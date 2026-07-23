@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中石油储量瀑布图 与 中石油/中海油对比</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f5f7fa;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            min-height: 100vh; overflow-y: auto;
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .chart-box {
+            width: 100%; height: 50vh; flex-shrink: 0;
+            background: #fff; border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
+        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div id="loading">数据加载中...</div>
+<div id="error-msg"></div>
+<div id="chart-ptr"     class="chart-box" style="display:none"></div>
+<div id="chart-cnc"     class="chart-box" style="display:none"></div>
+<div id="chart-compare" class="chart-box" style="display:none"></div>
+<script>
+function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    const el = document.getElementById('error-msg');
+    el.style.display = 'block';
+    el.textContent = '加载失败：' + msg + '（请确保 Flask 后端已启动）';
+}
+
+Promise.all([
+    axios.get('http://127.0.0.1:5000/api/petrochina_reserves'),
+    axios.get('http://127.0.0.1:5000/api/cnooc_reserves')
+]).then(([resPtr, resCnc]) => {
+    if (resPtr.data.code !== 200 || resCnc.data.code !== 200) {
+        showError('接口错误'); return;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('chart-ptr').style.display = 'block';
+    document.getElementById('chart-cnc').style.display = 'block';
+    document.getElementById('chart-compare').style.display = 'block';
+    renderWaterfall('chart-ptr', '中石油', resPtr.data.data);
+    renderWaterfall('chart-cnc', '中海油', resCnc.data.data);
+    renderCompare(resPtr.data.data, resCnc.data.data);
+}).catch(err => showError(err.message));
+
+/* ────── 通用瀑布图 ────── */
+function renderWaterfall(divId, company, data) {
+    const years = data.map(d => d.year);
+    const oil   = data.map(d => d.oil);
+
+    // 斜线纹理
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = 10; patternCanvas.height = 10;
+    const pCtx = patternCanvas.getContext('2d');
+    pCtx.fillStyle = '#f0f0f0'; pCtx.fillRect(0, 0, 10, 10);
+    pCtx.strokeStyle = '#999'; pCtx.lineWidth = 1.5;
+    pCtx.beginPath(); pCtx.moveTo(0, 10); pCtx.lineTo(10, 0); pCtx.stroke();
+    pCtx.beginPath(); pCtx.moveTo(-2, 2);  pCtx.lineTo(2, -2);  pCtx.stroke();
+    pCtx.beginPath(); pCtx.moveTo(8, 12);  pCtx.lineTo(12, 8);  pCtx.stroke();
+    const stripeImg = new Image();
+    stripeImg.src = patternCanvas.toDataURL();
+    const stripePattern = { image: stripeImg, repeat: 'repeat' };
+
+    const COLOR_BASE = '#3ba562';
+    const COLOR_GAIN = '#31d86e';
+
+    const baseData = [], gainData = [], lossData = [];
+    oil.forEach((v, i) => {
+        if (v == null) { baseData.push(null); gainData.push(null); lossData.push(null); return; }
+        const prev = i > 0 ? oil[i - 1] : null;
+        if (prev == null) { baseData.push(v); gainData.push(0); lossData.push(0); }
+        else {
+            baseData.push(Math.min(prev, v));
+            gainData.push(Math.max(0, v - prev));
+            lossData.push(Math.max(0, prev - v));
+        }
+    });
+
+    const chart = echarts.init(document.getElementById(divId));
+    chart.setOption({
+        backgroundColor: '#ffffff',
+        title: {
+            text: company + '证实原油储量瀑布图',
+            subtext: '暗绿 = 保留　亮绿 = 增加　灰色斜线 = 减少 | 单位：百万桶',
+            left: 'center', top: 8,
+            textStyle: { color: '#1a1a2e', fontSize: 14 },
+            subtextStyle: { color: '#666', fontSize: 11 }
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            position: (point, params, dom, rect, size) => {
+                const [x] = point;
+                const tw = size.contentSize[0];
+                const vw = size.viewSize[0];
+                return [x + 16 + tw > vw ? x - tw - 16 : x + 16, 16];
+            },
+            formatter: params => {
+                const yr = +params[0].axisValue;
+                const d  = data.find(d => d.year === yr);
+                const dp = data.find(d => d.year === yr - 1);
+                if (!d) return '';
+                const pct = dp && dp.oil != null && d.oil != null
+                    ? (Math.abs(d.oil - dp.oil) / Math.max(d.oil, dp.oil) * 100).toFixed(1)
+                    : null;
+                return `<b>${yr} 年 · ${company}</b><br>
+                        证实储量：<b>${d.oil.toLocaleString()}</b> 百万桶<br>
+                        ${pct !== null ? `变化占比：<b>${pct}%</b>` : '初始值'}`;
+            }
+        },
+        grid: { left: 64, right: 20, top: 66, bottom: 32 },
+        xAxis: {
+            type: 'category', data: years, boundaryGap: true,
+            axisLabel: { color: '#555', fontSize: 10 },
+            axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value', name: '储量（百万桶）',
+            nameTextStyle: { color: '#555' },
+            axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#e8e8e8' } },
+            min: 0
+        },
+        series: [
+            {
+                name: '基础', type: 'bar', stack: 'total',
+                data: baseData.map(v => ({ value: v, itemStyle: { color: COLOR_BASE } })),
+                barMaxWidth: 30
+            },
+            {
+                name: '增加', type: 'bar', stack: 'total',
+                data: gainData.map(v => ({ value: v, itemStyle: { color: COLOR_GAIN } })),
+                barMaxWidth: 30,
+                label: {
+                    show: true, position: 'top', fontSize: 10, fontWeight: 'bold', color: '#1a7a3a',
+                    formatter: p => p.value > 0 ? '+' + p.value.toLocaleString() : ''
+                }
+            },
+            {
+                name: '减少', type: 'bar', stack: 'total',
+                data: lossData.map(v => ({ value: v, itemStyle: { color: stripePattern } })),
+                barMaxWidth: 30,
+                label: {
+                    show: true, position: 'top', fontSize: 10, fontWeight: 'bold', color: '#666666',
+                    formatter: p => p.value > 0 ? '-' + p.value.toLocaleString() : ''
+                }
+            }
+        ]
+    });
+
+    window.addEventListener('resize', () => chart.resize());
+    return chart;
+}
+
+/* ────── 图 2：中石油 vs 中海油 折线对比 ────── */
+function renderCompare(ptrData, cncData) {
+    const allYears = Array.from(new Set([
+        ...ptrData.map(d => d.year),
+        ...cncData.map(d => d.year)
+    ])).sort();
+
+    const ptrMap = Object.fromEntries(ptrData.map(d => [d.year, d]));
+    const cncMap = Object.fromEntries(cncData.map(d => [d.year, d]));
+
+    const ptrOil = allYears.map(y => ptrMap[y] ? ptrMap[y].oil : null);
+    const cncOil = allYears.map(y => cncMap[y] ? cncMap[y].oil : null);
+
+    const COLOR_PTR = '#1a7a3a';
+    const COLOR_CNC = '#e65100';
+
+    const chart = echarts.init(document.getElementById('chart-compare'));
+    chart.setOption({
+        backgroundColor: '#ffffff',
+        title: {
+            text: '中石油 vs 中海油 证实原油储量对比（2000-2024）',
+            subtext: '数据来源：两家公司历年年报（SEC 标准）| 单位：百万桶',
+            left: 'center', top: 8,
+            textStyle: { color: '#1a1a2e', fontSize: 14 },
+            subtextStyle: { color: '#666', fontSize: 11 }
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            position: (point, params, dom, rect, size) => {
+                const [x] = point;
+                const tw = size.contentSize[0];
+                const vw = size.viewSize[0];
+                return [x + 16 + tw > vw ? x - tw - 16 : x + 16, 16];
+            },
+            formatter: params => {
+                const yr = +params[0].axisValue;
+                const p = ptrMap[yr];
+                const c = cncMap[yr];
+                let html = `<b>${yr} 年</b><br>`;
+                if (p && p.oil != null) {
+                    const ratio = c && c.oil != null ? (p.oil / c.oil).toFixed(1) : null;
+                    html += `<span style="color:${COLOR_PTR}">■</span> 中石油：<b>${p.oil.toLocaleString()}</b> 百万桶`;
+                    if (ratio) html += `　（${ratio}× 中海油）`;
+                    html += '<br>';
+                }
+                if (c && c.oil != null) {
+                    html += `<span style="color:${COLOR_CNC}">■</span> 中海油：<b>${c.oil.toLocaleString()}</b> 百万桶<br>`;
+                }
+                return html;
+            }
+        },
+        legend: {
+            data: ['中石油', '中海油'],
+            top: 40,
+            textStyle: { fontSize: 12, color: '#333' }
+        },
+        grid: { left: 64, right: 20, top: 74, bottom: 32 },
+        xAxis: {
+            type: 'category', data: allYears, boundaryGap: false,
+            axisLabel: { color: '#555', fontSize: 10 },
+            axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value', name: '储量（百万桶）',
+            nameTextStyle: { color: '#555' },
+            axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#e8e8e8' } },
+            min: 0
+        },
+        series: [
+            {
+                name: '中石油', type: 'line',
+                data: ptrOil, smooth: false,
+                symbol: 'circle', symbolSize: 6, connectNulls: false,
+                lineStyle: { color: COLOR_PTR, width: 3 },
+                itemStyle: { color: COLOR_PTR },
+                areaStyle: { color: 'rgba(26, 122, 58, 0.08)' }
+            },
+            {
+                name: '中海油', type: 'line',
+                data: cncOil, smooth: false,
+                symbol: 'circle', symbolSize: 6, connectNulls: false,
+                lineStyle: { color: COLOR_CNC, width: 3 },
+                itemStyle: { color: COLOR_CNC },
+                areaStyle: { color: 'rgba(230, 81, 0, 0.08)' }
+            }
+        ]
+    });
+
+    window.addEventListener('resize', () => chart.resize());
+    return chart;
+}
+</script>
+</body>
+</html>

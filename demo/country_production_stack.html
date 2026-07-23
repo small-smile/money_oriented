@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>各国石油产量（原始值，1965-2024）</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f5f7fa;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chart-stack { width: 100%; flex: 1 1 0; min-height: 0; }
+        #detail-wrap {
+            display: none;
+            width: 100%;
+            flex: 0 0 220px;
+            background: #fff;
+            border-top: 2px solid #ddd;
+        }
+        #detail-title {
+            text-align: center;
+            font-size: 13px;
+            color: #333;
+            padding: 3px 0 0;
+            height: 20px;
+            line-height: 20px;
+        }
+        #chart-detail { width: 100%; height: 200px; }
+        #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
+        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div id="loading">数据加载中...</div>
+<div id="error-msg"></div>
+<div id="chart-stack" style="display:none"></div>
+<div id="detail-wrap">
+    <div id="detail-title"></div>
+    <div id="chart-detail"></div>
+</div>
+<script>
+const REGION_COLORS = {
+    'North America':      '#5470c6',
+    'CIS':                '#fac858',
+    'Middle East':        '#ee6666',
+    'S. & Cent. America': '#91cc75',
+    'Africa':             '#fc8452',
+    'Asia Pacific':       '#73c0de',
+    'Europe':             '#9a60b4'
+};
+
+function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    const el = document.getElementById('error-msg');
+    el.style.display = 'block';
+    el.textContent = '加载失败：' + msg + '（请确保 Flask 后端已启动）';
+}
+
+let _years, _allData, _meta;
+let detailChart = null;
+let currentCountry = null;
+
+axios.get('http://127.0.0.1:5000/api/production_region')
+    .then(res => {
+        if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
+        const d = res.data.data;
+        _years   = d.years;
+        _allData = d.country_all_data;
+        _meta    = d.country_meta;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('chart-stack').style.display = 'block';
+        renderStack(d.years, d.sorted_countries, d.country_all_data, d.country_meta);
+        // 默认展示第一个国家
+        const first = d.sorted_countries[0];
+        currentCountry = first;
+        showDetail(first);
+    })
+    .catch(err => showError(err.message));
+
+function renderStack(years, sortedCountries, allData, meta) {
+    const chart = echarts.init(document.getElementById('chart-stack'));
+
+    const series = sortedCountries.map(c => {
+        const baseColor = REGION_COLORS[meta[c].continent] || '#888';
+        return {
+            name: c,
+            type: 'line',
+            stack: 'total',
+            areaStyle: { opacity: 0.65 },
+            data: allData[c],
+            smooth: true,
+            showSymbol: false,
+            connectNulls: true,
+            lineStyle: { width: 0.5 },
+            itemStyle: { color: baseColor },
+            emphasis: { focus: 'series', areaStyle: { opacity: 1 } }
+        };
+    });
+
+    chart.setOption({
+        backgroundColor: '#ffffff',
+        title: {
+            text: '各国石油产量堆叠图（1965-2024）',
+            subtext: '悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日',
+            left: 'center', top: 8,
+            textStyle: { color: '#1a1a2e', fontSize: 15 },
+            subtextStyle: { color: '#666', fontSize: 12 }
+        },
+        tooltip: {
+            trigger: 'axis',
+            position: [12, 12],
+            axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            formatter: params => {
+                let html = `<b>${params[0].axisValue} 年</b><br>`;
+                const items = params.filter(p => p.value != null && p.value > 0)
+                                    .sort((a, b) => b.value - a.value);
+                // 当前悬浮国家加粗高亮，放在最前面
+                const cur = items.find(p => p.seriesName === currentCountry);
+                if (cur) {
+                    html += `${cur.marker}<b>${cur.seriesName}: ${cur.value.toLocaleString()}</b> ← 当前<br>`;
+                    html += `<hr style="margin:3px 0;border-color:#ddd">`;
+                }
+                items.filter(p => p.seriesName !== currentCountry)
+                     .slice(0, 8)
+                     .forEach(p => {
+                         html += `${p.marker}${p.seriesName}: <b>${p.value.toLocaleString()}</b><br>`;
+                     });
+                if (items.length > 9) html += `…（共 ${items.length} 条）`;
+                return html;
+            }
+        },
+        legend: {
+            data: sortedCountries, type: 'scroll', top: 60,
+            textStyle: { fontSize: 11 },
+            formatter: name => {
+                const m = meta[name];
+                const sign = m.change >= 0 ? '+' : '';
+                return `${name} (${sign}${m.change.toLocaleString()})`;
+            }
+        },
+        grid: { left: 64, right: 20, top: 130, bottom: 60 },
+        toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
+        dataZoom: [
+            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 },
+            { type: 'inside', xAxisIndex: 0 }
+        ],
+        xAxis: {
+            type: 'category', data: years, boundaryGap: false,
+            axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value', name: '千桶/日',
+            nameTextStyle: { color: '#555' },
+            axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#e8e8e8' } }
+        },
+        series
+    });
+
+    // 用 tooltip formatter 内部捕获各年各系列的堆叠累积值
+    // 根据鼠标 Y 像素判断落在哪一层
+    let _stackedPixels = {};   // { yearIdx: [{name, topPx, botPx}] }
+
+    chart.on('rendered', () => {
+        // 缓存每条系列每年的像素区间（仅在渲染后更新一次）
+        _stackedPixels = {};
+    });
+
+    const chartDom = document.getElementById('chart-stack');
+    chartDom.addEventListener('mousemove', e => {
+        const rect = chartDom.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+
+        // 将像素 X 转为 xAxis 索引
+        const dataCoord = chart.convertFromPixel('grid', [px, py]);
+        if (!dataCoord) return;
+        const xi = Math.round(dataCoord[0]);
+        if (xi < 0 || xi >= years.length) return;
+
+        // 累计各系列在该 xi 列的堆叠值，从下到上找鼠标 Y 落在哪层
+        let cumulative = 0;
+        let hit = null;
+        for (let si = 0; si < sortedCountries.length; si++) {
+            const c = sortedCountries[si];
+            const val = allData[c][xi] || 0;
+            const prevCum = cumulative;
+            cumulative += val;
+            const botPx = chart.convertToPixel('grid', [xi, prevCum])[1];
+            const topPx = chart.convertToPixel('grid', [xi, cumulative])[1];
+            if (py >= topPx && py <= botPx) {
+                hit = c;
+                break;
+            }
+        }
+
+        if (hit && hit !== currentCountry) {
+            currentCountry = hit;
+            showDetail(hit);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        chart.resize();
+        if (detailChart) detailChart.resize();
+    });
+
+    // detail 显示后主图需要重新 resize 以适应压缩后的高度
+    const observer = new ResizeObserver(() => chart.resize());
+    observer.observe(document.getElementById('chart-stack'));
+}
+
+function showDetail(country) {
+    const wrap = document.getElementById('detail-wrap');
+    const wasHidden = wrap.style.display === 'none';
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    document.getElementById('detail-title').textContent =
+        `${country}（${_meta[country].continent}）— 独立产量走势（千桶/日）`;
+
+    if (!detailChart) {
+        detailChart = echarts.init(document.getElementById('chart-detail'));
+    }
+
+    const color = REGION_COLORS[_meta[country].continent] || '#5470c6';
+
+    detailChart.setOption({
+        backgroundColor: '#fafafa',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } } },
+        grid: { left: 56, right: 16, top: 12, bottom: 40 },
+        dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
+        xAxis: {
+            type: 'category', data: _years, boundaryGap: false,
+            axisLabel: { color: '#555', fontSize: 10 },
+            axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value',
+            axisLabel: { color: '#555', fontSize: 10, formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#eee' } }
+        },
+        series: [{
+            type: 'line',
+            data: _allData[country],
+            smooth: true,
+            showSymbol: false,
+            connectNulls: true,
+            areaStyle: { color, opacity: 0.15 },
+            lineStyle: { color, width: 2 },
+            itemStyle: { color }
+        }]
+    }, true);   // true = notMerge，避免残留上一个国家的系列
+}
+</script>
+</body>
+</html>
