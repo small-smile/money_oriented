@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="common/base.css">
+    <script src="common/site-header.js" defer></script>
+    <title>各地区石油产量（1965-2024）</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .main-row {
+            flex: 1 1 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+        .left-panel {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #chart-abs { width: 100%; flex: 1 1 0; min-height: 0; }
+        #chart-pct { width: 100%; flex: 1 1 0; min-height: 0; }
+        #detail-wrap {
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            border-left: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        #detail-title {
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+            height: 28px;
+            line-height: 28px;
+            padding-top: 3px;
+            flex-shrink: 0;
+        }
+        #chart-detail { width: 100%; flex: 1 1 0; min-height: 0; }
+        #loading, #error-msg { width: 100%; }
+    </style>
+</head>
+<body>
+<div id="loading">数据加载中...</div>
+<div id="error-msg"></div>
+<main class="main-row" style="display:none" id="main-row">
+    <div class="left-panel">
+        <div id="chart-abs"></div>
+        <div id="chart-pct"></div>
+    </div>
+    <div id="detail-wrap">
+        <div id="detail-title">—</div>
+        <div id="chart-detail"></div>
+    </div>
+</main>
+<script>
+const REGION_COLORS = {
+    'North America':      '#5470c6',
+    'CIS':                '#fac858',
+    'Middle East':        '#ee6666',
+    'S. & Cent. America': '#91cc75',
+    'Africa':             '#fc8452',
+    'Asia Pacific':       '#73c0de',
+    'Europe':             '#9a60b4'
+};
+
+function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    const el = document.getElementById('error-msg');
+    el.style.display = 'block';
+    el.textContent = '加载失败：' + msg + '（请确保 Flask 后端已启动）';
+}
+
+let _years, _regionData, _pctData, _regions;
+let absChart = null, pctChart = null, detailChart = null;
+let currentRegion = null;
+
+axios.get('http://127.0.0.1:5000/api/production_region')
+    .then(res => {
+        if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
+        const d = res.data.data;
+        _years = d.years;
+        _regionData = d.region_data;
+
+        // 排序：减少的在下，增加的在上
+        _regions = Object.keys(_regionData).sort((a, b) => {
+            const ca = _regionData[a][_regionData[a].length - 1] - _regionData[a][0];
+            const cb = _regionData[b][_regionData[b].length - 1] - _regionData[b][0];
+            return ca - cb;
+        });
+
+        // 预计算百分比数据
+        const totals = _years.map((_, yi) =>
+            _regions.reduce((s, r) => s + (_regionData[r][yi] || 0), 0)
+        );
+        _pctData = {};
+        _regions.forEach(r => {
+            _pctData[r] = _regionData[r].map((v, yi) =>
+                totals[yi] > 0 ? parseFloat(((v / totals[yi]) * 100).toFixed(2)) : 0
+            );
+        });
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('main-row').style.display = 'flex';
+
+        renderCharts();
+
+        // 默认展示减少最多的洲
+        currentRegion = _regions[0];
+        showDetail(currentRegion);
+    })
+    .catch(err => showError(err.message));
+
+function buildOption(dataMap, isAbs) {
+    const series = _regions.map(r => ({
+        name: r, type: 'line', stack: 'total',
+        areaStyle: { opacity: 0.75 }, emphasis: { focus: 'series' },
+        smooth: true, showSymbol: false,
+        data: dataMap[r], color: REGION_COLORS[r]
+    }));
+
+    return {
+        backgroundColor: '#ffffff',
+        title: {
+            text: isAbs
+                ? '各地区石油产量（堆叠面积图，1965-2024）'
+                : '各地区石油产量占比（百分比堆叠，1965-2024）',
+            subtext: isAbs ? '悬浮到某层查看该地区独立走势' : '',
+            left: 'center', top: 4,
+            textStyle: { color: '#1a1a2e', fontSize: 15 },
+            subtextStyle: { color: '#666', fontSize: 12 }
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            position: [12, 12],
+            formatter: params => {
+                let html = `<b>${params[0].axisValue} 年</b><br>`;
+                if (isAbs) {
+                    let total = 0;
+                    params.forEach(p => { total += p.value || 0; });
+                    params.slice().reverse().forEach(p => {
+                        const bold = p.seriesName === currentRegion;
+                        html += `${p.marker}${bold ? '<b>' : ''}${p.seriesName}: ${(p.value||0).toLocaleString()}${bold ? ' ←</b>' : ''}<br>`;
+                    });
+                    html += `<hr style="margin:3px 0;border-color:#ddd">合计: <b>${total.toLocaleString()}</b>`;
+                } else {
+                    params.slice().reverse().forEach(p => {
+                        const bold = p.seriesName === currentRegion;
+                        html += `${p.marker}${bold ? '<b>' : ''}${p.seriesName}: ${(p.value||0).toFixed(1)}%${bold ? ' ←</b>' : ''}<br>`;
+                    });
+                }
+                return html;
+            }
+        },
+        legend: {
+            data: _regions, top: 42, type: 'scroll',
+            textStyle: { color: '#333', fontSize: 12 },
+            formatter: name => {
+                const d = dataMap[name];
+                const change = d[d.length - 1] - d[0];
+                const sign = change >= 0 ? '+' : '';
+                return isAbs
+                    ? `${name}  (${sign}${Math.round(change).toLocaleString()})`
+                    : `${name}  (${sign}${change.toFixed(1)}%)`;
+            }
+        },
+        grid: { left: isAbs ? 60 : 50, right: 16, top: 80, bottom: 24 },
+        toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
+        dataZoom: [
+            { type: 'inside', xAxisIndex: 0 }
+        ],
+        xAxis: {
+            type: 'category', data: _years, boundaryGap: false,
+            axisLabel: { color: '#555', fontSize: 11 }, axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: isAbs ? {
+            type: 'value', name: '千桶/日',
+            nameTextStyle: { color: '#555', fontSize: 11 },
+            axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#e8e8e8' } }
+        } : {
+            type: 'value', name: '%', min: 0, max: 100,
+            nameTextStyle: { color: '#555', fontSize: 11 },
+            axisLabel: { color: '#555', fontSize: 11, formatter: v => v + '%' },
+            splitLine: { lineStyle: { color: '#e8e8e8' } }
+        },
+        series
+    };
+}
+
+function bindHover(chartDom, chart, dataMap) {
+    chartDom.onmousemove = e => {
+        const rect = chartDom.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const dataCoord = chart.convertFromPixel('grid', [px, py]);
+        if (!dataCoord) return;
+        const xi = Math.round(dataCoord[0]);
+        if (xi < 0 || xi >= _years.length) return;
+        let cum = 0, hit = null;
+        for (const r of _regions) {
+            const val = dataMap[r][xi] || 0;
+            const prevCum = cum;
+            cum += val;
+            const botPx = chart.convertToPixel('grid', [xi, prevCum])[1];
+            const topPx = chart.convertToPixel('grid', [xi, cum])[1];
+            if (py >= topPx && py <= botPx) { hit = r; break; }
+        }
+        if (hit && hit !== currentRegion) {
+            currentRegion = hit;
+            showDetail(hit);
+        }
+    };
+}
+
+function renderCharts() {
+    absChart = echarts.init(document.getElementById('chart-abs'));
+    pctChart = echarts.init(document.getElementById('chart-pct'));
+
+    absChart.setOption(buildOption(_regionData, true), true);
+    pctChart.setOption(buildOption(_pctData, false), true);
+
+    bindHover(document.getElementById('chart-abs'), absChart, _regionData);
+    bindHover(document.getElementById('chart-pct'), pctChart, _pctData);
+
+    window.addEventListener('resize', () => {
+        absChart.resize();
+        pctChart.resize();
+        if (detailChart) detailChart.resize();
+    });
+}
+
+function showDetail(region) {
+    document.getElementById('detail-title').textContent =
+        `${region} — 独立产量走势（千桶/日）`;
+    if (!detailChart) detailChart = echarts.init(document.getElementById('chart-detail'));
+    const color = REGION_COLORS[region] || '#5470c6';
+    detailChart.setOption({
+        backgroundColor: '#fafafa',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } } },
+        grid: { left: 56, right: 16, top: 24, bottom: 24 },
+        dataZoom: [
+            { type: 'inside', xAxisIndex: 0 }
+        ],
+        xAxis: {
+            type: 'category', data: _years, boundaryGap: false,
+            axisLabel: { color: '#555', fontSize: 11 }, axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value',
+            axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
+            splitLine: { lineStyle: { color: '#eee' } }
+        },
+        series: [{
+            type: 'line', data: _regionData[region],
+            smooth: true, showSymbol: false,
+            areaStyle: { color, opacity: 0.15 },
+            lineStyle: { color, width: 2 }, itemStyle: { color }
+        }]
+    }, true);
+}
+</script>
+</body>
+</html>

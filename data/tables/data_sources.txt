@@ -1,0 +1,37 @@
+# 数据来源清单 (data/tables/)
+# 说明: 本文件记录本目录各数据文件的来源。
+#   [确认] = 来源已核实(有抓取脚本或既有 meta 记录)
+#   [推断] = 依数据内容/命名推断的来源, 尚未逐一核实, 引用前请再确认
+# 生成时间: 2026-07-30
+# 格式: 文件名 <TAB> 来源 <TAB> 状态/备注
+
+# --- 原油价格 (日/月频, FRED) ---
+wti_daily.csv	FRED (St. Louis Fed) DCOILWTICO	[确认] 见 fred_oil_meta.txt; extract/fetch_fred_oil.py
+wti_monthly.csv	FRED MCOILWTICO	[确认] 见 fred_oil_meta.txt
+brent_daily.csv	FRED DCOILBRENTEU	[确认] 见 fred_oil_meta.txt
+brent_monthly.csv	FRED MCOILBRENTEU	[确认] 见 fred_oil_meta.txt
+
+# --- 原油长期年度序列 ---
+oil.price.txt	BP/EI Statistical Review of World Energy 长期原油价格序列 (1861-至今, 名义 + 通胀调整)	[推断] 经典 1861-present 序列, 具体版本待确认
+oil.production.txt	原油年度产量	[推断] 来源待确认 (疑为 EI/BP 或 EIA)
+
+# --- 区域产量/消费 ---
+production_region.csv	Energy Institute (EI) Statistical Review of World Energy	[推断] 待确认
+consumption_region.csv	Energy Institute (EI) Statistical Review of World Energy	[推断] 待确认
+
+# --- 黄金 ---
+gold.price.txt	gold.org (World Gold Council) 年度收盘价, USD/oz	[确认] 见 meta.txt
+
+# --- 世界人口 ---
+world_population.txt	World Bank Open Data SP.POP.TOTL (WLD, 世界聚合), 单位: 亿, 覆盖 1960 起	[确认] extract/fetch_world_population.py
+
+# --- 公司财务/储量/产量 ---
+abc_financials.txt	农业银行 (sh.601288) 年报/财务报表	[推断] 来源待确认
+petrochina_reserves.csv	中石油 (PetroChina) 年报 / SEC Form 20-F	[推断] 待确认
+petrochina_production.csv	中石油 (PetroChina) 年报 / SEC Form 20-F	[推断] 待确认
+cnooc_reserves.csv	中海油 (CNOOC) 年报 / SEC Form 20-F	[推断] 待确认
+cnooc_production.csv	中海油 (CNOOC) 年报 / SEC Form 20-F	[推断] 待确认
+
+# --- 元数据文件 (自描述) ---
+meta.txt	本目录旧版来源记录 (仅 gold)	[确认]
+fred_oil_meta.txt	FRED 抓取元数据 (由 fetch_fred_oil.py 生成)	[确认]

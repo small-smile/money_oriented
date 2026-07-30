@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="common/base.css">
+    <script src="common/site-header.js" defer></script>
+    <title>图表导航</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "Microsoft YaHei", sans-serif;
+            background: #f5f7fa;
+            padding: 40px 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 36px;
+            color: #2c3e50;
+            font-size: 28px;
+        }
+        h2 {
+            max-width: 1200px;
+            margin: 40px auto 16px;
+            color: #2c3e50;
+            font-size: 20px;
+            border-left: 4px solid #1f2937;
+            padding-left: 12px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .card .title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card .desc {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .card .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            width: fit-content;
+        }
+        .tag-price { background: #fdebd0; color: #d35400; }
+        .tag-production { background: #d5f5e3; color: #1e8449; }
+        .tag-consumption { background: #fce4ec; color: #ad1457; }
+        .tag-company { background: #d6eaf8; color: #1a5276; }
+        .tag-bank { background: #e8daef; color: #6c3483; }
+    </style>
+</head>
+<body>
+<h1>📊 行业数据看板</h1>
+
+<h2>石油</h2>
+<div class="grid">
+    <a class="card" href="oil_history_price.html">
+        <span class="tag tag-price">油价</span>
+        <span class="title">原油K线图</span>
+        <span class="desc">历史油价K线 + 通胀调整后油价 + 年产量多系列图表</span>
+    </a>
+    <a class="card" href="region_production.html">
+        <span class="tag tag-production">产量</span>
+        <span class="title">各地区石油产量（1965-2024）</span>
+        <span class="desc">按地区维度展示全球石油产量趋势</span>
+    </a>
+    <a class="card" href="country_production_stack.html">
+        <span class="tag tag-production">产量</span>
+        <span class="title">各国石油产量（原始值）</span>
+        <span class="desc">主要产油国 1965-2024 产量堆叠图</span>
+    </a>
+    <a class="card" href="country_consumption_stack.html">
+        <span class="tag tag-consumption">消费</span>
+        <span class="title">各国石油消费量（原始值）</span>
+        <span class="desc">主要消费国 1965-2024 消费量堆叠图</span>
+    </a>
+    <a class="card" href="country_production_percent.html">
+        <span class="tag tag-production">产量</span>
+        <span class="title">各国石油产量占比（1965-2024）</span>
+        <span class="desc">各国产量在全球中的占比变化</span>
+    </a>
+    <a class="card" href="country_change_2001_vs_2024.html">
+        <span class="tag tag-production">产量</span>
+        <span class="title">各洲产量对比：2001 vs 2024</span>
+        <span class="desc">对比各大洲在两个年份的产量差异</span>
+    </a>
+    <a class="card" href="country_change_2001_vs_2024_area.html">
+        <span class="tag tag-production">产量</span>
+        <span class="title">各洲产量对比（面积图）</span>
+        <span class="desc">以面积图形式展示各洲产量对比</span>
+    </a>
+    <a class="card" href="petro_balance_sheet.html">
+        <span class="tag tag-company">公司</span>
+        <span class="title">中石油 2024 资产负债表</span>
+        <span class="desc">资产 = 负债 + 所有者权益 结构化展示</span>
+    </a>
+    <a class="card" href="petro_income_waterfall.html">
+        <span class="tag tag-company">公司</span>
+        <span class="title">中石油 2025 利润→营收 瀑布图</span>
+        <span class="desc">按金额升序的反向瀑布图</span>
+    </a>
+    <a class="card" href="petro_reserves.html">
+        <span class="tag tag-company">公司</span>
+        <span class="title">中石油储量瀑布图</span>
+        <span class="desc">中石油/中海油储量对比</span>
+    </a>
+</div>
+
+<h2>银行</h2>
+<div class="grid">
+    <a class="card" href="abc_detail.html">
+        <span class="tag tag-bank">公司</span>
+        <span class="title">农业银行 - 营收利润走势</span>
+        <span class="desc">农业银行营收与利润数据可视化</span>
+    </a>
+    <a class="card" href="company.html">
+        <span class="tag tag-bank">公司</span>
+        <span class="title">渝农商行（601077）2025 年报</span>
+        <span class="desc">业绩走势 · 前瞻指引 · 股东变动 · 会计准则 · 三张表</span>
+    </a>
+</div>
+</body>
+</html>

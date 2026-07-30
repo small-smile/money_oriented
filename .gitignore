@@ -35,3 +35,6 @@ tmp/
 
 # Chart / images output (可选，按需保留)
 *.png
+
+# Secrets / drafts (含真实登录 token，勿入库)
+draft.json

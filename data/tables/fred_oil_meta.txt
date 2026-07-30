@@ -1,0 +1,8 @@
+# FRED oil price fetch
+# fetched_at: 2026-07-23 11:10 UTC
+# source: https://fred.stlouisfed.org/
+
+wti_daily.csv	DCOILWTICO	rows=10205	1986-01-02~2026-07-20
+wti_monthly.csv	MCOILWTICO	rows=486	1986-01-01~2026-06-01
+brent_daily.csv	DCOILBRENTEU	rows=9937	1987-05-20~2026-07-20
+brent_monthly.csv	MCOILBRENTEU	rows=470	1987-05-01~2026-06-01
