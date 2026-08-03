@@ -407,6 +407,55 @@ def read_consumption_region():
     }
 
 
+def read_consumption_product():
+    """分产品消费量（汽油/柴油/航空煤油/石脑油 + 总计），EI Regional Consumption。
+
+    四个细分品种源表只有 1980 起，总计有 1965 起 —— 年轴统一用细分品种的跨度，
+    否则 1965-1979 会留出一段只有总计的空白。
+    """
+    df = pd.read_csv("data/tables/consumption_product.csv")
+    PRODUCTS = ["汽油", "柴油", "航空煤油", "石脑油"]
+
+    sub = df[df['产品'].isin(PRODUCTS)]
+    years = sorted(sub['年份'].unique().tolist())
+    regions = sorted(df['地区'].unique().tolist())
+
+    def series_for(region, product):
+        s = df[(df['地区'] == region) & (df['产品'] == product)]
+        ym = dict(zip(s['年份'], s['消费量(千桶/日)']))
+        out = []
+        for y in years:
+            v = ym.get(y)
+            out.append(round(float(v), 1) if v is not None and not (isinstance(v, float) and v != v) else None)
+        return out
+
+    region_products = {}
+    for r in regions:
+        region_products[r] = {p: series_for(r, p) for p in PRODUCTS}
+        region_products[r]['总计'] = series_for(r, '总计')
+
+    # 各品种占同区域石油总消费的比例（%），用于底部占比视图
+    region_shares = {}
+    for r in regions:
+        total = region_products[r]['总计']
+        region_shares[r] = {
+            p: [None if (v is None or total[i] in (None, 0)) else round(v / total[i] * 100, 2)
+                for i, v in enumerate(region_products[r][p])]
+            for p in PRODUCTS
+        }
+
+    return {
+        "code": 200,
+        "data": {
+            "years": years,
+            "products": PRODUCTS,
+            "regions": regions,
+            "region_products": region_products,
+            "region_shares": region_shares
+        }
+    }
+
+
 @app.route("/api/production")
 def api_prod():
     return jsonify(read_production())
@@ -430,6 +479,11 @@ def api_production_region():
 @app.route("/api/consumption_region")
 def api_consumption_region():
     return jsonify(read_consumption_region())
+
+
+@app.route("/api/consumption_product")
+def api_consumption_product():
+    return jsonify(read_consumption_product())
 
 
 def _read_reserves_csv(path, oil_col, price_col):

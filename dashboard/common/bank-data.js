@@ -1,5 +1,5 @@
 /* 自动生成，请勿手工编辑。
- * 生成脚本：extract/gen_bank_dashboard_data.py
+ * 生成脚本：data/extract/gen_bank_dashboard_data.py
  * 数据源：data/tables/bank_<code>_annual.json（东方财富 F10，取值源自各期年度报告）
  * 金额序列单位：亿元；三张表单位：百万元；比率单位：%
  */

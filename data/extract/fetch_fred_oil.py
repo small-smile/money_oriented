@@ -23,8 +23,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-# 项目根目录（extract/ 的上一级）
-ROOT = Path(__file__).resolve().parent.parent
+# 项目根目录（data/extract/ 的上两级）
+ROOT = Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "data" / "tables"
 
 SERIES = {

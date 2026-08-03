@@ -8,7 +8,7 @@ dashboard/common/bank-data.js（window.BANK_QUANT）。
     - 费用类科目在数据里保持正数，另用 neg 标记，由页面渲染成 (x)
 
 用法：
-    python extract/gen_bank_dashboard_data.py
+    python data/extract/gen_bank_dashboard_data.py
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 TABLES = ROOT / "data" / "tables"
 OUT = ROOT / "dashboard" / "common" / "bank-data.js"
 
@@ -255,7 +255,7 @@ def main() -> None:
     body = json.dumps(data, ensure_ascii=False, indent=1)
     OUT.write_text(
         "/* 自动生成，请勿手工编辑。\n"
-        " * 生成脚本：extract/gen_bank_dashboard_data.py\n"
+        " * 生成脚本：data/extract/gen_bank_dashboard_data.py\n"
         " * 数据源：data/tables/bank_<code>_annual.json（东方财富 F10，取值源自各期年度报告）\n"
         " * 金额序列单位：亿元；三张表单位：百万元；比率单位：%\n"
         " */\n"

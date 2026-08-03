@@ -26,7 +26,7 @@ annual = df.groupby("year")["price"].mean().round(2).reset_index()
 annual.columns = ["year", "close"]
 
 print(annual)
-out_path = os.path.join(os.path.dirname(__file__), "../data/tables/gold.price.txt")
+out_path = os.path.join(os.path.dirname(__file__), "../../data/tables/gold.price.txt")
 annual.to_csv(out_path, sep="\t", index=False)
 print(f"保存完成，共 {len(annual)} 条，覆盖 {annual['year'].min()}–{annual['year'].max()}")
 print(annual)

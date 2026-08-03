@@ -21,7 +21,7 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "data" / "tables"
 
 INDICATOR = "SP.POP.TOTL"

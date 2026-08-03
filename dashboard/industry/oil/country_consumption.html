@@ -33,6 +33,26 @@
         #chart-detail { width: 100%; height: 200px; }
         #loading { text-align: center; padding: 60px; color: #666; font-size: 16px; }
         #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 16px; }
+
+        /* ── 分产品消费量卡片 ── */
+        #product-card { display: none; background: #fff; margin-top: 24px; padding-bottom: 12px; }
+        #chart-product { width: 100%; height: 620px; }
+        .btn-row {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            padding: 8px 16px 4px; align-items: center;
+        }
+        .btn-row .label { font-size: 16px; color: #555; margin-right: 4px; }
+        .btn-row button {
+            font-size: 16px; padding: 4px 12px; cursor: pointer;
+            background: #f3f4f6; color: #374151;
+            border: 1px solid #d1d5db; border-radius: 4px;
+            font-family: inherit;
+        }
+        .btn-row button:hover { background: #e5e7eb; }
+        .btn-row button.active {
+            background: #1f2937; color: #fff; border-color: #1f2937; font-weight: 600;
+        }
+        .btn-row .spacer { flex: 1; }
     </style>
 </head>
 <body>
@@ -46,6 +66,12 @@
     <div id="detail-wrap">
         <div id="detail-title"></div>
         <div id="chart-detail"></div>
+    </div>
+    <div id="product-card">
+        <h2 class="chart-title">分产品消费量（1980-2024）<span class="sub">汽油 / 柴油 / 航空煤油 / 石脑油 | 点击按钮切换地区与口径 | 来源：EI Statistical Review 2025</span></h2>
+        <div class="btn-row" id="region-btns"><span class="label">地区</span></div>
+        <div class="btn-row" id="mode-btns"><span class="label">口径</span></div>
+        <div id="chart-product"></div>
     </div>
 </div>
 <script>
@@ -237,6 +263,148 @@ function showDetail(country) {
             lineStyle: { color, width: 2 },
             itemStyle: { color }
         }]
+    }, true);
+}
+
+// ══════════════ 分产品消费量（EI: Oil - Regional Consumption） ══════════════
+const PRODUCT_COLORS = {
+    '汽油':     '#5470c6',
+    '柴油':     '#ee6666',
+    '航空煤油': '#3ba272',
+    '石脑油':   '#fac858'
+};
+
+// 源表 17 个区块，按"总量→大区→重点国家"排列，中文标签只用于按钮和图例
+const REGION_LABELS = {
+    'World': '全球', 'OECD': 'OECD', 'Non-OECD': '非 OECD',
+    'North America': '北美', 'US': '美国',
+    'S. & Cent. America': '中南美', 'Brazil': '巴西',
+    'Europe': '欧洲', 'European Union': '欧盟',
+    'CIS': '独联体', 'USSR': '苏联',
+    'Middle East': '中东', 'Africa': '非洲',
+    'Asia Pacific': '亚太', 'China': '中国', 'India': '印度', 'Japan': '日本'
+};
+const REGION_ORDER = Object.keys(REGION_LABELS);
+
+let _pd = null;                 // 接口返回的 data
+let productChart = null;
+let curRegion = 'World';
+let curMode = 'abs';            // abs = 千桶/日, share = 占本地区石油消费 %
+
+axios.get('http://127.0.0.1:5000/api/consumption_product')
+    .then(res => {
+        if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
+        _pd = res.data.data;
+        document.getElementById('product-card').style.display = 'block';
+        buildProductButtons();
+        renderProduct();
+    })
+    .catch(err => showError(err.message));
+
+function buildProductButtons() {
+    const rWrap = document.getElementById('region-btns');
+    REGION_ORDER.filter(r => _pd.regions.includes(r)).forEach(r => {
+        const b = document.createElement('button');
+        b.textContent = REGION_LABELS[r];
+        b.dataset.region = r;
+        if (r === curRegion) b.classList.add('active');
+        b.addEventListener('click', () => {
+            curRegion = r;
+            rWrap.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            renderProduct();
+        });
+        rWrap.appendChild(b);
+    });
+
+    const mWrap = document.getElementById('mode-btns');
+    [['abs', '绝对量（千桶/日）'], ['share', '占本地区石油消费（%）']].forEach(([mode, text]) => {
+        const b = document.createElement('button');
+        b.textContent = text;
+        if (mode === curMode) b.classList.add('active');
+        b.addEventListener('click', () => {
+            curMode = mode;
+            mWrap.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            renderProduct();
+        });
+        mWrap.appendChild(b);
+    });
+}
+
+function renderProduct() {
+    if (!productChart) {
+        productChart = echarts.init(document.getElementById('chart-product'));
+        window.addEventListener('resize', () => productChart.resize());
+        new ResizeObserver(() => productChart.resize())
+            .observe(document.getElementById('chart-product'));
+    }
+
+    const share = curMode === 'share';
+    const src = share ? _pd.region_shares[curRegion] : _pd.region_products[curRegion];
+    const unit = share ? '%' : '千桶/日';
+
+    const series = _pd.products.map(p => {
+        const color = PRODUCT_COLORS[p];
+        return {
+            name: p,
+            type: 'line',
+            data: src[p],
+            smooth: true,
+            showSymbol: false,
+            connectNulls: false,     // 苏联 1985 后断档，不能连
+            lineStyle: { color, width: 2.5 },
+            itemStyle: { color },
+            endLabel: {
+                show: true, fontSize: 16, color,
+                formatter: pm => pm.value == null ? '' :
+                    `${p} ${share ? pm.value.toFixed(1) + '%' : pm.value.toLocaleString()}`
+            }
+        };
+    });
+
+    productChart.setOption({
+        backgroundColor: '#ffffff',
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            textStyle: { fontSize: 16 },
+            formatter: params => {
+                let html = `<b>${params[0].axisValue} 年 · ${REGION_LABELS[curRegion]}</b><br>`;
+                params.filter(p => p.value != null)
+                      .sort((a, b) => b.value - a.value)
+                      .forEach(p => {
+                          const v = share ? p.value.toFixed(2) + '%' : p.value.toLocaleString();
+                          html += `${p.marker}${p.seriesName}: <b>${v}</b><br>`;
+                      });
+                return html;
+            }
+        },
+        legend: {
+            data: _pd.products, top: 8, textStyle: { fontSize: 16 }
+        },
+        // endLabel 写在线尾，右侧留白给它
+        grid: { left: 88, right: 150, top: 52, bottom: 64 },
+        toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
+        dataZoom: [
+            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20, textStyle: { fontSize: 14 } }
+        ],
+        xAxis: {
+            type: 'category', data: _pd.years, boundaryGap: false,
+            axisLabel: { color: '#555', fontSize: 16 },
+            axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: {
+            type: 'value', name: unit,
+            min: 0,                  // 消费量有意义的 0 基线，不做截断放大
+            nameTextStyle: { color: '#555', fontSize: 16 },
+            axisLabel: {
+                color: '#555', fontSize: 16,
+                formatter: v => share ? v + '%' : (v / 1000).toFixed(0) + 'k'
+            },
+            splitLine: { lineStyle: { color: '#e8e8e8' } }
+        },
+        series
     }, true);
 }
 </script>

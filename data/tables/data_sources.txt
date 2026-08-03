@@ -6,7 +6,7 @@
 # 格式: 文件名 <TAB> 来源 <TAB> 状态/备注
 
 # --- 原油价格 (日/月频, FRED) ---
-wti_daily.csv	FRED (St. Louis Fed) DCOILWTICO	[确认] 见 fred_oil_meta.txt; extract/fetch_fred_oil.py
+wti_daily.csv	FRED (St. Louis Fed) DCOILWTICO	[确认] 见 fred_oil_meta.txt; data/extract/fetch_fred_oil.py
 wti_monthly.csv	FRED MCOILWTICO	[确认] 见 fred_oil_meta.txt
 brent_daily.csv	FRED DCOILBRENTEU	[确认] 见 fred_oil_meta.txt
 brent_monthly.csv	FRED MCOILBRENTEU	[确认] 见 fred_oil_meta.txt
@@ -23,7 +23,7 @@ consumption_region.csv	Energy Institute (EI) Statistical Review of World Energy	
 gold.price.txt	gold.org (World Gold Council) 年度收盘价, USD/oz	[确认] 见 meta.txt
 
 # --- 世界人口 ---
-world_population.txt	World Bank Open Data SP.POP.TOTL (WLD, 世界聚合), 单位: 亿, 覆盖 1960 起	[确认] extract/fetch_world_population.py
+world_population.txt	World Bank Open Data SP.POP.TOTL (WLD, 世界聚合), 单位: 亿, 覆盖 1960 起	[确认] data/extract/fetch_world_population.py
 
 # --- 公司财务/储量/产量 ---
 abc_financials.txt	农业银行 (sh.601288) 年报/财务报表	[推断] 来源待确认

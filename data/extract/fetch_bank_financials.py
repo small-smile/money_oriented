@@ -14,9 +14,9 @@
     data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 元信息
 
 用法：
-    python extract/fetch_bank_financials.py            # 使用缓存（缺失才请求）
-    python extract/fetch_bank_financials.py --refresh  # 强制重新拉取
-    python extract/fetch_bank_financials.py 600036     # 只处理指定代码
+    python data/extract/fetch_bank_financials.py            # 使用缓存（缺失才请求）
+    python data/extract/fetch_bank_financials.py --refresh  # 强制重新拉取
+    python data/extract/fetch_bank_financials.py 600036     # 只处理指定代码
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "tables"
 
