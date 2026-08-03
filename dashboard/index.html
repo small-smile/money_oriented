@@ -12,6 +12,7 @@
             background: #f5f7fa;
             padding: 40px 20px;
         }
+        .site-nav { margin: -40px -20px 0; }
         h1 {
             text-align: center;
             margin-bottom: 36px;
@@ -20,11 +21,19 @@
         }
         h2 {
             max-width: 1200px;
-            margin: 40px auto 16px;
+            margin: 44px auto 6px;
             color: #2c3e50;
-            font-size: 20px;
-            border-left: 4px solid #1f2937;
+            font-size: 22px;
+            border-left: 5px solid #1f2937;
             padding-left: 12px;
+        }
+        h3 {
+            max-width: 1200px;
+            margin: 24px auto 14px;
+            color: #4b5563;
+            font-size: 18px;
+            font-weight: 600;
+            padding-left: 17px;
         }
         .grid {
             display: grid;
@@ -66,9 +75,20 @@
             font-weight: 500;
             width: fit-content;
         }
+        /* 尚无页面的占位卡片：不可点击，避免死链 */
+        .card.todo {
+            background: #f3f4f6;
+            border: 1px dashed #cbd5e1;
+            box-shadow: none;
+            cursor: default;
+        }
+        .card.todo:hover { transform: none; box-shadow: none; }
+        .card.todo .title { color: #9ca3af; }
+        .tag-todo { background: #e5e7eb; color: #6b7280; }
         .tag-price { background: #fdebd0; color: #d35400; }
         .tag-production { background: #d5f5e3; color: #1e8449; }
         .tag-consumption { background: #fce4ec; color: #ad1457; }
+        .tag-reserve { background: #fdf2d0; color: #9a6700; }
         .tag-company { background: #d6eaf8; color: #1a5276; }
         .tag-bank { background: #e8daef; color: #6c3483; }
     </style>
@@ -76,71 +96,62 @@
 <body>
 <h1>📊 行业数据看板</h1>
 
-<h2>石油</h2>
+<h2>行业分析</h2>
+
+<h3>石油</h3>
 <div class="grid">
-    <a class="card" href="oil_history_price.html">
-        <span class="tag tag-price">油价</span>
-        <span class="title">原油K线图</span>
-        <span class="desc">历史油价K线 + 通胀调整后油价 + 年产量多系列图表</span>
+    <a class="card" href="industry/oil/price_history.html">
+        <span class="tag tag-price">量价</span>
+        <span class="title">原油历史量价</span>
+        <span class="desc">历史油价K线 + 通胀调整后油价 + 年产量 + 金价 / 金油比</span>
     </a>
-    <a class="card" href="region_production.html">
+    <a class="card" href="industry/oil/region_production.html">
         <span class="tag tag-production">产量</span>
-        <span class="title">各地区石油产量（1965-2024）</span>
-        <span class="desc">按地区维度展示全球石油产量趋势</span>
+        <span class="title">石油产量总览（1965-2024）</span>
+        <span class="desc">三合一：地区堆叠 / 各国堆叠 / 各国占比，Tab 切换</span>
     </a>
-    <a class="card" href="country_production_stack.html">
-        <span class="tag tag-production">产量</span>
-        <span class="title">各国石油产量（原始值）</span>
-        <span class="desc">主要产油国 1965-2024 产量堆叠图</span>
-    </a>
-    <a class="card" href="country_consumption_stack.html">
+    <a class="card" href="industry/oil/country_consumption.html">
         <span class="tag tag-consumption">消费</span>
         <span class="title">各国石油消费量（原始值）</span>
         <span class="desc">主要消费国 1965-2024 消费量堆叠图</span>
     </a>
-    <a class="card" href="country_production_percent.html">
-        <span class="tag tag-production">产量</span>
-        <span class="title">各国石油产量占比（1965-2024）</span>
-        <span class="desc">各国产量在全球中的占比变化</span>
-    </a>
-    <a class="card" href="country_change_2001_vs_2024.html">
+    <a class="card" href="industry/oil/country_change_2001_2024.html">
         <span class="tag tag-production">产量</span>
         <span class="title">各洲产量对比：2001 vs 2024</span>
         <span class="desc">对比各大洲在两个年份的产量差异</span>
     </a>
-    <a class="card" href="country_change_2001_vs_2024_area.html">
-        <span class="tag tag-production">产量</span>
-        <span class="title">各洲产量对比（面积图）</span>
-        <span class="desc">以面积图形式展示各洲产量对比</span>
-    </a>
-    <a class="card" href="petro_balance_sheet.html">
-        <span class="tag tag-company">公司</span>
-        <span class="title">中石油 2024 资产负债表</span>
-        <span class="desc">资产 = 负债 + 所有者权益 结构化展示</span>
-    </a>
-    <a class="card" href="petro_income_waterfall.html">
-        <span class="tag tag-company">公司</span>
-        <span class="title">中石油 2025 利润→营收 瀑布图</span>
-        <span class="desc">按金额升序的反向瀑布图</span>
-    </a>
-    <a class="card" href="petro_reserves.html">
-        <span class="tag tag-company">公司</span>
-        <span class="title">中石油储量瀑布图</span>
-        <span class="desc">中石油/中海油储量对比</span>
+    <a class="card" href="industry/oil/reserves.html">
+        <span class="tag tag-reserve">储量</span>
+        <span class="title">证实储量：中石油 / 中海油</span>
+        <span class="desc">储量瀑布图 + 实现油价对照，含 2020 年储量下修</span>
     </a>
 </div>
 
-<h2>银行</h2>
+<h3>银行</h3>
 <div class="grid">
-    <a class="card" href="abc_detail.html">
-        <span class="tag tag-bank">公司</span>
-        <span class="title">农业银行 - 营收利润走势</span>
-        <span class="desc">农业银行营收与利润数据可视化</span>
+    <div class="card todo">
+        <span class="tag tag-todo">待建设</span>
+        <span class="title">行业层面分析</span>
+        <span class="desc">息差 / 资产质量 / 规模的同业横向对比，尚无页面；个股年报见下方「公司年报」</span>
+    </div>
+</div>
+
+<h2>公司年报</h2>
+<div class="grid">
+    <a class="card" href="company/index.html">
+        <span class="tag tag-bank">银行</span>
+        <span class="title">银行年报（可切换公司）</span>
+        <span class="desc">渝农商行 601077 / 招商银行 600036：业绩走势 · 股东变动 · 三张表</span>
     </a>
-    <a class="card" href="company.html">
-        <span class="tag tag-bank">公司</span>
-        <span class="title">渝农商行（601077）2025 年报</span>
-        <span class="desc">业绩走势 · 前瞻指引 · 股东变动 · 会计准则 · 三张表</span>
+    <a class="card" href="company/petro_balance_sheet.html">
+        <span class="tag tag-company">石油</span>
+        <span class="title">中石油 2024 资产负债表</span>
+        <span class="desc">资产 = 负债 + 所有者权益 结构化展示</span>
+    </a>
+    <a class="card" href="company/petro_income_waterfall.html">
+        <span class="tag tag-company">石油</span>
+        <span class="title">中石油 2025 利润→营收 瀑布图</span>
+        <span class="desc">按金额升序的反向瀑布图</span>
     </a>
 </div>
 </body>

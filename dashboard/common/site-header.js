@@ -1,42 +1,52 @@
-/* 顶部通用导航条注入 —— 所有 demo 页面共享
- * 每个页面 <head> 里 <script src="common/site-header.js" defer></script>
+/* 顶部通用导航条注入 —— 所有看板页面共享
+ * 每个页面 <head> 里 <script src="<相对路径>/common/site-header.js" defer></script>
  * 依赖 common/base.css 中的 .site-nav 样式
+ *
+ * 目录结构：
+ *   dashboard/index.html            导航首页
+ *   dashboard/industry/oil/*.html   行业分析 · 石油
+ *   dashboard/industry/bank/*.html  行业分析 · 银行（待建设）
+ *   dashboard/company/*.html        公司年报
+ *
+ * 下面 href 一律写成「相对 dashboard/ 根目录」的路径，由脚本按自身 src 推算前缀，
+ * 因此页面放在任意层级都不需要改这里。
  */
 (function () {
-    // 首页单独放在最前面，其余页面按行业分组
+    // 本脚本自身的 src（如 '../../common/site-header.js'）→ dashboard/ 根前缀 '../../'
+    const self = document.currentScript
+        || Array.prototype.find.call(document.scripts, s => /common\/site-header\.js/.test(s.getAttribute('src') || ''));
+    const ROOT = self ? (self.getAttribute('src') || '').replace(/common\/site-header\.js.*$/, '') : '';
+
     const HOME = {href: 'index.html', title: '导航'};
     const GROUPS = [
         {
-            industry: '石油',
+            label: '石油',
             pages: [
-                {href: 'oil_history_price.html',                title: '油价 K 线'},
-                {href: 'region_production.html',                title: '地区产量'},
-                {href: 'country_production_stack.html',         title: '各国产量'},
-                {href: 'country_production_percent.html',       title: '产量占比'},
-                {href: 'country_consumption_stack.html',        title: '各国消费'},
-                {href: 'country_change_2001_vs_2024.html',      title: '2001 vs 2024'},
-                {href: 'country_change_2001_vs_2024_area.html', title: '洲对比 (面积)'},
-                {href: 'petro_balance_sheet.html',              title: '中石油 资产'},
-                {href: 'petro_income_waterfall.html',           title: '中石油 利润'},
-                {href: 'petro_reserves.html',                   title: '中石油 储量'}
+                {href: 'industry/oil/price_history.html',                title: '油价 K 线'},
+                {href: 'industry/oil/region_production.html',            title: '产量总览'},
+                {href: 'industry/oil/country_consumption.html',          title: '各国消费'},
+                {href: 'industry/oil/country_change_2001_2024.html',     title: '2001 vs 2024'},
+                {href: 'industry/oil/reserves.html',                     title: '证实储量'}
             ]
         },
         {
-            industry: '银行',
+            label: '公司年报',
             pages: [
-                {href: 'abc_detail.html',                       title: '农行 详情'},
-                {href: 'company.html',                          title: '渝农商行 年报'}
+                {href: 'company/index.html',                  title: '银行年报'},
+                {href: 'company/petro_balance_sheet.html',    title: '中石油 资产'},
+                {href: 'company/petro_income_waterfall.html', title: '中石油 利润'}
             ]
         }
     ];
 
-    const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    // 当前页在 dashboard/ 下的路径，用于高亮
+    const path = location.pathname.replace(/\/$/, '/index.html');
 
     function makeLink(p) {
         const a = document.createElement('a');
-        a.href = p.href;
+        a.href = ROOT + p.href;
         a.textContent = p.title;
-        if (p.href.toLowerCase() === current) a.className = 'active';
+        if (path.toLowerCase().endsWith('/' + p.href.toLowerCase())) a.className = 'active';
         return a;
     }
 
@@ -52,7 +62,7 @@
         for (const g of GROUPS) {
             const label = document.createElement('span');
             label.className = 'nav-group';
-            label.textContent = g.industry;
+            label.textContent = g.label;
             nav.appendChild(label);
             for (const p of g.pages) nav.appendChild(makeLink(p));
         }

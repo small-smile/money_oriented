@@ -27,10 +27,11 @@ world_population.txt	World Bank Open Data SP.POP.TOTL (WLD, 世界聚合), 单�
 
 # --- 公司财务/储量/产量 ---
 abc_financials.txt	农业银行 (sh.601288) 年报/财务报表	[推断] 来源待确认
+ynshb_personal_loans.json	重庆农村商业银行 (sh.601077 / hk.03618) 2018–2025 个人贷款按用途细分余额与不良率	[确认] 从 A 股 2019/2020/2024/2025 年报 + H 股 2021/2022/2023 RESULTS ANNOUNCEMENT PDF 手工汇总 (pdftotext -layout), 2026-07-31 提取
 petrochina_reserves.csv	中石油 (PetroChina) 年报 / SEC Form 20-F	[推断] 待确认
 petrochina_production.csv	中石油 (PetroChina) 年报 / SEC Form 20-F	[推断] 待确认
 cnooc_reserves.csv	中海油 (CNOOC) 年报 / SEC Form 20-F	[推断] 待确认
-cnooc_production.csv	中海油 (CNOOC) 年报 / SEC Form 20-F	[推断] 待确认
+cnooc_production.csv	中海油 (CNOOC) 年报 / SEC Form 20-F	[确认] 2011-2020 SEC EDGAR 20-F (CIK 0001095595: dp45516/DP55155/dp75013/dp89178/dp149282); 2021-2024 HKEXnews/cnoocltd.com 年报及业绩发布. 口径=合并子公司+权益法投资. 2013 Nexen 并表. 2026-07-31 补齐 2011-2024 原油产量
 
 # --- 元数据文件 (自描述) ---
 meta.txt	本目录旧版来源记录 (仅 gold)	[确认]

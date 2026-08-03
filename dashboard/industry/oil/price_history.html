@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="common/base.css">
-    <script src="common/site-header.js" defer></script>
+    <link rel="stylesheet" href="../../common/base.css">
+    <script src="../../common/site-header.js" defer></script>
     <title>原油K线图</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -22,13 +22,145 @@
             box-sizing: border-box;
         }
 
-        #main {
+        /* 两张图等高，换卡时页面不跳动；卡片已负责白底和边框 */
+        #main, #gold-oil {
             width: 100%;
             height: 800px;
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
+        }
+
+        #main {
             cursor: crosshair;
+        }
+
+        /* === 页签：胶囊式分段控件，白色滑块随选中项平移 === */
+        .stack-tabs {
+            position: relative;
+            display: inline-flex;
+            padding: 5px;
+            margin-bottom: 16px;
+            background: #eceff3;
+            border-radius: 999px;
+            box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.07);
+        }
+
+        .tab-slider {
+            position: absolute;
+            top: 5px;
+            bottom: 5px;
+            left: 0;
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
+            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                        width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stack-tab {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            font: inherit;
+            font-size: 16px;
+            line-height: 1.4;
+            padding: 10px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 999px;
+            color: #6b7280;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.25s ease;
+        }
+
+        .stack-tab .tab-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.4;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .stack-tab:hover {
+            color: #374151;
+        }
+
+        .stack-tab.active {
+            color: #0f172a;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .stack-tab.active .tab-dot {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* === 卡片堆叠：前卡在上，后卡向下露出一条 === */
+        .card-stack {
+            position: relative;
+            margin-bottom: 70px;       /* 给露出的那截留位置，否则会压住下面的表格 */
+        }
+
+        .stack-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 16px 16px;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        /* 前卡留在文档流里，由它决定 .card-stack 的高度 */
+        .stack-card.front {
+            position: relative;
+            z-index: 2;
+        }
+
+        .stack-card.back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            transform: translateY(16px) scale(0.985);
+            cursor: pointer;
+        }
+
+        .stack-card.back:hover {
+            transform: translateY(24px) scale(0.99);
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin: 2px 4px 10px;
+        }
+
+        /* 露出的那条只在后卡显示，用来标明这是哪张图 */
+        .card-peek {
+            display: none;
+        }
+
+        .stack-card.back .card-peek {
+            display: block;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f3f4f6;
+            font-size: 16px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .chart-note {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.7;
+            margin: 16px 2px 0;
         }
 
         /* === 点击弹出的居中标注浮层 === */
@@ -198,11 +330,34 @@
             padding-left: 12px;
             white-space: nowrap;
         }
+
+        #annotation-table td:last-child {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
 <div class="page">
-    <div id="main"></div>
+    <div class="stack-tabs" id="stack-tabs"></div>
+    <div class="card-stack">
+        <div class="stack-card front" data-name="原油K线" data-color="#be123c">
+            <div class="card-title">原油K线 (1861 起)</div>
+            <div id="main"></div>
+            <div class="card-peek">原油K线 (1861 起) · 点击切到前面</div>
+        </div>
+        <div class="stack-card back" data-name="黄金 / 原油 / 金油比" data-color="#d4a017">
+            <div class="card-title">黄金 / 原油 / 金油比 (1970 起)</div>
+            <div id="gold-oil"></div>
+            <div class="card-peek">黄金 / 原油 / 金油比 (1970 起) · 点击切到前面</div>
+        </div>
+    </div>
+    <p class="chart-note">
+        原油K线：BP/EI 长期年度序列，1861 起，名义美元；图例可叠加 2024 平价价格。
+        金油比图：黄金 = 年度均价 (USD/oz, gold.org)，原油 = 年度名义均价 (USD/bbl)，
+        金油比 = 黄金价 / 原油价，即 1 盎司黄金可换的原油桶数；
+        三条线各用一条独立线性坐标轴（左：黄金；右：原油；最右：金油比），
+        量级不同，线间上下位置无可比性，只看各自形状与拐点，共同覆盖 1970–2024。
+    </p>
     <section id="annotations-section">
         <h2>标注事件对照表</h2>
         <table id="annotation-table">
@@ -292,8 +447,8 @@
             end: 1972,
             name: 'TRC 控价 (德州铁路委员会)',
             color: '#0369a1',
-            time: '1935 - 1972.4',
-            desc: '与 Sisters 共治期完全重叠但操作层不同：TRC 管美国上游井口配额，Sisters 管全球中下游炼化分销。Connally Hot Oil Act (1935.2) 给 TRC 州级配额加联邦执法力度。每月 market demand hearing 设 allowable，德州 ~40% 美国产量 → TRC 事实决定全球边际油价。1972.4 转"100% allowable"，US swing 能力终结，OPEC 接棒。业内共识："OPEC 是 TRC 的学生"。'
+            time: '1935 - 1972.3',
+            desc: 'TRC 通过限制美国上游井口产量来定边际桶价格。传导前提：德州 ~40% 美国产量，美国为当时世界主产国，1959.3-1973.4 强制进口配额 (MOIP) 隔离国内市场，德州的边际桶即全球边际桶。月度闭环：炼厂与管道公司提交 nominations（下月采购计划）+ 矿务局需求预测 → 奥斯汀 market demand hearing 定全州 allowable → 摊到油田/租区/单井，执行口径是每月"允许生产天数"，1960 年代常年 8-10 天/月；需求转弱减天数收紧边际供给，转强则加天数。1935.2 Connally Hot Oil Act 禁止超配额原油 (hot oil) 跨州运输，配额有了联邦执法力，边际供给才真正可控。结果：1948-1970 年 posted price 钉在 ~$2.5-3.0/bbl。1971 年起 allowable 逐月上调，1972.3 给到 100%（部分来源记 4 月），备用产能耗尽，边际定价权移交 OPEC。'
         },
         {
             id: 'nixon',
@@ -342,8 +497,213 @@
         }
     ];
 
+    // === tooltip 统一规则（两张图共用）===
+    // 1) trigger 'axis' + 十字准星：按 x 轴时点聚合当年全部系列
+    // 2) 标题 18px 加粗，数值行 16px；单位按系列名从 SERIES_UNIT 取
+    // 3) candlestick 的 data 是 [dataIndex, open, close, low, high]，只展示 开/收
+    // 4) 传入 dom 时启用避让：指针在左半区 → 浮层靠右，否则靠左
+    const SERIES_UNIT = {
+        '原油K线': '美元/桶',
+        '2024平价价格': '美元/桶',
+        '黄金': '美元/盎司',
+        '原油': '美元/桶',
+        '金油比': '桶/盎司'
+    };
+
+    function axisTooltip(avoidCursorDom) {
+        const conf = {
+            trigger: 'axis',
+            axisPointer: {type: 'cross'},
+            textStyle: {fontSize: 16},
+            formatter: params => {
+                const rows = params.map(p => {
+                    const d = p.data;
+                    if (d == null) return '';
+                    let value;
+                    if (p.seriesType === 'candlestick') {
+                        const arr = Array.isArray(d) ? d : d.value;
+                        value = '开: <b>' + arr[1] + '</b>&nbsp;&nbsp;收: <b>' + arr[2] + '</b>';
+                    } else {
+                        value = '<b>' + d + '</b>';
+                    }
+                    const unit = SERIES_UNIT[p.seriesName];
+                    return '<div style="font-size:16px;line-height:1.7">'
+                        + p.marker + p.seriesName + '&nbsp;&nbsp;' + value
+                        + (unit ? ' ' + unit : '') + '</div>';
+                }).join('');
+                return '<div style="font-weight:600;font-size:18px;margin-bottom:6px">'
+                    + params[0].axisValue + '</div>' + rows;
+            }
+        };
+        if (avoidCursorDom) {
+            conf.position = point =>
+                point[0] < avoidCursorDom.offsetWidth / 2 ? ['60%', '10%'] : ['5%', '10%'];
+        }
+        return conf;
+    }
+
     const chartDom = document.getElementById('main');
     const myChart = echarts.init(chartDom);
+
+    // === 1970 年以后：黄金 / 原油 / 金油比 折线图 ===
+    // 轮播采用 translateX 平移，两张 slide 始终在布局中且宽度等于视口，
+    // 所以这里可以直接 init，不用等切换。
+    (function renderGoldOilChart() {
+        const dom = document.getElementById('gold-oil');
+        const chart = echarts.init(dom);
+        chart.showLoading();
+
+        axios.get('http://127.0.0.1:5000/api/gold_oil')
+            .then(res => {
+                chart.hideLoading();
+                if (res.data.code !== 200) throw new Error('金油比接口异常');
+                const {xAxis, gold, oil, ratio} = res.data.data;
+
+                chart.setOption({
+                    // 图名由卡片标题承担，图内不再重复
+                    tooltip: axisTooltip(),
+                    legend: {
+                        data: ['黄金', '原油', '金油比'],
+                        bottom: 0,
+                        textStyle: {fontSize: 16}
+                    },
+                    grid: {left: 90, right: 260, top: 40, bottom: 70},
+                    xAxis: {
+                        type: 'category',
+                        data: xAxis,
+                        axisLabel: {rotate: 45, fontSize: 16}
+                    },
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '黄金 (美元/盎司)',
+                            position: 'left',
+                            nameTextStyle: {fontSize: 16, color: '#d4a017'},
+                            axisLine: {show: true, lineStyle: {color: '#d4a017'}},
+                            axisLabel: {fontSize: 16},
+                            splitLine: {lineStyle: {color: '#eef0f3'}}
+                        },
+                        {
+                            type: 'value',
+                            name: '原油 (美元/桶)',
+                            position: 'right',
+                            nameTextStyle: {fontSize: 16, color: '#1f2937'},
+                            axisLine: {show: true, lineStyle: {color: '#1f2937'}},
+                            axisLabel: {fontSize: 16},
+                            splitLine: {show: false}
+                        },
+                        {
+                            type: 'value',
+                            name: '金油比 (桶/盎司)',
+                            position: 'right',
+                            offset: 150,
+                            nameTextStyle: {fontSize: 16, color: '#7c3aed'},
+                            axisLine: {show: true, lineStyle: {color: '#7c3aed'}},
+                            axisLabel: {fontSize: 16},
+                            splitLine: {show: false}
+                        }
+                    ],
+                    dataZoom: [{type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: false, moveOnMouseWheel: false}],
+                    series: [
+                        {
+                            name: '黄金',
+                            type: 'line',
+                            yAxisIndex: 0,
+                            data: gold,
+                            symbol: 'circle',
+                            symbolSize: 5,
+                            lineStyle: {width: 2.5, color: '#d4a017'},
+                            itemStyle: {color: '#d4a017'}
+                        },
+                        {
+                            name: '原油',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: oil,
+                            symbol: 'circle',
+                            symbolSize: 5,
+                            lineStyle: {width: 2.5, color: '#1f2937'},
+                            itemStyle: {color: '#1f2937'}
+                        },
+                        {
+                            name: '金油比',
+                            type: 'line',
+                            yAxisIndex: 2,
+                            data: ratio,
+                            symbol: 'circle',
+                            symbolSize: 5,
+                            lineStyle: {width: 2, color: '#7c3aed', type: 'dashed'},
+                            itemStyle: {color: '#7c3aed'},
+                            markLine: {
+                                symbol: 'none',
+                                silent: true,
+                                lineStyle: {color: '#7c3aed', type: 'dotted'},
+                                label: {
+                                    formatter: '金油比均值 {c}',
+                                    fontSize: 16,
+                                    color: '#7c3aed',
+                                    position: 'insideEndTop'
+                                },
+                                data: [{type: 'average'}]
+                            }
+                        }
+                    ]
+                });
+                window.addEventListener('resize', () => chart.resize());
+            })
+            .catch(err => {
+                chart.hideLoading();
+                console.error(err);
+                dom.innerHTML = '<div style="padding:24px;font-size:16px;color:#6b7280">'
+                    + '金油比数据加载失败，请检查后端服务 (/api/gold_oil)</div>';
+            });
+    })();
+
+    // === 卡片堆叠切换：页签是主入口，点后卡露出的那条也能翻到前面 ===
+    (function initCardStack() {
+        const cards = Array.from(document.querySelectorAll('.stack-card'));
+        const tabBar = document.getElementById('stack-tabs');
+
+        const slider = document.createElement('span');
+        slider.className = 'tab-slider';
+        tabBar.appendChild(slider);
+
+        const tabs = cards.map((card, i) => {
+            const tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = 'stack-tab';
+            tab.innerHTML = '<span class="tab-dot" style="color:' + card.dataset.color + '"></span>'
+                + '<span>' + card.dataset.name + '</span>';
+            tab.addEventListener('click', () => activate(i));
+            tabBar.appendChild(tab);
+            return tab;
+        });
+
+        function moveSlider(tab) {
+            slider.style.width = tab.offsetWidth + 'px';
+            slider.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+        }
+
+        function activate(idx) {
+            cards.forEach((c, i) => {
+                c.classList.toggle('front', i === idx);
+                c.classList.toggle('back', i !== idx);
+            });
+            tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+            moveSlider(tabs[idx]);
+        }
+
+        cards.forEach((card, i) => card.addEventListener('click', () => {
+            if (card.classList.contains('front')) return;   // 前卡的点击留给图表本身
+            activate(i);
+        }));
+
+        activate(cards.findIndex(c => c.classList.contains('front')));
+        // 字体加载完 / 窗口变化后页签宽度会变，滑块跟上
+        window.addEventListener('resize', () => moveSlider(tabBar.querySelector('.stack-tab.active')));
+        if (document.fonts) document.fonts.ready.then(
+            () => moveSlider(tabBar.querySelector('.stack-tab.active')));
+    })();
 
     // === 渲染底部标注表（不依赖数据接口，页面加载即可显示）===
     (function renderAnnotationTable() {
@@ -378,42 +738,7 @@
 
             // 下面直接写option渲染多系列图表
             const option = {
-                title: {text: "原油K线", left: 'center'},
-                tooltip: {
-                    trigger: "axis",
-                    axisPointer: {type: "cross"},
-                    textStyle: {fontSize: 16},
-                    position: function (point) {
-                        const chartWidth = chartDom.offsetWidth;
-                        if (point[0] < chartWidth / 2) {
-                            return ['60%', '10%'];
-                        } else {
-                            return ['5%', '10%'];
-                        }
-                    },
-                    formatter: function (params) {
-                        const axisValue = params[0].axisValue;
-                        let html = '<div style="font-weight:600;font-size:18px;margin-bottom:6px">' + axisValue + '</div>';
-                        params.forEach(p => {
-                            const d = p.data;
-                            if (d == null) return;
-                            if (p.seriesType === 'candlestick') {
-                                const arr = Array.isArray(d) ? d : d.value;
-                                html += '<div style="font-size:16px;line-height:1.7">'
-                                    + p.marker + p.seriesName
-                                    + '&nbsp;&nbsp;开: <b>' + arr[1] + '</b>'
-                                    + '&nbsp;&nbsp;收: <b>' + arr[2] + '</b>'
-                                    + '</div>';
-                            } else {
-                                html += '<div style="font-size:16px;line-height:1.7">'
-                                    + p.marker + p.seriesName
-                                    + '&nbsp;&nbsp;<b>' + d + '</b>'
-                                    + '</div>';
-                            }
-                        });
-                        return html;
-                    }
-                },
+                tooltip: axisTooltip(chartDom),
                 legend: {
                     data: ["原油K线", "2024平价价格"],
                     left: '50%',
@@ -618,6 +943,8 @@
 
             // 通过 zrender 监听画布点击，转像素坐标为 xAxis 索引
             myChart.getZr().on('click', (params) => {
+                // K 线卡在后面时，点击只用于换卡，不弹标注
+                if (!chartDom.closest('.stack-card').classList.contains('front')) return;
                 const pointInPixel = [params.offsetX, params.offsetY];
                 if (!myChart.containPixel('grid', pointInPixel)) return;
                 const dataCoord = myChart.convertFromPixel({seriesIndex: 0}, pointInPixel);

@@ -11,6 +11,8 @@ body {
     background: #f5f7fa;
     font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     color: #1f2937;
+    font-size: 16px;      /* 全局默认字体：最小 16px */
+    line-height: 1.6;
 }
 
 /* 顶部通用导航条（由 site-header.js 动态注入） */

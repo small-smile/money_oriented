@@ -489,6 +489,45 @@ def api_cnooc_reserves():
     return jsonify(read_cnooc_reserves())
 
 
+def _read_company_production_csv(path):
+    """通用公司产量 CSV 读取：年份 + 原油/天然气/油气合计"""
+    df = pd.read_csv(path)
+    records = []
+    for _, row in df.iterrows():
+        def _f(col):
+            v = row.get(col)
+            if v is None or (isinstance(v, float) and pd.isna(v)):
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+        records.append({
+            "year":     int(row["年份"]),
+            "oil":      _f("原油产量(百万桶)"),
+            "gas":      _f("天然气产量(十亿立方英尺)"),
+            "combined": _f("油气合计产量(百万桶油当量)"),
+            "note":     str(row.get("备注", ""))
+        })
+    return records
+
+
+@app.route("/api/petrochina_production")
+def api_petrochina_production():
+    return jsonify({
+        "code": 200,
+        "data": _read_company_production_csv("data/tables/petrochina_production.csv")
+    })
+
+
+@app.route("/api/cnooc_production")
+def api_cnooc_production():
+    return jsonify({
+        "code": 200,
+        "data": _read_company_production_csv("data/tables/cnooc_production.csv")
+    })
+
+
 def _read_oil_years_usd():
     """读取 oil.price.txt，返回 (年份列表, {年份: 名义美元价})，作为对齐用的规范 x 轴"""
     path = "data/tables/oil.price.txt"
@@ -522,6 +561,38 @@ def read_gold_ratio():
         g = gold.get(y)
         values.append(round(oil_usd[y] / g, 4) if g and g > 0 else None)
     return {"code": 200, "data": {"xAxis": years, "values": values}}
+
+
+def read_gold_oil():
+    """1970 年起的黄金价 (USD/oz)、原油名义价 (USD/bbl) 与金油比 (每盎司黄金可换桶数)。
+    只取两个序列都有数据的年份 (黄金 1970 起, 原油序列到 2024)。"""
+    _, oil_usd = _read_oil_years_usd()
+    gold = {}
+    with open("data/tables/gold.price.txt", "r", encoding="utf-8") as f:
+        for line in f.readlines()[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            y, close = line.split("\t")
+            gold[y] = float(close)
+
+    years = sorted(y for y in oil_usd if y in gold and int(y) >= 1970)
+    gold_vals, oil_vals, ratio_vals = [], [], []
+    for y in years:
+        g, o = gold[y], oil_usd[y]
+        gold_vals.append(g)
+        oil_vals.append(o)
+        ratio_vals.append(round(g / o, 2) if o > 0 else None)
+
+    return {
+        "code": 200,
+        "data": {
+            "xAxis": years,
+            "gold": gold_vals,
+            "oil": oil_vals,
+            "ratio": ratio_vals
+        }
+    }
 
 
 def read_population():
@@ -574,6 +645,11 @@ def read_bank_financials(stock_code):
 @app.route("/api/gold_ratio")
 def api_gold_ratio():
     return jsonify(read_gold_ratio())
+
+
+@app.route("/api/gold_oil")
+def api_gold_oil():
+    return jsonify(read_gold_oil())
 
 
 @app.route("/api/population")

@@ -2,20 +2,20 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="common/base.css">
-    <script src="common/site-header.js" defer></script>
+    <link rel="stylesheet" href="../common/base.css">
+    <script src="../common/site-header.js" defer></script>
     <title>渝农商行（601077）2025 年报</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
         body { min-height: 100vh; overflow-y: auto; }
-        .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 20px 60px; }
+        .wrap { max-width: 1800px; margin: 0 auto; padding: 24px 24px 60px; }
         .page-head { text-align: center; margin-bottom: 8px; }
         .page-head h1 { font-size: 26px; color: #1f2937; margin-bottom: 6px; }
-        .page-head .meta { color: #6b7280; font-size: 13px; line-height: 1.7; }
+        .page-head .meta { color: #6b7280; font-size: 16px; line-height: 1.7; }
         .page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         .page-head .tags span {
             background: #e8daef; color: #6c3483; border-radius: 12px;
-            padding: 3px 12px; font-size: 12px; font-weight: 500;
+            padding: 3px 12px; font-size: 16px; font-weight: 500;
         }
         section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
                   padding: 20px 22px; margin-top: 22px; }
@@ -23,15 +23,15 @@
             font-size: 19px; color: #1f2937; margin-bottom: 4px;
             border-left: 4px solid #6c3483; padding-left: 10px;
         }
-        section > .sub { color: #6b7280; font-size: 12px; margin: 0 0 14px 14px; }
+        section > .sub { color: #6b7280; font-size: 16px; margin: 0 0 14px 14px; }
         .chart { width: 100%; height: 380px; }
         .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
         .kpi { background: #faf6fc; border: 1px solid #efe3f5; border-radius: 8px; padding: 12px 14px; }
-        .kpi .label { font-size: 12px; color: #7f8c8d; }
-        .kpi .value { font-size: 20px; font-weight: 700; color: #6c3483; margin-top: 4px; }
-        .kpi .delta { font-size: 12px; margin-top: 2px; }
+        .kpi .label { font-size: 16px; color: #7f8c8d; }
+        .kpi .value { font-size: 22px; font-weight: 700; color: #6c3483; margin-top: 4px; }
+        .kpi .delta { font-size: 16px; margin-top: 2px; }
         .up { color: #c0392b; } .down { color: #1e8449; }
-        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 16px; }
         th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
         th:first-child, td:first-child { text-align: left; }
         thead th { background: #f4eef8; color: #4a2a5a; font-weight: 600; border-bottom: 2px solid #e0cdea; }
@@ -41,9 +41,9 @@
         .neg { color: #c0392b; }
         .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; }
         .card2 { background: #faf6fc; border: 1px solid #efe3f5; border-radius: 8px; padding: 14px 16px; }
-        .card2 h3 { font-size: 14px; color: #6c3483; margin-bottom: 6px; }
-        .card2 p { font-size: 13px; color: #444; line-height: 1.65; }
-        .card2 ul { margin: 4px 0 0 18px; font-size: 13px; color: #444; line-height: 1.7; }
+        .card2 h3 { font-size: 16px; color: #6c3483; margin-bottom: 6px; }
+        .card2 p { font-size: 16px; color: #444; line-height: 1.65; }
+        .card2 ul { margin: 4px 0 0 18px; font-size: 16px; color: #444; line-height: 1.7; }
         .opinion { margin-top: 16px; background: linear-gradient(135deg, #eafaf1 0%, #d5f5e3 100%);
                    border: 2px solid #1e8449; border-radius: 10px; padding: 18px 22px;
                    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
@@ -51,14 +51,14 @@
         .opinion .seal { flex: 0 0 auto; text-align: center; }
         .opinion .seal .mark { font-size: 34px; font-weight: 900; color: #1e8449; line-height: 1;
                    letter-spacing: 2px; text-shadow: 0 1px 0 #fff; }
-        .opinion .seal .mark small { display: block; font-size: 13px; font-weight: 700; letter-spacing: 6px; margin-top: 4px; }
+        .opinion .seal .mark small { display: block; font-size: 16px; font-weight: 700; letter-spacing: 6px; margin-top: 4px; }
         .opinion .seal .tick { display: inline-block; background: #1e8449; color: #fff;
-                   font-size: 12px; font-weight: 700; border-radius: 12px; padding: 3px 12px; margin-top: 8px; }
+                   font-size: 16px; font-weight: 700; border-radius: 12px; padding: 3px 12px; margin-top: 8px; }
         .opinion .txt { flex: 1 1 340px; }
         .opinion .txt .lead { font-size: 16px; font-weight: 700; color: #145a32; margin-bottom: 4px; }
         .opinion .txt .lead b { color: #1e8449; background: #fff6c2; padding: 0 4px; border-radius: 3px; }
-        .opinion .txt p { font-size: 13px; color: #2c5c3f; line-height: 1.65; }
-        .note { font-size: 12px; color: #9ca3af; margin-top: 10px; line-height: 1.6; }
+        .opinion .txt p { font-size: 16px; color: #2c5c3f; line-height: 1.65; }
+        .note { font-size: 16px; color: #9ca3af; margin-top: 10px; line-height: 1.6; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
         .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
         @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } .three-col { grid-template-columns: 1fr; } }
@@ -143,6 +143,22 @@
         </div>
     </section>
 
+    <!-- ══════════ 1d. 个人贷款按用途细分 ══════════ -->
+    <section>
+        <h2>一之四、个人贷款按用途细分（2018–2025）</h2>
+        <p class="sub">口径：本集团合并数 · 期末余额（亿元）与不良贷款率（%） · 数据取自 A 股 2019/2020/2024/2025 年年报及 H 股 2021/2022/2023 年 RESULTS ANNOUNCEMENT</p>
+        <div class="two-col">
+            <div id="chart-perloan-bal" class="chart" style="height:380px"></div>
+            <div id="chart-perloan-npl" class="chart" style="height:380px"></div>
+        </div>
+        <div class="note">
+            <b>披露区间：2018–2025 共 8 年。</b>2010–2017 年年报因披露口径不含个人贷款按用途细分（H 股早期报表按抵/质押方式列示、A 股上市前无此明细）而<b>不可比</b>，故仅呈现有明确产品分类披露的年份。<br>
+            <b>4 条余额线：</b>住房按揭贷款 / 个人经营性贷款 / 信用卡透支 三项 2018–2025 连续可比；<b>个人消费贷款</b>仅 2023–2025 单独披露（前期归入「其他」类），故 2018–2022 以空缺表示、图中线段自 2023 起。<br>
+            <b>3 条不良率线：</b>按揭、经营、其他（含消费+信用卡+抵押担保等）。年报<b>不良率按大类披露</b>——2018–2022 年「其他」= 消费 + 信用卡 + 房屋抵押担保 + 农户联保等；2023–2025 年「其他」= 消费 + 信用卡。因此 <b>2023 年前后「其他」不良率的口径变化</b>存在，请勿以趋势断变化。<br>
+            <b>关键观察：</b>① 按揭余额 2021 见顶（1,009.80 亿元）后连续 4 年回落至 2025 年 874.53 亿元、-13.4%；② 经营贷 2018→2024 由 429.98 亿升至 1,235.83 亿（+187%），成为个贷第一大产品，2025 年首次回落 -4.0%；③ 按揭不良率 2019 年 0.33% 上行至 2025 年 <b>1.60%</b>，经营贷不良率 2021 年 0.73% 上行至 2025 年 <b>1.97%</b>——个贷双引擎均处于风险抬升期。
+        </div>
+    </section>
+
     <!-- ══════════ 2. 前瞻指引 ══════════ -->
     <section>
         <h2>二、前瞻指引</h2>
@@ -172,10 +188,16 @@
     <section>
         <h2>三、股东及股东变动</h2>
         <p class="sub">报告期末股东总数 116,634 户（A 股 115,547 户、H 股 1,087 户）· 前十名股东持股情况</p>
-        <div id="chart-holders" class="chart" style="height:680px"></div>
-        <div id="holders-legend" style="font-size:13px;color:#444;line-height:1.9;margin:6px 4px 0"></div>
-        <div id="chart-holders2" class="chart" style="height:680px;margin-top:20px"></div>
-        <div id="holders2-legend" style="font-size:13px;color:#444;line-height:1.9;margin:6px 4px 0"></div>
+        <div id="chart-holders" class="chart" style="height:560px"></div>
+        <div id="holders-legend" style="font-size:16px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
+        <div style="margin-top:22px">
+            <div style="font-size:16px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:10px">股权占比折叠条（100% 按「己」字形折成 3 行 · 三横相连的转折段为「连接段」不计入占比 · 用灰色特殊标注 · 每段按比例 · 同派系同色）</div>
+            <div id="chart-holders-fold" class="chart" style="padding:16px 8px"></div>
+        </div>
+        <div style="margin-top:22px">
+            <div style="font-size:16px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:10px">股东持股比例条形图（横向 · 按比例排序 · 同派系同色 · ≥4% 股东条内显示股东名 · 可用下方滑块左右拉伸放大）</div>
+            <div id="chart-holders-bar" class="chart" style="height:520px"></div>
+        </div>
         <div style="overflow-x:auto;margin-top:16px">
             <table>
                 <thead><tr><th>股东名称</th><th>比例</th><th>报告期内增减</th><th>类别</th></tr></thead>
@@ -183,7 +205,7 @@
             </table>
         </div>
         <div class="note">
-            <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#444">
+            <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:12px;font-size:16px;color:#444">
                 <b style="color:#333">同色 = 同一致行动派系：</b>
                 <span><span style="display:inline-block;width:12px;height:12px;background:#6c3483;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>渝富系（渝富资本 / 水利投资 / 水务）</span>
                 <span><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>发展系（发展置业 / 发展投资）</span>
@@ -193,8 +215,8 @@
                 <span><span style="display:inline-block;width:12px;height:12px;background:#f1c40f;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>社保116</span>
                 <span><span style="display:inline-block;width:12px;height:12px;background:#95a5a6;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>其他流通股东</span>
             </div>
-            环形图（上）：前十大股东按持股排名分三层（内 3 / 中 3 / 外 4），<b>前后接续</b>——外层从内层结束的角度接着往下画，10 名股东连成一条由内向外、顺时针推进的连续弧；<b>每个扇区圆心角 = 其占总股本比例</b>，弧到 58.29% 处结束（即前十大合计）。
-            环形图（下）：最外再接一层「其他流通股东」（41.71%），把整条弧补满整圈 <b>100%</b>（3 / 3 / 4 / 1）。<b>同一致行动派系的股东使用同一颜色</b>；扇区过小的标签已隐藏，可 hover 查看。
+            环形图 / 折叠条：全部股东（<b>「其他流通股东」也作为一个普通股东参与排序</b>）按<b>持股比例从大到小</b>铺满整圈 / 整条（合计 100%）；<b>每段角度 / 长度 = 其占总股本比例</b>，<b>同一致行动派系用同一颜色</b>（青=香港中央结算、紫=渝富系、蓝=发展系，其余城投橙 / 财信红 / 社保黄 / 其他灰）。圆心标注前十大合计 58.29%。
+            扇区过小的标签已隐藏，可 hover 或看下方派系清单 / 底部明细表。
             一致行动关系：重庆发展置业管理与重庆发展投资互为一致行动人；重庆市水利投资（集团）、重庆水务集团为重庆渝富资本运营集团的一致行动人。
             重庆财信企业集团所持 1.125 亿股处于质押、司法冻结状态。持股比例按总股本 113.57 亿股计算。
         </div>
@@ -229,7 +251,7 @@
             </div>
         </div>
 
-        <h3 style="color:#6c3483;margin:18px 0 8px;font-size:15px">关键审计事项（Key Audit Matters）</h3>
+        <h3 style="color:#6c3483;margin:18px 0 8px;font-size:16px">关键审计事项（Key Audit Matters）</h3>
         <div class="cards">
             <div class="card2">
                 <h3>① 客户贷款和垫款的预期信用损失</h3>
@@ -250,7 +272,7 @@
         <h2>五、三张财务报表</h2>
         <p class="sub">合并口径 · 单位：人民币百万元 · 括号内为负值</p>
 
-        <h3 style="color:#6c3483;margin:12px 0 8px;font-size:15px">① 利润表（2025 vs 2024）</h3>
+        <h3 style="color:#6c3483;margin:12px 0 8px;font-size:16px">① 利润表（2025 vs 2024）</h3>
         <div style="overflow-x:auto">
         <table>
             <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th><th>同比</th></tr></thead>
@@ -260,22 +282,22 @@
                 <tr class="row-sub"><td>其中：手续费及佣金净收入</td><td>1,294.4</td><td>1,612.1</td><td class="down">-19.71%</td></tr>
                 <tr class="row-sub"><td>其中：其他非利息净收入</td><td>3,093.2</td><td>4,154.9</td><td class="down">-25.55%</td></tr>
                 <tr class="row-total"><td>营业收入</td><td>28,648.3</td><td>28,261.5</td><td class="up">+1.37%</td></tr>
-                <tr><td>税金及附加</td><td class="neg">(392.9)</td><td class="neg">(307.8)</td><td>+27.65%</td></tr>
-                <tr><td>业务及管理费</td><td class="neg">(8,943.2)</td><td class="neg">(9,004.5)</td><td>-0.68%</td></tr>
-                <tr><td>信用减值损失</td><td class="neg">(5,444.1)</td><td class="neg">(5,956.9)</td><td>-8.61%</td></tr>
-                <tr><td>其他资产减值损失</td><td class="neg">(41.6)</td><td class="neg">(63.3)</td><td>-34.28%</td></tr>
-                <tr><td>其他业务成本</td><td class="neg">(88.8)</td><td class="neg">(81.4)</td><td>+9.09%</td></tr>
+                <tr><td>税金及附加</td><td class="neg">(392.9)</td><td class="neg">(307.8)</td><td class="up">+27.65%</td></tr>
+                <tr><td>业务及管理费</td><td class="neg">(8,943.2)</td><td class="neg">(9,004.5)</td><td class="down">-0.68%</td></tr>
+                <tr><td>信用减值损失</td><td class="neg">(5,444.1)</td><td class="neg">(5,956.9)</td><td class="down">-8.61%</td></tr>
+                <tr><td>其他资产减值损失</td><td class="neg">(41.6)</td><td class="neg">(63.3)</td><td class="down">-34.28%</td></tr>
+                <tr><td>其他业务成本</td><td class="neg">(88.8)</td><td class="neg">(81.4)</td><td class="up">+9.09%</td></tr>
                 <tr class="row-total"><td>营业利润</td><td>13,737.7</td><td>12,847.6</td><td class="up">+6.93%</td></tr>
-                <tr><td>营业外收支净额</td><td class="neg">(28.3)</td><td class="neg">(30.2)</td><td>-6.29%</td></tr>
+                <tr><td>营业外收支净额</td><td class="neg">(28.3)</td><td class="neg">(30.2)</td><td class="down">-6.29%</td></tr>
                 <tr class="row-total"><td>利润总额</td><td>13,709.4</td><td>12,817.4</td><td class="up">+6.96%</td></tr>
-                <tr><td>所得税费用</td><td class="neg">(1,289.4)</td><td class="neg">(1,028.3)</td><td>+25.39%</td></tr>
+                <tr><td>所得税费用</td><td class="neg">(1,289.4)</td><td class="neg">(1,028.3)</td><td class="up">+25.39%</td></tr>
                 <tr class="row-total"><td>净利润</td><td>12,420.0</td><td>11,789.1</td><td class="up">+5.35%</td></tr>
                 <tr><td>归属于本行股东的净利润</td><td>12,128.4</td><td>11,512.7</td><td class="up">+5.35%</td></tr>
             </tbody>
         </table>
         </div>
 
-        <h3 style="color:#6c3483;margin:22px 0 8px;font-size:15px">② 资产负债表（期末，2025 / 2024 / 2023）</h3>
+        <h3 style="color:#6c3483;margin:22px 0 8px;font-size:16px">② 资产负债表（期末，2025 / 2024 / 2023）</h3>
         <div style="overflow-x:auto">
         <table>
             <thead><tr><th>项目</th><th>2025-12-31</th><th>2024-12-31</th><th>2023-12-31</th></tr></thead>
@@ -299,7 +321,7 @@
         <div id="chart-bs" class="chart" style="height:340px;margin-top:14px"></div>
         <div class="note">2025 年及 2024 年各明细科目均取自年报「资产负债表分析」披露的期末数；"—" 表示 2023 年该明细未在年报摘要中单列。</div>
 
-        <h3 style="color:#6c3483;margin:22px 0 8px;font-size:15px">③ 现金流量表（经营活动净额）</h3>
+        <h3 style="color:#6c3483;margin:22px 0 8px;font-size:16px">③ 现金流量表（经营活动净额）</h3>
         <div style="overflow-x:auto">
         <table>
             <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th><th>2023 年</th></tr></thead>
@@ -328,15 +350,16 @@
                       90.58, 97.60, 84.01, 95.60,102.76,109.02,115.13,121.28];
     echarts.init(document.getElementById('chart-perf')).setOption({
         backgroundColor: '#fff',
-        tooltip: { trigger: 'axis',
+        textStyle: { fontSize: 16 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
             formatter: p => `<b>${p[0].axisValue} 年</b><br>` +
                 p.map(x => `${x.marker}${x.seriesName}：${x.value} 亿元`).join('<br>') },
-        legend: { data: ['营业收入','归母净利润'], top: 4, textStyle: { fontSize: 13 } },
-        grid: { left: 56, right: 24, top: 44, bottom: 40 },
+        legend: { data: ['营业收入','归母净利润'], top: 4, textStyle: { fontSize: 16 } },
+        grid: { left: 64, right: 24, top: 46, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false,
-            axisLabel: { fontSize: 11, color: '#555', rotate: 40 }, axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: { type: 'value', name: '亿元', nameTextStyle: { color: '#555' },
-            axisLabel: { color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+            axisLabel: { fontSize: 16, color: '#555', rotate: 40 }, axisLine: { lineStyle: { color: '#bbb' } } },
+        yAxis: { type: 'value', name: '亿元', nameTextStyle: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '营业收入', type: 'line', data: revenue, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
@@ -359,12 +382,13 @@
 
     echarts.init(document.getElementById('chart-scale')).setOption({
         backgroundColor: '#fff',
-        title: { text: '存款 / 贷款规模（亿元）', left: 'center', top: 4, textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : Number(v).toLocaleString() + ' 亿' },
-        legend: { data: ['客户存款', '客户贷款及垫款'], bottom: 2, textStyle: { fontSize: 12 } },
-        grid: { left: 60, right: 20, top: 40, bottom: 46 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 11, color: '#555' } },
-        yAxis: { type: 'value', name: '亿元', axisLabel: { color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        textStyle: { fontSize: 16 },
+        title: { text: '存款 / 贷款规模（亿元）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : Number(v).toLocaleString() + ' 亿' },
+        legend: { data: ['客户存款', '客户贷款及垫款'], bottom: 2, textStyle: { fontSize: 16 } },
+        grid: { left: 64, right: 20, top: 44, bottom: 52 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '客户存款', type: 'line', data: deposit, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
@@ -376,29 +400,31 @@
 
     echarts.init(document.getElementById('chart-npl')).setOption({
         backgroundColor: '#fff',
-        title: { text: '不良贷款率（%）', left: 'center', top: 4, textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%' },
-        grid: { left: 46, right: 24, top: 40, bottom: 46 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 11, color: '#555' } },
-        yAxis: { type: 'value', name: '不良率%', min: 0, max: 2,
-                 axisLabel: { color: '#c0392b' }, splitLine: { lineStyle: { color: '#eee' } } },
+        textStyle: { fontSize: 16 },
+        title: { text: '不良贷款率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        grid: { left: 48, right: 24, top: 44, bottom: 52 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '不良率%', min: 0, max: 2, nameTextStyle: { fontSize: 16 },
+                 axisLabel: { color: '#c0392b', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '不良贷款率', type: 'line', data: npl, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
               areaStyle: { color: 'rgba(192,57,43,0.07)' },
-              label: { show: true, fontSize: 10, color: '#c0392b', formatter: '{c}%' } }
+              label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } }
         ]
     });
 
     echarts.init(document.getElementById('chart-quality')).setOption({
         backgroundColor: '#fff',
-        title: { text: '资本充足率（%）', left: 'center', top: 4, textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 11 } },
-        grid: { left: 46, right: 20, top: 40, bottom: 46 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 11, color: '#555' } },
-        yAxis: { type: 'value', name: '%', min: 10, max: 18,
-                 axisLabel: { color: '#1e8449' }, splitLine: { lineStyle: { color: '#eee' } } },
+        textStyle: { fontSize: 16 },
+        title: { text: '资本充足率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 16 } },
+        grid: { left: 48, right: 20, top: 44, bottom: 52 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '%', min: 10, max: 18, nameTextStyle: { fontSize: 16 },
+                 axisLabel: { color: '#1e8449', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '资本充足率', type: 'line', data: car, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
@@ -417,21 +443,22 @@
     const yld24 = [4.15, 4.21, 1.29];
     echarts.init(document.getElementById('chart-loanmix')).setOption({
         backgroundColor: '#fff',
-        title: { text: '贷款平均余额（亿元）与平均收益率（%）', left: 'center', top: 4, textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-        legend: { data: ['平均余额 2025', '平均余额 2024', '收益率 2025', '收益率 2024'], bottom: 2, textStyle: { fontSize: 11 } },
-        grid: { left: 62, right: 56, top: 40, bottom: 46 },
-        xAxis: { type: 'category', data: cats, axisLabel: { fontSize: 12, color: '#555' } },
+        textStyle: { fontSize: 16 },
+        title: { text: '贷款平均余额（亿元）与平均收益率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 } },
+        legend: { data: ['平均余额 2025', '平均余额 2024', '收益率 2025', '收益率 2024'], bottom: 2, textStyle: { fontSize: 16 } },
+        grid: { left: 68, right: 62, top: 46, bottom: 56 },
+        xAxis: { type: 'category', data: cats, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: [
-            { type: 'value', name: '亿元', axisLabel: { color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: '收益率%', position: 'right', min: 0, max: 5, axisLabel: { color: '#c0392b' }, splitLine: { show: false } }
+            { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: '收益率%', nameTextStyle: { fontSize: 16 }, position: 'right', min: 0, max: 5, axisLabel: { fontSize: 16, color: '#c0392b' }, splitLine: { show: false } }
         ],
         series: [
             { name: '平均余额 2025', type: 'bar', data: bal25, itemStyle: { color: '#6c3483' } },
             { name: '平均余额 2024', type: 'bar', data: bal24, itemStyle: { color: '#b39ddb' } },
             { name: '收益率 2025', type: 'line', yAxisIndex: 1, data: yld25, symbolSize: 7,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              label: { show: true, fontSize: 10, color: '#c0392b', formatter: '{c}%' } },
+              label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } },
             { name: '收益率 2024', type: 'line', yAxisIndex: 1, data: yld24, symbolSize: 6,
               lineStyle: { width: 2, color: '#e67e22', type: 'dashed' }, itemStyle: { color: '#e67e22' } }
         ]
@@ -440,22 +467,82 @@
     // 存款期限结构：活期 vs 定期 占比（2025 年末）
     echarts.init(document.getElementById('chart-depterm')).setOption({
         backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
         title: [
-            { text: '存款期限结构（2025 年末）', left: 'center', top: 4, textStyle: { fontSize: 13, color: '#4a2a5a' } },
+            { text: '存款期限结构（2025 年末）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
             { text: '定期 74.27%\n活期 25.30%', left: 'center', top: 'center', textAlign: 'center',
-              textStyle: { fontSize: 13, color: '#6c3483', fontWeight: 700, lineHeight: 20 } }
+              textStyle: { fontSize: 16, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
         ],
-        tooltip: { trigger: 'item', formatter: '{b}: {c} 亿元 ({d}%)' },
-        legend: { bottom: 2, textStyle: { fontSize: 12 } },
+        tooltip: { trigger: 'item', formatter: '{b}: {c} 亿元 ({d}%)', textStyle: { fontSize: 16 } },
+        legend: { bottom: 2, textStyle: { fontSize: 16 } },
         series: [{
             name: '存款期限结构', type: 'pie', radius: ['46%', '68%'], center: ['50%', '52%'],
-            avoidLabelOverlap: true, label: { show: true, fontSize: 11, formatter: '{b}\n{d}%' },
+            avoidLabelOverlap: true, label: { show: true, fontSize: 16, formatter: '{b}\n{d}%' },
             data: [
                 { value: 7640.86, name: '定期存款', itemStyle: { color: '#6c3483' } },
                 { value: 2601.74, name: '活期存款', itemStyle: { color: '#e67e22' } },
                 { value: 44.68,   name: '保证金及其他', itemStyle: { color: '#b0a0bd' } }
             ]
         }]
+    });
+})();
+
+/* ────── 1d. 个人贷款按用途细分（2018–2025） ────── */
+(function () {
+    const years = ['2018','2019','2020','2021','2022','2023','2024','2025'];
+    // 期末余额（亿元）——按揭 / 经营 / 信用卡 全区间；消费贷 2018–2022 未单独披露
+    const balMortgage = [603.74, 730.91, 913.37,1009.80, 969.65, 914.89, 886.98, 874.53];
+    const balBusiness = [429.98, 505.16, 668.00, 897.96,1018.80,1201.19,1235.83,1186.22];
+    const balCard     = [ 39.55,  45.06,  50.03,  91.43, 124.64, 149.99, 166.83, 167.82];
+    const balConsume  = [  null,   null,   null,   null,   null, 643.12, 635.43, 781.66];
+
+    echarts.init(document.getElementById('chart-perloan-bal')).setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
+        title: { text: '个人贷款按用途 · 期末余额（亿元）', left: 'center', top: 4,
+                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '未披露' : v + ' 亿', textStyle: { fontSize: 16 } },
+        legend: { data: ['住房按揭', '个人经营', '信用卡', '个人消费'], bottom: 2, textStyle: { fontSize: 16 } },
+        grid: { left: 66, right: 24, top: 46, bottom: 50 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: [
+            { name: '住房按揭', type: 'line', data: balMortgage, smooth: true, connectNulls: true, symbolSize: 7,
+              lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' } },
+            { name: '个人经营', type: 'line', data: balBusiness, smooth: true, connectNulls: true, symbolSize: 7,
+              lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' } },
+            { name: '信用卡', type: 'line', data: balCard, smooth: true, connectNulls: true, symbolSize: 6,
+              lineStyle: { width: 2.5, color: '#e67e22' }, itemStyle: { color: '#e67e22' } },
+            { name: '个人消费', type: 'line', data: balConsume, smooth: true, connectNulls: true, symbolSize: 6,
+              lineStyle: { width: 2.5, color: '#1e8449', type: 'dashed' }, itemStyle: { color: '#1e8449' } }
+        ]
+    });
+
+    // 不良率（%）——按揭 / 经营 / 其他（其他口径 2018–2022 vs 2023–2025 不同，见说明）
+    const nplMortgage = [0.43, 0.33, 0.31, 0.46, 0.77, 1.11, 1.15, 1.60];
+    const nplBusiness = [1.36, 0.87, 0.82, 0.73, 1.49, 2.05, 1.67, 1.97];
+    const nplOthers   = [1.55, 1.23, 0.86, 0.83, 1.25, 1.49, 2.00, 2.61];
+
+    echarts.init(document.getElementById('chart-perloan-npl')).setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
+        title: { text: '个人贷款按用途 · 不良贷款率（%）', left: 'center', top: 4,
+                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%', textStyle: { fontSize: 16 } },
+        legend: { data: ['住房按揭', '个人经营', '其他（含消费/信用卡）'], bottom: 2, textStyle: { fontSize: 16 } },
+        grid: { left: 56, right: 24, top: 46, bottom: 50 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '%', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#c0392b' }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: [
+            { name: '住房按揭', type: 'line', data: nplMortgage, smooth: true, connectNulls: true, symbolSize: 7,
+              lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
+              label: { show: true, fontSize: 16, color: '#6c3483', formatter: '{c}%' } },
+            { name: '个人经营', type: 'line', data: nplBusiness, smooth: true, connectNulls: true, symbolSize: 7,
+              lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+              label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } },
+            { name: '其他（含消费/信用卡）', type: 'line', data: nplOthers, smooth: true, connectNulls: true, symbolSize: 6,
+              lineStyle: { width: 2.5, color: '#7f8c8d', type: 'dashed' }, itemStyle: { color: '#7f8c8d' } }
+        ]
     });
 })();
 
@@ -478,95 +565,190 @@
     const chgColor = c => c === '不变' ? '#888' : (c[0] === '+' ? '#c0392b' : '#1e8449');
     tb.innerHTML = holders.map(h =>
         `<tr><td>${h.name}</td><td>${h.pct.toFixed(2)}%</td>` +
-        `<td style="color:${chgColor(h.chg)}">${h.chg}</td><td style="font-size:12px;color:#777">${h.type}</td></tr>`
+        `<td style="color:${chgColor(h.chg)}">${h.chg}</td><td style="font-size:16px;color:#777">${h.type}</td></tr>`
     ).join('');
-    // 股东三层环形图：按持股排名分层（内 3 / 中 3 / 外 4），颜色按「一致行动派系」区分
-    // 派系配色：渝富系 #6c3483 · 发展系 #2980b9 · 香港中央结算 #16a085 · 城投 #e67e22 · 财信 #c0392b · 社保 #f1c40f · 其他 #95a5a6
-    const tier1 = [
+    // 股东结构单层环形图：全部股东在同一个环、按比例铺满整圈；「其他流通股东」也按普通股东参与、严格按持股比例从大到小排序
+    // 派系配色：香港中央结算 #16a085 · 渝富系 #6c3483 · 发展系 #2980b9 · 城投 #e67e22 · 财信 #c0392b · 社保 #f1c40f · 其他 #95a5a6
+    const holderData = [
+        { name: '其他流通股东',    value: 41.71, itemStyle: { color: '#95a5a6' } },
         { name: '香港代理人(H股)', value: 22.08, itemStyle: { color: '#16a085' } },
         { name: '渝富资本',        value: 8.70,  itemStyle: { color: '#6c3483' } },
-        { name: '城投集团',        value: 7.02,  itemStyle: { color: '#e67e22' } }
+        { name: '城投集团',        value: 7.02,  itemStyle: { color: '#e67e22' } },
+        { name: '发展置业',        value: 5.19,  itemStyle: { color: '#2980b9' } },
+        { name: '水利投资',        value: 4.99,  itemStyle: { color: '#6c3483' } },
+        { name: '发展投资',        value: 4.60,  itemStyle: { color: '#2980b9' } },
+        { name: '沪股通(A股)',     value: 2.79,  itemStyle: { color: '#16a085' } },
+        { name: '水务集团',        value: 1.10,  itemStyle: { color: '#6c3483' } },
+        { name: '财信集团',        value: 0.99,  itemStyle: { color: '#c0392b' } },
+        { name: '社保116',         value: 0.83,  itemStyle: { color: '#f1c40f' } }
     ];
-    const tier2 = [
-        { name: '发展置业', value: 5.19, itemStyle: { color: '#2980b9' } },
-        { name: '水利投资', value: 4.99, itemStyle: { color: '#6c3483' } },
-        { name: '发展投资', value: 4.60, itemStyle: { color: '#2980b9' } }
-    ];
-    const tier3 = [
-        { name: '沪股通(A股)', value: 2.79, itemStyle: { color: '#16a085' } },
-        { name: '水务集团',    value: 1.10, itemStyle: { color: '#6c3483' } },
-        { name: '财信集团',    value: 0.99, itemStyle: { color: '#c0392b' } },
-        { name: '社保116',     value: 0.83, itemStyle: { color: '#f1c40f' } }
-    ];
-    const mkLabel = () => ({ show: true, position: 'inside', formatter: '{b}\n{c}%', fontSize: 12, color: '#fff', fontWeight: 600, lineHeight: 15 });
-    // 让各环「前后接续」：外环从内环结束的角度接着画，10 名股东连成一条连续弧。
-    // 每环 = 前导透明段(已累计比例) + 本层真实扇区 + 尾部透明段(补足到 100%)
-    const blank = v => ({ name: '', value: v, itemStyle: { color: 'transparent', borderWidth: 0 }, label: { show: false }, emphasis: { disabled: true } });
-    const ring = (arr, lead) => {
-        const s = arr.reduce((a, b) => a + b.value, 0);
-        const trail = +(100 - lead - s).toFixed(2);
-        const out = [];
-        if (lead > 0.0001) out.push(blank(+lead.toFixed(2)));
-        arr.forEach(d => out.push(d));
-        if (trail > 0.0001) out.push(blank(trail));
-        return out;
-    };
-    const c1 = 0, c2 = 37.80, c3 = 52.58, c4 = 58.29;   // 各层起始累计比例
-    const holderTip = { trigger: 'item', formatter: p => p.name ? `${p.name}：${p.value}%（占总股本）` : '' };
+    const holderTip = { trigger: 'item', formatter: p => `${p.name}：${p.value}%（占总股本）` };
     echarts.init(document.getElementById('chart-holders')).setOption({
         backgroundColor: '#fff',
-        title: { text: '前十大股东三层环形图（前后接续 · 圆心角 = 占总股本比例）', left: 'center', top: 6,
-                 textStyle: { fontSize: 14, color: '#4a2a5a', fontWeight: 600 } },
+        title: [
+            { text: '股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）', left: 'center', top: 8,
+              textStyle: { fontSize: 14, color: '#4a2a5a', fontWeight: 600 } },
+            { text: '前十大\n58.29%', left: 'center', top: 'center', textAlign: 'center',
+              textStyle: { fontSize: 15, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
+        ],
         tooltip: holderTip,
-        series: [
-            { name: '第一层 · 前 3', type: 'pie', radius: ['8%', '32%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier1, c1), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } },
-            { name: '第二层 · 第 4–6', type: 'pie', radius: ['34%', '60%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier2, c2), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } },
-            { name: '第三层 · 第 7–10', type: 'pie', radius: ['62%', '92%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier3, c3), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } }
-        ]
+        series: [{
+            type: 'pie', radius: ['40%', '74%'], center: ['50%', '54%'], startAngle: 90,
+            sort: null, minShowLabelAngle: 12, avoidLabelOverlap: true,
+            data: holderData,
+            label: { show: true, position: 'outside', formatter: '{b}\n{c}%', fontSize: 12, color: '#333' },
+            labelLine: { show: true, length: 12, length2: 10 },
+            itemStyle: { borderColor: '#fff', borderWidth: 2 }
+        }]
     });
 
-    // 第二幅：含「其他流通股东」的四层环形图（内 3 / 中 3 / 外 4 / 最外 1）
-    const tier4 = [
-        { name: '其他流通股东', value: 41.71, itemStyle: { color: '#95a5a6' } }
+    // 图外清单：确保每位股东信息清晰可读（不受扇区大小影响），按派系分组
+    const factions = [
+        { title: '香港中央结算', color: '#16a085', names: ['香港代理人(H股)', '沪股通(A股)'] },
+        { title: '渝富系（一致行动）', color: '#6c3483', names: ['渝富资本', '水利投资', '水务集团'] },
+        { title: '发展系（一致行动）', color: '#2980b9', names: ['发展置业', '发展投资'] },
+        { title: '城投集团', color: '#e67e22', names: ['城投集团'] },
+        { title: '财信集团', color: '#c0392b', names: ['财信集团'] },
+        { title: '社保116', color: '#f1c40f', names: ['社保116'] },
+        { title: '其他流通股东', color: '#95a5a6', names: ['其他流通股东'] }
     ];
-    echarts.init(document.getElementById('chart-holders2')).setOption({
-        backgroundColor: '#fff',
-        title: { text: '含其他流通股东 · 四层环形图（前后接续 · 合计 100%）', left: 'center', top: 6,
-                 textStyle: { fontSize: 14, color: '#4a2a5a', fontWeight: 600 } },
-        tooltip: holderTip,
-        series: [
-            { name: '第一层 · 前 3', type: 'pie', radius: ['5%', '25%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier1, c1), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } },
-            { name: '第二层 · 第 4–6', type: 'pie', radius: ['27%', '47%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier2, c2), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } },
-            { name: '第三层 · 第 7–10', type: 'pie', radius: ['49%', '69%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier3, c3), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } },
-            { name: '第四层 · 其他', type: 'pie', radius: ['71%', '92%'], center: ['50%', '54%'], startAngle: 90, minShowLabelAngle: 6,
-              data: ring(tier4, c4), label: mkLabel(), labelLine: { show: false }, itemStyle: { borderColor: '#fff', borderWidth: 2 } }
-        ]
-    });
+    const val = n => holderData.find(d => d.name === n).value;
+    document.getElementById('holders-legend').innerHTML = factions.map(f => {
+        const sum = f.names.reduce((a, n) => a + val(n), 0);
+        const items = f.names.map(n => `${n} ${val(n)}%`).join('　');
+        return `<div style="margin:3px 0"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${f.color};vertical-align:-1px;margin-right:6px"></span>` +
+               `<b style="color:#4a2a5a">${f.title}</b> <span style="color:#6c3483;font-weight:600">${sum.toFixed(2)}%</span>` +
+               (f.names.length > 1 ? `　<span style="color:#777;font-size:16px">（${items}）</span>` : '') + `</div>`;
+    }).join('');
 
-    // 图外清单：确保每位股东信息清晰可读（不受扇区大小影响）
-    const legendHtml = groups => groups.map(g =>
-        `<div style="margin:3px 0"><b style="color:#4a2a5a">${g.title}</b>　` +
-        g.items.map(d => `<span style="display:inline-block;margin:0 14px 0 0;white-space:nowrap">` +
-            `<span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${d.itemStyle.color};vertical-align:-1px;margin-right:5px"></span>` +
-            `${d.name}　<b>${d.value}%</b></span>`).join('') +
-        `</div>`).join('');
-    document.getElementById('holders-legend').innerHTML = legendHtml([
-        { title: '内层 · 前 3', items: tier1 },
-        { title: '中层 · 4–6', items: tier2 },
-        { title: '外层 · 7–10', items: tier3 }
-    ]);
-    document.getElementById('holders2-legend').innerHTML = legendHtml([
-        { title: '内层 · 前 3', items: tier1 },
-        { title: '中层 · 4–6', items: tier2 },
-        { title: '外层 · 7–10', items: tier3 },
-        { title: '最外 · 其他', items: tier4 }
-    ]);
+    // 「己」字形折叠条：3 行横条首尾相连成一条蛇形；三横之间的「连接段」（圆角转折）不计入占比，用灰色特殊标注。
+    (function buildFold() {
+        const W = 520, t = 44, m = t / 2, r = 30;      // 宽、条厚、留边、转折圆角半径
+        const vg = 30;                                 // 行间距（连接段竖向跨度）
+        const xL = m, xR = W - m;
+        const y0 = m, y1 = y0 + t + vg, y2 = y1 + t + vg, H = y2 + m;
+        const CONN = '#b7b1c4';                        // 连接段特殊色（不计入占比）
+
+        // 三行数据段的宽度（转折圆角占掉的部分归入连接段，不计比例）
+        const w1 = (xR - r) - xL;                      // 第1行：左端起，右端进圆角
+        const w2 = (xR - r) - (xL + r);                // 第2行：两端都进圆角
+        const w3 = xR - (xL + r);                      // 第3行：左端出圆角，右端到底
+        const dataLen = w1 + w2 + w3;                  // 100% 只摊在三横上
+
+        // 数据轨（横条），按弧长区间映射；第2行从右向左画以保持蛇形连续
+        const rails = [
+            { s: 0,        e: w1,           rect: (a, b) => ({ x: xL + a, y: y0 - t / 2, w: b - a }) },
+            { s: w1,       e: w1 + w2,      rect: (a, b) => { const la = a - w1, lb = b - w1, xr = xR - r; return { x: xr - lb, y: y1 - t / 2, w: lb - la }; } },
+            { s: w1 + w2,  e: dataLen,      rect: (a, b) => { const la = a - w1 - w2; return { x: (xL + r) + la, y: y2 - t / 2, w: b - a }; } }
+        ];
+
+        const gap = 2;                                 // 相邻股东留白
+        const FS = 16;                                 // 标签字号（≥16px 下限）
+        let d = 0;
+        const parts = [], inside = [], callouts = [];
+        holderData.forEach(hd => {
+            const d0 = d, d1 = d + hd.value / 100 * dataLen;
+            let best = null;
+            rails.forEach(rl => {
+                const a = Math.max(d0, rl.s), b = Math.min(d1, rl.e);
+                if (b > a + 0.01) {
+                    const rc = rl.rect(a + gap / 2, b - gap / 2);
+                    if (rc.w > 0.5) {
+                        parts.push({ ...rc, color: hd.itemStyle.color, name: hd.name, value: hd.value });
+                        if (!best || rc.w > best.w) best = rc;   // 该股东最宽的一段
+                    }
+                }
+            });
+            if (best) {
+                if (best.w > 60) {   // 段够宽，16px 文字放得下 → 段内标注
+                    inside.push({ x: best.x + best.w / 2, y: best.y + t / 2, text: best.w > 240 ? `${hd.name} ${hd.value}%` : `${hd.value}%` });
+                } else {             // 太窄 → 拉箭头到外面标注
+                    callouts.push({ name: hd.name, value: hd.value, color: hd.itemStyle.color, ax: best.x + best.w / 2, ay: best.y + t });
+                }
+            }
+            d = d1;
+        });
+
+        // 连接段（圆角转折，特殊色，不占比例）
+        const connA = `M ${xR - r} ${y0} Q ${xR} ${y0} ${xR} ${y0 + r} L ${xR} ${y1 - r} Q ${xR} ${y1} ${xR - r} ${y1}`; // 右侧：1行→2行
+        const connB = `M ${xL + r} ${y1} Q ${xL} ${y1} ${xL} ${y1 + r} L ${xL} ${y2 - r} Q ${xL} ${y2} ${xL + r} ${y2}`; // 左侧：2行→3行
+
+        // 引出标注布局：窄段标签排到底部，按锚点从左到右打包，放不下自动换行
+        const dotR = 5, rowH = 30, padX = 4;
+        const estW = c => {
+            let w = dotR * 2 + 10;                      // 圆点 + 间距
+            for (const ch of `${c.name} ${c.value}%`) w += ch.charCodeAt(0) > 255 ? FS : FS * 0.56;
+            return w + 8;
+        };
+        callouts.sort((a, b) => a.ax - b.ax);
+        let cx = padX, row = 0;
+        callouts.forEach(c => {
+            const w = estW(c);
+            if (cx + w > W - padX && cx > padX) { cx = padX; row++; }
+            c.lx = cx; c.row = row; c.w = w;
+            cx += w + 6;
+        });
+        const rows = callouts.length ? row + 1 : 0;
+        const baseY = H + 20;                           // 第一行标签基线
+        const svgH = H + (rows ? rows * rowH + 10 : 6);
+
+        let svg = `<svg viewBox="-3 -3 ${W + 6} ${svgH + 6}" width="100%" style="max-width:760px;display:block;margin:0 auto;height:auto">`;
+        [connA, connB].forEach(dstr => {
+            svg += `<path d="${dstr}" fill="none" stroke="${CONN}" stroke-width="${t}" stroke-linecap="butt" stroke-linejoin="round"><title>连接段（不计入占比）</title></path>`;
+        });
+        parts.forEach(p => {
+            svg += `<rect x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" width="${p.w.toFixed(1)}" height="${t}" fill="${p.color}" stroke="#fff" stroke-width="2"><title>${p.name}：${p.value}%（占总股本）</title></rect>`;
+        });
+        inside.forEach(l => {
+            svg += `<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="${FS}" fill="#fff" font-weight="600">${l.text}</text>`;
+        });
+        // 引出线 + 箭头 + 外部标签（每个股东都标注）
+        callouts.forEach(c => {
+            const ly = baseY + c.row * rowH;             // 该标签基线
+            const dotX = c.lx + dotR, dotY = ly - FS / 2 + 1;
+            const ax = c.ax.toFixed(1);
+            svg += `<line x1="${dotX.toFixed(1)}" y1="${(dotY - dotR).toFixed(1)}" x2="${ax}" y2="${(c.ay + 9).toFixed(1)}" stroke="${c.color}" stroke-width="1.4"/>`;
+            svg += `<polygon points="${ax},${c.ay.toFixed(1)} ${(c.ax - 5).toFixed(1)},${(c.ay + 9).toFixed(1)} ${(c.ax + 5).toFixed(1)},${(c.ay + 9).toFixed(1)}" fill="${c.color}"/>`;
+            svg += `<circle cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="${dotR}" fill="${c.color}"/>`;
+            svg += `<text x="${(c.lx + dotR * 2 + 6).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="start" font-size="${FS}" fill="#333" font-weight="600">${c.name} ${c.value}%</text>`;
+        });
+        svg += '</svg>';
+        document.getElementById('chart-holders-fold').innerHTML = svg;
+    })();
+
+    // 横向条形图：按比例排序，同派系同色；≥4% 条内显示股东名（白字），<4% 名称显示在条右侧；底部滑块可左右拉伸放大
+    (function buildBar() {
+        const names = holderData.map(h => h.name);
+        const barData = holderData.map(h => ({
+            value: h.value,
+            itemStyle: { color: h.itemStyle.color },
+            label: h.value >= 4
+                ? { show: true, position: 'insideLeft', distance: 8, color: '#fff', fontSize: 16, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
+                : { show: true, position: 'right', distance: 6, color: '#333', fontSize: 16, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
+        }));
+        echarts.init(document.getElementById('chart-holders-bar')).setOption({
+            backgroundColor: '#fff',
+            grid: { left: 14, right: 170, top: 16, bottom: 74, containLabel: true },
+            tooltip: { trigger: 'item', textStyle: { fontSize: 16 }, formatter: p => `${names[p.dataIndex]}：${p.value}%（占总股本）` },
+            xAxis: {
+                type: 'value', min: 0, max: 44, name: '占总股本 %', nameTextStyle: { fontSize: 16 },
+                axisLabel: { fontSize: 16, formatter: '{value}%' }, splitLine: { lineStyle: { color: '#eee' } }
+            },
+            yAxis: {
+                type: 'category', data: names, inverse: true,
+                axisLabel: { show: false }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#ccc' } }
+            },
+            dataZoom: [
+                { type: 'inside', xAxisIndex: 0, filterMode: 'none', start: 0, end: 100, zoomOnMouseWheel: false, moveOnMouseWheel: false },
+                { type: 'slider', xAxisIndex: 0, filterMode: 'none', start: 0, end: 100, bottom: 16, height: 26,
+                  labelFormatter: v => v.toFixed(1) + '%' }
+            ],
+            series: [{
+                type: 'bar', data: barData, barCategoryGap: '35%',
+                itemStyle: { borderColor: '#fff', borderWidth: 1 }
+            }]
+        });
+    })();
 })();
 
 /* ────── 5-② 资产负债表结构 (2025) ────── */
@@ -586,23 +768,25 @@
         { name: '少数股东权益',          value:    2169.1 }
     ];
     const CAT = ['资产', '负债 + 权益'];
+    const total = assets.reduce((s, it) => s + it.value, 0);
     const mk = (items, col) => items.map(it => ({
         name: it.name, type: 'bar', stack: 'bs', barMaxWidth: 160,
         emphasis: { focus: 'series' },
-        label: { show: true, position: 'inside', color: '#fff', fontSize: 10,
-                 formatter: p => (p.value/1665744.1*100) < 4 ? '' : it.name },
+        label: { show: true, position: 'inside', color: '#fff', fontSize: 16,
+                 formatter: p => (p.value/total*100) < 4 ? '' : it.name },
         data: CAT.map((_, i) => i === col ? it.value : '-')
     }));
     echarts.init(document.getElementById('chart-bs')).setOption({
         backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
         title: { text: '2025 年末资产负债结构（百万元）', left: 'center', top: 4,
-                 textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
             valueFormatter: v => (v === '-' || v == null) ? '' : Number(v).toLocaleString() },
-        legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 11 }, itemWidth: 12, itemHeight: 10 },
-        grid: { left: 70, right: 30, top: 40, bottom: 48 },
-        xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 13, fontWeight: 600, color: '#333' } },
-        yAxis: { type: 'value', axisLabel: { formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
+        legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 16 }, itemWidth: 14, itemHeight: 12 },
+        grid: { left: 76, right: 30, top: 46, bottom: 54 },
+        xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 16, fontWeight: 600, color: '#333' } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 16, formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
                  splitLine: { lineStyle: { color: '#eee' } } },
         color: ['#8e44ad','#9b59b6','#af7ac5','#c39bd3','#d7bde2','#ebdef0','#e74c3c','#ec7063','#27ae60','#7dcea0'],
         series: [...mk(assets, 0), ...mk(claims, 1)]
@@ -613,16 +797,17 @@
 (function () {
     echarts.init(document.getElementById('chart-cf')).setOption({
         backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
         title: { text: '2025 年分季度经营活动现金流量净额（百万元）', left: 'center', top: 4,
-                 textStyle: { fontSize: 13, color: '#4a2a5a' } },
-        tooltip: { trigger: 'axis', valueFormatter: v => Number(v).toLocaleString() },
-        grid: { left: 64, right: 24, top: 40, bottom: 30 },
+                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
+        tooltip: { trigger: 'axis', valueFormatter: v => Number(v).toLocaleString(), textStyle: { fontSize: 16 } },
+        grid: { left: 72, right: 24, top: 46, bottom: 36 },
         xAxis: { type: 'category', data: ['Q1','Q2','Q3','Q4'],
-                 axisLabel: { fontSize: 13, color: '#555' } },
-        yAxis: { type: 'value', axisLabel: { color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+                 axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [{ type: 'bar', data: [22569.6, -19134.4, 15532.8, -18595.7], barWidth: '48%',
             itemStyle: { color: p => p.value >= 0 ? '#8e44ad' : '#e74c3c', borderRadius: [4,4,0,0] },
-            label: { show: true, position: 'top', fontSize: 11,
+            label: { show: true, position: 'top', fontSize: 16,
                      formatter: p => Number(p.value).toLocaleString() } }]
     });
 })();

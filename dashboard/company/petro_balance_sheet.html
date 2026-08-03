@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="common/base.css">
-    <script src="common/site-header.js" defer></script>
+    <link rel="stylesheet" href="../common/base.css">
+    <script src="../common/site-header.js" defer></script>
     <title>中石油 2024 资产负债表（示例）：资产 = 负债 + 所有者权益</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
@@ -15,8 +15,9 @@
             padding: 16px;
             display: flex; flex-direction: column; gap: 12px;
         }
+        .site-nav { margin: -16px -16px 0; }
         .chart-box {
-            width: 100%; height: 88vh; flex-shrink: 0;
+            width: 100%; max-width: 1800px; margin: 0 auto; height: 140vh; flex-shrink: 0;
             background: #fff; border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
@@ -169,18 +170,30 @@ chart.setOption({
     },
     legend: {
         type: 'scroll',
-        bottom: 6,
+        bottom: 56,
         textStyle: { fontSize: 11, color: '#333' },
         itemWidth: 12, itemHeight: 10
     },
-    grid: { left: 80, right: 40, top: 78, bottom: 76 },
-    xAxis: {
+    dataZoom: [
+        {
+            type: 'slider',
+            xAxisIndex: 0,
+            bottom: 30,
+            height: 20,
+            startValue: 0,
+            endValue: totalAssets,
+            showDetail: false
+        }
+    ],
+    grid: { left: 160, right: 80, top: 78, bottom: 90 },
+    yAxis: {
         type: 'category',
         data: CATEGORIES,
+        inverse: true,
         axisLabel: { color: '#222', fontSize: 14, fontWeight: 600 },
         axisLine: { lineStyle: { color: '#bbb' } }
     },
-    yAxis: {
+    xAxis: {
         type: 'value',
         name: '金额（百万元）',
         nameTextStyle: { color: '#555' },
@@ -195,22 +208,22 @@ chart.setOption({
 const topAsset = series.filter(s => s.data[0] !== '-').slice(-1)[0];
 const topClaim = series.filter(s => s.data[1] !== '-').slice(-1)[0];
 topAsset.markPoint = {
-    symbol: 'roundRect', symbolSize: [140, 26], symbolOffset: [0, -18],
+    symbol: 'roundRect', symbolSize: [140, 26], symbolOffset: [18, 0],
     itemStyle: { color: '#1a4d7a' },
     label: {
         show: true, color: '#fff', fontWeight: 700, fontSize: 12,
         formatter: `资产总计  ${totalAssets.toLocaleString()}`
     },
-    data: [{ coord: ['资产', totalAssets] }]
+    data: [{ coord: [totalAssets, '资产'] }]
 };
 topClaim.markPoint = {
-    symbol: 'roundRect', symbolSize: [170, 26], symbolOffset: [0, -18],
+    symbol: 'roundRect', symbolSize: [170, 26], symbolOffset: [18, 0],
     itemStyle: { color: '#1a7a3a' },
     label: {
         show: true, color: '#fff', fontWeight: 700, fontSize: 12,
         formatter: `负债+权益 合计  ${totalClaims.toLocaleString()}`
     },
-    data: [{ coord: ['负债 + 所有者权益', totalClaims] }]
+    data: [{ coord: [totalClaims, '负债 + 所有者权益'] }]
 };
 chart.setOption({ series });
 

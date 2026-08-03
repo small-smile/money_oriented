@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="common/base.css">
-    <script src="common/site-header.js" defer></script>
+    <link rel="stylesheet" href="../common/base.css">
+    <script src="../common/site-header.js" defer></script>
     <title>中石油 2025 利润→营收 反向瀑布图（按金额升序）</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
@@ -15,8 +15,9 @@
             padding: 16px;
             display: flex; flex-direction: column; gap: 12px;
         }
+        .site-nav { margin: -16px -16px 0; }
         .chart-box {
-            width: 100%; height: 80vh; flex-shrink: 0;
+            width: 100%; max-width: 1800px; margin: 0 auto; height: 80vh; flex-shrink: 0;
             background: #fff; border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }

@@ -283,6 +283,8 @@ def main():
     for i, (code, name) in enumerate(BANK_STOCKS.items(), 1):
         print(f"[{i}/{len(BANK_STOCKS)}] {name}...")
         ret = get_bank_data(code, name)
+        print(ret)
+        exit(0)
         if ret is not None:
             all_returns[name] = ret
         else:
