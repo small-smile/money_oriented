@@ -147,8 +147,7 @@ function renderStack(years, sortedCountries, allData, meta) {
         grid: { left: 64, right: 20, top: 130, bottom: 60 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
         dataZoom: [
-            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 },
-            { type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: false, moveOnMouseWheel: false }
+            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }
         ],
         xAxis: {
             type: 'category', data: years, boundaryGap: false,
@@ -221,7 +220,7 @@ function showDetail(country) {
         backgroundColor: '#fafafa',
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } } },
         grid: { left: 56, right: 16, top: 12, bottom: 40 },
-        dataZoom: [{ type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: false, moveOnMouseWheel: false }],
+        // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
             axisLabel: { color: '#555', fontSize: 10 },

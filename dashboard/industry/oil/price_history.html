@@ -603,7 +603,7 @@
                             splitLine: {show: false}
                         }
                     ],
-                    dataZoom: [{type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: false, moveOnMouseWheel: false}],
+                    // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
                     series: [
                         {
                             name: '黄金',
