@@ -16,15 +16,19 @@
             display: flex; flex-direction: column; gap: 12px;
         }
         .site-nav { margin: -16px -16px 0; }
-        .chart-box {
-            width: 100%; max-width: 1800px; margin: 0 auto; height: 80vh; flex-shrink: 0;
+        .chart-card {
+            width: 100%; max-width: 1800px; margin: 0 auto; flex-shrink: 0;
             background: #fff; border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
+        .chart-box { width: 100%; height: 80vh; }
     </style>
 </head>
 <body>
-<div id="chart-income" class="chart-box"></div>
+<section class="chart-card">
+    <h2 class="chart-title">中石油 2025 年度：从「营业利润」逆推到「营业收入」（反向瀑布图）<span class="sub">左侧 11 项按金额升序 → 从营业利润 169,113 逐级加回成本费用 → 最右累积至营业收入 398,220 | 利息收入为增利项（向下回退）| 单位：百万元人民币</span></h2>
+    <div id="chart-income" class="chart-box"></div>
+</section>
 <script>
 /* ────── 2025 年度合并利润表（源：题干数据，单位：百万元人民币） ────── */
 /* delta 正 = 增利，负 = 减利；type: total 表示汇总柱（营业利润 / 营业收入） */
@@ -117,13 +121,6 @@ items.forEach(it => {
 const chart = echarts.init(document.getElementById('chart-income'));
 chart.setOption({
     backgroundColor: '#ffffff',
-    title: {
-        text: '中石油 2025 年度：从「营业利润」逆推到「营业收入」（反向瀑布图）',
-        subtext: '左侧 11 项按金额升序 → 从营业利润 169,113 逐级加回成本费用 → 最右累积至营业收入 398,220 | 利息收入为增利项（向下回退）| 单位：百万元人民币',
-        left: 'center', top: 8,
-        textStyle: { color: '#1a1a2e', fontSize: 15 },
-        subtextStyle: { color: '#666', fontSize: 11 }
-    },
     tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
@@ -147,7 +144,7 @@ chart.setOption({
                     占营收比：<b>${pct}%</b>`;
         }
     },
-    grid: { left: 72, right: 24, top: 74, bottom: 130 },
+    grid: { left: 72, right: 24, top: 24, bottom: 130 },
     xAxis: {
         type: 'category', data: categories,
         axisLabel: {

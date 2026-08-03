@@ -17,11 +17,12 @@
             display: flex; flex-direction: column; gap: 12px;
         }
         .site-nav { margin: -16px -16px 0; }
-        .chart-box {
-            width: 100%; max-width: 1800px; margin: 0 auto; height: 50vh; flex-shrink: 0;
+        .chart-card {
+            width: 100%; max-width: 1800px; margin: 0 auto; flex-shrink: 0;
             background: #fff; border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
+        .chart-box { width: 100%; height: 50vh; }
         #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
         #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
     </style>
@@ -29,10 +30,22 @@
 <body>
 <div id="loading">数据加载中...</div>
 <div id="error-msg"></div>
-<div id="chart-ptr"     class="chart-box" style="display:none"></div>
-<div id="chart-cnc"     class="chart-box" style="display:none"></div>
-<div id="chart-compare" class="chart-box" style="display:none"></div>
-<div id="chart-prod"    class="chart-box" style="display:none"></div>
+<section class="chart-card" id="card-ptr" style="display:none">
+    <h2 class="chart-title">中石油证实原油储量瀑布图<span class="sub">深色 = 保留　浅色 = 增加　灰色斜线 = 减少 | 单位：百万桶</span></h2>
+    <div id="chart-ptr" class="chart-box"></div>
+</section>
+<section class="chart-card" id="card-cnc" style="display:none">
+    <h2 class="chart-title">中海油证实原油储量瀑布图<span class="sub">深色 = 保留　浅色 = 增加　灰色斜线 = 减少 | 单位：百万桶</span></h2>
+    <div id="chart-cnc" class="chart-box"></div>
+</section>
+<section class="chart-card" id="card-compare" style="display:none">
+    <h2 class="chart-title">中石油 vs 中海油 证实原油储量对比（2000-2024）<span class="sub">数据来源：两家公司历年年报（SEC 标准）| 单位：百万桶</span></h2>
+    <div id="chart-compare" class="chart-box"></div>
+</section>
+<section class="chart-card" id="card-prod" style="display:none">
+    <h2 class="chart-title">中石油 vs 中海油 历年原油及液体产量<span class="sub">含原油、凝析油等石油液体 | 数据来源：两家公司历年年报 | 单位：百万桶</span></h2>
+    <div id="chart-prod" class="chart-box"></div>
+</section>
 <script>
 function showError(msg) {
     document.getElementById('loading').style.display = 'none';
@@ -52,10 +65,10 @@ Promise.all([
         showError('接口错误'); return;
     }
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('chart-ptr').style.display = 'block';
-    document.getElementById('chart-cnc').style.display = 'block';
-    document.getElementById('chart-compare').style.display = 'block';
-    document.getElementById('chart-prod').style.display = 'block';
+    document.getElementById('card-ptr').style.display = 'block';
+    document.getElementById('card-cnc').style.display = 'block';
+    document.getElementById('card-compare').style.display = 'block';
+    document.getElementById('card-prod').style.display = 'block';
     renderWaterfall('chart-ptr', '中石油', resPtr.data.data, { base: '#c94a4a', gain: '#e88a8a', label: '#a03030' });
     renderWaterfall('chart-cnc', '中海油', resCnc.data.data, { base: '#2a7ab5', gain: '#4fc3f7', label: '#1565c0' });
     renderCompare(resPtr.data.data, resCnc.data.data);
@@ -98,13 +111,6 @@ function renderWaterfall(divId, company, data, colors) {
     const chart = echarts.init(document.getElementById(divId));
     chart.setOption({
         backgroundColor: '#ffffff',
-        title: {
-            text: company + '证实原油储量瀑布图',
-            subtext: '深色 = 保留　浅色 = 增加　灰色斜线 = 减少 | 单位：百万桶',
-            left: 'center', top: 8,
-            textStyle: { color: '#1a1a2e', fontSize: 14 },
-            subtextStyle: { color: '#666', fontSize: 11 }
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'shadow' },
@@ -127,7 +133,7 @@ function renderWaterfall(divId, company, data, colors) {
                         ${pct !== null ? `变化占比：<b>${pct}%</b>` : '初始值'}`;
             }
         },
-        grid: { left: 64, right: 20, top: 66, bottom: 32 },
+        grid: { left: 64, right: 20, top: 24, bottom: 32 },
         xAxis: {
             type: 'category', data: years, boundaryGap: true,
             axisLabel: { color: '#555', fontSize: 10 },
@@ -190,13 +196,6 @@ function renderCompare(ptrData, cncData) {
     const chart = echarts.init(document.getElementById('chart-compare'));
     chart.setOption({
         backgroundColor: '#ffffff',
-        title: {
-            text: '中石油 vs 中海油 证实原油储量对比（2000-2024）',
-            subtext: '数据来源：两家公司历年年报（SEC 标准）| 单位：百万桶',
-            left: 'center', top: 8,
-            textStyle: { color: '#1a1a2e', fontSize: 14 },
-            subtextStyle: { color: '#666', fontSize: 11 }
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
@@ -225,10 +224,10 @@ function renderCompare(ptrData, cncData) {
         },
         legend: {
             data: ['中石油', '中海油'],
-            top: 40,
+            top: 4,
             textStyle: { fontSize: 12, color: '#333' }
         },
-        grid: { left: 64, right: 20, top: 74, bottom: 32 },
+        grid: { left: 64, right: 20, top: 40, bottom: 32 },
         xAxis: {
             type: 'category', data: allYears, boundaryGap: false,
             axisLabel: { color: '#555', fontSize: 10 },
@@ -284,13 +283,6 @@ function renderProduction(ptrData, cncData) {
     const chart = echarts.init(document.getElementById('chart-prod'));
     chart.setOption({
         backgroundColor: '#ffffff',
-        title: {
-            text: '中石油 vs 中海油 历年原油及液体产量',
-            subtext: '含原油、凝析油等石油液体 | 数据来源：两家公司历年年报 | 单位：百万桶',
-            left: 'center', top: 8,
-            textStyle: { color: '#1a1a2e', fontSize: 14 },
-            subtextStyle: { color: '#666', fontSize: 11 }
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
@@ -316,10 +308,10 @@ function renderProduction(ptrData, cncData) {
         },
         legend: {
             data: ['中石油', '中海油'],
-            top: 40,
+            top: 4,
             textStyle: { fontSize: 12, color: '#333' }
         },
-        grid: { left: 64, right: 20, top: 74, bottom: 32 },
+        grid: { left: 64, right: 20, top: 40, bottom: 32 },
         xAxis: {
             type: 'category', data: allYears, boundaryGap: false,
             axisLabel: { color: '#555', fontSize: 10 },

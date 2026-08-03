@@ -65,6 +65,24 @@ body {
     border-left: 1px solid #4b5563;
 }
 
+/* 图表标题：一律用 HTML 文本写在图外，不要用 ECharts 的 title
+ * canvas 里的文字无法选中复制，标题必须是可粘贴的普通文本
+ */
+.chart-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a2e;
+    padding: 8px 0 2px;
+}
+.chart-title .sub {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: #666;
+    margin-top: 2px;
+}
+
 /* 常见的加载/错误提示样式，去掉每个页面重复的 #loading / #error-msg 定义 */
 #loading {
     text-align: center;

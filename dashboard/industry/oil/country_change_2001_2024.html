@@ -12,7 +12,7 @@
         body { background: #f5f7fa; font-family: Arial, "Microsoft YaHei", sans-serif; }
         #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
         #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
-        .chart-block { width: 100%; }
+        .chart-block { width: 100%; background: #fff; }
         #container { max-width: 1800px; margin: 0 auto; padding: 20px 24px 40px; }
     </style>
 </head>
@@ -97,19 +97,23 @@ function render(compare) {
 
         // 图高自适应国家数
         const h = Math.max(260, countries.length * 32 + 120);
+        const block = document.createElement('div');
+        block.className = 'chart-block';
+        // 标题用 HTML 文本（可选中复制），不用 ECharts title
+        const titleEl = document.createElement('h2');
+        titleEl.className = 'chart-title';
+        titleEl.style.cssText = `text-align:left;padding:10px 0 0 16px;color:${color}`;
+        titleEl.textContent = cont;
+        block.appendChild(titleEl);
         const div = document.createElement('div');
-        div.className = 'chart-block';
+        div.style.width = '100%';
         div.style.height = h + 'px';
-        container.appendChild(div);
+        block.appendChild(div);
+        container.appendChild(block);
 
         const chart = echarts.init(div);
         chart.setOption({
             backgroundColor: '#ffffff',
-            title: {
-                text: cont,
-                left: 16, top: 8,
-                textStyle: { color: color, fontSize: 14, fontWeight: 'bold' }
-            },
             tooltip: {
                 trigger: 'axis',
 

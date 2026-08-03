@@ -16,15 +16,19 @@
             display: flex; flex-direction: column; gap: 12px;
         }
         .site-nav { margin: -16px -16px 0; }
-        .chart-box {
-            width: 100%; max-width: 1800px; margin: 0 auto; height: 140vh; flex-shrink: 0;
+        .chart-card {
+            width: 100%; max-width: 1800px; margin: 0 auto; flex-shrink: 0;
             background: #fff; border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
+        .chart-box { width: 100%; height: 140vh; }
     </style>
 </head>
 <body>
-<div id="chart-bs" class="chart-box"></div>
+<section class="chart-card">
+    <h2 class="chart-title">中石油 2024 年末资产负债表（示例）：资产 = 负债 + 所有者权益<span class="sub" id="bs-sub"></span></h2>
+    <div id="chart-bs" class="chart-box"></div>
+</section>
 <script>
 /* ────── 中石油 2024 年末合并资产负债表（示例数据，单位：百万元人民币） ──────
    数据结构对齐 20-F：资产按「流动 / 非流动」拆分；负债与权益按「流动负债 /
@@ -122,17 +126,12 @@ series.forEach(s => {
 });
 
 const chart = echarts.init(document.getElementById('chart-bs'));
+document.getElementById('bs-sub').textContent =
+    `示意数据 · 单位：百万元人民币 | 左柱按「流动 / 非流动」自下而上堆叠；`
+  + `右柱按「流动负债 → 非流动负债 → 归母权益 → 少数股东权益」自下而上堆叠 | `
+  + `合计：资产 ${totalAssets.toLocaleString()}，负债+权益 ${totalClaims.toLocaleString()}`;
 chart.setOption({
     backgroundColor: '#ffffff',
-    title: {
-        text: '中石油 2024 年末资产负债表（示例）：资产 = 负债 + 所有者权益',
-        subtext: `示意数据 · 单位：百万元人民币 | 左柱按「流动 / 非流动」自下而上堆叠；`
-               + `右柱按「流动负债 → 非流动负债 → 归母权益 → 少数股东权益」自下而上堆叠 | `
-               + `合计：资产 ${totalAssets.toLocaleString()}，负债+权益 ${totalClaims.toLocaleString()}`,
-        left: 'center', top: 8,
-        textStyle: { color: '#1a1a2e', fontSize: 15 },
-        subtextStyle: { color: '#666', fontSize: 11 }
-    },
     tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
@@ -185,7 +184,7 @@ chart.setOption({
             showDetail: false
         }
     ],
-    grid: { left: 160, right: 80, top: 78, bottom: 90 },
+    grid: { left: 160, right: 80, top: 24, bottom: 90 },
     yAxis: {
         type: 'category',
         data: CATEGORIES,

@@ -39,7 +39,10 @@
 <div id="loading">数据加载中...</div>
 <div id="error-msg"></div>
 <div id="content">
-    <div id="chart-stack" style="display:none"></div>
+    <div id="stack-wrap" style="display:none; background:#fff">
+        <h2 class="chart-title">各国石油消费量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
+        <div id="chart-stack"></div>
+    </div>
     <div id="detail-wrap">
         <div id="detail-title"></div>
         <div id="chart-detail"></div>
@@ -75,7 +78,7 @@ axios.get('http://127.0.0.1:5000/api/consumption_region')
         _allData = d.country_all_data;
         _meta    = d.country_meta;
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('chart-stack').style.display = 'block';
+        document.getElementById('stack-wrap').style.display = 'block';
         renderStack(d.years, d.sorted_countries, d.country_all_data, d.country_meta);
         // 默认展示第一个国家
         const first = d.sorted_countries[0];
@@ -106,13 +109,6 @@ function renderStack(years, sortedCountries, allData, meta) {
 
     chart.setOption({
         backgroundColor: '#ffffff',
-        title: {
-            text: '各国石油消费量堆叠图（1965-2024）',
-            subtext: '悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日',
-            left: 'center', top: 8,
-            textStyle: { color: '#1a1a2e', fontSize: 16 },
-            subtextStyle: { color: '#666', fontSize: 12 }
-        },
         tooltip: {
             trigger: 'axis',
             position: [12, 12],
@@ -136,7 +132,7 @@ function renderStack(years, sortedCountries, allData, meta) {
             }
         },
         legend: {
-            data: sortedCountries, type: 'scroll', top: 60,
+            data: sortedCountries, type: 'scroll', top: 36,
             textStyle: { fontSize: 11 },
             formatter: name => {
                 const m = meta[name];
@@ -144,7 +140,7 @@ function renderStack(years, sortedCountries, allData, meta) {
                 return `${name} (${sign}${m.change.toLocaleString()})`;
             }
         },
-        grid: { left: 64, right: 20, top: 130, bottom: 60 },
+        grid: { left: 64, right: 20, top: 96, bottom: 60 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
         dataZoom: [
             { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }

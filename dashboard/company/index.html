@@ -96,9 +96,18 @@
         <h2>一之二、存款/贷款规模 · 不良率 · 资本充足率</h2>
         <p class="sub">口径：本集团合并数 · 存贷款单位：亿元 · 比率单位：%</p>
         <div class="three-col">
-            <div id="chart-scale" class="chart" style="height:360px"></div>
-            <div id="chart-npl" class="chart" style="height:360px"></div>
-            <div id="chart-quality" class="chart" style="height:360px"></div>
+            <div>
+                <h3 class="chart-title">存款 / 贷款规模（亿元）</h3>
+                <div id="chart-scale" class="chart" style="height:360px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">不良贷款率（%）</h3>
+                <div id="chart-npl" class="chart" style="height:360px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">资本充足率（%）</h3>
+                <div id="chart-quality" class="chart" style="height:360px"></div>
+            </div>
         </div>
         <div class="note">
             数据来源：本行 2019、2020、2025 年年度报告「财务摘要」；2016、2017 年吸收存款取自 <b>H 股招股说明书 / A 股招股意向书摘要</b>（存贷款规模比较表，单位换算为亿元）。
@@ -113,8 +122,14 @@
         <h2>一之三、公司 / 个人 存贷款结构与利率</h2>
         <p class="sub">口径：本集团合并数 · 贷款为年度日均（平均余额）· 存款为期末余额 · 收益率 / 付息率为年度平均 · 单位：亿元 / %</p>
         <div class="two-col">
-            <div id="chart-loanmix" class="chart" style="height:360px"></div>
-            <div id="chart-depterm" class="chart" style="height:360px"></div>
+            <div>
+                <h3 class="chart-title">贷款平均余额（亿元）与平均收益率（%）</h3>
+                <div id="chart-loanmix" class="chart" style="height:360px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">存款期限结构（2025 年末）</h3>
+                <div id="chart-depterm" class="chart" style="height:360px"></div>
+            </div>
         </div>
         <table>
             <thead><tr><th>类别</th><th>项目</th><th>2025 年</th><th>2024 年</th></tr></thead>
@@ -148,8 +163,14 @@
         <h2>一之四、个人贷款按用途细分（2018–2025）</h2>
         <p class="sub">口径：本集团合并数 · 期末余额（亿元）与不良贷款率（%） · 数据取自 A 股 2019/2020/2024/2025 年年报及 H 股 2021/2022/2023 年 RESULTS ANNOUNCEMENT</p>
         <div class="two-col">
-            <div id="chart-perloan-bal" class="chart" style="height:380px"></div>
-            <div id="chart-perloan-npl" class="chart" style="height:380px"></div>
+            <div>
+                <h3 class="chart-title">个人贷款按用途 · 期末余额（亿元）</h3>
+                <div id="chart-perloan-bal" class="chart" style="height:380px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">个人贷款按用途 · 不良贷款率（%）</h3>
+                <div id="chart-perloan-npl" class="chart" style="height:380px"></div>
+            </div>
         </div>
         <div class="note">
             <b>披露区间：2018–2025 共 8 年。</b>2010–2017 年年报因披露口径不含个人贷款按用途细分（H 股早期报表按抵/质押方式列示、A 股上市前无此明细）而<b>不可比</b>，故仅呈现有明确产品分类披露的年份。<br>
@@ -188,6 +209,7 @@
     <section>
         <h2>三、股东及股东变动</h2>
         <p class="sub">报告期末股东总数 116,634 户（A 股 115,547 户、H 股 1,087 户）· 前十名股东持股情况</p>
+        <h3 class="chart-title">股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）</h3>
         <div id="chart-holders" class="chart" style="height:560px"></div>
         <div id="holders-legend" style="font-size:16px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
         <div style="margin-top:22px">
@@ -318,6 +340,7 @@
             </tbody>
         </table>
         </div>
+        <h3 class="chart-title">2025 年末资产负债结构（百万元）</h3>
         <div id="chart-bs" class="chart" style="height:340px;margin-top:14px"></div>
         <div class="note">2025 年及 2024 年各明细科目均取自年报「资产负债表分析」披露的期末数；"—" 表示 2023 年该明细未在年报摘要中单列。</div>
 
@@ -330,6 +353,7 @@
             </tbody>
         </table>
         </div>
+        <h3 class="chart-title">2025 年分季度经营活动现金流量净额（百万元）</h3>
         <div id="chart-cf" class="chart" style="height:300px;margin-top:14px"></div>
         <div class="note">年报摘要仅披露经营活动现金流量净额；2025 年四个季度分别为 22,569.6 / (19,134.4) / 15,532.8 / (18,595.7)，全年净额大幅下降主要受资金运用及负债结构调整影响。</div>
     </section>
@@ -383,10 +407,9 @@
     echarts.init(document.getElementById('chart-scale')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '存款 / 贷款规模（亿元）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : Number(v).toLocaleString() + ' 亿' },
         legend: { data: ['客户存款', '客户贷款及垫款'], bottom: 2, textStyle: { fontSize: 16 } },
-        grid: { left: 64, right: 20, top: 44, bottom: 52 },
+        grid: { left: 64, right: 20, top: 36, bottom: 52 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
@@ -401,9 +424,8 @@
     echarts.init(document.getElementById('chart-npl')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '不良贷款率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        grid: { left: 48, right: 24, top: 44, bottom: 52 },
+        grid: { left: 48, right: 24, top: 36, bottom: 52 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', name: '不良率%', min: 0, max: 2, nameTextStyle: { fontSize: 16 },
                  axisLabel: { color: '#c0392b', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
@@ -418,10 +440,9 @@
     echarts.init(document.getElementById('chart-quality')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '资本充足率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
         legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 16 } },
-        grid: { left: 48, right: 20, top: 44, bottom: 52 },
+        grid: { left: 48, right: 20, top: 36, bottom: 52 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', name: '%', min: 10, max: 18, nameTextStyle: { fontSize: 16 },
                  axisLabel: { color: '#1e8449', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
@@ -444,10 +465,9 @@
     echarts.init(document.getElementById('chart-loanmix')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '贷款平均余额（亿元）与平均收益率（%）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 } },
         legend: { data: ['平均余额 2025', '平均余额 2024', '收益率 2025', '收益率 2024'], bottom: 2, textStyle: { fontSize: 16 } },
-        grid: { left: 68, right: 62, top: 46, bottom: 56 },
+        grid: { left: 68, right: 62, top: 36, bottom: 56 },
         xAxis: { type: 'category', data: cats, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: [
             { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
@@ -469,7 +489,6 @@
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
         title: [
-            { text: '存款期限结构（2025 年末）', left: 'center', top: 4, textStyle: { fontSize: 16, color: '#4a2a5a' } },
             { text: '定期 74.27%\n活期 25.30%', left: 'center', top: 'center', textAlign: 'center',
               textStyle: { fontSize: 16, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
         ],
@@ -499,11 +518,9 @@
     echarts.init(document.getElementById('chart-perloan-bal')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '个人贷款按用途 · 期末余额（亿元）', left: 'center', top: 4,
-                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '未披露' : v + ' 亿', textStyle: { fontSize: 16 } },
         legend: { data: ['住房按揭', '个人经营', '信用卡', '个人消费'], bottom: 2, textStyle: { fontSize: 16 } },
-        grid: { left: 66, right: 24, top: 46, bottom: 50 },
+        grid: { left: 66, right: 24, top: 36, bottom: 50 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
@@ -526,11 +543,9 @@
     echarts.init(document.getElementById('chart-perloan-npl')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '个人贷款按用途 · 不良贷款率（%）', left: 'center', top: 4,
-                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%', textStyle: { fontSize: 16 } },
         legend: { data: ['住房按揭', '个人经营', '其他（含消费/信用卡）'], bottom: 2, textStyle: { fontSize: 16 } },
-        grid: { left: 56, right: 24, top: 46, bottom: 50 },
+        grid: { left: 56, right: 24, top: 36, bottom: 50 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', name: '%', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#c0392b' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
@@ -586,8 +601,6 @@
     echarts.init(document.getElementById('chart-holders')).setOption({
         backgroundColor: '#fff',
         title: [
-            { text: '股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）', left: 'center', top: 8,
-              textStyle: { fontSize: 14, color: '#4a2a5a', fontWeight: 600 } },
             { text: '前十大\n58.29%', left: 'center', top: 'center', textAlign: 'center',
               textStyle: { fontSize: 15, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
         ],
@@ -778,12 +791,10 @@
     echarts.init(document.getElementById('chart-bs')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '2025 年末资产负债结构（百万元）', left: 'center', top: 4,
-                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
             valueFormatter: v => (v === '-' || v == null) ? '' : Number(v).toLocaleString() },
         legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 16 }, itemWidth: 14, itemHeight: 12 },
-        grid: { left: 76, right: 30, top: 46, bottom: 54 },
+        grid: { left: 76, right: 30, top: 26, bottom: 54 },
         xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 16, fontWeight: 600, color: '#333' } },
         yAxis: { type: 'value', axisLabel: { fontSize: 16, formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
                  splitLine: { lineStyle: { color: '#eee' } } },
@@ -797,10 +808,8 @@
     echarts.init(document.getElementById('chart-cf')).setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
-        title: { text: '2025 年分季度经营活动现金流量净额（百万元）', left: 'center', top: 4,
-                 textStyle: { fontSize: 16, color: '#4a2a5a' } },
         tooltip: { trigger: 'axis', valueFormatter: v => Number(v).toLocaleString(), textStyle: { fontSize: 16 } },
-        grid: { left: 72, right: 24, top: 46, bottom: 36 },
+        grid: { left: 72, right: 24, top: 26, bottom: 36 },
         xAxis: { type: 'category', data: ['Q1','Q2','Q3','Q4'],
                  axisLabel: { fontSize: 16, color: '#555' } },
         yAxis: { type: 'value', axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
