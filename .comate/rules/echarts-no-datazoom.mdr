@@ -1,0 +1,38 @@
+---
+description: ECharts 图表默认不加 dataZoom（缩放滑块），年度序列一次画全
+globs: **/*.html
+alwaysApply: false
+---
+
+# 默认不用 dataZoom
+
+新建或修改 ECharts 图表时，**默认不要加 `dataZoom`**。年度序列（几十个点）一次全画出来就好，
+滑块只会占掉图高、多一层交互、并且让默认视图不再是"完整历史"。
+
+```js
+// BAD —— 默认就塞一个滑块
+dataZoom: [
+    { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }
+],
+grid: { bottom: 64 },   // 还要为滑块让出底部空间
+
+// GOOD —— 不写 dataZoom，底部留白只给轴标签
+grid: { left: 88, right: 150, top: 52, bottom: 40 },
+```
+
+## 例外：只有真的画不下才加
+
+日频/分钟频的 K 线（`type: 'candlestick'`）等上千个点的图，可以加 `dataZoom`，
+包含 `type: 'inside'` 的滚轮缩放 —— K 线图就是要用滚轮看局部。
+
+## 非 K 线图不要用 `type: 'inside'`
+
+只要图上存在 `inside`，ECharts 就会 `preventDefault` 滚轮事件，整个页面滚不动，
+而且设 `zoomOnMouseWheel/moveOnMouseWheel: false` 也救不回来 —— 必须整块删掉。
+
+## 缩放的替代做法
+
+要看局部区间时，优先用已有的手段，而不是长期挂一个滑块：
+
+- `toolbox.feature.dataZoom`（工具栏里的框选缩放，按需触发，`yAxisIndex: 'none'` 只缩 x 轴）
+- 按钮切换年份区间，与地区/口径切换按钮同一排

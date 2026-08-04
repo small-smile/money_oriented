@@ -169,22 +169,12 @@ chart.setOption({
     },
     legend: {
         type: 'scroll',
-        bottom: 56,
+        bottom: 16,
         textStyle: { fontSize: 11, color: '#333' },
         itemWidth: 12, itemHeight: 10
     },
-    dataZoom: [
-        {
-            type: 'slider',
-            xAxisIndex: 0,
-            bottom: 30,
-            height: 20,
-            startValue: 0,
-            endValue: totalAssets,
-            showDetail: false
-        }
-    ],
-    grid: { left: 160, right: 80, top: 24, bottom: 90 },
+    // 不加 dataZoom：两根柱固定展示资产/负债全额，x 轴 0-总资产已是完整口径
+    grid: { left: 160, right: 80, top: 24, bottom: 50 },
     yAxis: {
         type: 'category',
         data: CATEGORIES,

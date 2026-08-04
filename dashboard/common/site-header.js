@@ -24,9 +24,9 @@
             pages: [
                 {href: 'industry/oil/price_history.html',                title: '油价 K 线'},
                 {href: 'industry/oil/region_production.html',            title: '产量总览'},
-                {href: 'industry/oil/country_consumption.html',          title: '各国消费'},
+                {href: 'industry/oil/country_consumption.html',          title: '消费总览'},
                 {href: 'industry/oil/country_change_2001_2024.html',     title: '2001 vs 2024'},
-                {href: 'industry/oil/reserves.html',                     title: '证实储量'}
+                {href: 'industry/oil/china_oil_majors.html',             title: '证实储量'}
             ]
         },
         {

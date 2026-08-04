@@ -18,6 +18,7 @@ oil.production.txt	原油年度产量	[推断] 来源待确认 (疑为 EI/BP 或
 # --- 区域产量/消费 ---
 production_region.csv	Energy Institute (EI) Statistical Review of World Energy	[推断] 待确认
 consumption_region.csv	Energy Institute (EI) Statistical Review of World Energy	[推断] 待确认
+consumption_product.csv	EI Statistical Review 工作表 "Oil - Regional Consumption" (Oil: Regional consumption - by product group), 17 个地区 × 汽油/柴油/航空煤油/石脑油/总计, 千桶/日	[确认] extract/oil_consumption.py::extract_products, 2026-08-03 抽取. 源表四个细分品种在 1965-1979 写作 0.0(非留空), 已按缺失丢弃 -> 品种序列 1980-2024, 总计 1965-2024; USSR 区块止于 1984, CIS 起于 1985. 四品种之和 < 总计(不含 fuel oil/others)
 
 # --- 黄金 ---
 gold.price.txt	gold.org (World Gold Council) 年度收盘价, USD/oz	[确认] 见 meta.txt

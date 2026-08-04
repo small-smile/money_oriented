@@ -741,7 +741,7 @@
         }));
         echarts.init(document.getElementById('chart-holders-bar')).setOption({
             backgroundColor: '#fff',
-            grid: { left: 14, right: 170, top: 16, bottom: 74, containLabel: true },
+            grid: { left: 14, right: 170, top: 16, bottom: 16, containLabel: true },
             tooltip: { trigger: 'item', textStyle: { fontSize: 16 }, formatter: p => `${names[p.dataIndex]}：${p.value}%（占总股本）` },
             xAxis: {
                 type: 'value', min: 0, max: 44, name: '占总股本 %', nameTextStyle: { fontSize: 16 },
@@ -751,10 +751,7 @@
                 type: 'category', data: names, inverse: true,
                 axisLabel: { show: false }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#ccc' } }
             },
-            dataZoom: [
-                { type: 'slider', xAxisIndex: 0, filterMode: 'none', start: 0, end: 100, bottom: 16, height: 26,
-                  labelFormatter: v => v.toFixed(1) + '%' }
-            ],
+            // 不加 dataZoom：股东数量有限，x 轴已固定 0-44%，一次看全
             series: [{
                 type: 'bar', data: barData, barCategoryGap: '35%',
                 itemStyle: { borderColor: '#fff', borderWidth: 1 }

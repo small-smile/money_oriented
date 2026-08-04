@@ -26,7 +26,11 @@ Thumbs.db
 # Data cache / temp
 tmp.py/
 tmp/
-.comate/
+# .comate/ 下只让 rules/ 入库（IDE 读取的项目规则，需要跟着仓库走），
+# specs/ 等本地状态不入库。必须写 .comate/* 而不是 .comate/ ——
+# 带斜线是整目录排除，git 根本不往里扫，后面的 !.comate/rules/ 就失效了。
+.comate/*
+!.comate/rules/
 
 # Large binaries / generated
 *.pptx

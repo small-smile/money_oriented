@@ -150,6 +150,36 @@
             padding-top: 3px;
         }
         .stack-detail-chart { width: 100%; flex: 1 1 0; min-height: 0; }
+
+        /* === 画中画（PiP）：滚过卡片顶后，主图脱离卡片钉在屏幕左上角，作为筛选器 ===
+         * 位置和尺寸由 JS 逐帧插值（.pip-anim），不用 CSS transition，避免 canvas 尺寸失同步 */
+        .stack-card.pip-anim > #chart-region-abs,
+        .stack-card.pip-anim > #chart-region-pct {
+            position: fixed;
+            z-index: 100;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.24);
+            padding: 6px;
+        }
+        /* 主图脱离流后的占位：撑高 detail-wrap，避免卡片塌陷 */
+        .stack-card.pip-anim > .stack-detail-wrap {
+            /* JS 逐帧写 flex-basis */
+        }
+        /* PiP 提示条：只在 pip-anim 满进度时露出 */
+        .pip-hint {
+            display: none;
+            position: fixed;
+            z-index: 101;
+            font-size: 12px;
+            color: #6b7280;
+            background: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .pip-hint.visible { display: block; }
     </style>
 </head>
 <body>
@@ -165,7 +195,7 @@
 
     <!-- Card 1: 各地区产量 / 占比 —— 卡片堆叠，页签切换（同 price_history.html） -->
     <div class="stack-tabs" id="region-tabs"></div>
-    <div class="card-stack">
+    <div class="card-stack" id="region-stack">
         <div class="stack-card front" data-name="各地区石油产量" data-color="#5470c6">
             <h2 class="chart-title">各地区石油产量（堆叠面积图，1965-2024）<span class="sub" id="region-abs-sub">悬浮到某层查看该地区独立走势</span></h2>
             <div id="chart-region-abs"></div>
@@ -186,29 +216,32 @@
         </div>
     </div>
 
-    <!-- Card 2: 各国产量 (country stacked abs + country detail) -->
-    <section class="card">
-        <h2 class="chart-title">各国石油产量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
-        <div class="stack-wrap">
-            <div id="chart-country-stack" class="stack-main"></div>
-            <div class="stack-detail-wrap">
-                <div id="country-detail-title" class="stack-detail-title">—</div>
-                <div id="chart-country-detail" class="stack-detail-chart"></div>
+    <!-- Card 2: 各国产量 / 各国产量占比 —— 卡片堆叠 -->
+    <div class="stack-tabs" id="country-tabs"></div>
+    <div class="card-stack" id="country-stack">
+        <div class="stack-card front" data-name="各国石油产量" data-color="#5470c6">
+            <h2 class="chart-title">各国石油产量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
+            <div class="stack-wrap">
+                <div id="chart-country-stack" class="stack-main"></div>
+                <div class="stack-detail-wrap">
+                    <div id="country-detail-title" class="stack-detail-title">—</div>
+                    <div id="chart-country-detail" class="stack-detail-chart"></div>
+                </div>
             </div>
+            <div class="card-peek">各国石油产量 · 点击切到前面</div>
         </div>
-    </section>
-
-    <!-- Card 3: 产量占比 (country percent stacked + country detail) -->
-    <section class="card">
-        <h2 class="chart-title">各国石油产量占全球比例堆叠图（1965-2024）<span class="sub">悬浮到某层查看该国独立走势 | 同洲同色</span></h2>
-        <div class="stack-wrap">
-            <div id="chart-percent-stack" class="stack-main"></div>
-            <div class="stack-detail-wrap">
-                <div id="percent-detail-title" class="stack-detail-title">—</div>
-                <div id="chart-percent-detail" class="stack-detail-chart"></div>
+        <div class="stack-card back" data-name="各国产量占比" data-color="#ee6666">
+            <h2 class="chart-title">各国石油产量占全球比例堆叠图（1965-2024）<span class="sub">悬浮到某层查看该国独立走势 | 同洲同色</span></h2>
+            <div class="stack-wrap">
+                <div id="chart-percent-stack" class="stack-main"></div>
+                <div class="stack-detail-wrap">
+                    <div id="percent-detail-title" class="stack-detail-title">—</div>
+                    <div id="chart-percent-detail" class="stack-detail-chart"></div>
+                </div>
             </div>
+            <div class="card-peek">各国石油产量占比 · 点击切到前面</div>
         </div>
-    </section>
+    </div>
 </div>
 
 <script>
@@ -279,11 +312,11 @@ axios.get('http://127.0.0.1:5000/api/production_region')
         _countryMeta     = d.country_meta;
         _sortedCountries = d.sorted_countries;
 
-        // Region: 减少的在下，增加的在上
+        // 统一排序：产量大的在下（堆叠底部），小的在上；序列顺序 = 末年值降序
         _regions = Object.keys(_regionData).sort((a, b) => {
-            const ca = _regionData[a][_regionData[a].length - 1] - _regionData[a][0];
-            const cb = _regionData[b][_regionData[b].length - 1] - _regionData[b][0];
-            return ca - cb;
+            const va = _regionData[a][_regionData[a].length - 1] || 0;
+            const vb = _regionData[b][_regionData[b].length - 1] || 0;
+            return vb - va;
         });
         const regionTotals = _years.map((_, yi) =>
             _regions.reduce((s, r) => s + (_regionData[r][yi] || 0), 0)
@@ -305,6 +338,13 @@ axios.get('http://127.0.0.1:5000/api/production_region')
             );
         });
 
+        // 各国：与地区统一——末年产量降序（产量大的在堆叠底部）
+        _sortedCountries = [..._sortedCountries].sort((a, b) => {
+            const va = _countryAll[a][_countryAll[a].length - 1] || 0;
+            const vb = _countryAll[b][_countryAll[b].length - 1] || 0;
+            return vb - va;
+        });
+
         // Country percent: precompute
         const countryTotals = _years.map((_, yi) =>
             _sortedCountries.reduce((s, c) => s + (_countryAll[c][yi] || 0), 0)
@@ -320,13 +360,8 @@ axios.get('http://127.0.0.1:5000/api/production_region')
             const last  = pcts[pcts.length - 1];
             pctMeta[c] = { pctChange: parseFloat((last - first).toFixed(2)), pctLast: last };
         });
-        // 减少在下，增加在上
-        _sortedByPct = [..._sortedCountries].sort((a, b) => {
-            const upA = pctMeta[a].pctChange >= 0 ? 0 : 1;
-            const upB = pctMeta[b].pctChange >= 0 ? 0 : 1;
-            if (upA !== upB) return upA - upB;
-            return pctMeta[b].pctLast - pctMeta[a].pctLast;
-        });
+        // 与绝对值堆叠同序：末年占比降序（占比大的在底部）
+        _sortedByPct = [..._sortedCountries].sort((a, b) => pctMeta[b].pctLast - pctMeta[a].pctLast);
         window._pctMeta = pctMeta;
 
         document.getElementById('loading').style.display = 'none';
@@ -336,7 +371,8 @@ axios.get('http://127.0.0.1:5000/api/production_region')
         initRegion();
         initCountry();
         initPercent();
-        initRegionStack();   // 页签宽度依赖可见布局，必须在 #cards 显示之后
+        initRegionStack();    // 页签宽度依赖可见布局，必须在 #cards 显示之后
+        initCountryStack();
 
         window.addEventListener('resize', () => {
             [totalChart,
@@ -392,7 +428,7 @@ function initTotal() {
             }
         },
         legend: { data: ['实际总产量', '回归趋势'], top: 8, textStyle: { color: '#333', fontSize: 12 } },
-        grid: { left: 60, right: 96, top: 46, bottom: 30 },
+        grid: { left: 64, right: 96, top: 46, bottom: 30 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
@@ -401,7 +437,7 @@ function initTotal() {
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 11 },
+            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
             axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
@@ -447,21 +483,28 @@ function buildRegionOption(dataMap, isAbs) {
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
             position: [12, 12],
             formatter: params => {
-                let html = `<b>${params[0].axisValue} 年</b><br>`;
-                if (isAbs) {
-                    let total = 0;
-                    params.forEach(p => { total += p.value || 0; });
-                    params.slice().reverse().forEach(p => {
-                        const bold = p.seriesName === currentRegion;
-                        html += `${p.marker}${bold ? '<b>' : ''}${p.seriesName}: ${(p.value||0).toLocaleString()}${bold ? ' ←</b>' : ''}<br>`;
-                    });
-                    html += `<hr style="margin:3px 0;border-color:#ddd">合计: <b>${total.toLocaleString()}</b>`;
-                } else {
-                    params.slice().reverse().forEach(p => {
-                        const bold = p.seriesName === currentRegion;
-                        html += `${p.marker}${bold ? '<b>' : ''}${p.seriesName}: ${(p.value||0).toFixed(1)}%${bold ? ' ←</b>' : ''}<br>`;
-                    });
+                const year = params[0].axisValue;
+                // 找出当前悬浮地区并置顶
+                const cur = params.find(p => p.seriesName === currentRegion);
+                const others = params.filter(p => p.seriesName !== currentRegion).reverse();
+                const total = params.reduce((s, p) => s + (p.value || 0), 0);
+                let html = `<b>${year} 年</b>`;
+                if (cur) {
+                    const share = total > 0 ? (cur.value / total * 100).toFixed(1) : '0.0';
+                    const label = isAbs
+                        ? `${(cur.value || 0).toLocaleString()}（占 ${share}%）`
+                        : `${(cur.value || 0).toFixed(1)}%`;
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                                ${cur.marker}<b>${cur.seriesName}</b>：<b>${label}</b>
+                             </div>`;
                 }
+                others.forEach(p => {
+                    const val = isAbs
+                        ? (p.value || 0).toLocaleString()
+                        : (p.value || 0).toFixed(1) + '%';
+                    html += `${p.marker}${p.seriesName}: ${val}<br>`;
+                });
+                if (isAbs) html += `<hr style="margin:3px 0;border-color:#ddd">合计: <b>${total.toLocaleString()}</b>`;
                 return html;
             }
         },
@@ -477,7 +520,7 @@ function buildRegionOption(dataMap, isAbs) {
                     : `${name}  (${sign}${change.toFixed(1)}%)`;
             }
         },
-        grid: { left: isAbs ? 60 : 50, right: 16, top: 46, bottom: 24 },
+        grid: { left: 64, right: 96, top: 46, bottom: 24 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
@@ -486,12 +529,12 @@ function buildRegionOption(dataMap, isAbs) {
         },
         yAxis: isAbs ? {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 11 },
+            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
             axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         } : {
             type: 'value', name: '%', min: 0, max: 100,
-            nameTextStyle: { color: '#555', fontSize: 11 },
+            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
             axisLabel: { color: '#555', fontSize: 11, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
@@ -543,11 +586,10 @@ function initRegion() {
 }
 
 // === 卡片堆叠切换：页签是主入口，点后卡露出的那条也能翻到前面（同 price_history.html）===
-function initRegionStack() {
-    const cards = Array.from(document.querySelectorAll('.card-stack .stack-card'));
-    const tabBar = document.getElementById('region-tabs');
-    const chartOf = { 'chart-region-abs': [regionAbsChart, regionDetailAbsChart],
-                      'chart-region-pct': [regionPctChart, regionDetailPctChart] };
+function initCardStack(stackId, tabBarId, chartOf) {
+    const stackEl = document.getElementById(stackId);
+    const tabBar = document.getElementById(tabBarId);
+    const cards = Array.from(stackEl.querySelectorAll(':scope > .stack-card'));
 
     const slider = document.createElement('span');
     slider.className = 'tab-slider';
@@ -576,9 +618,12 @@ function initRegionStack() {
         });
         tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
         moveSlider(tabs[idx]);
-        // 后卡带 scale()，翻到前面后重新量一次尺寸，避免坐标换算偏移
-        const div = cards[idx].querySelector('[id^="chart-region-"]');
-        (chartOf[div && div.id] || []).forEach(c => c && c.resize());
+        // 翻到前面后重新量一次尺寸，避免坐标换算偏移
+        Object.entries(chartOf).forEach(([divId, charts]) => {
+            if (cards[idx].querySelector('#' + divId)) {
+                charts.forEach(c => c && c.resize());
+            }
+        });
     }
 
     cards.forEach((card, i) => card.addEventListener('click', () => {
@@ -592,6 +637,20 @@ function initRegionStack() {
         () => moveSlider(tabBar.querySelector('.stack-tab.active')));
 }
 
+function initRegionStack() {
+    initCardStack('region-stack', 'region-tabs', {
+        'chart-region-abs': [regionAbsChart, regionDetailAbsChart],
+        'chart-region-pct': [regionPctChart, regionDetailPctChart]
+    });
+}
+
+function initCountryStack() {
+    initCardStack('country-stack', 'country-tabs', {
+        'chart-country-stack': [countryStackChart, countryDetailChart],
+        'chart-percent-stack': [percentStackChart, percentDetailChart]
+    });
+}
+
 function showRegionDetailInto(region, titleId, chart, isPct) {
     document.getElementById(titleId).textContent = isPct
         ? `${region} — 独立占比走势（占全球 %）`
@@ -603,7 +662,7 @@ function showRegionDetailInto(region, titleId, chart, isPct) {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
             valueFormatter: v => isPct ? (v || 0).toFixed(2) + '%' : Math.round(v || 0).toLocaleString()
         },
-        grid: { left: 56, right: 16, top: 24, bottom: 24 },
+        grid: { left: 64, right: 96, top: 24, bottom: 24 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
@@ -653,13 +712,16 @@ function initCountry() {
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
             formatter: params => {
-                let html = `<b>${params[0].axisValue} 年</b><br>`;
+                let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
                                     .sort((a, b) => b.value - a.value);
                 const cur = items.find(p => p.seriesName === currentCountry);
                 if (cur) {
-                    html += `${cur.marker}<b>${cur.seriesName}: ${cur.value.toLocaleString()}</b> ← 当前<br>`;
-                    html += `<hr style="margin:3px 0;border-color:#ddd">`;
+                    const rank = items.indexOf(cur) + 1;
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                                ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toLocaleString()}</b>　千桶/日
+                                <span style="color:#888;font-size:11px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                             </div>`;
                 }
                 items.filter(p => p.seriesName !== currentCountry)
                      .slice(0, 8)
@@ -679,18 +741,16 @@ function initCountry() {
                 return `${name} (${sign}${m.change.toLocaleString()})`;
             }
         },
-        grid: { left: 64, right: 20, top: 78, bottom: 60 },
+        grid: { left: 64, right: 96, top: 78, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
-        dataZoom: [
-            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }
-        ],
+        // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
             axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555' },
+            nameTextStyle: { color: '#555', align: 'right' },
             axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
@@ -734,7 +794,7 @@ function showCountryDetail(country) {
     countryDetailChart.setOption({
         backgroundColor: '#fafafa',
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } } },
-        grid: { left: 56, right: 16, top: 12, bottom: 40 },
+        grid: { left: 64, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
@@ -768,13 +828,16 @@ function initPercent() {
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
             formatter: params => {
-                let html = `<b>${params[0].axisValue} 年</b><br>`;
+                let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
                                     .sort((a, b) => b.value - a.value);
                 const cur = items.find(p => p.seriesName === currentPercentCountry);
                 if (cur) {
-                    html += `${cur.marker}<b>${cur.seriesName}: ${cur.value.toFixed(1)}% ←</b><br>`;
-                    html += `<hr style="margin:3px 0;border-color:#ddd">`;
+                    const rank = items.indexOf(cur) + 1;
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                                ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toFixed(2)}%</b>
+                                <span style="color:#888;font-size:11px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                             </div>`;
                 }
                 items.filter(p => p.seriesName !== currentPercentCountry)
                      .slice(0, 8)
@@ -794,18 +857,16 @@ function initPercent() {
                 return `${name} (${sign}${pm.pctChange}%)`;
             }
         },
-        grid: { left: 56, right: 20, top: 78, bottom: 60 },
+        grid: { left: 64, right: 96, top: 78, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
-        dataZoom: [
-            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }
-        ],
+        // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
             axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '%',
-            nameTextStyle: { color: '#555' },
+            nameTextStyle: { color: '#555', align: 'right' },
             axisLabel: { color: '#555', formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
@@ -857,7 +918,7 @@ function showPercentDetail(country) {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
             valueFormatter: v => (v || 0).toFixed(2) + '%'
         },
-        grid: { left: 56, right: 16, top: 12, bottom: 40 },
+        grid: { left: 64, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
@@ -876,6 +937,146 @@ function showPercentDetail(country) {
         }]
     }, true);
 }
+
+// ============================================================
+// 画中画（PiP）连续滚动特效：
+//   随着滚轮向下，主图从原位置逐帧插值飞到屏幕左上角，
+//   缩成一个 360×220 的筛选面板，同卡的独立走势条同步长高铺满卡片。
+//   小图依然可 hover，选中的地区会更新下面的详情图。
+// ============================================================
+(function initPip() {
+    const CORNER_TOP    = 24;    // 终态：钉在屏幕的位置
+    const CORNER_LEFT   = 24;
+    const CORNER_W      = 360;
+    const CORNER_H      = 220;
+    const SHRINK_RANGE  = 500;   // 从触发点起再滚 500px 缩满
+    const DETAIL_PIP_H  = 880;   // PiP 期间 detail 撑到多高，把腾出的位置填满
+
+    let regionStackEl, hintEl;
+    let anchor = null;           // 进入 PiP 那一瞬主图的自然 rect
+    let currentPipCard = null;
+    let ticking = false;
+
+    function findFront() {
+        return regionStackEl.querySelector(':scope > .stack-card.front');
+    }
+    function findChartInCard(card) {
+        return card.querySelector(':scope > #chart-region-abs, :scope > #chart-region-pct');
+    }
+    function findDetailInCard(card) {
+        return card.querySelector(':scope > .stack-detail-wrap');
+    }
+
+    function clearInlineStyles(card) {
+        const chart = card.querySelector('#chart-region-abs, #chart-region-pct');
+        if (chart) {
+            chart.style.top = '';
+            chart.style.left = '';
+            chart.style.width = '';
+            chart.style.height = '';
+        }
+        const detail = card.querySelector('.stack-detail-wrap');
+        if (detail) detail.style.flex = '';
+    }
+
+    function apply() {
+        ticking = false;
+        if (!regionStackEl) return;
+        const stackRect = regionStackEl.getBoundingClientRect();
+        // 触发：卡顶滚过视口顶（stackRect.top ≤ 0）
+        // 完成：再滚 SHRINK_RANGE px；卡片完全滑出视口（bottom < 100）则退出
+        const outOfSight = stackRect.bottom < 100;
+        let t = 0;
+        if (!outOfSight && stackRect.top < 0) {
+            t = Math.min(1, -stackRect.top / SHRINK_RANGE);
+        }
+
+        const frontCard = findFront();
+
+        if (t <= 0.001 || outOfSight) {
+            // 退出 PiP
+            if (currentPipCard) {
+                currentPipCard.classList.remove('pip-anim');
+                clearInlineStyles(currentPipCard);
+                currentPipCard = null;
+                if (hintEl) hintEl.classList.remove('visible');
+                requestAnimationFrame(() => {
+                    [regionAbsChart, regionPctChart, regionDetailAbsChart, regionDetailPctChart]
+                        .forEach(c => c && c.resize());
+                });
+            }
+            return;
+        }
+
+        if (!frontCard) return;
+
+        // 进入 PiP 或切换了前卡：记录当前主图的自然 rect 作为插值起点
+        if (currentPipCard !== frontCard) {
+            if (currentPipCard) {
+                currentPipCard.classList.remove('pip-anim');
+                clearInlineStyles(currentPipCard);
+            }
+            const chart = findChartInCard(frontCard);
+            if (!chart) return;
+            const r = chart.getBoundingClientRect();
+            anchor = { top: r.top, left: r.left, width: r.width, height: r.height };
+            frontCard.classList.add('pip-anim');
+            currentPipCard = frontCard;
+        }
+
+        const chart  = findChartInCard(frontCard);
+        const detail = findDetailInCard(frontCard);
+        if (!chart || !anchor) return;
+
+        // 逐帧插值
+        const top    = anchor.top    * (1 - t) + CORNER_TOP  * t;
+        const left   = anchor.left   * (1 - t) + CORNER_LEFT * t;
+        const width  = anchor.width  * (1 - t) + CORNER_W    * t;
+        const height = anchor.height * (1 - t) + CORNER_H    * t;
+        chart.style.top    = top    + 'px';
+        chart.style.left   = left   + 'px';
+        chart.style.width  = width  + 'px';
+        chart.style.height = height + 'px';
+
+        if (detail) detail.style.flex = `0 0 ${DETAIL_PIP_H}px`;
+
+        // hint 在缩得比较小时才露出
+        if (hintEl) {
+            if (t > 0.7) {
+                hintEl.classList.add('visible');
+                hintEl.style.top  = (top + height + 6) + 'px';
+                hintEl.style.left = left + 'px';
+                hintEl.style.width = width + 'px';
+            } else {
+                hintEl.classList.remove('visible');
+            }
+        }
+
+        // 每帧 resize echarts（图不多，代价可控）
+        [regionAbsChart, regionPctChart, regionDetailAbsChart, regionDetailPctChart]
+            .forEach(c => c && c.resize());
+    }
+
+    function onScroll() {
+        if (!ticking) { requestAnimationFrame(apply); ticking = true; }
+    }
+
+    const timer = setInterval(() => {
+        regionStackEl = document.getElementById('region-stack');
+        if (!regionStackEl) return;
+        if (!regionStackEl.querySelector('#chart-region-abs, #chart-region-pct')) return;
+        clearInterval(timer);
+        // 挂 hint 元素
+        hintEl = document.createElement('div');
+        hintEl.className = 'pip-hint';
+        hintEl.textContent = '悬浮此处选择地区 →';
+        hintEl.style.textAlign = 'center';
+        document.body.appendChild(hintEl);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        apply();
+    }, 120);
+})();
 </script>
 </body>
 </html>

@@ -140,8 +140,7 @@ function renderWaterfall(divId, company, data, colors) {
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
-            type: 'value', name: '储量（百万桶）',
-            nameTextStyle: { color: '#555' },
+            type: 'value',
             axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0
@@ -234,8 +233,7 @@ function renderCompare(ptrData, cncData) {
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
-            type: 'value', name: '储量（百万桶）',
-            nameTextStyle: { color: '#555' },
+            type: 'value',
             axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0
@@ -318,8 +316,7 @@ function renderProduction(ptrData, cncData) {
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
-            type: 'value', name: '原油及液体产量（百万桶）',
-            nameTextStyle: { color: '#555' },
+            type: 'value',
             axisLabel: { color: '#555' },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0

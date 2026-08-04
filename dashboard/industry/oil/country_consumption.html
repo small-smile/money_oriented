@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../../common/base.css">
     <script src="../../common/site-header.js" defer></script>
-    <title>各国石油消费量（原始值，1965-2024）</title>
+    <title>石油消费总览（1965-2024）</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
@@ -166,11 +166,9 @@ function renderStack(years, sortedCountries, allData, meta) {
                 return `${name} (${sign}${m.change.toLocaleString()})`;
             }
         },
-        grid: { left: 64, right: 20, top: 96, bottom: 60 },
+        grid: { left: 64, right: 20, top: 96, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
-        dataZoom: [
-            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20 }
-        ],
+        // 不加 dataZoom：60 个年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: years, boundaryGap: false,
             axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
@@ -384,11 +382,9 @@ function renderProduct() {
             data: _pd.products, top: 8, textStyle: { fontSize: 16 }
         },
         // endLabel 写在线尾，右侧留白给它
-        grid: { left: 88, right: 150, top: 52, bottom: 64 },
+        grid: { left: 88, right: 150, top: 52, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
-        dataZoom: [
-            { type: 'slider', xAxisIndex: 0, bottom: 8, height: 20, textStyle: { fontSize: 14 } }
-        ],
+        // 不加 dataZoom：45 个年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _pd.years, boundaryGap: false,
             axisLabel: { color: '#555', fontSize: 16 },
