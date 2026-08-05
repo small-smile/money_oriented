@@ -12,7 +12,8 @@
         body { background: #f5f7fa; font-family: Arial, "Microsoft YaHei", sans-serif; }
         #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
         #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
-        .chart-block { width: 100%; background: #fff; }
+        /* 圆角/投影/白底见 common/base.css 的 .chart-card，这里只加卡片间距 */
+        .chart-block { width: 100%; margin-bottom: 24px; }
         #container { max-width: 1800px; margin: 0 auto; padding: 20px 24px 40px; }
     </style>
 </head>
@@ -60,6 +61,9 @@ function render(compare) {
     // 向上取整到整千
     globalMax = Math.ceil(globalMax / 1000) * 1000;
 
+    // 收集所有 chart，斜线图案就绪后统一回填
+    const charts = [];
+
     // 生成斜线纹理 dataURL，转为 ECharts 可用的 image pattern
     const patternCanvas = document.createElement('canvas');
     patternCanvas.width = 10;
@@ -73,11 +77,20 @@ function render(compare) {
     pCtx.beginPath(); pCtx.moveTo(-2, 2);  pCtx.lineTo(2, -2);  pCtx.stroke();
     pCtx.beginPath(); pCtx.moveTo(8, 12);  pCtx.lineTo(12, 8);  pCtx.stroke();
     const stripeImg = new Image();
-    stripeImg.src = patternCanvas.toDataURL();
     const stripePattern = {
         image: stripeImg,
         repeat: 'repeat'
     };
+    // 图案是异步解码的：图片就绪前用它填充会画成空白，
+    // 解码完成后把"减少"系列重新 setOption 一次，纹理才会显示
+    stripeImg.onload = () => {
+        charts.forEach(({ chart, losses }) => {
+            chart.setOption({ series: [{}, {}, {
+                data: losses.map(v => ({ value: v, itemStyle: { color: stripePattern } }))
+            }] });
+        });
+    };
+    stripeImg.src = patternCanvas.toDataURL();
 
     continents.forEach(cont => {
         const entries = [...compare[cont]].sort((a, b) => b.v2024 - a.v2024);
@@ -98,7 +111,7 @@ function render(compare) {
         // 图高自适应国家数
         const h = Math.max(260, countries.length * 32 + 120);
         const block = document.createElement('div');
-        block.className = 'chart-block';
+        block.className = 'chart-block chart-card';
         // 标题用 HTML 文本（可选中复制），不用 ECharts title
         const titleEl = document.createElement('h2');
         titleEl.className = 'chart-title';
@@ -112,6 +125,7 @@ function render(compare) {
         container.appendChild(block);
 
         const chart = echarts.init(div);
+        charts.push({ chart, losses });
         chart.setOption({
             backgroundColor: '#ffffff',
             tooltip: {
@@ -128,7 +142,7 @@ function render(compare) {
                     return `<b>${name}</b><br>
                             2001：<b>${m.v2001.toLocaleString()}</b> 千桶/日<br>
                             2024：<b>${m.v2024.toLocaleString()}</b> 千桶/日<br>
-                            diff / max_production(2001,2024) ：<b>${sign}${m.diff.toLocaleString()}</b> ${pctStr}`;
+                            变化：<b>${sign}${m.diff.toLocaleString()}</b> ${pctStr}`;
                 }
             },
             legend: {

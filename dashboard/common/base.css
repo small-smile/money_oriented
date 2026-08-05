@@ -65,6 +65,16 @@ body {
     border-left: 1px solid #4b5563;
 }
 
+/* 图表卡片：白底 + 圆角 + 柔和投影，所有页面统一
+ * 取自 region_production.html 的 .card，页面里只写各自的宽度/边距/布局，
+ * 不要再各自定义 border-radius / box-shadow，圆润度以这里为准
+ */
+.chart-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
 /* 图表标题：一律用 HTML 文本写在图外，不要用 ECharts 的 title
  * canvas 里的文字无法选中复制，标题必须是可粘贴的普通文本
  */

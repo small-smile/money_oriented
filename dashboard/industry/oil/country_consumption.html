@@ -19,8 +19,7 @@
             display: none;
             width: 100%;
             height: 222px;
-            background: #fff;
-            border-top: 2px solid #ddd;
+            margin-top: 12px;   /* 与上方堆叠卡分开，各自成圆角卡片 */
         }
         #detail-title {
             text-align: center;
@@ -35,7 +34,8 @@
         #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 16px; }
 
         /* ── 分产品消费量卡片 ── */
-        #product-card { display: none; background: #fff; margin-top: 24px; padding-bottom: 12px; }
+        /* 圆角/投影/白底见 common/base.css 的 .chart-card */
+        #product-card { display: none; margin-top: 24px; padding-bottom: 12px; }
         #chart-product { width: 100%; height: 620px; }
         .btn-row {
             display: flex; flex-wrap: wrap; gap: 6px;
@@ -59,15 +59,15 @@
 <div id="loading">数据加载中...</div>
 <div id="error-msg"></div>
 <div id="content">
-    <div id="stack-wrap" style="display:none; background:#fff">
+    <div id="stack-wrap" class="chart-card" style="display:none">
         <h2 class="chart-title">各国石油消费量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
         <div id="chart-stack"></div>
     </div>
-    <div id="detail-wrap">
+    <div id="detail-wrap" class="chart-card">
         <div id="detail-title"></div>
         <div id="chart-detail"></div>
     </div>
-    <div id="product-card">
+    <div id="product-card" class="chart-card">
         <h2 class="chart-title">分产品消费量（1980-2024）<span class="sub">汽油 / 柴油 / 航空煤油 / 石脑油 | 点击按钮切换地区与口径 | 来源：EI Statistical Review 2025</span></h2>
         <div class="btn-row" id="region-btns"><span class="label">地区</span></div>
         <div class="btn-row" id="mode-btns"><span class="label">口径</span></div>

@@ -151,23 +151,21 @@
         }
         .stack-detail-chart { width: 100%; flex: 1 1 0; min-height: 0; }
 
-        /* === 画中画（PiP）：滚过卡片顶后，主图脱离卡片钉在屏幕左上角，作为筛选器 ===
-         * 位置和尺寸由 JS 逐帧插值（.pip-anim），不用 CSS transition，避免 canvas 尺寸失同步 */
-        .stack-card.pip-anim > #chart-region-abs,
-        .stack-card.pip-anim > #chart-region-pct {
-            position: fixed;
+        /* === 滚动塌缩（参考 demo）：随滚动进度把主图缩到左上角小卡，详情图此消彼长长大 ===
+         * 缩放全程只动 transform（scale/translate），跟着滚动实时刷，绝不逐帧 resize canvas */
+        .chart-collapsing {
+            position: fixed !important;
+            top: 0; left: 0;
             z-index: 100;
+            transform-origin: top left;
+            will-change: transform;
             background: #fff;
-            border: 1px solid #e5e7eb;
             border-radius: 10px;
             box-shadow: 0 8px 28px rgba(15, 23, 42, 0.24);
-            padding: 6px;
         }
-        /* 主图脱离流后的占位：撑高 detail-wrap，避免卡片塌陷 */
-        .stack-card.pip-anim > .stack-detail-wrap {
-            /* JS 逐帧写 flex-basis */
-        }
-        /* PiP 提示条：只在 pip-anim 满进度时露出 */
+        /* 主图钉走后留下的占位：高度随进度从原高收拢到 0，把空间“让给”详情图；总高不变 */
+        .chart-slot { width: 100%; }
+        /* 吸顶提示条 */
         .pip-hint {
             display: none;
             position: fixed;
@@ -196,7 +194,7 @@
     <!-- Card 1: 各地区产量 / 占比 —— 卡片堆叠，页签切换（同 price_history.html） -->
     <div class="stack-tabs" id="region-tabs"></div>
     <div class="card-stack" id="region-stack">
-        <div class="stack-card front" data-name="各地区石油产量" data-color="#5470c6">
+        <div class="stack-card front" data-name="各地区石油产量" data-color="#5470c6" id="top">
             <h2 class="chart-title">各地区石油产量（堆叠面积图，1965-2024）<span class="sub" id="region-abs-sub">悬浮到某层查看该地区独立走势</span></h2>
             <div id="chart-region-abs"></div>
             <div class="stack-detail-wrap">
@@ -849,7 +847,9 @@ function initPercent() {
             }
         },
         legend: {
-            data: _sortedByPct, type: 'scroll', top: 8,
+            data: _sortedByPct, type: 'scroll',
+            orient: 'vertical', right: 8, top: 40, bottom: 40,
+            itemWidth: 12, itemHeight: 8, itemGap: 6,
             textStyle: { fontSize: 11 },
             formatter: name => {
                 const pm = window._pctMeta[name];
@@ -857,7 +857,7 @@ function initPercent() {
                 return `${name} (${sign}${pm.pctChange}%)`;
             }
         },
-        grid: { left: 64, right: 96, top: 78, bottom: 40 },
+        grid: { left: 64, right: 210, top: 40, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
         // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
@@ -939,142 +939,157 @@ function showPercentDetail(country) {
 }
 
 // ============================================================
-// 画中画（PiP）连续滚动特效：
-//   随着滚轮向下，主图从原位置逐帧插值飞到屏幕左上角，
-//   缩成一个 360×220 的筛选面板，同卡的独立走势条同步长高铺满卡片。
-//   小图依然可 hover，选中的地区会更新下面的详情图。
+// 滚动塌缩（参考 demo）：滚过卡片顶后，随滚动进度 p(0→1) 连续把主图
+//   缩到左上角(30% 尺寸)，同时底部详情图此消彼长地长大。
+//   缩放全程用 transform: scale(丝滑)，只在 p 到达/离开终点各 resize 一次。
 // ============================================================
-(function initPip() {
-    const CORNER_TOP    = 24;    // 终态：钉在屏幕的位置
-    const CORNER_LEFT   = 24;
-    const CORNER_W      = 360;
-    const CORNER_H      = 220;
-    const SHRINK_RANGE  = 500;   // 从触发点起再滚 500px 缩满
-    const DETAIL_PIP_H  = 880;   // PiP 期间 detail 撑到多高，把腾出的位置填满
+(function initScrollCollapse() {
+    const CORNER_TOP = 24, CORNER_LEFT = 24;
+    const K = 0.30;      // 主图终态缩放比：30%
+    const RANGE = 360;   // 滚动多少 px 完成整个塌缩
 
-    let regionStackEl, hintEl;
-    let anchor = null;           // 进入 PiP 那一瞬主图的自然 rect
-    let currentPipCard = null;
+    let stackEl, hintEl;
+    let s = null;        // 当前塌缩现场；null=未激活
     let ticking = false;
 
-    function findFront() {
-        return regionStackEl.querySelector(':scope > .stack-card.front');
-    }
-    function findChartInCard(card) {
-        return card.querySelector(':scope > #chart-region-abs, :scope > #chart-region-pct');
-    }
-    function findDetailInCard(card) {
-        return card.querySelector(':scope > .stack-detail-wrap');
+    function frontChart() {
+        const front = stackEl.querySelector(':scope > .stack-card.front');
+        return front && front.querySelector(':scope > #chart-region-abs, :scope > #chart-region-pct');
     }
 
-    function clearInlineStyles(card) {
-        const chart = card.querySelector('#chart-region-abs, #chart-region-pct');
-        if (chart) {
-            chart.style.top = '';
-            chart.style.left = '';
-            chart.style.width = '';
-            chart.style.height = '';
+    function setup(chart) {
+        const r = chart.getBoundingClientRect();
+        const card       = chart.closest('.stack-card');
+        const detailWrap = card && card.querySelector(':scope > .stack-detail-wrap');
+        const detailDiv  = detailWrap && detailWrap.querySelector('.stack-detail-chart');
+        const detailInst = detailDiv && echarts.getInstanceByDom(detailDiv);
+
+        // 占位块占住主图原高度，主图随后 fixed 飞走
+        const placeholder = document.createElement('div');
+        placeholder.className = 'chart-slot';
+        placeholder.style.height = r.height + 'px';
+        chart.parentNode.insertBefore(placeholder, chart);
+
+        // 详情图不再一步到位：起点尺寸留底，随滚动进度逐帧长高（见 apply）
+        let dW0 = 0, dBasis0 = '', innerW0 = 0, innerH0 = 0;
+        if (detailWrap && detailInst) {
+            dW0 = detailWrap.getBoundingClientRect().height;
+            dBasis0 = detailWrap.style.flexBasis || '';
+            innerW0 = detailDiv.getBoundingClientRect().width;
+            innerH0 = detailDiv.getBoundingClientRect().height;
+            detailWrap.style.overflow = 'hidden';
+            detailWrap.style.transition = 'none';
         }
-        const detail = card.querySelector('.stack-detail-wrap');
-        if (detail) detail.style.flex = '';
+
+        chart.style.width  = r.width  + 'px';
+        chart.style.height = r.height + 'px';
+        chart.style.transition = 'none';
+        chart.classList.add('chart-collapsing');
+
+        s = { chart, placeholder, detailWrap, detailInst,
+              rLeft: r.left, rTop: r.top, rWidth: r.width, rHeight: r.height,
+              dW0, dBasis0, innerW0, innerH0,
+              miniW: Math.round(r.width * K), miniH: Math.round(r.height * K),
+              crisped: false };
+        if (hintEl) hintEl.classList.add('visible');
     }
 
-    function apply() {
-        ticking = false;
-        if (!regionStackEl) return;
-        const stackRect = regionStackEl.getBoundingClientRect();
-        // 触发：卡顶滚过视口顶（stackRect.top ≤ 0）
-        // 完成：再滚 SHRINK_RANGE px；卡片完全滑出视口（bottom < 100）则退出
-        const outOfSight = stackRect.bottom < 100;
-        let t = 0;
-        if (!outOfSight && stackRect.top < 0) {
-            t = Math.min(1, -stackRect.top / SHRINK_RANGE);
+    // 按滚动进度 p(0→1) 实时刷新：主图缩放平移、占位收拢、详情长高
+    function apply(p) {
+        if (!s) return;
+        const scale = 1 + (K - 1) * p;
+        const tx = s.rLeft + (CORNER_LEFT - s.rLeft) * p;
+        const ty = s.rTop  + (CORNER_TOP  - s.rTop ) * p;
+
+        const wantCrisp = p > 0.999;                 // 到终点：换真实小尺寸渲染，更清晰
+        if (wantCrisp && !s.crisped) {
+            s.crisped = true;
+            s.chart.style.width  = s.miniW + 'px';
+            s.chart.style.height = s.miniH + 'px';
+            const inst = echarts.getInstanceByDom(s.chart);
+            if (inst) inst.resize({ width: s.miniW, height: s.miniH });
+            s.chart.style.transform = 'translate(' + CORNER_LEFT + 'px,' + CORNER_TOP + 'px) scale(1)';
+        } else if (!wantCrisp && s.crisped) {        // 离开终点：恢复原尺寸，改回 transform 缩放
+            s.crisped = false;
+            s.chart.style.width  = s.rWidth  + 'px';
+            s.chart.style.height = s.rHeight + 'px';
+            const inst = echarts.getInstanceByDom(s.chart);
+            if (inst) inst.resize({ width: s.rWidth, height: s.rHeight });
+        }
+        if (!s.crisped) {
+            s.chart.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
         }
 
-        const frontCard = findFront();
-
-        if (t <= 0.001 || outOfSight) {
-            // 退出 PiP
-            if (currentPipCard) {
-                currentPipCard.classList.remove('pip-anim');
-                clearInlineStyles(currentPipCard);
-                currentPipCard = null;
-                if (hintEl) hintEl.classList.remove('visible');
-                requestAnimationFrame(() => {
-                    [regionAbsChart, regionPctChart, regionDetailAbsChart, regionDetailPctChart]
-                        .forEach(c => c && c.resize());
-                });
-            }
-            return;
+        s.placeholder.style.height = (s.rHeight * (1 - p)) + 'px';
+        if (s.detailWrap) {
+            s.detailWrap.style.flexBasis = (s.dW0 + s.rHeight * p) + 'px';
+            // 详情图逐帧 resize，高度跟着进度长（而非一步到位后靠裁剪揭示）
+            if (s.detailInst) s.detailInst.resize({ width: s.innerW0, height: s.innerH0 + s.rHeight * p });
         }
 
-        if (!frontCard) return;
-
-        // 进入 PiP 或切换了前卡：记录当前主图的自然 rect 作为插值起点
-        if (currentPipCard !== frontCard) {
-            if (currentPipCard) {
-                currentPipCard.classList.remove('pip-anim');
-                clearInlineStyles(currentPipCard);
-            }
-            const chart = findChartInCard(frontCard);
-            if (!chart) return;
-            const r = chart.getBoundingClientRect();
-            anchor = { top: r.top, left: r.left, width: r.width, height: r.height };
-            frontCard.classList.add('pip-anim');
-            currentPipCard = frontCard;
-        }
-
-        const chart  = findChartInCard(frontCard);
-        const detail = findDetailInCard(frontCard);
-        if (!chart || !anchor) return;
-
-        // 逐帧插值
-        const top    = anchor.top    * (1 - t) + CORNER_TOP  * t;
-        const left   = anchor.left   * (1 - t) + CORNER_LEFT * t;
-        const width  = anchor.width  * (1 - t) + CORNER_W    * t;
-        const height = anchor.height * (1 - t) + CORNER_H    * t;
-        chart.style.top    = top    + 'px';
-        chart.style.left   = left   + 'px';
-        chart.style.width  = width  + 'px';
-        chart.style.height = height + 'px';
-
-        if (detail) detail.style.flex = `0 0 ${DETAIL_PIP_H}px`;
-
-        // hint 在缩得比较小时才露出
         if (hintEl) {
-            if (t > 0.7) {
-                hintEl.classList.add('visible');
-                hintEl.style.top  = (top + height + 6) + 'px';
-                hintEl.style.left = left + 'px';
-                hintEl.style.width = width + 'px';
-            } else {
-                hintEl.classList.remove('visible');
-            }
+            hintEl.style.left  = CORNER_LEFT + 'px';
+            hintEl.style.top   = (CORNER_TOP + s.rHeight * K + 6) + 'px';
+            hintEl.style.width = (s.rWidth * K) + 'px';
         }
-
-        // 每帧 resize echarts（图不多，代价可控）
-        [regionAbsChart, regionPctChart, regionDetailAbsChart, regionDetailPctChart]
-            .forEach(c => c && c.resize());
     }
 
-    function onScroll() {
-        if (!ticking) { requestAnimationFrame(apply); ticking = true; }
+    function teardown() {
+        if (!s) return;
+        const c = s; s = null;
+        c.chart.classList.remove('chart-collapsing');
+        c.chart.style.transition = '';
+        c.chart.style.transform = '';
+        c.chart.style.width = '';
+        c.chart.style.height = '';
+        if (c.placeholder && c.placeholder.parentNode) c.placeholder.parentNode.removeChild(c.placeholder);
+        if (c.detailWrap) {
+            c.detailWrap.style.transition = '';
+            c.detailWrap.style.flexBasis = c.dBasis0;
+            c.detailWrap.style.overflow = '';
+        }
+        // 布局回落后各按原始尺寸 resize 一次（详情展开时放大过，须显式传回原值）
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const inst = echarts.getInstanceByDom(c.chart);
+            if (inst) inst.resize();
+            if (c.detailInst) c.detailInst.resize({ width: c.innerW0, height: c.innerH0 });
+        }));
+        if (hintEl) hintEl.classList.remove('visible');
     }
+
+    function tick() {
+        ticking = false;
+        if (!stackEl) return;
+        const rect = stackEl.getBoundingClientRect();
+        // 卡顶滚过视口顶、且卡片还没整块滑走时进入塌缩
+        const active = rect.top < 0 && rect.bottom > 160;
+        if (active) {
+            const front = frontChart();
+            if (!front) { teardown(); return; }
+            if (s && s.chart !== front) teardown();   // 切了页签：重建现场
+            if (!s) setup(front);
+            const p = Math.min(1, Math.max(0, (-rect.top) / RANGE));
+            apply(p);
+        } else if (s) {
+            teardown();
+        }
+    }
+
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
 
     const timer = setInterval(() => {
-        regionStackEl = document.getElementById('region-stack');
-        if (!regionStackEl) return;
-        if (!regionStackEl.querySelector('#chart-region-abs, #chart-region-pct')) return;
+        stackEl = document.getElementById('region-stack');
+        if (!stackEl) return;
+        if (!stackEl.querySelector('#chart-region-abs, #chart-region-pct')) return;
         clearInterval(timer);
-        // 挂 hint 元素
         hintEl = document.createElement('div');
         hintEl.className = 'pip-hint';
         hintEl.textContent = '悬浮此处选择地区 →';
         hintEl.style.textAlign = 'center';
         document.body.appendChild(hintEl);
         window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        apply();
+        window.addEventListener('resize', teardown);
+        tick();
     }, 120);
 })();
 </script>
