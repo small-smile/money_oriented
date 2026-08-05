@@ -30,15 +30,15 @@
         }
 
         /* Selectable/copyable HTML chart titles (ECharts canvas titles can't be selected) */
-        .chart-title { text-align: center; font-size: 16px; font-weight: 600; color: #1a1a2e; padding: 8px 0 2px; }
-        .chart-title .sub { display: block; font-size: 12px; font-weight: 400; color: #666; margin-top: 2px; }
+        .chart-title { text-align: center; font-size: 18px; font-weight: 600; color: #1a1a2e; padding: 8px 0 2px; }
+        .chart-title .sub { display: block; font-size: 16px; font-weight: 400; color: #666; margin-top: 2px; }
 
         /* Card 0: 全球总产量 + 回归趋势 */
         #chart-total { width: 100%; height: 680px; }
 
         /* Card 1: region — 两张图做成 price_history.html 那样的卡片堆叠（页签切换） */
-        /* 两卡等高，换卡时页面不跳动 */
-        #chart-region-abs, #chart-region-pct { width: 100%; height: 680px; }
+        /* 宽高由滚动进度逐帧设置（见 initStickyRatio），这里只给个兜底初值 */
+        #chart-region-abs, #chart-region-pct { width: 100%; height: 520px; flex: 0 0 auto; }
 
         /* === 页签：胶囊式分段控件，白色滑块随选中项平移；靠右侧对齐 === */
         .stack-tabs {
@@ -141,43 +141,98 @@
             display: flex;
             flex-direction: column;
         }
+        /* 滚到底后详情图才是主角，标题要一眼看到是哪个地区/国家 */
         .stack-detail-title {
             text-align: center;
-            font-size: 13px;
-            color: #333;
-            height: 20px;
-            line-height: 20px;
-            padding-top: 3px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            letter-spacing: 0.2px;
+            height: 28px;
+            line-height: 28px;
+            padding-top: 4px;
         }
         .stack-detail-chart { width: 100%; flex: 1 1 0; min-height: 0; }
 
-        /* === 滚动塌缩（参考 demo）：随滚动进度把主图缩到左上角小卡，详情图此消彼长长大 ===
-         * 缩放全程只动 transform（scale/translate），跟着滚动实时刷，绝不逐帧 resize canvas */
-        .chart-collapsing {
-            position: fixed !important;
-            top: 0; left: 0;
-            z-index: 100;
-            transform-origin: top left;
-            will-change: transform;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.24);
+        /* === 吸顶滚动改变高度比例（参考 demo/sticky-image-scroll.html）===
+         * .pin-scroller 比一屏高出的那段决定动画滚多久；.pin-stage 吸顶占满一屏，
+         * 卡片留在原地不动，主图在这一屏里由大变小（真实宽高，不是 transform 缩放），
+         * 底部详情图此消彼长地长大 —— 缩小后的主图就是选地区/选国家的选择器。 */
+        .pin-scroller { height: calc(100vh + 620px); }
+        .pin-stage {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0 16px;
         }
-        /* 主图钉走后留下的占位：高度随进度从原高收拢到 0，把空间“让给”详情图；总高不变 */
-        .chart-slot { width: 100%; }
-        /* 吸顶提示条 */
-        .pip-hint {
-            display: none;
-            position: fixed;
-            z-index: 101;
-            font-size: 12px;
-            color: #6b7280;
-            background: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        .pin-stage .stack-tabs { flex: 0 0 auto; }
+        /* 底部留出 68px：后卡整块下移，"点击切到前面"那条要露在前卡下面，不能被舞台裁掉 */
+        .pin-stage .card-stack { flex: 1 1 0; min-height: 0; margin-bottom: 68px; }
+        .pin-stage .stack-card.front { height: 100%; }
+        .pin-stage .stack-card.back { bottom: 0; transform: translateY(52px) scale(0.99); }
+        .pin-stage .stack-card.back:hover { transform: translateY(60px) scale(0.994); }
+        /* 各国那两张卡多一层 .stack-wrap：撑满卡片，高度不再写死 760px */
+        .pin-stage .stack-wrap { height: auto; flex: 1 1 0; min-height: 0; }
+        /* 主图变窄时左边不动、从右侧收（列向 flex 的交叉轴对齐）；高度由 JS 给 */
+        .pin-stage #chart-region-abs,
+        .pin-stage #chart-region-pct,
+        .pin-stage .stack-main { align-self: flex-start; flex: 0 0 auto; }
+        .pin-stage .stack-detail-wrap { flex: 0 0 auto; overflow: hidden; }
+
+        /* 各国图：图例做成 HTML 横向长条，可伸出卡片右侧、横向滚轮滚动、点击切显隐 */
+        .stack-main { position: relative; }
+        .stack-legend {
+            position: absolute; top: 34px; bottom: 8px;
+            display: flex; align-items: stretch; gap: 0;
+            overflow-x: auto; overflow-y: hidden;
+            z-index: 5; scrollbar-width: thin;
+            padding: 12px 10px;
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: saturate(140%) blur(8px);
+            -webkit-backdrop-filter: saturate(140%) blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
         }
-        .pip-hint.visible { display: block; }
+        .stack-legend::-webkit-scrollbar { height: 7px; }
+        .stack-legend::-webkit-scrollbar-thumb {
+            background: rgba(120, 130, 145, 0.35); border-radius: 4px;
+        }
+        .stack-legend::-webkit-scrollbar-thumb:hover {
+            background: rgba(120, 130, 145, 0.55);
+        }
+        .cl-col {
+            flex: 0 0 auto; padding: 0 8px;
+            display: flex; flex-direction: column; min-height: 0;
+        }
+        /* 图例变矮时，一个洲的国家从单列坍塌成多列：纵向填满后另起一列，整组变宽。
+           列数由 JS（layoutLegendColumns）按当前可用高度算好，再写死 height/columnCount/width，
+           纯 CSS 的 flex/multicol 在自动宽度下不会为新列撑宽、会溢出压到隔壁洲。 */
+        .cl-items { column-gap: 14px; column-fill: auto; }
+        .cl-head {
+            flex: 0 0 auto;
+            font-size: 16px; font-weight: 600; margin-bottom: 10px;
+            white-space: nowrap; letter-spacing: 0.01em;
+        }
+        .cl-item {
+            flex: 0 0 auto; width: 124px; box-sizing: border-box;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 16px; line-height: 22px; color: #1d1d1f;
+            cursor: pointer; white-space: nowrap; overflow: hidden; user-select: none;
+            padding: 3px 8px; border-radius: 9px; margin: 1px 0;
+            transition: background 0.15s ease, opacity 0.15s ease;
+        }
+        .cl-item:hover { background: rgba(0, 0, 0, 0.05); }
+        .cl-item.active { background: rgba(0, 0, 0, 0.08); font-weight: 600; }
+        .cl-item .cl-dot { width: 14px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
+        .cl-item .cl-name { overflow: hidden; text-overflow: ellipsis; }
+        .cl-item.active .cl-dot { box-shadow: 0 0 0 2px rgba(0,0,0,0.12); }
+        /* 切到「各国产量占比」时，各国产量图退到后卡，它的图例别再浮在前卡上被遮挡 */
+        .stack-card.back .stack-legend { display: none; }
     </style>
 </head>
 <body>
@@ -191,53 +246,61 @@
         <div id="chart-total"></div>
     </section>
 
-    <!-- Card 1: 各地区产量 / 占比 —— 卡片堆叠，页签切换（同 price_history.html） -->
-    <div class="stack-tabs" id="region-tabs"></div>
-    <div class="card-stack" id="region-stack">
-        <div class="stack-card front" data-name="各地区石油产量" data-color="#5470c6" id="top">
-            <h2 class="chart-title">各地区石油产量（堆叠面积图，1965-2024）<span class="sub" id="region-abs-sub">悬浮到某层查看该地区独立走势</span></h2>
-            <div id="chart-region-abs"></div>
-            <div class="stack-detail-wrap">
-                <div id="region-detail-title-abs" class="stack-detail-title">—</div>
-                <div id="chart-region-detail-abs" class="stack-detail-chart"></div>
+    <!-- Card 1: 各地区产量 / 占比 —— 卡片堆叠，页签切换；外层 scroller/stage 做吸顶变比例 -->
+    <div class="pin-scroller" id="region-scroller">
+        <div class="pin-stage" id="region-stage">
+            <div class="stack-tabs" id="region-tabs"></div>
+            <div class="card-stack" id="region-stack">
+                <div class="stack-card front" data-name="各地区石油产量" data-color="#5470c6">
+                    <h2 class="chart-title">各地区石油产量（堆叠面积图，1965-2024）<span class="sub" id="region-abs-sub">悬浮到某层查看该地区独立走势</span></h2>
+                    <div id="chart-region-abs"></div>
+                    <div class="stack-detail-wrap">
+                        <div id="region-detail-title-abs" class="stack-detail-title">—</div>
+                        <div id="chart-region-detail-abs" class="stack-detail-chart"></div>
+                    </div>
+                    <div class="card-peek">各地区石油产量 · 点击切到前面</div>
+                </div>
+                <div class="stack-card back" data-name="各地区产量占比" data-color="#ee6666">
+                    <h2 class="chart-title">各地区石油产量占比（百分比堆叠，1965-2024）<span class="sub">悬浮到某层查看该地区独立走势</span></h2>
+                    <div id="chart-region-pct"></div>
+                    <div class="stack-detail-wrap">
+                        <div id="region-detail-title-pct" class="stack-detail-title">—</div>
+                        <div id="chart-region-detail-pct" class="stack-detail-chart"></div>
+                    </div>
+                    <div class="card-peek">各地区石油产量占比 · 点击切到前面</div>
+                </div>
             </div>
-            <div class="card-peek">各地区石油产量 · 点击切到前面</div>
-        </div>
-        <div class="stack-card back" data-name="各地区产量占比" data-color="#ee6666">
-            <h2 class="chart-title">各地区石油产量占比（百分比堆叠，1965-2024）<span class="sub">悬浮到某层查看该地区独立走势</span></h2>
-            <div id="chart-region-pct"></div>
-            <div class="stack-detail-wrap">
-                <div id="region-detail-title-pct" class="stack-detail-title">—</div>
-                <div id="chart-region-detail-pct" class="stack-detail-chart"></div>
-            </div>
-            <div class="card-peek">各地区石油产量占比 · 点击切到前面</div>
         </div>
     </div>
 
-    <!-- Card 2: 各国产量 / 各国产量占比 —— 卡片堆叠 -->
-    <div class="stack-tabs" id="country-tabs"></div>
-    <div class="card-stack" id="country-stack">
-        <div class="stack-card front" data-name="各国石油产量" data-color="#5470c6">
-            <h2 class="chart-title">各国石油产量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
-            <div class="stack-wrap">
-                <div id="chart-country-stack" class="stack-main"></div>
-                <div class="stack-detail-wrap">
-                    <div id="country-detail-title" class="stack-detail-title">—</div>
-                    <div id="chart-country-detail" class="stack-detail-chart"></div>
+    <!-- Card 2: 各国产量 / 各国产量占比 —— 卡片堆叠；同样吸顶变比例 -->
+    <div class="pin-scroller" id="country-scroller">
+        <div class="pin-stage" id="country-stage">
+            <div class="stack-tabs" id="country-tabs"></div>
+            <div class="card-stack" id="country-stack">
+                <div class="stack-card front" data-name="各国石油产量" data-color="#5470c6">
+                    <h2 class="chart-title">各国石油产量堆叠图（1965-2024）<span class="sub">悬浮到某层切换底部详情 | 同洲同色 | 单位：千桶/日</span></h2>
+                    <div class="stack-wrap">
+                        <div id="chart-country-stack" class="stack-main"></div>
+                        <div class="stack-detail-wrap">
+                            <div id="country-detail-title" class="stack-detail-title">—</div>
+                            <div id="chart-country-detail" class="stack-detail-chart"></div>
+                        </div>
+                    </div>
+                    <div class="card-peek">各国石油产量 · 点击切到前面</div>
+                </div>
+                <div class="stack-card back" data-name="各国产量占比" data-color="#ee6666">
+                    <h2 class="chart-title">各国石油产量占全球比例堆叠图（1965-2024）<span class="sub">悬浮到某层查看该国独立走势 | 同洲同色</span></h2>
+                    <div class="stack-wrap">
+                        <div id="chart-percent-stack" class="stack-main"></div>
+                        <div class="stack-detail-wrap">
+                            <div id="percent-detail-title" class="stack-detail-title">—</div>
+                            <div id="chart-percent-detail" class="stack-detail-chart"></div>
+                        </div>
+                    </div>
+                    <div class="card-peek">各国石油产量占比 · 点击切到前面</div>
                 </div>
             </div>
-            <div class="card-peek">各国石油产量 · 点击切到前面</div>
-        </div>
-        <div class="stack-card back" data-name="各国产量占比" data-color="#ee6666">
-            <h2 class="chart-title">各国石油产量占全球比例堆叠图（1965-2024）<span class="sub">悬浮到某层查看该国独立走势 | 同洲同色</span></h2>
-            <div class="stack-wrap">
-                <div id="chart-percent-stack" class="stack-main"></div>
-                <div class="stack-detail-wrap">
-                    <div id="percent-detail-title" class="stack-detail-title">—</div>
-                    <div id="chart-percent-detail" class="stack-detail-chart"></div>
-                </div>
-            </div>
-            <div class="card-peek">各国石油产量占比 · 点击切到前面</div>
         </div>
     </div>
 </div>
@@ -246,10 +309,10 @@
 const REGION_COLORS = {
     'North America':      '#5470c6',
     'CIS':                '#fac858',
-    'Middle East':        '#ee6666',
+    'Middle East':        '#e6a23c',
     'S. & Cent. America': '#91cc75',
     'Africa':             '#fc8452',
-    'Asia Pacific':       '#73c0de',
+    'Asia Pacific':       '#5ab9c1',
     'Europe':             '#9a60b4'
 };
 
@@ -403,6 +466,7 @@ function initTotal() {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            textStyle: { fontSize: 16 },
             formatter: params => {
                 const year = params[0].axisValue;
                 const act = params.find(p => p.seriesName === '实际总产量');
@@ -425,18 +489,18 @@ function initTotal() {
                 return html;
             }
         },
-        legend: { data: ['实际总产量', '回归趋势'], top: 8, textStyle: { color: '#333', fontSize: 12 } },
-        grid: { left: 64, right: 96, top: 46, bottom: 30 },
+        legend: { data: ['实际总产量', '回归趋势'], top: 8, textStyle: { color: '#333', fontSize: 16 } },
+        grid: { left: 72, right: 120, top: 46, bottom: 30 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 11 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series: [
@@ -454,7 +518,7 @@ function initTotal() {
                 itemStyle: { color: '#ee6666' },
                 // 把回归增速直接标在趋势线末端，不用去看副标题
                 endLabel: {
-                    show: true, color: '#ee6666', fontSize: 13, fontWeight: 'bold',
+                    show: true, color: '#ee6666', fontSize: 16, fontWeight: 'bold',
                     formatter: () => _totalFit
                         ? `${_totalFit.cagr >= 0 ? '+' : ''}${(_totalFit.cagr * 100).toFixed(2)}%/年`
                         : ''
@@ -480,6 +544,7 @@ function buildRegionOption(dataMap, isAbs) {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
             position: [12, 12],
+            textStyle: { fontSize: 16 },
             formatter: params => {
                 const year = params[0].axisValue;
                 // 找出当前悬浮地区并置顶
@@ -492,7 +557,7 @@ function buildRegionOption(dataMap, isAbs) {
                     const label = isAbs
                         ? `${(cur.value || 0).toLocaleString()}（占 ${share}%）`
                         : `${(cur.value || 0).toFixed(1)}%`;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${label}</b>
                              </div>`;
                 }
@@ -508,7 +573,7 @@ function buildRegionOption(dataMap, isAbs) {
         },
         legend: {
             data: _regions, top: 8, type: 'scroll',
-            textStyle: { color: '#333', fontSize: 12 },
+            textStyle: { color: '#333', fontSize: 16 },
             formatter: name => {
                 const d = dataMap[name];
                 const change = d[d.length - 1] - d[0];
@@ -518,22 +583,22 @@ function buildRegionOption(dataMap, isAbs) {
                     : `${name}  (${sign}${change.toFixed(1)}%)`;
             }
         },
-        grid: { left: 64, right: 96, top: 46, bottom: 24 },
+        grid: { left: 72, right: 96, top: 46, bottom: 24 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 11 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: isAbs ? {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         } : {
             type: 'value', name: '%', min: 0, max: 100,
-            nameTextStyle: { color: '#555', fontSize: 11, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 11, formatter: v => v + '%' },
+            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series
@@ -622,6 +687,8 @@ function initCardStack(stackId, tabBarId, chartOf) {
                 charts.forEach(c => c && c.resize());
             }
         });
+        // 前后卡露出的那条一有一无，可用高度跟着变；让吸顶比例按当前进度重算一遍
+        window.dispatchEvent(new Event('pin-ratio-refresh'));
     }
 
     cards.forEach((card, i) => card.addEventListener('click', () => {
@@ -658,21 +725,22 @@ function showRegionDetailInto(region, titleId, chart, isPct) {
         backgroundColor: '#fafafa',
         tooltip: {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
+            textStyle: { fontSize: 16 },
             valueFormatter: v => isPct ? (v || 0).toFixed(2) + '%' : Math.round(v || 0).toLocaleString()
         },
-        grid: { left: 64, right: 96, top: 24, bottom: 24 },
+        grid: { left: 72, right: 96, top: 24, bottom: 24 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 11 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: isPct ? {
             type: 'value', min: 0,
-            axisLabel: { color: '#555', fontSize: 11, formatter: v => v + '%' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#eee' } }
         } : {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 11, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{
@@ -703,12 +771,16 @@ function initCountry() {
         };
     });
 
+    // —— 图例见 initCountry 末尾的 buildStackLegend 调用 ——
+    const RESERVE = 150;   // 主图右侧给图例起始列留出的宽度（与 grid.right 对齐）
+
     countryStackChart.setOption({
         backgroundColor: '#ffffff',
         tooltip: {
             trigger: 'axis',
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            textStyle: { fontSize: 16 },
             formatter: params => {
                 let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
@@ -716,9 +788,9 @@ function initCountry() {
                 const cur = items.find(p => p.seriesName === currentCountry);
                 if (cur) {
                     const rank = items.indexOf(cur) + 1;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toLocaleString()}</b>　千桶/日
-                                <span style="color:#888;font-size:11px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                                <span style="color:#888;font-size:16px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
                              </div>`;
                 }
                 items.filter(p => p.seriesName !== currentCountry)
@@ -730,32 +802,25 @@ function initCountry() {
                 return html;
             }
         },
-        legend: {
-            data: _sortedCountries, type: 'scroll', top: 8,
-            textStyle: { fontSize: 11 },
-            formatter: name => {
-                const m = _countryMeta[name];
-                const sign = m.change >= 0 ? '+' : '';
-                return `${name} (${sign}${m.change.toLocaleString()})`;
-            }
-        },
-        grid: { left: 64, right: 96, top: 78, bottom: 40 },
+        legend: { show: false, data: _sortedCountries, selectedMode: 'multiple' },
+        grid: { left: 72, right: RESERVE, top: 40, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
         // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', align: 'right' },
-            axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series
     });
 
     const chartDom = document.getElementById('chart-country-stack');
+    let countryLegend = null;
     chartDom.addEventListener('mousemove', e => {
         const rect = chartDom.getBoundingClientRect();
         const px = e.clientX - rect.left;
@@ -777,11 +842,19 @@ function initCountry() {
         if (hit && hit !== currentCountry) {
             currentCountry = hit;
             showCountryDetail(hit);
+            if (countryLegend) countryLegend.syncActive();
         }
     });
 
+    // HTML 悬浮图例（各洲并排、坍塌成多列、悬浮/点击切独立走势），与占比卡共用 buildStackLegend
     currentCountry = _sortedCountries[0];
+    countryLegend = buildStackLegend(
+        chartDom, 'country-legend', _sortedCountries,
+        () => currentCountry,
+        c => { currentCountry = c; showCountryDetail(c); }
+    );
     showCountryDetail(currentCountry);
+    countryLegend.syncActive();
 }
 
 function showCountryDetail(country) {
@@ -791,17 +864,17 @@ function showCountryDetail(country) {
     const color = REGION_COLORS[_countryMeta[country].continent] || '#5470c6';
     countryDetailChart.setOption({
         backgroundColor: '#fafafa',
-        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } } },
-        grid: { left: 64, right: 96, top: 12, bottom: 40 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } }, textStyle: { fontSize: 16 } },
+        grid: { left: 72, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 10 },
+            axisLabel: { color: '#555', fontSize: 16 },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 10, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{
@@ -811,6 +884,99 @@ function showCountryDetail(country) {
             lineStyle: { color, width: 2 }, itemStyle: { color }
         }]
     }, true);
+}
+
+// 通用：给某张堆叠卡建一条 HTML 悬浮图例（各洲并排、坍塌成多列、悬浮/点击切独立走势）
+// order=国家排序，getCurrent()=当前选中国，onPick(c)=切到该国并刷新独立走势
+function buildStackLegend(chartDom, legendId, order, getCurrent, onPick) {
+    const RESERVE = 150;
+    const contOrder = Object.keys(REGION_COLORS)
+        .filter(cont => order.some(c => _countryMeta[c].continent === cont));
+    const legendBox = document.createElement('div');
+    legendBox.id = legendId;
+    legendBox.className = 'stack-legend';
+    contOrder.forEach(cont => {
+        const col = document.createElement('div');
+        col.className = 'cl-col';
+        const head = document.createElement('div');
+        head.className = 'cl-head';
+        head.textContent = cont;
+        head.style.color = REGION_COLORS[cont] || '#333';
+        col.appendChild(head);
+        const items = document.createElement('div');
+        items.className = 'cl-items';
+        order.filter(c => _countryMeta[c].continent === cont).forEach(c => {
+            const it = document.createElement('div');
+            it.className = 'cl-item';
+            it.dataset.name = c;
+            it.title = c;
+            const dot = document.createElement('span');
+            dot.className = 'cl-dot';
+            dot.style.background = REGION_COLORS[cont] || '#888';
+            const nm = document.createElement('span');
+            nm.className = 'cl-name';
+            nm.textContent = c;
+            it.append(dot, nm);
+            const pick = () => {
+                if (getCurrent() === c) return;
+                onPick(c);
+                legendBox.querySelectorAll('.cl-item').forEach(el =>
+                    el.classList.toggle('active', el === it));
+            };
+            it.addEventListener('click', pick);
+            it.addEventListener('mouseenter', pick);
+            items.appendChild(it);
+        });
+        col.appendChild(items);
+        legendBox.appendChild(col);
+    });
+    chartDom.appendChild(legendBox);
+
+    function syncActive() {
+        legendBox.querySelectorAll('.cl-item').forEach(el =>
+            el.classList.toggle('active', el.dataset.name === getCurrent()));
+    }
+    // 图例变矮（主图吸顶收缩）时，把每个洲的国家从单列铺成多列，避免被裁掉
+    function layoutLegendColumns() {
+        const ITEM_W = 124, GAP = 14, itemH = 30;
+        legendBox.querySelectorAll('.cl-col').forEach(col => {
+            const items = col.querySelector('.cl-items');
+            const head = col.querySelector('.cl-head');
+            const n = items.children.length;
+            const availH = col.clientHeight - head.offsetHeight;
+            if (availH <= 0 || !n) return;
+            const perCol = Math.max(1, Math.floor(availH / itemH));
+            const cols = Math.max(1, Math.ceil(n / perCol));
+            items.style.height = availH + 'px';
+            items.style.columnCount = cols;
+            items.style.width = (cols * ITEM_W + (cols - 1) * GAP) + 'px';
+        });
+    }
+    // 长条固定在主图右侧预留带，一直伸到视口右缘（伸出卡片）
+    function place() {
+        const r = chartDom.getBoundingClientRect();
+        if (!r.width) return;
+        const GAP = 16;   // 图例左缘离开绘图区右缘一点，别压到堆叠图上（也免得磨砂透出图表色）
+        const leftRel = Math.max(0, r.width - RESERVE + GAP);
+        legendBox.style.left = leftRel + 'px';
+        legendBox.style.width = Math.max(RESERVE - GAP, window.innerWidth - 8 - (r.left + leftRel)) + 'px';
+        layoutLegendColumns();
+    }
+    place();
+    new ResizeObserver(place).observe(chartDom);
+    window.addEventListener('resize', place);
+    // 切卡/吸顶比例变化时重排：图例从隐藏变可见后 clientHeight 才不为 0，需重算列数
+    window.addEventListener('pin-ratio-refresh', place);
+
+    // 鼠标在图例条上：竖向滚轮转成横向滚动，横向到头也不带动页面上下
+    legendBox.addEventListener('wheel', e => {
+        const d = e.deltaY || e.deltaX;
+        if (!d) return;
+        legendBox.scrollLeft += d;
+        e.preventDefault();
+    }, { passive: false });
+
+    return { syncActive, place };
 }
 
 // ============================================================
@@ -825,6 +991,7 @@ function initPercent() {
             trigger: 'axis',
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
+            textStyle: { fontSize: 16 },
             formatter: params => {
                 let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
@@ -832,9 +999,9 @@ function initPercent() {
                 const cur = items.find(p => p.seriesName === currentPercentCountry);
                 if (cur) {
                     const rank = items.indexOf(cur) + 1;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:13px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toFixed(2)}%</b>
-                                <span style="color:#888;font-size:11px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                                <span style="color:#888;font-size:16px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
                              </div>`;
                 }
                 items.filter(p => p.seriesName !== currentPercentCountry)
@@ -846,28 +1013,18 @@ function initPercent() {
                 return html;
             }
         },
-        legend: {
-            data: _sortedByPct, type: 'scroll',
-            orient: 'vertical', right: 8, top: 40, bottom: 40,
-            itemWidth: 12, itemHeight: 8, itemGap: 6,
-            textStyle: { fontSize: 11 },
-            formatter: name => {
-                const pm = window._pctMeta[name];
-                const sign = pm.pctChange >= 0 ? '+' : '';
-                return `${name} (${sign}${pm.pctChange}%)`;
-            }
-        },
-        grid: { left: 64, right: 210, top: 40, bottom: 40 },
+        // 图例改用 HTML 悬浮图例（见 initPercent 末尾 buildStackLegend），右侧留白与产量卡一致
+        grid: { left: 72, right: 150, top: 40, bottom: 40 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 10, top: 8 },
         // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555' }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '%',
-            nameTextStyle: { color: '#555', align: 'right' },
-            axisLabel: { color: '#555', formatter: v => v + '%' },
+            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series: _sortedByPct.map(c => ({
@@ -880,6 +1037,7 @@ function initPercent() {
     });
 
     const chartDom = document.getElementById('chart-percent-stack');
+    let percentLegend = null;
     chartDom.addEventListener('mousemove', e => {
         const rect = chartDom.getBoundingClientRect();
         const px = e.clientX - rect.left;
@@ -900,11 +1058,18 @@ function initPercent() {
         if (hit && hit !== currentPercentCountry) {
             currentPercentCountry = hit;
             showPercentDetail(hit);
+            if (percentLegend) percentLegend.syncActive();
         }
     });
 
     currentPercentCountry = _sortedByPct[0];
     showPercentDetail(currentPercentCountry);
+    percentLegend = buildStackLegend(
+        chartDom, 'percent-legend', _sortedByPct,
+        () => currentPercentCountry,
+        c => { currentPercentCountry = c; showPercentDetail(c); }
+    );
+    percentLegend.syncActive();
 }
 
 function showPercentDetail(country) {
@@ -916,17 +1081,18 @@ function showPercentDetail(country) {
         backgroundColor: '#fafafa',
         tooltip: {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
-            valueFormatter: v => (v || 0).toFixed(2) + '%'
+            valueFormatter: v => (v || 0).toFixed(2) + '%',
+            textStyle: { fontSize: 16 }
         },
-        grid: { left: 64, right: 96, top: 12, bottom: 40 },
+        grid: { left: 72, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 10 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', min: 0,
-            axisLabel: { color: '#555', fontSize: 10, formatter: v => v + '%' },
+            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{
@@ -939,159 +1105,93 @@ function showPercentDetail(country) {
 }
 
 // ============================================================
-// 滚动塌缩（参考 demo）：滚过卡片顶后，随滚动进度 p(0→1) 连续把主图
-//   缩到左上角(30% 尺寸)，同时底部详情图此消彼长地长大。
-//   缩放全程用 transform: scale(丝滑)，只在 p 到达/离开终点各 resize 一次。
+// 吸顶改变高度比例（参考 demo/sticky-image-scroll.html）：
+//   .pin-scroller 比一屏高出 620px，卡片在吸顶的 .pin-stage 里原地不动，
+//   滚动进度 p(0→1) 直接改主图的真实宽高（不是 transform 缩放），
+//   主图由大变小到左上角，底部详情图此消彼长地长大 —— 小主图就是选地区/选国家的选择器。
+//   地区卡、各国卡各挂一份。
 // ============================================================
-(function initScrollCollapse() {
-    const CORNER_TOP = 24, CORNER_LEFT = 24;
-    const K = 0.30;      // 主图终态缩放比：30%
-    const RANGE = 360;   // 滚动多少 px 完成整个塌缩
+function initPinnedRatio(scrollerId, stageId, pairs) {
+    const MAIN_H = [0.78, 0.26];   // 主图占容器可用高度：78% → 26%
+    const MAIN_W = [100, 34];      // 主图宽度：100% → 34%
 
-    let stackEl, hintEl;
-    let s = null;        // 当前塌缩现场；null=未激活
-    let ticking = false;
+    let scroller, stage, lastP = -1, ticking = false;
 
-    function frontChart() {
-        const front = stackEl.querySelector(':scope > .stack-card.front');
-        return front && front.querySelector(':scope > #chart-region-abs, :scope > #chart-region-pct');
-    }
+    const lerp = (a, b, p) => a + (b - a) * p;
 
-    function setup(chart) {
-        const r = chart.getBoundingClientRect();
-        const card       = chart.closest('.stack-card');
-        const detailWrap = card && card.querySelector(':scope > .stack-detail-wrap');
-        const detailDiv  = detailWrap && detailWrap.querySelector('.stack-detail-chart');
-        const detailInst = detailDiv && echarts.getInstanceByDom(detailDiv);
-
-        // 占位块占住主图原高度，主图随后 fixed 飞走
-        const placeholder = document.createElement('div');
-        placeholder.className = 'chart-slot';
-        placeholder.style.height = r.height + 'px';
-        chart.parentNode.insertBefore(placeholder, chart);
-
-        // 详情图不再一步到位：起点尺寸留底，随滚动进度逐帧长高（见 apply）
-        let dW0 = 0, dBasis0 = '', innerW0 = 0, innerH0 = 0;
-        if (detailWrap && detailInst) {
-            dW0 = detailWrap.getBoundingClientRect().height;
-            dBasis0 = detailWrap.style.flexBasis || '';
-            innerW0 = detailDiv.getBoundingClientRect().width;
-            innerH0 = detailDiv.getBoundingClientRect().height;
-            detailWrap.style.overflow = 'hidden';
-            detailWrap.style.transition = 'none';
-        }
-
-        chart.style.width  = r.width  + 'px';
-        chart.style.height = r.height + 'px';
-        chart.style.transition = 'none';
-        chart.classList.add('chart-collapsing');
-
-        s = { chart, placeholder, detailWrap, detailInst,
-              rLeft: r.left, rTop: r.top, rWidth: r.width, rHeight: r.height,
-              dW0, dBasis0, innerW0, innerH0,
-              miniW: Math.round(r.width * K), miniH: Math.round(r.height * K),
-              crisped: false };
-        if (hintEl) hintEl.classList.add('visible');
-    }
-
-    // 按滚动进度 p(0→1) 实时刷新：主图缩放平移、占位收拢、详情长高
+    // 两张卡（前卡/后卡）同尺寸，一起按进度刷，切页签时不用重建
     function apply(p) {
-        if (!s) return;
-        const scale = 1 + (K - 1) * p;
-        const tx = s.rLeft + (CORNER_LEFT - s.rLeft) * p;
-        const ty = s.rTop  + (CORNER_TOP  - s.rTop ) * p;
+        pairs.forEach(([mainId, detailId]) => {
+            const mainEl = document.getElementById(mainId);
+            const detailEl = document.getElementById(detailId);
+            if (!mainEl || !detailEl) return;
+            const wrap = detailEl.closest('.stack-detail-wrap');
+            const box = mainEl.parentElement;   // 地区卡是 .stack-card，各国卡是 .stack-wrap
+            const cs = getComputedStyle(box);
+            // 可用高度 = 容器内容高 - 标题/露出条等固定块
+            let fixed = 0;
+            for (const ch of box.children) {
+                if (ch !== mainEl && ch !== wrap) fixed += ch.offsetHeight;
+            }
+            const inner = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            const avail = Math.max(240, inner - fixed);
 
-        const wantCrisp = p > 0.999;                 // 到终点：换真实小尺寸渲染，更清晰
-        if (wantCrisp && !s.crisped) {
-            s.crisped = true;
-            s.chart.style.width  = s.miniW + 'px';
-            s.chart.style.height = s.miniH + 'px';
-            const inst = echarts.getInstanceByDom(s.chart);
-            if (inst) inst.resize({ width: s.miniW, height: s.miniH });
-            s.chart.style.transform = 'translate(' + CORNER_LEFT + 'px,' + CORNER_TOP + 'px) scale(1)';
-        } else if (!wantCrisp && s.crisped) {        // 离开终点：恢复原尺寸，改回 transform 缩放
-            s.crisped = false;
-            s.chart.style.width  = s.rWidth  + 'px';
-            s.chart.style.height = s.rHeight + 'px';
-            const inst = echarts.getInstanceByDom(s.chart);
-            if (inst) inst.resize({ width: s.rWidth, height: s.rHeight });
-        }
-        if (!s.crisped) {
-            s.chart.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
-        }
+            const mainH = Math.round(avail * lerp(MAIN_H[0], MAIN_H[1], p));
+            const mainW = lerp(MAIN_W[0], MAIN_W[1], p);
+            mainEl.style.width  = mainW.toFixed(2) + '%';
+            mainEl.style.height = mainH + 'px';
+            wrap.style.flexBasis = (avail - mainH) + 'px';   // 此消彼长，总高不变
 
-        s.placeholder.style.height = (s.rHeight * (1 - p)) + 'px';
-        if (s.detailWrap) {
-            s.detailWrap.style.flexBasis = (s.dW0 + s.rHeight * p) + 'px';
-            // 详情图逐帧 resize，高度跟着进度长（而非一步到位后靠裁剪揭示）
-            if (s.detailInst) s.detailInst.resize({ width: s.innerW0, height: s.innerH0 + s.rHeight * p });
-        }
-
-        if (hintEl) {
-            hintEl.style.left  = CORNER_LEFT + 'px';
-            hintEl.style.top   = (CORNER_TOP + s.rHeight * K + 6) + 'px';
-            hintEl.style.width = (s.rWidth * K) + 'px';
-        }
+            // 真实宽高变了就得重新量：hover 命中靠 convertFromPixel，尺寸必须是最新的
+            const mainInst = echarts.getInstanceByDom(mainEl);
+            if (mainInst) mainInst.resize();
+            // 主图缩到不足一半宽时太窄，tooltip 会挤爆小图 —— 关掉；
+            // 关的同时把当前正显示的 tooltip 也收掉（不只是拦下次 hover）
+            const showTip = mainW >= 60;
+            if (mainInst && mainEl.dataset.tipShown !== String(showTip)) {
+                mainInst.setOption({ tooltip: { show: showTip } });
+                if (!showTip) mainInst.dispatchAction({ type: 'hideTip' });
+                mainEl.dataset.tipShown = String(showTip);
+            }
+            const detailInst = echarts.getInstanceByDom(detailEl);
+            if (detailInst) detailInst.resize();
+        });
     }
 
-    function teardown() {
-        if (!s) return;
-        const c = s; s = null;
-        c.chart.classList.remove('chart-collapsing');
-        c.chart.style.transition = '';
-        c.chart.style.transform = '';
-        c.chart.style.width = '';
-        c.chart.style.height = '';
-        if (c.placeholder && c.placeholder.parentNode) c.placeholder.parentNode.removeChild(c.placeholder);
-        if (c.detailWrap) {
-            c.detailWrap.style.transition = '';
-            c.detailWrap.style.flexBasis = c.dBasis0;
-            c.detailWrap.style.overflow = '';
-        }
-        // 布局回落后各按原始尺寸 resize 一次（详情展开时放大过，须显式传回原值）
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            const inst = echarts.getInstanceByDom(c.chart);
-            if (inst) inst.resize();
-            if (c.detailInst) c.detailInst.resize({ width: c.innerW0, height: c.innerH0 });
-        }));
-        if (hintEl) hintEl.classList.remove('visible');
-    }
-
+    // 滚动进度：scroller 顶部滚过的距离 / (scroller 高 - 吸顶一屏)，同 demo
     function tick() {
         ticking = false;
-        if (!stackEl) return;
-        const rect = stackEl.getBoundingClientRect();
-        // 卡顶滚过视口顶、且卡片还没整块滑走时进入塌缩
-        const active = rect.top < 0 && rect.bottom > 160;
-        if (active) {
-            const front = frontChart();
-            if (!front) { teardown(); return; }
-            if (s && s.chart !== front) teardown();   // 切了页签：重建现场
-            if (!s) setup(front);
-            const p = Math.min(1, Math.max(0, (-rect.top) / RANGE));
-            apply(p);
-        } else if (s) {
-            teardown();
-        }
+        const total = scroller.offsetHeight - stage.offsetHeight;
+        const scrolled = -scroller.getBoundingClientRect().top;
+        const p = total > 0 ? Math.min(1, Math.max(0, scrolled / total)) : 0;
+        if (Math.abs(p - lastP) < 0.002) return;   // 进度没变就别白刷 canvas
+        lastP = p;
+        apply(p);
     }
 
     function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
 
     const timer = setInterval(() => {
-        stackEl = document.getElementById('region-stack');
-        if (!stackEl) return;
-        if (!stackEl.querySelector('#chart-region-abs, #chart-region-pct')) return;
+        scroller = document.getElementById(scrollerId);
+        stage = document.getElementById(stageId);
+        if (!scroller || !stage) return;
+        if (!echarts.getInstanceByDom(document.getElementById(pairs[0][0]) || document.body)) return;
         clearInterval(timer);
-        hintEl = document.createElement('div');
-        hintEl.className = 'pip-hint';
-        hintEl.textContent = '悬浮此处选择地区 →';
-        hintEl.style.textAlign = 'center';
-        document.body.appendChild(hintEl);
         window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', teardown);
+        window.addEventListener('resize', () => { lastP = -1; tick(); });
+        window.addEventListener('pin-ratio-refresh', () => { lastP = -1; tick(); });
         tick();
     }, 120);
-})();
+}
+
+initPinnedRatio('region-scroller', 'region-stage', [
+    ['chart-region-abs', 'chart-region-detail-abs'],
+    ['chart-region-pct', 'chart-region-detail-pct']
+]);
+initPinnedRatio('country-scroller', 'country-stage', [
+    ['chart-country-stack', 'chart-country-detail'],
+    ['chart-percent-stack', 'chart-percent-detail']
+]);
 </script>
 </body>
 </html>

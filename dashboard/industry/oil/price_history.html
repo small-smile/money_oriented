@@ -588,8 +588,8 @@
                             type: 'value',
                             name: '原油 (美元/桶)',
                             position: 'right',
-                            nameTextStyle: {fontSize: 16, color: '#1f2937'},
-                            axisLine: {show: true, lineStyle: {color: '#1f2937'}},
+                            nameTextStyle: {fontSize: 16, color: '#c0392b'},
+                            axisLine: {show: true, lineStyle: {color: '#c0392b'}},
                             axisLabel: {fontSize: 16},
                             splitLine: {show: false}
                         },
@@ -623,8 +623,8 @@
                             data: oil,
                             symbol: 'circle',
                             symbolSize: 5,
-                            lineStyle: {width: 2.5, color: '#1f2937'},
-                            itemStyle: {color: '#1f2937'}
+                            lineStyle: {width: 2.5, color: '#c0392b'},
+                            itemStyle: {color: '#c0392b'}
                         },
                         {
                             name: '金油比',
@@ -744,18 +744,21 @@
                     data: ["原油K线", "2024平价价格"],
                     left: '50%',
                     bottom: 0,
-                    selected: {"原油K线": true, "2024平价价格": false}
+                    selected: {"原油K线": true, "2024平价价格": false},
+                    textStyle: {fontSize: 16}
                 },
                 grid: {bottom: 60},
                 xAxis: [
-                    {type: "category", data: xAxis, axisLabel: {rotate: 45}},
+                    {type: "category", data: xAxis, axisLabel: {rotate: 45, fontSize: 16}},
                 ],
                 yAxis: [
-                    {type: "value", name: "价格", scale: true},
+                    {type: "value", name: "价格", scale: true,
+                        nameTextStyle: {fontSize: 16}, axisLabel: {fontSize: 16}},
                     {
                         type: "value", name: "2024平价价格", scale: true,
                         position: 'right',
-                        axisLabel: {margin: 8},
+                        nameTextStyle: {fontSize: 16},
+                        axisLabel: {margin: 8, fontSize: 16},
                     },
                 ],
                 dataZoom: [
@@ -778,6 +781,7 @@
                             symbol: 'none',
                             silent: true,
                             lineStyle: {color: '#be123c', type: 'dashed', width: 1.5},
+                            label: {fontSize: 16},
                             data: [
                                 {
                                     name: 'Standard Oil 拆分',

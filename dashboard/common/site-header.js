@@ -26,17 +26,16 @@
                 {href: 'industry/oil/region_production.html',            title: '产量总览'},
                 {href: 'industry/oil/country_consumption.html',          title: '消费总览'},
                 {href: 'industry/oil/country_change_2001_2024.html',     title: '2001 vs 2024'},
-                {href: 'industry/oil/china_oil_majors.html',             title: '证实储量'}
+                {href: 'industry/oil/china_oil_majors.html',             title: '油企'},
+                {href: 'industry/oil/cnooc_roa_oil.html',                title: '中海油 油价·ROA'}
             ]
         },
         {
-            label: '公司年报',
+            label: '银行',
             pages: [
-                {href: 'company/index.html',                  title: '银行年报'},
-                {href: 'company/petro_balance_sheet.html',    title: '中石油 资产'},
-                {href: 'company/petro_income_waterfall.html', title: '中石油 利润'}
+                {href: 'company/index.html',                               title: '银行年报'}
             ]
-        }
+        },
     ];
 
     // 当前页在 dashboard/ 下的路径，用于高亮

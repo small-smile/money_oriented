@@ -20,11 +20,11 @@ body {
     background: #1f2937;
     color: #fff;
     padding: 0 16px;
-    height: 40px;
+    height: 44px;
     display: flex;
     align-items: center;
     gap: 2px;
-    font-size: 14px;
+    font-size: 16px;
     white-space: nowrap;
     overflow-x: auto;
     flex-shrink: 0;   /* 与 body flex-column 布局兼容，防止被 flex 压扁 */
@@ -34,7 +34,7 @@ body {
     font-weight: bold;
     color: #fbbf24;
     margin-right: 20px;
-    font-size: 15px;
+    font-size: 17px;
     letter-spacing: 0.5px;
 }
 .site-nav a {
@@ -42,7 +42,7 @@ body {
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
     transition: background 0.15s, color 0.15s;
 }
 .site-nav a:hover {
@@ -57,7 +57,7 @@ body {
 /* 行业分组标签：区隔不同行业的页面 */
 .site-nav .nav-group {
     color: #9ca3af;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: 0.5px;
     margin: 0 6px 0 14px;
@@ -80,14 +80,14 @@ body {
  */
 .chart-title {
     text-align: center;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #1a1a2e;
     padding: 8px 0 2px;
 }
 .chart-title .sub {
     display: block;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 400;
     color: #666;
     margin-top: 2px;

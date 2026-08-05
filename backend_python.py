@@ -456,6 +456,56 @@ def read_consumption_product():
     }
 
 
+def _read_two_col_txt(path):
+    """读取 year<TAB>value 两列 txt（跳过表头），返回 {int(year): float(value)}。"""
+    out = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f.readlines()[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+            try:
+                out[int(parts[0])] = float(parts[1])
+            except (ValueError, TypeError):
+                continue
+    return out
+
+
+def read_consumption_growth():
+    """全球原油总消费量长期趋势 + 人口 / 电力发电量对比。
+
+    - 原油: consumption_region.csv 各国按年求和 (千桶/日), 1965-2024
+    - 人口: world_population.txt (亿), World Bank, 1960-2025
+    - 电力: electricity_generation.txt (TWh), EI Total World, 1985-2024
+
+    三条序列各自年份跨度不同，一并返回，回归线与指数化对比由前端计算。
+    """
+    df = pd.read_csv("data/tables/consumption_region.csv")
+    oil_sum = df.groupby("年份")["消费量(千桶/日)"].sum().sort_index()
+    oil_years = [int(y) for y in oil_sum.index.tolist()]
+    oil_vals = [round(float(v), 1) for v in oil_sum.tolist()]
+
+    pop = _read_two_col_txt("data/tables/world_population.txt")
+    pop_years = sorted(pop.keys())
+    pop_vals = [round(pop[y], 2) for y in pop_years]
+
+    elec = _read_two_col_txt("data/tables/electricity_generation.txt")
+    elec_years = sorted(elec.keys())
+    elec_vals = [round(elec[y], 1) for y in elec_years]
+
+    return {
+        "code": 200,
+        "data": {
+            "oil":         {"years": oil_years,  "values": oil_vals,  "unit": "千桶/日", "label": "原油总消费量"},
+            "population":  {"years": pop_years,  "values": pop_vals,  "unit": "亿人",    "label": "世界人口"},
+            "electricity": {"years": elec_years, "values": elec_vals, "unit": "TWh",     "label": "电力发电量"}
+        }
+    }
+
+
 @app.route("/api/production")
 def api_prod():
     return jsonify(read_production())
@@ -484,6 +534,11 @@ def api_consumption_region():
 @app.route("/api/consumption_product")
 def api_consumption_product():
     return jsonify(read_consumption_product())
+
+
+@app.route("/api/consumption_growth")
+def api_consumption_growth():
+    return jsonify(read_consumption_growth())
 
 
 def _read_reserves_csv(path, oil_col, price_col):

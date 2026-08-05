@@ -10,8 +10,8 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #f5f7fa; font-family: Arial, "Microsoft YaHei", sans-serif; }
-        #loading { text-align: center; padding: 60px; color: #666; font-size: 15px; }
-        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 14px; }
+        #loading { text-align: center; padding: 60px; color: #666; font-size: 16px; }
+        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 16px; }
         /* 圆角/投影/白底见 common/base.css 的 .chart-card，这里只加卡片间距 */
         .chart-block { width: 100%; margin-bottom: 24px; }
         #container { max-width: 1800px; margin: 0 auto; padding: 20px 24px 40px; }
@@ -81,11 +81,12 @@ function render(compare) {
         image: stripeImg,
         repeat: 'repeat'
     };
-    // 图案是异步解码的：图片就绪前用它填充会画成空白，
-    // 解码完成后把"减少"系列重新 setOption 一次，纹理才会显示
+    // 图案是异步解码的：图片就绪前用它填充会画成空白（柱子和 legend 标记都是），
+    // 解码完成后把"减少"系列的系列级 itemStyle 和 data 都重新 setOption 一次，纹理才会显示
     stripeImg.onload = () => {
         charts.forEach(({ chart, losses }) => {
             chart.setOption({ series: [{}, {}, {
+                itemStyle: { color: stripePattern },
                 data: losses.map(v => ({ value: v, itemStyle: { color: stripePattern } }))
             }] });
         });
@@ -130,7 +131,7 @@ function render(compare) {
             backgroundColor: '#ffffff',
             tooltip: {
                 trigger: 'axis',
-
+                textStyle: { fontSize: 16 },
                 axisPointer: { type: 'shadow' },
                 formatter: params => {
                     const name = params[0].axisValue;
@@ -148,20 +149,22 @@ function render(compare) {
             legend: {
                 data: ['保留', '增加', '减少'],
                 top: 8, right: 20,
-                textStyle: { color: '#333', fontSize: 11 }
+                itemGap: 20,
+                textStyle: { color: '#333', fontSize: 16 }
             },
-            grid: { left: 120, right: 60, top: 40, bottom: 30 },
+            /* 左右留白按 16px 字号给：'Other Southern Africa' 这类长国名和 ±数值都要放得下 */
+            grid: { left: 210, right: 96, top: 40, bottom: 30 },
             xAxis: {
                 type: 'value',
                 min: 0,
                 max: globalMax,
-                axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0)+'k' },
+                axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0)+'k' },
                 splitLine: { lineStyle: { color: '#eee' } }
             },
             yAxis: {
                 type: 'category',
                 data: countries,
-                axisLabel: { color: '#333', fontSize: 13 },
+                axisLabel: { color: '#333', fontSize: 16 },
                 axisLine: { lineStyle: { color: '#ddd' } },
                 axisTick: { show: false }
             },
@@ -169,23 +172,30 @@ function render(compare) {
                 {
                     name: '保留',
                     type: 'bar', stack: 'total', barMaxWidth: 14,
+                    // 系列级 color 供 legend 取色；数据项 itemStyle 会覆盖柱子本身
+                    itemStyle: { color: '#3ba562' },
                         data: base.map(v => ({ value: v, itemStyle: { color: '#3ba562' } }))
                 },
                 {
                     name: '增加',
                     type: 'bar', stack: 'total', barMaxWidth: 14,
+                    itemStyle: { color: '#31d86e' },
                     data: gains.map(v => ({ value: v, itemStyle: { color: '#31d86e' } })),
+                    // 16px 的数值放不下时宁可不画：明细看 tooltip
+                    labelLayout: { hideOverlap: true },
                     label: {
-                        show: true, position: 'right', fontSize: 9, color: '#1a7a3a',
+                        show: true, position: 'right', fontSize: 16, color: '#1a7a3a',
                         formatter: p => p.value > 0 ? '+' + p.value.toLocaleString() : ''
                     }
                 },
                 {
                     name: '减少',
                     type: 'bar', stack: 'total', barMaxWidth: 14,
+                    itemStyle: { color: stripePattern },
                     data: losses.map(v => ({ value: v, itemStyle: { color: stripePattern } })),
+                    labelLayout: { hideOverlap: true },
                     label: {
-                        show: true, position: 'right', fontSize: 9, color: '#888888',
+                        show: true, position: 'right', fontSize: 16, color: '#6b7280',
                         formatter: p => p.value > 0 ? '-' + p.value.toLocaleString() : ''
                     }
                 }

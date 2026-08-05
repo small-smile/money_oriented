@@ -26,6 +26,9 @@ gold.price.txt	gold.org (World Gold Council) 年度收盘价, USD/oz	[确认] �
 # --- 世界人口 ---
 world_population.txt	World Bank Open Data SP.POP.TOTL (WLD, 世界聚合), 单位: 亿, 覆盖 1960 起	[确认] data/extract/fetch_world_population.py
 
+# --- 世界电力 ---
+electricity_generation.txt	Energy Institute (EI) Statistical Review 工作表 "Electricity Generation - TWh" 之 "Total World" 行, 单位: TWh, 覆盖 1985-2024	[确认] data/extract/electricity.py, 2026-08-05 抽取. 源表表头尾部 3 个统计列被误标为 "2024", 已按"4 位年份+严格递增"去重
+
 # --- 公司财务/储量/产量 ---
 abc_financials.txt	农业银行 (sh.601288) 年报/财务报表	[推断] 来源待确认
 ynshb_personal_loans.json	重庆农村商业银行 (sh.601077 / hk.03618) 2018–2025 个人贷款按用途细分余额与不良率	[确认] 从 A 股 2019/2020/2024/2025 年报 + H 股 2021/2022/2023 RESULTS ANNOUNCEMENT PDF 手工汇总 (pdftotext -layout), 2026-07-31 提取

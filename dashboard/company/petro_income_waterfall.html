@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../common/base.css">
-    <script src="../common/site-header.js" defer></script>
     <title>中石油 2025 利润→营收 反向瀑布图（按金额升序）</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -15,194 +14,15 @@
             padding: 16px;
             display: flex; flex-direction: column; gap: 12px;
         }
-        .site-nav { margin: -16px -16px 0; }
+
         .chart-card {
             /* 圆角/投影/白底见 common/base.css，这里只管布局 */
             width: 100%; max-width: 1800px; margin: 0 auto; flex-shrink: 0;
         }
-        .chart-box { width: 100%; height: 80vh; }
+
     </style>
 </head>
 <body>
-<section class="chart-card">
-    <h2 class="chart-title">中石油 2025 年度：从「营业利润」逆推到「营业收入」（反向瀑布图）<span class="sub">左侧 11 项按金额升序 → 从营业利润 169,113 逐级加回成本费用 → 最右累积至营业收入 398,220 | 利息收入为增利项（向下回退）| 单位：百万元人民币</span></h2>
-    <div id="chart-income" class="chart-box"></div>
-</section>
-<script>
-/* ────── 2025 年度合并利润表（源：题干数据，单位：百万元人民币） ────── */
-/* delta 正 = 增利，负 = 减利；type: total 表示汇总柱（营业利润 / 营业收入） */
-const rawItems = [
-    { name: '营业收入',         delta:  398220, type: 'total' },
-    { name: '原油及油品采购成本', delta:  -47646 },
-    { name: '生产操作费',        delta:  -40273 },
-    { name: '税金及附加',        delta:  -18194 },
-    { name: '勘探费用',          delta:  -15365 },
-    { name: '折旧、折耗和摊销',  delta:  -79771 },
-    { name: '减值及跌价准备',    delta:   -3818 },
-    { name: '销售及管理费用',    delta:  -12039 },
-    { name: '利息收入',          delta:   +5062 },
-    { name: '财务费用',          delta:   -6512 },
-    { name: '其他费用',          delta:  -10079 },
-    { name: '联/合营投资损失',   delta:    -472 },
-    { name: '营业利润',          delta:  169113, type: 'total' }
-];
 
-/* 中间 11 项：其他 10 项按 |delta| 升序；利息收入固定放倒数第三（末位成本项）*/
-const revenueItem = rawItems.find(it => it.name === '营业收入');
-const profitItem  = rawItems.find(it => it.name === '营业利润');
-const interestItem = rawItems.find(it => it.name === '利息收入');
-const middle = rawItems
-    .filter(it => it.type !== 'total' && it !== interestItem)
-    .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta));
-middle.push(interestItem);   // 利息收入 → 中间段末位 → 全局倒数第三
-
-/* 最大扣减项自动高亮（当前为 DD&A） */
-const maxLoss = middle
-    .filter(it => it.delta < 0)
-    .reduce((m, it) => (!m || Math.abs(it.delta) > Math.abs(m.delta)) ? it : m, null);
-if (maxLoss) maxLoss.highlight = true;
-
-const items = [...middle, profitItem, revenueItem];
-
-/* ────── 反向瀑布：从「营业利润」向上累积到「营业收入」 ────── */
-/* 中间 11 项在 X 轴按 |delta| 升序排列（小→大） */
-/* 扣减项(cost) → 向上堆一段 red 浮柱；增利项(gain, 利息收入) → 向下堆一段 green 浮柱 */
-/* 最终累积应正好等于营业收入 (398220 = 169113 + Σcost - 利息 = 169113 + 229107) */
-
-const COLOR_REVENUE = '#1a4d7a';
-const COLOR_PROFIT  = '#1a7a3a';
-const COLOR_GAIN    = '#31d86e';
-const COLOR_LOSS    = '#d94a4a';
-const COLOR_LOSS_HL = '#a11616';
-
-const categories  = items.map(it => it.name);
-const placeholder = [];
-const gainSeries  = [];
-const lossSeries  = [];
-const totalSeries = [];
-
-let running = profitItem.delta;   // 169113 起步
-items.forEach(it => {
-    if (it.type === 'total') {
-        placeholder.push(0);
-        gainSeries.push('-');
-        lossSeries.push('-');
-        totalSeries.push({
-            value: it.delta,
-            itemStyle: { color: it.name === '营业收入' ? COLOR_REVENUE : COLOR_PROFIT }
-        });
-    } else if (it.delta < 0) {
-        // 扣减项：向上堆积，floats [running, running+mag]
-        const mag = -it.delta;
-        placeholder.push(running);
-        lossSeries.push({
-            value: mag,
-            itemStyle: { color: it.highlight ? COLOR_LOSS_HL : COLOR_LOSS }
-        });
-        gainSeries.push('-');
-        totalSeries.push('-');
-        running += mag;
-    } else {
-        // 增利项（利息收入）：向下回退，floats [running-mag, running]
-        const mag = it.delta;
-        placeholder.push(running - mag);
-        gainSeries.push({
-            value: mag,
-            itemStyle: { color: COLOR_GAIN }
-        });
-        lossSeries.push('-');
-        totalSeries.push('-');
-        running -= mag;
-    }
-});
-// running 此时应 == 398220（营业收入），最右侧总柱正好画出这一数值
-
-const chart = echarts.init(document.getElementById('chart-income'));
-chart.setOption({
-    backgroundColor: '#ffffff',
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        position: (point, params, dom, rect, size) => {
-            const [x] = point;
-            const tw = size.contentSize[0];
-            const vw = size.viewSize[0];
-            return [x + 16 + tw > vw ? x - tw - 16 : x + 16, 16];
-        },
-        formatter: params => {
-            const it   = items[params[0].dataIndex];
-            const sign = it.delta >= 0 ? '+' : '-';
-            const pct  = (Math.abs(it.delta) / revenueItem.delta * 100).toFixed(1);
-            let role;
-            if (it.type === 'total') role = it.name === '营业收入' ? '营收总额（终点）' : '营业利润（起点）';
-            else if (it.delta >= 0)  role = '增利项（向下回退）';
-            else role = it.highlight ? '最大扣减项（向上加回）' : '扣减项（向上加回）';
-            return `<b>${it.name}</b><br>
-                    类型：${role}<br>
-                    金额：<b>${sign}${Math.abs(it.delta).toLocaleString()}</b> 百万元<br>
-                    占营收比：<b>${pct}%</b>`;
-        }
-    },
-    grid: { left: 72, right: 24, top: 24, bottom: 130 },
-    xAxis: {
-        type: 'category', data: categories,
-        axisLabel: {
-            color: '#222', fontSize: 14, fontWeight: 500,
-            interval: 0, rotate: 40,
-            margin: 12
-        },
-        axisLine: { lineStyle: { color: '#bbb' } }
-    },
-    yAxis: {
-        type: 'value', name: '金额（百万元）',
-        nameTextStyle: { color: '#555' },
-        axisLabel: { color: '#555', formatter: v => (v/1000).toFixed(0) + 'k' },
-        splitLine: { lineStyle: { color: '#e8e8e8' } },
-        min: 0
-    },
-    series: [
-        {
-            name: 'placeholder', type: 'bar', stack: 'total',
-            silent: true,
-            itemStyle: { color: 'transparent' },
-            emphasis: { itemStyle: { color: 'transparent' } },
-            data: placeholder,
-            barMaxWidth: 42
-        },
-        {
-            name: '扣减（加回）', type: 'bar', stack: 'total',
-            data: lossSeries,
-            barMaxWidth: 42,
-            label: {
-                show: true, position: 'top', fontSize: 10, fontWeight: 'bold',
-                color: '#a11616',
-                formatter: p => (p.value === '-' || p.value == null) ? '' : '+' + Number(p.value).toLocaleString()
-            }
-        },
-        {
-            name: '增利（回退）', type: 'bar', stack: 'total',
-            data: gainSeries,
-            barMaxWidth: 42,
-            label: {
-                show: true, position: 'bottom', fontSize: 10, fontWeight: 'bold',
-                color: '#1a7a3a',
-                formatter: p => (p.value === '-' || p.value == null) ? '' : '-' + Number(p.value).toLocaleString()
-            }
-        },
-        {
-            name: '汇总', type: 'bar', stack: 'total',
-            data: totalSeries,
-            barMaxWidth: 42,
-            label: {
-                show: true, position: 'top', fontSize: 11, fontWeight: 'bold',
-                color: '#1a1a2e',
-                formatter: p => (p.value === '-' || p.value == null) ? '' : Number(p.value).toLocaleString()
-            }
-        }
-    ]
-});
-
-window.addEventListener('resize', () => chart.resize());
-</script>
 </body>
 </html>
