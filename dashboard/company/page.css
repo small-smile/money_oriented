@@ -29,6 +29,15 @@ thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom:
 tbody tr:hover { background: #f3f6fa; }
 .row-total td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #c9a24a; }
 .row-sub td:first-child { padding-left: 26px; color: #555; font-weight: 400; }
+/* 可排序表格：表头可点，箭头提示当前排序列及方向；data-sort="none" 列（如序号）不参与排序，无箭头/手型 */
+table.sortable thead th { cursor: pointer; user-select: none; white-space: nowrap; }
+table.sortable thead th:hover { background: #e3e9f0; }
+table.sortable thead th::after { content: '⇕'; display: inline-block; margin-left: 5px; font-size: 12px; color: #b0bac5; }
+table.sortable thead th[data-sort-dir="asc"]::after { content: '▲'; color: #c9a24a; }
+table.sortable thead th[data-sort-dir="desc"]::after { content: '▼'; color: #c9a24a; }
+table.sortable thead th[data-sort="none"] { cursor: default; }
+table.sortable thead th[data-sort="none"]:hover { background: inherit; }
+table.sortable thead th[data-sort="none"]::after { content: none; }
 .neg { color: #c0392b; }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,420px)); gap: 14px; }
 .card2 { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 14px 16px; }

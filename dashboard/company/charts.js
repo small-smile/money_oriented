@@ -515,6 +515,28 @@ function initChart(id) {
     });
 })();
 
+/* ────── 1j2. 历年每 10 股分红（元，含税，按年度累计） ────── */
+(function () {
+    if (!document.getElementById('chart-dividend-per10')) return;   // 仅股东页
+    const years7 = ['2019','2020','2021','2022','2023','2024','2025'];
+    const per10  = [2.30, 2.22, 2.525, 2.714, 2.885, 3.046, 3.2091];
+
+    initChart('chart-dividend-per10')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 16 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + ' 元' },
+        grid: { left: 60, right: 40, top: 30, bottom: 40 },
+        xAxis: { type: 'category', data: years7, axisLabel: { fontSize: 16, color: '#555' } },
+        yAxis: { type: 'value', name: '每10股分红(元)', min: 0, nameTextStyle: { color: '#555', fontSize: 16 },
+                 axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: [
+            { name: '每10股分红(含税)', type: 'bar', data: per10, itemStyle: { color: '#c0392b' },
+              barMaxWidth: 44,
+              label: { show: true, position: 'top', fontSize: 16, color: '#c0392b', formatter: '{c}' } }
+        ]
+    });
+})();
+
 /* ────── 1k. 金融投资分类结构 AC / FVOCI / FVTPL ────── */
 (function () {
     const years8 = ['2018','2019','2020','2021','2022','2023','2024','2025'];
@@ -1089,8 +1111,45 @@ function initChart(id) {
                 type: 'bar', data: barData, barCategoryGap: '35%',
                 itemStyle: { borderColor: '#fff', borderWidth: 1 }
             }]
+    });
+})();
+})();
+
+// 可排序表格：点击表头按该列排序，"合计"等 data-nosort 行固定在最后不参与排序。
+// 数值列按 data-sort="num" 解析（去掉千分位逗号），文本列按 localeCompare。
+(function initSortableTables() {
+    document.querySelectorAll('table.sortable').forEach(table => {
+        const headers = table.querySelectorAll('thead th');
+        const tbody = table.querySelector('tbody');
+        headers.forEach((th, colIndex) => {
+            if (th.dataset.sort === 'none') return;   // 序号列：固定顺序，不参与排序
+            th.addEventListener('click', () => {
+                const type = th.dataset.sort || 'text';
+                const curDir = th.dataset.sortDir;
+                const dir = curDir === 'asc' ? 'desc' : 'asc';
+                headers.forEach(h => delete h.dataset.sortDir);
+                th.dataset.sortDir = dir;
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const fixedRows = rows.filter(r => r.dataset.nosort !== undefined);
+                const sortRows = rows.filter(r => r.dataset.nosort === undefined);
+
+                sortRows.sort((ra, rb) => {
+                    const a = ra.children[colIndex].textContent.trim();
+                    const b = rb.children[colIndex].textContent.trim();
+                    let cmp;
+                    if (type === 'num') {
+                        cmp = parseFloat(a.replace(/,/g, '')) - parseFloat(b.replace(/,/g, ''));
+                    } else {
+                        cmp = a.localeCompare(b, 'zh-Hans-CN');
+                    }
+                    return dir === 'asc' ? cmp : -cmp;
+                });
+
+                sortRows.concat(fixedRows).forEach(r => tbody.appendChild(r));
+            });
         });
-    })();
+    });
 })();
 
 /* ────── 6. 分部信息 ────── */

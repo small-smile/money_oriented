@@ -8,10 +8,11 @@
     - RPT_F10_FINANCE_MAINFINADATA  主要指标（含银行专项：存贷款总额、不良率、
                                     资本充足率、核心一级、一级、NIM/NIS、拨备覆盖率、拨贷比等）
     - RPT_F10_EH_HOLDERS            前十名股东（含报告期内增减）
+    - RPT_SHAREBONUS_DET            历年分红实施明细（每 10 股派现等）
 
 输出：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
-    data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 元信息
+    data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
 用法：
     python data/extract/fetch_bank_financials.py            # 使用缓存（缺失才请求）
@@ -247,6 +248,21 @@ def build_bank(code: str, refresh: bool) -> dict:
         prev_npl = npl
         prev_gross = gl
 
+    # 历年分红：按利润分配方案归属的报告年度（REPORT_DATE 年份）累加每 10 股派现（含税），
+    # 同一年度可能有中期 + 末期两条记录（如 2025 起），按年度合计。
+    bonus_payload = cached("RPT_SHAREBONUS_DET", code, filt, refresh,
+                           sort_col="PLAN_NOTICE_DATE", page_size=100)
+    bonus_rows = (bonus_payload.get("result") or {}).get("data") or []
+    dividend_per10: dict[str, float] = {}
+    for r in bonus_rows:
+        if r.get("ASSIGN_PROGRESS") != "实施分配":
+            continue
+        amt = r.get("PRETAX_BONUS_RMB")
+        rd = (r.get("REPORT_DATE") or "")[:4]
+        if amt is None or not rd:
+            continue
+        dividend_per10[rd] = round(dividend_per10.get(rd, 0.0) + amt, 4)
+
     holders_payload = cached("RPT_F10_EH_HOLDERS", code, filt, refresh,
                              sort_col="END_DATE", page_size=200)
     holder_rows = (holders_payload.get("result") or {}).get("data") or []
@@ -278,6 +294,7 @@ def build_bank(code: str, refresh: bool) -> dict:
         "annual": annual,
         "holders_end_date": latest_end,
         "holders": holders,
+        "dividend_per10": dividend_per10,
     }
 
 
