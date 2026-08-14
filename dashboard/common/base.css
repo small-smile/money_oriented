@@ -27,9 +27,18 @@ body {
     font-size: 16px;
     white-space: nowrap;
     overflow-x: auto;
+    /* 链接放不下时横向滚动，但隐藏滚动条：否则溢出的页面（石油/行业页）
+     * 底部会多出一条灰色滚动条，视觉高度比不溢出的银行页矮一截、参差不齐。
+     * 隐藏后所有导航条都是干净的 44px，仍可用滚轮/触控板横向滚动。 */
+    scrollbar-width: none;              /* Firefox */
+    -ms-overflow-style: none;           /* 旧 Edge/IE */
     flex-shrink: 0;   /* 与 body flex-column 布局兼容，防止被 flex 压扁 */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
+.site-nav::-webkit-scrollbar { display: none; }   /* Chrome/Safari：隐藏横向滚动条 */
 .site-nav .brand {
     font-weight: bold;
     color: #fbbf24;
@@ -60,9 +69,20 @@ body {
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    margin: 0 6px 0 14px;
-    padding-left: 14px;
-    border-left: 1px solid #4b5563;
+    margin: 0 8px 0 20px;
+    padding: 4px 10px 4px 16px;
+    border-left: 2px solid #4b5563;
+    background: rgba(255,255,255,0.03);
+    border-radius: 0 4px 4px 0;
+}
+/* 导航条布局：brand 靠左，主链接居中
+ * .nav-center 用 margin: 0 auto 在 flex 容器里居中
+ */
+.site-nav .nav-center {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: 0 auto;
 }
 
 /* 图表卡片：白底 + 圆角 + 柔和投影，所有页面统一

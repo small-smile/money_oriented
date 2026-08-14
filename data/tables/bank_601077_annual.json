@@ -2,7 +2,7 @@
  "code": "601077",
  "secucode": "601077.SH",
  "name": "渝农商行",
- "fetched_at": "2026-07-31 15:31 UTC",
+ "fetched_at": "2026-08-13 22:34 UTC",
  "source": "东方财富 F10 数据接口（取值源自各期年度报告，合并口径）",
  "unit_note": "金额字段单位为元；比率字段单位为 %",
  "annual": {
@@ -68,7 +68,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": null,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2006": {
    "interest_ni": null,
@@ -132,7 +136,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": null,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2007": {
    "interest_ni": null,
@@ -196,7 +204,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 2832761100.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2008": {
    "interest_ni": null,
@@ -260,7 +272,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 5640702300.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2009": {
    "interest_ni": 5474455000,
@@ -324,7 +340,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 5005501000.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2010": {
    "interest_ni": 7501768000,
@@ -388,7 +408,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": null,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": null,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2011": {
    "interest_ni": 10505018872,
@@ -455,7 +479,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 13524,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": null,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2012": {
    "interest_ni": 13092194000,
@@ -522,7 +550,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 14800,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": null,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2013": {
    "interest_ni": 15703193000,
@@ -589,7 +621,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15443,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 7100594000.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2014": {
    "interest_ni": 18348716000,
@@ -656,7 +692,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15740,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 8676237300.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2015": {
    "interest_ni": 20166479000,
@@ -723,7 +763,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 16182,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 11042588700.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2016": {
    "interest_ni": 19404719000,
@@ -790,7 +834,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 16245,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 12307070100.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2017": {
    "interest_ni": 21500730000,
@@ -857,7 +905,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15892,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 14235232400.0,
+   "net_charge_off": null,
+   "npl_formation": null,
+   "npl_formation_rate": null
   },
   "2018": {
    "interest_ni": 20013921000,
@@ -924,7 +976,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15688,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 17133178770.0,
+   "net_charge_off": 3291567630.0,
+   "npl_formation": 4916867630.0,
+   "npl_formation_rate": 1.4532
   },
   "2019": {
    "interest_ni": 23373635000,
@@ -991,7 +1047,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15371,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 20764545690.0,
+   "net_charge_off": 2941276080.0,
+   "npl_formation": 3474876080.0,
+   "npl_formation_rate": 0.9117
   },
   "2020": {
    "interest_ni": 24248870000,
@@ -1058,7 +1118,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15088,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 20928742450.0,
+   "net_charge_off": 10044396240.0,
+   "npl_formation": 11229596240.0,
+   "npl_formation_rate": 2.5692
   },
   "2021": {
    "interest_ni": 26234800000,
@@ -1125,7 +1189,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 14905,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 24838930500.0,
+   "net_charge_off": 6941947950.0,
+   "npl_formation": 7597047950.0,
+   "npl_formation_rate": 1.4958
   },
   "2022": {
    "interest_ni": 25404238000,
@@ -1192,7 +1260,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 14760,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 27605007100.0,
+   "net_charge_off": 5074414400.0,
+   "npl_formation": 5490714400.0,
+   "npl_formation_rate": 0.9432
   },
   "2023": {
    "interest_ni": 23493109000,
@@ -1259,7 +1331,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 15017,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 29553086400.0,
+   "net_charge_off": 3993196700.0,
+   "npl_formation": 4335896700.0,
+   "npl_formation_rate": 0.6853
   },
   "2024": {
    "interest_ni": 22494484000,
@@ -1326,7 +1402,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 14542,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 30601284560.0,
+   "net_charge_off": 4908711840.0,
+   "npl_formation": 5269411840.0,
+   "npl_formation_rate": 0.7787
   },
   "2025": {
    "interest_ni": 24260650000,
@@ -1393,7 +1473,11 @@
    "nsfr": null,
    "leverage_ratio": null,
    "staff_num": 14266,
-   "total_share": 11357000000
+   "total_share": 11357000000,
+   "loan_loss_allowance": 31545430440.0,
+   "net_charge_off": 4499980120.0,
+   "npl_formation": 4669480120.0,
+   "npl_formation_rate": 0.6537
   }
  },
  "holders_end_date": "2025-12-31",

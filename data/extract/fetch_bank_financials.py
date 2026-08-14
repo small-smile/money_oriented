@@ -45,6 +45,7 @@ HEADERS = {
 BANKS = {
     "601077": ("SH", "渝农商行"),
     "600036": ("SH", "招商银行"),
+    "601288": ("SH", "农业银行"),
 }
 
 STATEMENTS = {
@@ -200,6 +201,51 @@ def build_bank(code: str, refresh: bool) -> dict:
             if row:
                 rec.update(pick(row, fields))
         annual[y] = rec
+
+    # ── 派生指标：贷款减值准备余额、核销净额、不良生成额/率 ──
+    prev_allowance: float | None = None
+    prev_npl: float | None = None
+    prev_gross: float | None = None
+    for y in years:
+        rec = annual[y]
+        npl = rec.get("npl_amount")
+        pc = rec.get("provision_coverage")
+        gl = rec.get("gross_loans")
+        lpr = rec.get("loan_provision_ratio")
+        ci = rec.get("credit_impairment")
+
+        # 贷款减值准备余额 = 不良余额 × 拨备覆盖率 / 100（优先）或 贷款总额 × 拨贷比 / 100
+        if npl and pc:
+            allowance = npl * pc / 100
+        elif gl and lpr:
+            allowance = gl * lpr / 100
+        else:
+            allowance = None
+        rec["loan_loss_allowance"] = allowance
+
+        # 核销净额 = 期初准备 + 本期计提 − 期末准备
+        if prev_allowance is not None and allowance is not None and ci is not None:
+            rec["net_charge_off"] = prev_allowance + ci - allowance
+        else:
+            rec["net_charge_off"] = None
+
+        # 不良生成额 = 期末不良 − 期初不良 + 核销净额
+        nco = rec["net_charge_off"]
+        if npl is not None and prev_npl is not None and nco is not None:
+            rec["npl_formation"] = npl - prev_npl + nco
+        else:
+            rec["npl_formation"] = None
+
+        # 不良生成率 = 不良生成额 / 期初贷款总额 × 100（%）
+        formation = rec["npl_formation"]
+        if formation is not None and prev_gross and prev_gross > 0:
+            rec["npl_formation_rate"] = round(formation / prev_gross * 100, 4)
+        else:
+            rec["npl_formation_rate"] = None
+
+        prev_allowance = allowance
+        prev_npl = npl
+        prev_gross = gl
 
     holders_payload = cached("RPT_F10_EH_HOLDERS", code, filt, refresh,
                              sort_col="END_DATE", page_size=200)

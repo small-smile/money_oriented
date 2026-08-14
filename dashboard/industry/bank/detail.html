@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <script src="../../common/site-header.js" defer></script>
+    <title>银行详情 · 待补充</title>
+    <style>
+        body { padding: 0; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .crumb { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+        .crumb a { color: #1d4ed8; text-decoration: none; }
+        .crumb a:hover { text-decoration: underline; }
+        h1 { color: #2c3e50; font-size: 26px; margin-bottom: 10px; }
+        .codes { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .code {
+            padding: 3px 10px; border-radius: 12px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: 14px; font-weight: 500;
+        }
+        .code.a { background: #fee2e2; color: #b91c1c; }
+        .code.h { background: #dbeafe; color: #1d4ed8; }
+        .placeholder {
+            background: #fff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            color: #6b7280;
+        }
+        .placeholder .icon { font-size: 42px; margin-bottom: 12px; }
+        .placeholder .msg { font-size: 16px; margin-bottom: 8px; }
+        .placeholder .hint { font-size: 14px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="crumb"><a href="overview.html">← A/H 股上市银行概览</a></div>
+    <h1 id="title">银行详情</h1>
+    <div class="codes" id="codes"></div>
+    <div class="placeholder">
+        <div class="icon">🏗️</div>
+        <div class="msg">该银行专属数据页尚未建设</div>
+        <div class="hint">当前仅已完成 <a href="../../company/index.html">渝农商行 (601077)</a> 的年报数据页</div>
+    </div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const name = q.get('name') || '未指定';
+const a = q.get('a');
+const h = q.get('h');
+document.title = name + ' · 待补充';
+document.getElementById('title').textContent = name;
+const codes = document.getElementById('codes');
+if (a) {
+    const el = document.createElement('span');
+    el.className = 'code a';
+    el.textContent = 'A 股 ' + a;
+    codes.appendChild(el);
+}
+if (h) {
+    const el = document.createElement('span');
+    el.className = 'code h';
+    el.textContent = '港股 ' + h;
+    codes.appendChild(el);
+}
+</script>
+</body>
+</html>

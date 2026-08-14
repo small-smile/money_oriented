@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <script src="../../common/site-header.js" defer></script>
+    <title>A/H 股上市银行概览</title>
+    <style>
+        body { padding: 0; }
+        .page { max-width: 1200px; margin: 0 auto; padding: 32px 20px 48px; }
+        h1 { text-align: center; color: #2c3e50; font-size: 26px; margin-bottom: 8px; }
+        .lede { text-align: center; color: #6b7280; font-size: 15px; margin-bottom: 28px; }
+        h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            border-left: 5px solid #1f2937;
+            padding-left: 12px;
+            margin: 32px 0 12px;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+        h2 .count { color: #9ca3af; font-size: 14px; font-weight: 500; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .b-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+        }
+        .b-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+            border-color: #cbd5e1;
+        }
+        .b-card .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .b-card .codes {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .code {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+            font-weight: 500;
+        }
+        .code.a { background: #fee2e2; color: #b91c1c; }
+        .code.h { background: #dbeafe; color: #1d4ed8; }
+        .code.none { background: #f3f4f6; color: #9ca3af; }
+        .b-card.has-data { border-color: #d97706; box-shadow: 0 1px 4px rgba(217,119,6,0.15); }
+        .b-card.has-data .name::after {
+            content: "· 数据页";
+            font-size: 12px;
+            color: #d97706;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+        .legend {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin: 4px 0 24px;
+        }
+        .legend .code { font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>A/H 股上市银行概览</h1>
+    <div class="lede">按 国有大行 / 股份制 / 城商行 / 农商行 分组，含 A 股与港股上市主体</div>
+    <div class="legend">
+        <span><span class="code a">601xxx</span> A 股代码</span>
+        <span><span class="code h">xxxx.HK</span> 港股代码</span>
+        <span style="color:#d97706;">橙色边框 = 已有专属数据页</span>
+    </div>
+
+    <h2>国有大行 <span class="count">6 家 · 均 A+H 两地上市</span></h2>
+    <div class="grid" id="grid-big"></div>
+
+    <h2>股份制银行 <span class="count">10 家（9 家 A 股 · 渤海银行仅 H）</span></h2>
+    <div class="grid" id="grid-joint"></div>
+
+    <h2>城市商业银行 <span class="count">A 股 17 家 + 仅港股 12 家</span></h2>
+    <div class="grid" id="grid-city"></div>
+
+    <h2>农村商业银行 <span class="count">A 股 10 家 + 仅港股 3 家</span></h2>
+    <div class="grid" id="grid-rural"></div>
+</div>
+
+<script>
+/* 每家银行：name 简称，a A股代码（可空），h 港股代码（可空），page 已有专属页（可空） */
+const BANKS = {
+    big: [
+        {name: '工商银行', a: '601398', h: '1398.HK'},
+        {name: '建设银行', a: '601939', h: '0939.HK'},
+        {name: '农业银行', a: '601288', h: '1288.HK'},
+        {name: '中国银行', a: '601988', h: '3988.HK'},
+        {name: '交通银行', a: '601328', h: '3328.HK'},
+        {name: '邮储银行', a: '601658', h: '1658.HK'}
+    ],
+    joint: [
+        {name: '招商银行', a: '600036', h: '3968.HK'},
+        {name: '兴业银行', a: '601166', h: null},
+        {name: '浦发银行', a: '600000', h: null},
+        {name: '中信银行', a: '601998', h: '0998.HK'},
+        {name: '民生银行', a: '600016', h: '1988.HK'},
+        {name: '光大银行', a: '601818', h: '6818.HK'},
+        {name: '华夏银行', a: '600015', h: null},
+        {name: '平安银行', a: '000001', h: null},
+        {name: '浙商银行', a: '601916', h: '2016.HK'},
+        {name: '渤海银行', a: null,     h: '9668.HK'}
+    ],
+    city: [
+        // A 股 17 家
+        {name: '北京银行',   a: '601169', h: null},
+        {name: '江苏银行',   a: '600919', h: null},
+        {name: '上海银行',   a: '601229', h: null},
+        {name: '南京银行',   a: '601009', h: null},
+        {name: '宁波银行',   a: '002142', h: null},
+        {name: '杭州银行',   a: '600926', h: null},
+        {name: '成都银行',   a: '601838', h: null},
+        {name: '长沙银行',   a: '601577', h: null},
+        {name: '贵阳银行',   a: '601997', h: null},
+        {name: '重庆银行',   a: '601963', h: '1963.HK'},
+        {name: '郑州银行',   a: '002936', h: '6196.HK'},
+        {name: '青岛银行',   a: '002948', h: '3866.HK'},
+        {name: '苏州银行',   a: '002966', h: null},
+        {name: '齐鲁银行',   a: '601665', h: null},
+        {name: '厦门银行',   a: '601187', h: null},
+        {name: '西安银行',   a: '600928', h: null},
+        {name: '兰州银行',   a: '001227', h: null},
+        // 仅港股 12 家
+        {name: '徽商银行',   a: null, h: '3698.HK'},
+        {name: '中原银行',   a: null, h: '1216.HK'},
+        {name: '哈尔滨银行', a: null, h: '6138.HK'},
+        {name: '盛京银行',   a: null, h: '2066.HK'},
+        {name: '天津银行',   a: null, h: '1578.HK'},
+        {name: '甘肃银行',   a: null, h: '2139.HK'},
+        {name: '江西银行',   a: null, h: '1916.HK'},
+        {name: '九江银行',   a: null, h: '6190.HK'},
+        {name: '泸州银行',   a: null, h: '1983.HK'},
+        {name: '贵州银行',   a: null, h: '6199.HK'},
+        {name: '晋商银行',   a: null, h: '2558.HK'},
+        {name: '威海市商业银行', a: null, h: '9677.HK'}
+    ],
+    rural: [
+        // A 股 10 家
+        {name: '渝农商行',   a: '601077', h: '3618.HK'},
+        {name: '沪农商行',   a: '601825', h: null},
+        {name: '常熟银行',   a: '601128', h: null},
+        {name: '紫金银行',   a: '601860', h: null},
+        {name: '青农商行',   a: '002958', h: null},
+        {name: '瑞丰银行',   a: '601528', h: null},
+        {name: '无锡银行',   a: '600908', h: null},
+        {name: '苏农银行',   a: '603323', h: null},
+        {name: '江阴银行',   a: '002807', h: null},
+        {name: '张家港行',   a: '002839', h: null},
+        // 仅港股
+        {name: '广州农商行', a: null, h: '1551.HK'},
+        {name: '东莞农商行', a: null, h: '9889.HK'},
+        {name: '九台农商行', a: null, h: '6122.HK'}
+    ]
+};
+
+/* 已有专属详情页的银行：代码 → 相对 dashboard/industry/bank/ 的路径 */
+const DETAIL_PAGES = {
+    '601077': '../../company/index.html'
+};
+
+function detailHref(bank) {
+    if (bank.a && DETAIL_PAGES[bank.a]) return DETAIL_PAGES[bank.a];
+    const q = new URLSearchParams();
+    if (bank.a) q.set('a', bank.a);
+    if (bank.h) q.set('h', bank.h);
+    q.set('name', bank.name);
+    return 'detail.html?' + q.toString();
+}
+
+function render(id, banks) {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    for (const b of banks) {
+        const a = document.createElement('a');
+        a.className = 'b-card';
+        if (b.a && DETAIL_PAGES[b.a]) a.classList.add('has-data');
+        a.href = detailHref(b);
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = b.name;
+
+        const codes = document.createElement('span');
+        codes.className = 'codes';
+        if (b.a) {
+            const c = document.createElement('span');
+            c.className = 'code a';
+            c.textContent = b.a;
+            codes.appendChild(c);
+        }
+        if (b.h) {
+            const c = document.createElement('span');
+            c.className = 'code h';
+            c.textContent = b.h;
+            codes.appendChild(c);
+        }
+        if (!b.a && !b.h) {
+            const c = document.createElement('span');
+            c.className = 'code none';
+            c.textContent = '未上市';
+            codes.appendChild(c);
+        }
+
+        a.appendChild(name);
+        a.appendChild(codes);
+        grid.appendChild(a);
+    }
+}
+
+render('grid-big',   BANKS.big);
+render('grid-joint', BANKS.joint);
+render('grid-city',  BANKS.city);
+render('grid-rural', BANKS.rural);
+</script>
+</body>
+</html>

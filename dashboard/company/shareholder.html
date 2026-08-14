@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../common/base.css">
+    <link rel="stylesheet" href="page.css">
+    <script src="../common/bank-header.js" defer></script>
+    <title>渝农商行（601077 / 03618）2025 年报 · 股东</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>重庆农村商业银行（渝农商行）2025 年报 · 股东</h1>
+        <div class="meta">
+            A 股 601077（上交所） · H 股 03618（港交所） · 董事长 刘小军 · 行长 隋军<br>
+            全国首家"万亿"农商行 · 西部首家"A+H"股上市银行 · 单位：人民币百万元（另标注除外）
+        </div>
+        <div class="tags"><span>股东</span><span>每股指标</span><span>分红</span><span>股权结构</span></div>
+    </div>
+
+    <!-- ══════════ 0 审计意见（置顶） ══════════ -->
+    <div class="opinion-hero">
+        <span class="tick">✓ 标准无保留意见</span>
+        <div class="txt">2025 年度财务报告 · 审计机构 毕马威</div>
+    </div>
+
+    <!-- ══════════ 1.11 每股指标 EPS / BVPS ══════════ -->
+    <section id="sec-pershare">
+        <h2>每股指标（基本每股收益 / 每股净资产，2010–2025）</h2>
+        <p class="sub">口径：本集团合并数 · 基本每股收益（元/股）· 归属普通股股东的每股净资产（元/股）</p>
+        <div class="kpis">
+            <div class="kpi"><div class="label">2025 基本每股收益 EPS</div><div class="value">1.05 元</div><div class="delta up">▲ 0.06</div></div>
+            <div class="kpi"><div class="label">2025 每股净资产 BVPS</div><div class="value">11.55 元</div><div class="delta up">▲ 0.48</div></div>
+        </div>
+        <div id="chart-pershare" class="chart"></div>
+        <div class="note">
+            自 2010 年 H 股上市以来，每股净资产由 2.43 元稳步增厚至 2025 年 <b>11.55 元</b>（15 年 +375%），靠留存收益逐年积累；基本每股收益由 0.45 元升至 <b>1.05 元</b>，其中 2020 年受疫情大额拨备计提影响回落至 0.74 元后恢复上行。EPS 增速慢于 BVPS，主要因期间多次配股 / 定增及可转债等摊薄、总股本由约 74 亿股扩至 113.57 亿股。<br>
+            <b>注：</b>EPS 为年报披露「基本每股收益」，已扣除永续债等其他权益工具利息、按加权平均股数计算，故不等于「归母净利润 ÷ 期末总股本」；BVPS 为归属于普通股股东权益 ÷ 期末普通股股数，低于「归母权益 ÷ 总股本」因剔除了其他权益工具。<br>
+            数据来源：东方财富 F10（历年年报「主要财务指标」，取「基本每股收益」与「每股净资产」披露值）。
+        </div>
+    </section>
+
+    <!-- ══════════ 3 股东及股东变动 ══════════ -->
+    <section id="sec-holders">
+        <h2>股东及股东变动</h2>
+        <p class="sub">报告期末股东总数 116,634 户（A 股 115,547 户、H 股 1,087 户）· 前十名股东持股情况</p>
+        <h3 class="chart-title">股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）</h3>
+        <div id="chart-holders" class="chart" style="height:560px"></div>
+        <div id="holders-legend" style="font-size:16px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
+        <div style="margin-top:22px">
+            <div style="font-size:16px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:10px">股权占比折叠条（100% 按「己」字形折成 3 行 · 三横相连的转折段为「连接段」不计入占比 · 用灰色特殊标注 · 每段按比例 · 同派系同色）</div>
+            <div id="chart-holders-fold" class="chart" style="padding:16px 8px"></div>
+        </div>
+        <div style="margin-top:22px">
+            <div style="font-size:16px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:10px">股东持股比例条形图（横向 · 按比例排序 · 同派系同色 · ≥4% 股东条内显示股东名 · 可用下方滑块左右拉伸放大）</div>
+            <div id="chart-holders-bar" class="chart" style="height:520px"></div>
+        </div>
+        <div style="overflow-x:auto;margin-top:16px">
+            <table>
+                <thead><tr><th>股东名称</th><th>比例</th><th>报告期内增减</th><th>类别</th></tr></thead>
+                <tbody id="holder-tbody"></tbody>
+            </table>
+        </div>
+        <div class="note">
+            <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:12px;font-size:16px;color:#444">
+                <b style="color:#333">同色 = 同一致行动派系：</b>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#6c3483;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>渝富系（渝富资本 / 水利投资 / 水务）</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>发展系（发展置业 / 发展投资）</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#16a085;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>香港中央结算（代理人 / 沪股通）</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#e67e22;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>城投集团</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#c0392b;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>财信集团</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#f1c40f;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>社保116</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#95a5a6;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>其他流通股东</span>
+            </div>
+            环形图 / 折叠条：全部股东（<b>「其他流通股东」也作为一个普通股东参与排序</b>）按<b>持股比例从大到小</b>铺满整圈 / 整条（合计 100%）；<b>每段角度 / 长度 = 其占总股本比例</b>，<b>同一致行动派系用同一颜色</b>（青=香港中央结算、紫=渝富系、蓝=发展系，其余城投橙 / 财信红 / 社保黄 / 其他灰）。圆心标注前十大合计 58.29%。
+            扇区过小的标签已隐藏，可 hover 或看下方派系清单 / 底部明细表。
+            一致行动关系：重庆发展置业管理与重庆发展投资互为一致行动人；重庆市水利投资（集团）、重庆水务集团为重庆渝富资本运营集团的一致行动人。
+            重庆财信企业集团所持 1.125 亿股处于质押、司法冻结状态。持股比例按总股本 113.57 亿股计算。
+        </div>
+    </section>
+
+    <!-- ══════════ 分红与股东回报 ══════════ -->
+    <section id="sec-dividend">
+        <h2>分红与股东回报</h2>
+        <p class="sub">来源：2025 年报「利润分配方案」及历年分红公告</p>
+        <div class="cards">
+            <div class="card2">
+                <h3>2025 年度分红</h3>
+                <ul>
+                    <li>2025 中期股息：每 10 股 2.0336 元（含税）</li>
+                    <li>2025 末期拟派：每 10 股 1.1755 元（含税）</li>
+                    <li>全年累计：每 10 股 3.2091 元</li>
+                    <li>近五年累计分红 150 亿元，分红率≥30%</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script src="charts.js"></script>
+</body>
+</html>

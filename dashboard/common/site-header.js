@@ -1,12 +1,9 @@
-/* 顶部通用导航条注入 —— 所有看板页面共享
+/* 石油分组专用导航条注入 —— 供 dashboard/industry/oil/*.html 使用
  * 每个页面 <head> 里 <script src="<相对路径>/common/site-header.js" defer></script>
  * 依赖 common/base.css 中的 .site-nav 样式
  *
- * 目录结构：
- *   dashboard/index.html            导航首页
- *   dashboard/industry/oil/*.html   行业分析 · 石油
- *   dashboard/industry/bank/*.html  行业分析 · 银行（待建设）
- *   dashboard/company/*.html        公司年报
+ * 银行相关页面（dashboard/company/*.html）改用独立的 bank-header.js，
+ * 两个分组的导航逻辑/配置完全分开，改一个不影响另一个。
  *
  * 下面 href 一律写成「相对 dashboard/ 根目录」的路径，由脚本按自身 src 推算前缀，
  * 因此页面放在任意层级都不需要改这里。
@@ -29,13 +26,7 @@
                 {href: 'industry/oil/china_oil_majors.html',             title: '油企'},
                 {href: 'industry/oil/cnooc_roa_oil.html',                title: '中海油 油价·ROA'}
             ]
-        },
-        {
-            label: '银行',
-            pages: [
-                {href: 'company/index.html',                               title: '银行年报'}
-            ]
-        },
+        }
     ];
 
     // 当前页在 dashboard/ 下的路径，用于高亮
