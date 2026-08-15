@@ -11,7 +11,9 @@ body {
     background: #f5f7fa;
     font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     color: #1f2937;
-    font-size: 16px;      /* 全局默认字体：最小 16px */
+    font-size: 18px;      /* 全局默认字体：最小 18px（= 原 16px × 1.125）
+                           * 相当于浏览器缩放 125% 再回到 90%——那一档看着最舒服，直接固化进样式。
+                           * 全站字号、导航高度、正文列宽、图表高度都按同一 1.125 比例放大。 */
     line-height: 1.6;
 }
 
@@ -19,17 +21,17 @@ body {
 .site-nav {
     background: #1f2937;
     color: #fff;
-    padding: 0 16px;
-    height: 44px;
+    padding: 0 18px;
+    height: 50px;   /* 44 × 1.125：字号放大后 44px 装不下一行链接 */
     display: flex;
     align-items: center;
     gap: 2px;
-    font-size: 16px;
+    font-size: 18px;
     white-space: nowrap;
     overflow-x: auto;
     /* 链接放不下时横向滚动，但隐藏滚动条：否则溢出的页面（石油/行业页）
      * 底部会多出一条灰色滚动条，视觉高度比不溢出的银行页矮一截、参差不齐。
-     * 隐藏后所有导航条都是干净的 44px，仍可用滚轮/触控板横向滚动。 */
+     * 隐藏后所有导航条都是干净的 50px，仍可用滚轮/触控板横向滚动。 */
     scrollbar-width: none;              /* Firefox */
     -ms-overflow-style: none;           /* 旧 Edge/IE */
     flex-shrink: 0;   /* 与 body flex-column 布局兼容，防止被 flex 压扁 */
@@ -42,16 +44,16 @@ body {
 .site-nav .brand {
     font-weight: bold;
     color: #fbbf24;
-    margin-right: 20px;
-    font-size: 17px;
+    margin-right: 23px;
+    font-size: 19px;
     letter-spacing: 0.5px;
 }
 .site-nav a {
     color: #d1d5db;
     text-decoration: none;
-    padding: 6px 12px;
+    padding: 7px 14px;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 18px;
     transition: background 0.15s, color 0.15s;
 }
 .site-nav a:hover {
@@ -66,11 +68,11 @@ body {
 /* 行业分组标签：区隔不同行业的页面 */
 .site-nav .nav-group {
     color: #9ca3af;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    margin: 0 8px 0 20px;
-    padding: 4px 10px 4px 16px;
+    margin: 0 9px 0 23px;
+    padding: 5px 12px 5px 18px;
     border-left: 2px solid #4b5563;
     background: rgba(255,255,255,0.03);
     border-radius: 0 4px 4px 0;
@@ -83,6 +85,25 @@ body {
     align-items: center;
     gap: 2px;
     margin: 0 auto;
+}
+/* 真正居中：margin: 0 auto 只在「剩余空间」里居中，左边 brand 占了 140.94px
+ * （120.94 + margin-right 20），右边没有对应物，链接组因此被推右 ~71px
+ * （实测 1440 视口：组中心 783.97，而导航条中心是 712.5）。
+ * 在右侧放一个与 brand 同字体、同 padding、同 margin 的隐藏镜像占位，
+ * 两侧对称后 auto margin 才落在真正的中心（实测修正后组中心 = 712.49）。
+ * 文案与 .brand 保持一致；改 brand 文字时这里一起改。
+ * 只作用于有 .nav-center 的银行页（bank-header.js）；石油页（site-header.js）
+ * 把链接直接挂在 .site-nav 上、没有 .nav-center，不受这条规则影响。
+ */
+.site-nav:has(.nav-center)::after {
+    content: '📊 行业看板';
+    flex: 0 0 auto;
+    font-weight: bold;
+    font-size: 19px;
+    letter-spacing: 0.5px;
+    padding: 7px 14px;
+    margin-left: 23px;
+    visibility: hidden;
 }
 
 /* 图表卡片：白底 + 圆角 + 柔和投影，所有页面统一
@@ -100,14 +121,14 @@ body {
  */
 .chart-title {
     text-align: center;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #1a1a2e;
     padding: 8px 0 2px;
 }
 .chart-title .sub {
     display: block;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 400;
     color: #666;
     margin-top: 2px;
@@ -118,12 +139,12 @@ body {
     text-align: center;
     padding: 60px;
     color: #666;
-    font-size: 16px;
+    font-size: 18px;
 }
 #error-msg {
     display: none;
     text-align: center;
     padding: 20px;
     color: #d32f2f;
-    font-size: 16px;
+    font-size: 18px;
 }

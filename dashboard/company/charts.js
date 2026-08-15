@@ -5,26 +5,31 @@ function initChart(id) {
     return el ? echarts.init(el) : null;
 }
 
-/* ────── 1. 业绩走势（自上市以来 2010–2025） ────── */
+/* ────── 1. 业绩走势（2009 年起，2008 年 6 月信用社改制为股份公司致口径断口） ────── */
 (function () {
-    const years   = ['2010','2011','2012','2013','2014','2015','2016','2017',
+    const years   = ['2009',
+                     '2010','2011','2012','2013','2014','2015','2016','2017',
                      '2018','2019','2020','2021','2022','2023','2024','2025'];
-    const revenue = [ 78.11,110.24,135.54,162.10,197.10,217.43,217.05,239.88,
+    // 2009 年营业收入 56.77 亿、净利润 18.88 亿：取自本行 2010 年 12 月 H 股招股章程 Appendix IB 会计师报告（重组后口径）
+    // 2010/2011 归母净利润按 H 股年报「歸屬於本行股東的淨利潤」原文修正为 30.64/42.47 亿（此前误取衍生值 31.13/42.71）
+    const revenue = [ 56.77,
+                      78.11,110.24,135.54,162.10,197.10,217.43,217.05,239.88,
                      261.16,266.30,281.86,308.42,289.91,279.56,282.31,286.20];
-    const profit  = [ 31.13, 42.71, 53.61, 59.91, 68.28, 72.23, 79.45, 89.36,
+    const profit  = [ 18.88,
+                      30.64, 42.47, 53.61, 59.91, 68.28, 72.23, 79.45, 89.36,
                       90.58, 97.60, 84.01, 95.60,102.76,109.02,115.13,121.28];
     initChart('chart-perf')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
             formatter: p => `<b>${p[0].axisValue} 年</b><br>` +
                 p.map(x => `${x.marker}${x.seriesName}：${x.value} 亿元`).join('<br>') },
-        legend: { data: ['营业收入','归母净利润'], top: 4, textStyle: { fontSize: 16 } },
+        legend: { data: ['营业收入','归母净利润'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 24, top: 46, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false,
-            axisLabel: { fontSize: 16, color: '#555', rotate: 40 }, axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { color: '#555', fontSize: 16 },
-            axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+            axisLabel: { fontSize: 18, color: '#555', rotate: 40 }, axisLine: { lineStyle: { color: '#bbb' } } },
+        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { color: '#555', fontSize: 18 },
+            axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '营业收入', type: 'line', data: revenue, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
@@ -35,41 +40,42 @@ function initChart(id) {
     });
 })();
 
-/* ────── 1.1b 加权平均 ROE（2010–2025，2018 年新准则切换断口） ────── */
+/* ────── 1.1b 加权平均 ROE（2009 年起，2018 年新准则切换断口） ────── */
 (function () {
-    const years = ['2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
-    // 2010–2013 简单 ROE = 归母净利润 / 平均归母权益（年报未披露加权平均值，取自 F10 利润表/资产负债表计算）
+    const years = ['2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+    // 2009–2013 简单 ROE = 归母净利润 / 平均归母权益（年报未披露加权平均值）
+    // 2009 年净利润 18.88 亿、期末权益 94.77 亿：取自 2010 年 H 股招股章程 Appendix IB 会计师报告（hkexnews.hk），2008 年期末权益 78.92 亿同源
     // 2010 年 12 月 H 股上市募资致权益年内跳升，简单平均偏低；2011–2013 无重大增发，近似加权
-    const roeCalc = [19.89, 17.01, 18.07, 17.81, null, null, null, null, null, null, null, null, null, null, null, null];
+    const roeCalc = [21.75, 19.89, 17.01, 18.07, 17.81, null, null, null, null, null, null, null, null, null, null, null, null];
     // 旧准则「加权平均股东权益回报率」(年报披露)，2014–2018
-    const roeOld = [null, null, null, null, 17.81, 17.27, 17.06, 16.38, 15.99, null, null, null, null, null, null, null];
+    const roeOld = [null, null, null, null, null, 17.81, 17.27, 17.06, 16.38, 15.99, null, null, null, null, null, null, null];
     // 新准则「加权平均净资产收益率」(年报披露)，自 2018 年首次执行新金融工具准则起
-    const roeNew = [null, null, null, null, null, null, null, null, 13.55, 12.82, 9.28, 9.87, 9.76, 9.58, 9.28, 9.18];
+    const roeNew = [null, null, null, null, null, null, null, null, null, 13.55, 12.82, 9.28, 9.87, 9.76, 9.58, 9.28, 9.18];
     initChart('chart-roe')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
             formatter: p => {
                 let s = `<b>${p[0].axisValue} 年</b>`;
                 p.forEach(x => { if (x.value != null) s += `<br>${x.marker}${x.seriesName}：${x.value}%`; });
                 return s;
             } },
-        legend: { data: ['简单ROE（净利/平均权益）', 'ROE（旧准则·年报）', 'ROE（新准则·年报）'], bottom: 2, textStyle: { fontSize: 16 } },
+        legend: { data: ['简单ROE（净利/平均权益）', 'ROE（旧准则·年报）', 'ROE（新准则·年报）'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 56, right: 24, top: 36, bottom: 68 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555', rotate: 40 } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '简单ROE（净利/平均权益）', type: 'line', data: roeCalc, symbolSize: 6,
               lineStyle: { width: 2.5, color: '#af7ac5', type: 'dotted' }, itemStyle: { color: '#af7ac5' },
-              label: { show: true, position: 'top', fontSize: 14, color: '#af7ac5', formatter: '{c}%' } },
+              label: { show: true, position: 'top', fontSize: 16, color: '#af7ac5', formatter: '{c}%' } },
             { name: 'ROE（旧准则·年报）', type: 'line', data: roeOld, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483', type: 'dashed' }, itemStyle: { color: '#6c3483' },
-              label: { show: true, position: 'top', fontSize: 14, color: '#6c3483', formatter: '{c}%' } },
+              label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } },
             { name: 'ROE（新准则·年报）', type: 'line', data: roeNew, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
               areaStyle: { color: 'rgba(108,52,131,0.08)' },
-              label: { show: true, position: 'top', fontSize: 14, color: '#6c3483', formatter: '{c}%' } }
+              label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } }
         ]
     });
 })();
@@ -123,8 +129,8 @@ function initChart(id) {
         const exp = fits.log[key], lin = fits.lin[key];
         chart.setOption({
             backgroundColor: '#fff',
-            textStyle: { fontSize: 16 },
-            tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
                 formatter: p => {
                     const i = p[0].dataIndex, act = vals[i];
                     if (act == null) return `<b>${p[0].axisValue} 年</b><br>${label}：缺口`;
@@ -136,21 +142,21 @@ function initChart(id) {
                            `<br>　指数趋势 ${exp.fit[i].toLocaleString()} 亿 · 偏离 ${dev(exp)}` +
                            `<br>　线性趋势 ${lin.fit[i].toLocaleString()} 亿 · 偏离 ${dev(lin)}`;
                 } },
-            legend: { data: [label, '指数回归', '线性回归'], bottom: 2, textStyle: { fontSize: 16 } },
+            legend: { data: [label, '指数回归', '线性回归'], bottom: 2, textStyle: { fontSize: 18 } },
             grid: { left: 64, right: 170, top: 30, bottom: 52 },
-            xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-            yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+            xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+            yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
             series: [
                 { name: label, type: 'line', data: vals, smooth: true, connectNulls: true, symbolSize: 6,
                   lineStyle: { width: 3, color }, itemStyle: { color },
                   areaStyle: { color: areaColor } },
                 { name: '指数回归', type: 'line', data: exp.fit, symbol: 'none', z: 3, silent: true,
                   lineStyle: { width: 2, type: 'dashed', color, opacity: 0.8 }, itemStyle: { color },
-                  endLabel: { show: true, fontSize: 16, color, distance: 6,
+                  endLabel: { show: true, fontSize: 18, color, distance: 6,
                       formatter: `指数 ${exp.rate}` } },
                 { name: '线性回归', type: 'line', data: lin.fit, symbol: 'none', z: 3, silent: true,
                   lineStyle: { width: 2, type: 'dotted', color: '#7f8c8d' }, itemStyle: { color: '#7f8c8d' },
-                  endLabel: { show: true, fontSize: 16, color: '#7f8c8d', distance: 6,
+                  endLabel: { show: true, fontSize: 18, color: '#7f8c8d', distance: 6,
                       formatter: `线性 ${lin.rate}` } }
             ]
         });
@@ -163,18 +169,18 @@ function initChart(id) {
 
     initChart('chart-npl')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行', '招商银行'], bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['渝农商行', '农业银行', '招商银行'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 48, right: 24, top: 56, bottom: 60 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '不良率%', min: 0, max: 3, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { color: '#c0392b', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '不良率%', min: 0, max: 3, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '渝农商行', type: 'line', data: npl, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
               areaStyle: { color: 'rgba(192,57,43,0.07)' },
-              label: { show: true, position: 'top', fontSize: 16, color: '#c0392b', formatter: '{c}%' } },
+              label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
             { name: '农业银行', type: 'line', data: nplAbc, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' } },
             { name: '招商银行', type: 'line', data: nplCmb, smooth: true, connectNulls: true, symbolSize: 6,
@@ -184,13 +190,13 @@ function initChart(id) {
 
     initChart('chart-quality')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 48, right: 20, top: 36, bottom: 52 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '%', min: 0, max: 18, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { color: '#1e8449', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '%', min: 0, max: 18, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { color: '#1e8449', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '资本充足率', type: 'line', data: car, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
@@ -204,17 +210,19 @@ function initChart(id) {
 (function () {
     const years10  = ['2010','2011','2012','2013','2014','2015','2016','2017',
                        '2018','2019','2020','2021','2022','2023','2024','2025'];
-    const nim  = [3.07, 3.36, 3.50, null, null, 3.20, 2.74, 2.62, 2.65, 2.33, 2.25, 2.17, 1.97, 1.73, 1.61, 1.60];
-    const nis  = [2.97, 3.13, null, 3.19, 3.14, 2.99, 2.57, 2.44, 2.44, 2.16, 2.08, 2.01, 1.84, 1.64, 1.51, 1.51];
+    // NIM/NIS：H 股 03618 历年年报「財務摘要—盈利能力指標」及本行 2010–2025 年年度报告披露值
+    // 2018 年改用新准则（IFRS9）值 2.45/2.40（此前误取"經調整"IAS39 口径 2.65/2.44，与后续年份口径不一致）
+    const nim  = [3.07, 3.36, 3.50, 3.41, 3.37, 3.20, 2.74, 2.62, 2.45, 2.33, 2.25, 2.17, 1.97, 1.73, 1.61, 1.60];
+    const nis  = [2.97, 3.13, 3.26, 3.19, 3.14, 2.99, 2.57, 2.44, 2.40, 2.16, 2.08, 2.01, 1.84, 1.64, 1.51, 1.51];
 
     initChart('chart-nim-trend')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['净息差 NIM', '净利差 NIS'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['净息差 NIM', '净利差 NIS'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 48, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years10, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555', rotate: 40 } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years10, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '净息差 NIM', type: 'line', data: nim, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
@@ -224,17 +232,20 @@ function initChart(id) {
         ]
     });
 
-    const nonInt     = [3.96, 4.70, 3.40, 3.13, 6.91, 7.25, 10.60, 10.37, 23.37, 12.23, 13.97, 14.94, 12.37, 15.96, 20.41, 15.32];
-    const costIncome = [43.40,36.73,37.97,37.91,35.90,34.92,35.88,33.94,30.33,28.54,27.09,27.52,31.84,33.94,31.86,31.22];
+    // 非息收入占比：2010–2018 由 H 股年报「淨利息收入佔營業收入總額」反算（100% − 该比率）；2019–2025 为本行年报「非利息净收入/营业收入」披露值
+    // 2018 年为 H 股口径 23.29%，A 股 2019 年报比较列重述为 23.37%（此处衔接 2019 起的 A 股序列口径取 23.37%）
+    const nonInt     = [3.14, 5.52, 4.11, 3.75, 7.34, 7.87, 10.42, 10.30, 23.37, 12.23, 13.97, 14.94, 12.37, 15.96, 20.41, 15.32];
+    // 成本收入比：2010–2017 为 H 股年报「成本佔收入比率」披露值（总营业支出扣除税金及附加/其他业务成本 ÷ 营业收入）；2018–2025 为本行年报「成本收入比」披露值（业务及管理费/营业收入），两段定义不同、不完全可比
+    const costIncome = [44.40,36.64,37.70,37.66,35.74,34.69,35.95,33.96,30.33,28.54,27.09,27.52,31.84,33.94,31.86,31.22];
 
     initChart('chart-costincome')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['非息收入占比', '成本收入比'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['非息收入占比', '成本收入比'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 48, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years10, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555', rotate: 40 } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years10, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '非息收入占比', type: 'line', data: nonInt, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#16a085' }, itemStyle: { color: '#16a085' } },
@@ -256,7 +267,7 @@ function initChart(id) {
     // 2018 年起执行 IFRS9，减值损失科目口径与渝农商行新准则可比；2010–2017 未追溯查证故留空
     const impTcb   = [null, null, null, null, null, null, null, null,
                        28.69, 43.57, 47.86, 55.68, 47.75, 47.22, 45.39, 45.37];
-    // 农业银行（601288.SH）「资产/信用减值损失 / 营业收入」——东方财富 F10（历年年报，合并口径），口径切换与渝农商行一致（2018 年起 IFRS9）
+    // 农业银行（601288.SH）「资产/信用减值损失 / 营业收入」——历年年报（abchina.com 官网 PDF，合并口径），口径切换与渝农商行一致（2018 年起 IFRS9）
     const impAbcOld = [14.95, 17.00, 12.85, 11.45, 13.05, 15.70, 17.08, 18.28,
                        null, null, null, null, null, null, null, null];
     const impAbcNew = [null, null, null, null, null, null, null, null,
@@ -266,22 +277,22 @@ function initChart(id) {
         return [
             { name: '资产减值/营收（旧准则）', type: 'line', data: impOld, smooth: true, connectNulls: false, symbolSize: 6,
               lineStyle: { width: 2.5, color: '#e67e22' }, itemStyle: { color: '#e67e22' },
-              label: { show: true, fontSize: 16, color: '#e67e22', formatter: '{c}%' } },
+              label: { show: true, fontSize: 18, color: '#e67e22', formatter: '{c}%' } },
             { name: '信用减值/营收（新准则）', type: 'line', data: impNew, smooth: true, connectNulls: false, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
               areaStyle: { color: 'rgba(192,57,43,0.08)' },
-              label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } }
+              label: { show: true, fontSize: 18, color: '#c0392b', formatter: '{c}%' } }
         ];
     }
     function creditcostOption(series) {
         return {
             backgroundColor: '#fff',
-            textStyle: { fontSize: 16 },
-            tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '—' : v + '%' },
-            legend: { data: series.map(s => s.name), top: 4, textStyle: { fontSize: 16 } },
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '—' : v + '%' },
+            legend: { data: series.map(s => s.name), top: 4, textStyle: { fontSize: 18 } },
             grid: { left: 48, right: 24, top: 46, bottom: 52 },
-            xAxis: { type: 'category', data: yearsCC, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555', rotate: 40 } },
-            yAxis: { type: 'value', name: '%', nameTextStyle: { fontSize: 16 }, axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+            xAxis: { type: 'category', data: yearsCC, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+            yAxis: { type: 'value', name: '%', nameTextStyle: { fontSize: 18 }, axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
             series
         };
     }
@@ -291,16 +302,16 @@ function initChart(id) {
         ...baseSeries(),
         { name: '天津银行·减值/营收', type: 'line', data: impTcb, smooth: true, connectNulls: false, symbolSize: 6,
           lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' },
-          label: { show: true, fontSize: 16, color: '#2874a6', formatter: '{c}%' } }
+          label: { show: true, fontSize: 18, color: '#2874a6', formatter: '{c}%' } }
     ]));
     initChart('chart-creditcost-abc')?.setOption(creditcostOption([
         ...baseSeries(),
         { name: '农业银行·旧准则', type: 'line', data: impAbcOld, smooth: true, connectNulls: false, symbolSize: 6,
           lineStyle: { width: 2.5, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' },
-          label: { show: true, fontSize: 16, color: '#229954', formatter: '{c}%' } },
+          label: { show: true, fontSize: 18, color: '#229954', formatter: '{c}%' } },
         { name: '农业银行·新准则', type: 'line', data: impAbcNew, smooth: true, connectNulls: false, symbolSize: 6,
           lineStyle: { width: 3, color: '#196f3d', type: 'dashed' }, itemStyle: { color: '#196f3d' },
-          label: { show: true, fontSize: 16, color: '#196f3d', formatter: '{c}%' } }
+          label: { show: true, fontSize: 18, color: '#196f3d', formatter: '{c}%' } }
     ]));
 
     // 平铺 + 左右滑动（参考 Apple TV 那种横向内容带）：三张图并排，鼠标可直接按住拖动横向滚动，
@@ -358,16 +369,16 @@ function initChart(id) {
 
     initChart('chart-provision')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['拨备覆盖率', '拨贷比'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['拨备覆盖率', '拨贷比'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 64, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years13, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        xAxis: { type: 'category', data: years13, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
-            { type: 'value', name: '拨备覆盖率%', min: 0, nameTextStyle: { color: '#1e8449', fontSize: 16 },
-              axisLabel: { color: '#1e8449', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: '拨贷比%', min: 0, nameTextStyle: { color: '#2980b9', fontSize: 16 },
-              axisLabel: { color: '#2980b9', fontSize: 16 }, splitLine: { show: false } }
+            { type: 'value', name: '拨备覆盖率%', min: 0, nameTextStyle: { color: '#1e8449', fontSize: 18 },
+              axisLabel: { color: '#1e8449', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: '拨贷比%', min: 0, nameTextStyle: { color: '#2980b9', fontSize: 18 },
+              axisLabel: { color: '#2980b9', fontSize: 18 }, splitLine: { show: false } }
         ],
         series: [
             { name: '拨备覆盖率', type: 'line', data: provCov13, smooth: true, symbolSize: 6,
@@ -389,13 +400,13 @@ function initChart(id) {
     const netWO     = [867.8, 1943.4, 10051.6, 7933.3, null,   null,   null,   null];
     initChart('chart-writeoff')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + ' 百万' },
-        legend: { data: ['本期核销', '收回已核销', '净核销（2018–2021）'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + ' 百万' },
+        legend: { data: ['本期核销', '收回已核销', '净核销（2018–2021）'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: yearsWO, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '人民币百万元', min: 0, nameTextStyle: { color: '#555', fontSize: 16 },
-                 axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: yearsWO, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '人民币百万元', min: 0, nameTextStyle: { color: '#555', fontSize: 18 },
+                 axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '本期核销', type: 'line', data: writeOff, connectNulls: true, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
@@ -418,13 +429,13 @@ function initChart(id) {
     const netWO     = [867.8, 1943.4, 10051.6, 7933.3, null,   null,   null,   null];
     initChart('chart-writeoff')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + ' 百万' },
-        legend: { data: ['本期核销', '收回已核销', '净核销（2018–2021）'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + ' 百万' },
+        legend: { data: ['本期核销', '收回已核销', '净核销（2018–2021）'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: yearsWO, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '人民币百万元', min: 0, nameTextStyle: { color: '#555', fontSize: 16 },
-                 axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: yearsWO, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '人民币百万元', min: 0, nameTextStyle: { color: '#555', fontSize: 18 },
+                 axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '本期核销', type: 'line', data: writeOff, connectNulls: true, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
@@ -445,13 +456,13 @@ function initChart(id) {
                        -0.87, -1.82, -2.44, 2.47, -4.77, 8.98, 41.72, -28.97];
     initChart('chart-oci')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + ' 亿' },
-        legend: { data: ['其他综合收益'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + ' 亿' },
+        legend: { data: ['其他综合收益'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 64, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '其他综合收益(亿元)', nameTextStyle: { color: '#c0392b', fontSize: 16 },
-              axisLabel: { color: '#c0392b', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '其他综合收益(亿元)', nameTextStyle: { color: '#c0392b', fontSize: 18 },
+              axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '其他综合收益', type: 'line', data: oci, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
@@ -460,7 +471,7 @@ function initChart(id) {
                   symbol: 'none', silent: true,
                   lineStyle: { color: '#8e8e8e', type: 'dashed', width: 1.5 },
                   label: { formatter: '2018 IFRS9 新准则', position: 'end', distance: 6,
-                           fontSize: 14, color: '#8e8e8e' },
+                           fontSize: 16, color: '#8e8e8e' },
                   data: [
                       { xAxis: '2018' },
                       { yAxis: 0, lineStyle: { color: '#bbb', type: 'solid', width: 1 },
@@ -469,7 +480,7 @@ function initChart(id) {
               },
               markPoint: {
                   symbol: 'circle', symbolSize: 11, silent: true,
-                  label: { fontSize: 14, fontWeight: 'bold', position: 'left', distance: 8,
+                  label: { fontSize: 16, fontWeight: 'bold', position: 'left', distance: 8,
                            formatter: '{c} 亿' },
                   data: [
                       { type: 'max', name: '最大', itemStyle: { color: '#c0392b' },
@@ -488,29 +499,30 @@ function initChart(id) {
                      '2018','2019','2020','2021','2022','2023','2024','2025'];
     const eps  = [0.45, 0.46, 0.58, 0.64, 0.73, 0.78, 0.85, 0.94,
                   0.91, 0.95, 0.74, 0.84, 0.89, 0.94, 0.99, 1.05];
-    const bvps = [2.43, 3.00, 3.38, 3.85, 4.41, 4.98, 5.61, 6.32,
-                  7.03, 7.73, 8.21, 8.85, 9.45, 10.19, 11.07, 11.55];
+    // BVPS：港交所 03618 历年年报「歸屬於本行股東的每股淨資產」披露值（2010 年为加权口径，2011 起为期末口径）
+    const bvps = [3.26, 3.00, 3.43, 3.90, 4.45, 5.03, 5.66, 6.37,
+                  7.07, 7.73, 8.21, 8.85, 9.45, 10.19, 11.07, 11.55];
 
     initChart('chart-pershare')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + ' 元' },
-        legend: { data: ['基本每股收益(EPS)', '每股净资产(BVPS)'], top: 4, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 元' },
+        legend: { data: ['基本每股收益(EPS)', '每股净资产(BVPS)'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 60, right: 60, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
-            { type: 'value', name: 'EPS(元)', min: 0, nameTextStyle: { color: '#6c3483', fontSize: 16 },
-              axisLabel: { color: '#6c3483', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: 'BVPS(元)', min: 0, nameTextStyle: { color: '#2980b9', fontSize: 16 },
-              axisLabel: { color: '#2980b9', fontSize: 16 }, splitLine: { show: false } }
+            { type: 'value', name: 'EPS(元)', min: 0, nameTextStyle: { color: '#6c3483', fontSize: 18 },
+              axisLabel: { color: '#6c3483', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: 'BVPS(元)', min: 0, nameTextStyle: { color: '#2980b9', fontSize: 18 },
+              axisLabel: { color: '#2980b9', fontSize: 18 }, splitLine: { show: false } }
         ],
         series: [
             { name: '基本每股收益(EPS)', type: 'line', data: eps, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-              endLabel: { show: true, fontSize: 16, color: '#6c3483', formatter: '{c}' } },
+              endLabel: { show: true, fontSize: 18, color: '#6c3483', formatter: '{c}' } },
             { name: '每股净资产(BVPS)', type: 'line', yAxisIndex: 1, data: bvps, smooth: true, symbolSize: 6,
               lineStyle: { width: 2, color: '#2980b9', type: 'dashed' }, itemStyle: { color: '#2980b9' },
-              endLabel: { show: true, fontSize: 16, color: '#2980b9', formatter: '{c}' } }
+              endLabel: { show: true, fontSize: 18, color: '#2980b9', formatter: '{c}' } }
         ]
     });
 })();
@@ -518,24 +530,214 @@ function initChart(id) {
 /* ────── 1j2. 历年每 10 股分红（元，含税，按年度累计） ────── */
 (function () {
     if (!document.getElementById('chart-dividend-per10')) return;   // 仅股东页
-    const years7 = ['2019','2020','2021','2022','2023','2024','2025'];
-    const per10  = [2.30, 2.22, 2.525, 2.714, 2.885, 3.046, 3.2091];
+    // 2011–2018：03618 港股年报「盈利与股息」披露的内资股/H股每股派息（元）× 10；2010 年董事会未提常规股息（仅 IPO 前特别股息，口径不可比，未纳入）
+    // 2019–2025：本行 A 股年度报告「利润分配方案」披露的每 10 股股利
+    const years9 = ['2011','2012','2013','2014','2015','2016','2017','2018',
+                    '2019','2020','2021','2022','2023','2024','2025'];
+    const per10  = [1.40, 1.70, 1.90, 2.00, 2.00, 2.00, 2.00, 2.00,
+                     2.30, 2.22, 2.525, 2.714, 2.885, 3.046, 3.2091];
 
     initChart('chart-dividend-per10')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + ' 元' },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 元' },
         grid: { left: 60, right: 40, top: 30, bottom: 40 },
-        xAxis: { type: 'category', data: years7, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '每10股分红(元)', min: 0, nameTextStyle: { color: '#555', fontSize: 16 },
-                 axisLabel: { color: '#555', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years9, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '每10股分红(元)', min: 0, nameTextStyle: { color: '#555', fontSize: 18 },
+                 axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '每10股分红(含税)', type: 'bar', data: per10, itemStyle: { color: '#c0392b' },
               barMaxWidth: 44,
-              label: { show: true, position: 'top', fontSize: 16, color: '#c0392b', formatter: '{c}' } }
+              label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}' } }
         ]
     });
 })();
+
+/* ────── 1j3. 历年股东户数（2017-12 至今：H 股年报 + 历年定期报告披露值） ────── */
+(function () {
+    if (!document.getElementById('chart-holder-count')) return;   // 仅股东页
+    // [披露日, 股东总数, A 股股东, H 股股东] —— A/H 部分披露点未拆分, 保留 null
+    // 数据源:
+    //   · A 股 IPO 后 (2019-10 至今, 43 期): 本行历年定期报告（年报/中报/季报）「股东情况」章节披露值
+    //   · A 股 IPO 前 H 股登记股东数 (2017/2018 年末, 2 期): 03618 港股年报「股本变动及股东情况」章节脚注
+    //     -> data/tables/holder_count_hshare_2010_2018.json  (2010-2016 年报未披露该项)
+    const raw = [
+        ['2017-12-31', null,   null,   1420],   // 03618 2017 年报 p.85: "H 股登记股东 1,420 户"
+        ['2018-12-31', null,   null,   1316],   // 03618 2018 年报 p.89: "H 股登记股东 1,316 户"
+        ['2019-10-29', 948725, null,   null],
+        ['2019-10-31', 583060, null,   null],
+        ['2019-11-20', 452600, null,   null],
+        ['2019-12-10', 419500, null,   null],
+        ['2019-12-31', 394155, 392874, 1281],
+        ['2020-02-29', 332330, 331053, 1277],
+        ['2020-03-31', 314762, 313482, 1280],
+        ['2020-06-30', 303597, 302319, 1278],
+        ['2020-07-31', 292747, 291477, 1270],
+        ['2020-09-30', 277555, 276289, 1266],
+        ['2020-12-31', 275965, 274714, 1251],
+        ['2021-02-28', 274738, 273496, 1242],
+        ['2021-03-31', 271460, null,   null],
+        ['2021-06-30', 266913, 265687, 1226],
+        ['2021-07-31', 262138, 260914, 1224],
+        ['2021-09-30', 254077, null,   null],
+        ['2021-12-31', 252817, 251605, 1212],
+        ['2022-02-28', 244222, 243013, 1209],
+        ['2022-03-31', 241964, null,   null],
+        ['2022-06-30', 237764, 236567, 1197],
+        ['2022-07-31', 236283, 235093, 1190],
+        ['2022-09-30', 230787, null,   null],
+        ['2022-12-31', 228767, 227580, 1187],
+        ['2023-02-28', 227672, 226485, 1187],
+        ['2023-03-31', 225817, null,   null],
+        ['2023-06-30', 216900, 215719, 1181],
+        ['2023-07-31', 214738, 213559, 1179],
+        ['2023-09-30', 207940, null,   null],
+        ['2023-12-31', 195606, 194439, 1167],
+        ['2024-02-29', 189461, 188300, 1161],
+        ['2024-03-31', 186110, null,   null],
+        ['2024-06-30', 175010, 173852, 1158],
+        ['2024-07-31', 169389, 168232, 1157],
+        ['2024-09-30', 186110, null,   null],   // 数据源该期回填前值, 图中保留原样
+        ['2024-12-31', 149711, 148580, 1131],
+        ['2025-02-28', 146121, 144998, 1123],
+        ['2025-03-31', 137910, null,   null],
+        ['2025-06-30', 124514, 123409, 1105],
+        ['2025-07-31', 125825, 124727, 1098],
+        ['2025-09-30', 123765, null,   null],
+        ['2025-12-31', 116634, 115547, 1087],
+        ['2026-02-28', 112716, 111633, 1083],
+        ['2026-03-31', 107028, null,   null]
+    ];
+    const dates  = raw.map(r => r[0]);
+    const total  = raw.map(r => r[1]);
+    const aNum   = raw.map(r => r[2]);
+    const hNum   = raw.map(r => r[3]);
+    const fmt    = v => v == null ? '—' : v.toLocaleString('en-US');
+    const wan    = v => v == null ? '—' : (v / 10000).toFixed(2) + ' 万';
+
+    initChart('chart-holder-count')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 18 },
+        legend: {
+            data: ['股东总数（A+H · 左轴 · 万户）', 'H 股登记股东数（右轴 · 户）'],
+            top: 4, right: 20, textStyle: { fontSize: 16 },
+            icon: 'roundRect'
+        },
+        tooltip: {
+            trigger: 'axis', textStyle: { fontSize: 18 },
+            formatter: p => {
+                const i = p[0].dataIndex;
+                // 找出前一个有 total 值的披露点用于环比
+                let prev = null;
+                for (let k = i - 1; k >= 0; k--) { if (total[k] != null) { prev = total[k]; break; } }
+                const chg  = (prev == null || total[i] == null) ? '' :
+                             (total[i] - prev >= 0 ? '+' : '') + (total[i] - prev).toLocaleString('en-US');
+                const pct  = (prev == null || total[i] == null) ? '' :
+                             ((total[i] - prev) / prev * 100).toFixed(2) + '%';
+                const totalLine = total[i] == null
+                    ? `股东总数：— <span style="color:#888">（A 股尚未上市）</span>`
+                    : `股东总数：${fmt(total[i])} 户（${wan(total[i])}）` +
+                      (prev == null ? '' : `<br>环比：${chg} 户（${pct}）`);
+                return `<b>${dates[i]}</b><br>` + totalLine +
+                       (aNum[i] != null ? `<br>其中 A 股：${fmt(aNum[i])} 户` : '') +
+                       (hNum[i] != null ? `<br>H 股登记股东：${fmt(hNum[i])} 户` : '');
+            }
+        },
+        grid: { left: 88, right: 160, top: 56, bottom: 70 },
+        xAxis: {
+            type: 'category', data: dates, boundaryGap: false,
+            axisLabel: { fontSize: 16, color: '#555', rotate: 40, interval: 2 },
+            axisLine: { lineStyle: { color: '#bbb' } }
+        },
+        yAxis: [
+            {
+                type: 'value', name: '股东总数（万户）', min: 0,
+                position: 'left',
+                nameTextStyle: { color: '#6c3483', fontSize: 18 },
+                axisLabel: { color: '#6c3483', fontSize: 18, formatter: v => (v / 10000).toFixed(0) },
+                splitLine: { lineStyle: { color: '#eee' } }
+            },
+            {
+                type: 'value', name: 'H 股股东（户）', min: 1000, max: 1500, interval: 100,
+                position: 'right',
+                nameTextStyle: { color: '#16a085', fontSize: 18 },
+                axisLabel: { color: '#16a085', fontSize: 18, formatter: v => v.toLocaleString('en-US') },
+                splitLine: { show: false }
+            }
+        ],
+        series: [{
+            name: '股东总数（A+H · 左轴 · 万户）',
+            type: 'line', data: total, smooth: true, symbolSize: 7,
+            connectNulls: false,
+            lineStyle: { width: 3, color: '#6c3483' },
+            itemStyle: { color: '#6c3483' },
+            areaStyle: { color: 'rgba(108,52,131,0.10)' },
+            endLabel: { show: true, fontSize: 18, color: '#6c3483',
+                        formatter: p => p.value == null ? '' : `${(p.value / 10000).toFixed(2)} 万` },
+            markPoint: {
+                symbol: 'circle', symbolSize: 11, silent: true,
+                label: { fontSize: 16, fontWeight: 'bold', color: '#fff',
+                         formatter: p => (p.value / 10000).toFixed(1) + ' 万' },
+                data: [
+                    { type: 'max', name: 'IPO 峰值', itemStyle: { color: '#c0392b' },
+                      label: { color: '#fff' } },
+                    { type: 'min', name: '当前最低', itemStyle: { color: '#2c6fb3' },
+                      label: { color: '#fff' } }
+                ]
+            },
+            markLine: {
+                symbol: 'none', silent: true,
+                lineStyle: { color: '#8e8e8e', type: 'dashed', width: 1.5 },
+                label: { fontSize: 16, color: '#8e8e8e', position: 'insideEndTop',
+                         formatter: '{b}' },
+                data: [
+                    { name: '2019-10-29 A 股上市', xAxis: '2019-10-29' }
+                ]
+            }
+        }, {
+            name: 'H 股登记股东数（右轴 · 户）',
+            type: 'line', yAxisIndex: 1, data: hNum,
+            smooth: true, symbolSize: 8,
+            connectNulls: true,       // H 股只在年末/半年末披露, 跨越缺口连线
+            lineStyle: { width: 2.5, color: '#16a085', type: 'solid' },
+            itemStyle: { color: '#16a085' },
+            endLabel: { show: true, fontSize: 16, color: '#16a085',
+                        formatter: p => p.value == null ? '' : `${p.value.toLocaleString('en-US')} 户` }
+        }]
+    });
+})();
+
+/* ────── 1j4. 历年处理消费投诉数（件）与客户满意度（%） ────── */
+(function () {
+    if (!document.getElementById('chart-complaint')) return;   // 仅简介页
+    const years3 = ['2023', '2024', '2025'];
+    const complaints   = [1615, 1662, 2602];
+    const satisfaction = [86.07, 83.51, 70.88];
+
+    initChart('chart-complaint')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 } },
+        legend: { data: ['处理消费投诉数', '消费投诉处理客户满意度'], bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 60, right: 60, top: 40, bottom: 56 },
+        xAxis: { type: 'category', data: years3, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: [
+            { type: 'value', name: '投诉数(件)', min: 0, nameTextStyle: { color: '#c0392b', fontSize: 18 },
+              axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: '满意度(%)', min: 0, max: 100, nameTextStyle: { color: '#2980b9', fontSize: 18 },
+              axisLabel: { color: '#2980b9', fontSize: 18 }, splitLine: { show: false } }
+        ],
+        series: [
+            { name: '处理消费投诉数', type: 'bar', data: complaints, itemStyle: { color: '#c0392b' },
+              barMaxWidth: 60,
+              label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}' } },
+            { name: '消费投诉处理客户满意度', type: 'line', yAxisIndex: 1, data: satisfaction, smooth: true, symbolSize: 6,
+              lineStyle: { width: 3, color: '#2980b9' }, itemStyle: { color: '#2980b9' },
+              endLabel: { show: true, fontSize: 18, color: '#2980b9', formatter: '{c}%' } }
+        ]
+    });
+})();
+
 
 /* ────── 1k. 金融投资分类结构 AC / FVOCI / FVTPL ────── */
 (function () {
@@ -547,15 +749,15 @@ function initChart(id) {
 
     initChart('chart-invest')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
                    valueFormatter: v => v + ' 亿' },
         legend: { data: ['债权投资(AC/摊余成本)', '其他债权投资(FVOCI债)', '其他权益工具(FVOCI股)', '交易性金融资产(FVTPL)'],
-                  bottom: 2, textStyle: { fontSize: 16 } },
+                  bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 68, right: 30, top: 40, bottom: 56 },
-        xAxis: { type: 'category', data: years8, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years8, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '债权投资(AC/摊余成本)', type: 'bar', stack: 'inv', data: ac, itemStyle: { color: '#2980b9' } },
             { name: '其他债权投资(FVOCI债)', type: 'bar', stack: 'inv', data: fvociDebt, itemStyle: { color: '#16a085' } },
@@ -574,17 +776,17 @@ function initChart(id) {
 
     initChart('chart-fvtpl-mix')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
                    valueFormatter: v => v + ' 亿' },
-        legend: { data: ['2025 年末', '2024 年末'], bottom: 2, textStyle: { fontSize: 16 } },
+        legend: { data: ['2025 年末', '2024 年末'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 116, right: 84, top: 20, bottom: 48 },
-        xAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-        yAxis: { type: 'category', data: cats, axisLabel: { fontSize: 16, color: '#555' } },
+        xAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        yAxis: { type: 'category', data: cats, axisLabel: { fontSize: 18, color: '#555' } },
         series: [
             { name: '2025 年末', type: 'bar', data: y2025, itemStyle: { color: '#c0392b' },
-              label: { show: true, position: 'right', fontSize: 16, color: '#c0392b' } },
+              label: { show: true, position: 'right', fontSize: 18, color: '#c0392b' } },
             { name: '2024 年末', type: 'bar', data: y2024, itemStyle: { color: '#e8a49c' } }
         ]
     });
@@ -601,9 +803,9 @@ function initChart(id) {
 
     initChart('chart-fvlevel')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
         tooltip: {
-            trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+            trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
             formatter: p => {
                 const i = p[0].dataIndex;
                 return p[0].name + '　合计 ' + tot[i].toFixed(2) + ' 亿<br>' + p.map(s =>
@@ -611,17 +813,17 @@ function initChart(id) {
                     (s.value / tot[i] * 100).toFixed(1) + '%）').join('<br>');
             }
         },
-        legend: { data: ['第一层次 L1', '第二层次 L2', '第三层次 L3'], bottom: 2, textStyle: { fontSize: 16 } },
+        legend: { data: ['第一层次 L1', '第二层次 L2', '第三层次 L3'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 84, right: 30, top: 30, bottom: 48 },
-        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '第一层次 L1', type: 'bar', stack: 'fv', barWidth: '46%', data: l1,
               itemStyle: { color: '#2980b9' } },
             { name: '第二层次 L2', type: 'bar', stack: 'fv', data: l2, itemStyle: { color: '#16a085' } },
             { name: '第三层次 L3', type: 'bar', stack: 'fv', data: l3, itemStyle: { color: '#f39c12' },
-              label: { show: true, position: 'top', fontSize: 16, color: '#555',
+              label: { show: true, position: 'top', fontSize: 18, color: '#555',
                        formatter: p => '合计 ' + tot[p.dataIndex].toFixed(0) + ' 亿' } }
         ]
     });
@@ -631,40 +833,42 @@ function initChart(id) {
 (function () {
     const years15 = ['2011','2012','2013','2014','2015','2016','2017','2018',
                      '2019','2020','2021','2022','2023','2024','2025'];
+    // 员工数：2011–2018 为本行口径「在岗员工」（H 股年报「員工及人力資源管理」）；2019–2025 为本集团口径「在岗员工」（A 股年报「员工和机构情况」，含子公司），2018→2019 口径切换处不连续
     const staff = [13524, 14800, 15443, 15740, 16182, 16245, 15892, 15688,
-                   15371, 15088, 14905, 14760, 15017, 14542, 14266];
+                   15653, 15431, 15270, 15167, 15017, 14542, 14266];
+    // 人均营业收入/人均归母净利润 = 营业收入/归母净利润(本行历年年度报告「合并利润表」披露值) ÷ 对应口径员工数
     const perOI = [81.5, 91.6, 105.0, 125.2, 134.4, 133.6, 150.9, 166.5,
-                   173.2, 186.8, 206.9, 196.4, 186.2, 194.3, 200.8];
+                   170.1, 182.7, 202.0, 191.1, 186.2, 194.3, 200.8];
     const perNP = [31.6, 36.2, 38.8, 43.4, 44.6, 48.9, 56.2, 57.7,
-                   63.5, 55.7, 64.1, 69.6, 72.6, 79.2, 85.0];
+                   62.4, 54.4, 62.6, 67.7, 72.6, 79.2, 85.0];
 
     initChart('chart-staff')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
                    formatter: p => {
                        const rows = p.map(s => s.seriesName + '：' + s.value +
                            (s.seriesName === '年末员工数' ? ' 人' : ' 万元/人'));
                        return p[0].axisValue + '<br>' + rows.join('<br>');
                    } },
-        legend: { data: ['年末员工数', '人均营业收入', '人均归母净利润'], top: 4, textStyle: { fontSize: 16 } },
+        legend: { data: ['年末员工数', '人均营业收入', '人均归母净利润'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 72, right: 66, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years15, axisLabel: { fontSize: 16, color: '#555' } },
+        xAxis: { type: 'category', data: years15, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
-            { type: 'value', name: '员工数(人)', min: 0, nameTextStyle: { color: '#95a5a6', fontSize: 16 },
-              axisLabel: { color: '#95a5a6', fontSize: 16 }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: '万元/人', min: 0, nameTextStyle: { color: '#c0392b', fontSize: 16 },
-              axisLabel: { color: '#555', fontSize: 16 }, splitLine: { show: false } }
+            { type: 'value', name: '员工数(人)', min: 0, nameTextStyle: { color: '#95a5a6', fontSize: 18 },
+              axisLabel: { color: '#95a5a6', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: '万元/人', min: 0, nameTextStyle: { color: '#c0392b', fontSize: 18 },
+              axisLabel: { color: '#555', fontSize: 18 }, splitLine: { show: false } }
         ],
         series: [
             { name: '年末员工数', type: 'bar', data: staff, itemStyle: { color: '#d5dbdb' },
               barWidth: '55%', z: 1 },
             { name: '人均营业收入', type: 'line', yAxisIndex: 1, data: perOI, smooth: true, symbolSize: 6, z: 3,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              endLabel: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}' } },
+              endLabel: { show: true, fontSize: 18, color: '#c0392b', formatter: '{c}' } },
             { name: '人均归母净利润', type: 'line', yAxisIndex: 1, data: perNP, smooth: true, symbolSize: 6, z: 3,
               lineStyle: { width: 3, color: '#e67e22' }, itemStyle: { color: '#e67e22' },
-              endLabel: { show: true, fontSize: 16, color: '#e67e22', formatter: '{c}' } }
+              endLabel: { show: true, fontSize: 18, color: '#e67e22', formatter: '{c}' } }
         ]
     });
 })();
@@ -687,32 +891,32 @@ function initChart(id) {
     const loanMixLine = (name, data, color, unit, dy) => ({
         name, type: 'line', data, symbolSize: name === '客户贷款合计' ? 7 : 6,
         lineStyle: { width: name === '客户贷款合计' ? 3 : 2, color }, itemStyle: { color },
-        endLabel: { show: true, fontSize: 16, color, offset: [0, dy || 0],
+        endLabel: { show: true, fontSize: 18, color, offset: [0, dy || 0],
                     formatter: p => p.value + unit }
     });
 
     initChart('chart-loanmix-bal')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + ' 亿' },
-        legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 亿' },
+        legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 76, right: 128, top: 36, bottom: 56 },
-        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [balCorp, balRetail, balBill, balTotal].map(
             (d, i) => loanMixLine(loanMixNames[i], d, loanMixColors[i], ' 亿'))
     });
 
     initChart('chart-loanmix-yld')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + '%' },
-        legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
+        legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 76, right: 128, top: 36, bottom: 56 },
-        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '平均收益率%', min: 0, max: 6, nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '平均收益率%', min: 0, max: 6, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [yldCorp, yldRetail, yldBill, yldTotal].map(
             // 2025 年三条线收于 3.64%–3.87%，端点标签手动错开纵向位置避免相互压盖
             (d, i) => loanMixLine(loanMixNames[i], d, loanMixColors[i], '%', [-14, 8, 0, 28][i]))
@@ -721,16 +925,16 @@ function initChart(id) {
     // 存款期限结构：活期 vs 定期 占比（2025 年末）
     initChart('chart-depterm')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
         title: [
             { text: '定期 74.27%\n活期 25.30%', left: 'center', top: 'center', textAlign: 'center',
-              textStyle: { fontSize: 16, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
+              textStyle: { fontSize: 18, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
         ],
-        tooltip: { trigger: 'item', formatter: '{b}: {c} 亿元 ({d}%)', textStyle: { fontSize: 16 } },
-        legend: { bottom: 2, textStyle: { fontSize: 16 } },
+        tooltip: { trigger: 'item', formatter: '{b}: {c} 亿元 ({d}%)', textStyle: { fontSize: 18 } },
+        legend: { bottom: 2, textStyle: { fontSize: 18 } },
         series: [{
             name: '存款期限结构', type: 'pie', radius: ['46%', '68%'], center: ['50%', '52%'],
-            avoidLabelOverlap: true, label: { show: true, fontSize: 16, formatter: '{b}\n{d}%' },
+            avoidLabelOverlap: true, label: { show: true, fontSize: 18, formatter: '{b}\n{d}%' },
             data: [
                 { value: 7640.86, name: '定期存款', itemStyle: { color: '#6c3483' } },
                 { value: 2601.74, name: '活期存款', itemStyle: { color: '#e67e22' } },
@@ -750,40 +954,40 @@ function initChart(id) {
 
     initChart('chart-depcost')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
                    valueFormatter: v => v + '%' },
         grid: { left: 60, right: 66, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: years, boundaryGap: false,
-                 axisLabel: { fontSize: 16, color: '#555' } },
+                 axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '付息率%', min: 1.3, max: 2.1,
-                 nameTextStyle: { fontSize: 16, color: '#c0392b' },
-                 axisLabel: { fontSize: 16, color: '#555', formatter: '{value}%' },
+                 nameTextStyle: { fontSize: 18, color: '#c0392b' },
+                 axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
                  splitLine: { lineStyle: { color: '#eee' } } },
         series: [{
             name: '客户存款平均付息率', type: 'line', data: cost, smooth: true, symbolSize: 7, z: 3,
             lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-            label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%', position: 'top' }
+            label: { show: true, fontSize: 18, color: '#c0392b', formatter: '{c}%', position: 'top' }
         }]
     });
 
     initChart('chart-demandratio')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
                    valueFormatter: v => v + '%' },
         grid: { left: 60, right: 66, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: years, boundaryGap: false,
-                 axisLabel: { fontSize: 16, color: '#555' } },
+                 axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '活期占比%', min: 0,
-                 nameTextStyle: { fontSize: 16, color: '#6c3483' },
-                 axisLabel: { fontSize: 16, color: '#555', formatter: '{value}%' },
+                 nameTextStyle: { fontSize: 18, color: '#6c3483' },
+                 axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
                  splitLine: { lineStyle: { color: '#eee' } } },
         series: [{
             name: '活期存款占比', type: 'line', data: demand, smooth: true, symbolSize: 7, z: 3,
             lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
             areaStyle: { color: 'rgba(108,52,131,0.10)' },
-            label: { show: true, fontSize: 16, color: '#6c3483', formatter: '{c}%', position: 'top' }
+            label: { show: true, fontSize: 18, color: '#6c3483', formatter: '{c}%', position: 'top' }
         }]
     });
 })();
@@ -798,22 +1002,22 @@ function initChart(id) {
     const g2024 = [-1747.6,  -990.3, 1649.7, 1959.0, 357.5];
     echarts.init(el).setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
-                   textStyle: { fontSize: 16 }, valueFormatter: v => v + ' 亿' },
-        legend: { data: ['2025', '2024'], top: 4, textStyle: { fontSize: 16 } },
+                   textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 亿' },
+        legend: { data: ['2025', '2024'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 76, right: 24, top: 44, bottom: 40 },
-        xAxis: { type: 'category', data: buckets, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '缺口 亿元', nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: buckets, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '缺口 亿元', nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '2025', type: 'bar', data: g2025, barGap: '10%',
               itemStyle: { color: '#c0392b' },
-              label: { show: true, fontSize: 14, color: '#555',
+              label: { show: true, fontSize: 16, color: '#555',
                        position: p => p.value >= 0 ? 'top' : 'bottom', formatter: '{c}' } },
             { name: '2024', type: 'bar', data: g2024,
               itemStyle: { color: '#95a5a6' },
-              label: { show: true, fontSize: 14, color: '#888',
+              label: { show: true, fontSize: 16, color: '#888',
                        position: p => p.value >= 0 ? 'top' : 'bottom', formatter: '{c}' } }
         ]
     });
@@ -833,19 +1037,19 @@ function initChart(id) {
                      1.94, 1.95, 1.47, 1.04, 1.04, 0.55];
     initChart('chart-loantrend')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
                    formatter: ps => ps[0].axisValue + '<br>' + ps.map(p =>
                        `${p.marker}${p.seriesName}：${p.value == null ? '—'
                          : p.value + (p.seriesName === '公司贷款不良率' ? '%' : ' 亿元')}`).join('<br>') },
-        legend: { data: ['公司贷款', '零售贷款', '公司贷款不良率'], bottom: 2, textStyle: { fontSize: 16 } },
+        legend: { data: ['公司贷款', '零售贷款', '公司贷款不良率'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 68, right: 60, top: 36, bottom: 52 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
-            { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 },
-              axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: '不良率%', min: 0, position: 'right', nameTextStyle: { color: '#c0392b', fontSize: 16 },
-              axisLabel: { fontSize: 16, color: '#c0392b' }, splitLine: { show: false } }
+            { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+              axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: '不良率%', min: 0, position: 'right', nameTextStyle: { color: '#c0392b', fontSize: 18 },
+              axisLabel: { fontSize: 18, color: '#c0392b' }, splitLine: { show: false } }
         ],
         series: [
             { name: '公司贷款', type: 'line', data: corp, smooth: true, symbolSize: 6,
@@ -855,7 +1059,7 @@ function initChart(id) {
               lineStyle: { width: 3, color: '#e67e22' }, itemStyle: { color: '#e67e22' } },
             { name: '公司贷款不良率', type: 'line', yAxisIndex: 1, data: nplCorp, smooth: true, symbolSize: 6,
               lineStyle: { width: 2, color: '#c0392b', type: 'dashed' }, itemStyle: { color: '#c0392b' },
-              endLabel: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } }
+              endLabel: { show: true, fontSize: 18, color: '#c0392b', formatter: '{c}%' } }
         ]
     });
 })();
@@ -871,12 +1075,12 @@ function initChart(id) {
 
     initChart('chart-perloan-bal')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '未披露' : v + ' 亿', textStyle: { fontSize: 16 } },
-        legend: { data: ['住房按揭', '个人经营', '信用卡', '个人消费'], bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '未披露' : v + ' 亿', textStyle: { fontSize: 18 } },
+        legend: { data: ['住房按揭', '个人经营', '信用卡', '个人消费'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 66, right: 24, top: 36, bottom: 50 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '住房按揭', type: 'line', data: balMortgage, smooth: true, connectNulls: true, symbolSize: 7,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' } },
@@ -896,19 +1100,19 @@ function initChart(id) {
 
     initChart('chart-perloan-npl')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%', textStyle: { fontSize: 16 } },
-        legend: { data: ['住房按揭', '个人经营', '其他（含消费/信用卡）'], bottom: 2, textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '缺口' : v + '%', textStyle: { fontSize: 18 } },
+        legend: { data: ['住房按揭', '个人经营', '其他（含消费/信用卡）'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 56, right: 24, top: 36, bottom: 50 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '住房按揭', type: 'line', data: nplMortgage, smooth: true, connectNulls: true, symbolSize: 7,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-              label: { show: true, fontSize: 16, color: '#6c3483', formatter: '{c}%' } },
+              label: { show: true, fontSize: 18, color: '#6c3483', formatter: '{c}%' } },
             { name: '个人经营', type: 'line', data: nplBusiness, smooth: true, connectNulls: true, symbolSize: 7,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              label: { show: true, fontSize: 16, color: '#c0392b', formatter: '{c}%' } },
+              label: { show: true, fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
             { name: '其他（含消费/信用卡）', type: 'line', data: nplOthers, smooth: true, connectNulls: true, symbolSize: 6,
               lineStyle: { width: 2.5, color: '#7f8c8d', type: 'dashed' }, itemStyle: { color: '#7f8c8d' } }
         ]
@@ -935,7 +1139,7 @@ function initChart(id) {
     const chgColor = c => c === '不变' ? '#888' : (c[0] === '+' ? '#c0392b' : '#1e8449');
     tb.innerHTML = holders.map(h =>
         `<tr><td>${h.name}</td><td>${h.pct.toFixed(2)}%</td>` +
-        `<td style="color:${chgColor(h.chg)}">${h.chg}</td><td style="font-size:16px;color:#777">${h.type}</td></tr>`
+        `<td style="color:${chgColor(h.chg)}">${h.chg}</td><td style="font-size:18px;color:#777">${h.type}</td></tr>`
     ).join('');
     // 股东结构单层环形图：全部股东在同一个环、按比例铺满整圈；「其他流通股东」也按普通股东参与、严格按持股比例从大到小排序
     // 派系配色：香港中央结算 #16a085 · 渝富系 #6c3483 · 发展系 #2980b9 · 城投 #e67e22 · 财信 #c0392b · 社保 #f1c40f · 其他 #95a5a6
@@ -952,19 +1156,19 @@ function initChart(id) {
         { name: '财信集团',        value: 0.99,  itemStyle: { color: '#c0392b' } },
         { name: '社保116',         value: 0.83,  itemStyle: { color: '#f1c40f' } }
     ];
-    const holderTip = { trigger: 'item', textStyle: { fontSize: 16 }, formatter: p => `${p.name}：${p.value}%（占总股本）` };
+    const holderTip = { trigger: 'item', textStyle: { fontSize: 18 }, formatter: p => `${p.name}：${p.value}%（占总股本）` };
     initChart('chart-holders')?.setOption({
         backgroundColor: '#fff',
         title: [
             { text: '前十大\n58.29%', left: 'center', top: 'center', textAlign: 'center',
-              textStyle: { fontSize: 18, color: '#6c3483', fontWeight: 700, lineHeight: 24 } }
+              textStyle: { fontSize: 20, color: '#6c3483', fontWeight: 700, lineHeight: 24 } }
         ],
         tooltip: holderTip,
         series: [{
             type: 'pie', radius: ['40%', '74%'], center: ['50%', '54%'], startAngle: 90,
             sort: null, minShowLabelAngle: 12, avoidLabelOverlap: true,
             data: holderData,
-            label: { show: true, position: 'outside', formatter: '{b}\n{c}%', fontSize: 16, color: '#333' },
+            label: { show: true, position: 'outside', formatter: '{b}\n{c}%', fontSize: 18, color: '#333' },
             labelLine: { show: true, length: 12, length2: 10 },
             itemStyle: { borderColor: '#fff', borderWidth: 2 }
         }]
@@ -986,7 +1190,7 @@ function initChart(id) {
         const items = f.names.map(n => `${n} ${val(n)}%`).join('　');
         return `<div style="margin:3px 0"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${f.color};vertical-align:-1px;margin-right:6px"></span>` +
                `<b style="color:#4a2a5a">${f.title}</b> <span style="color:#6c3483;font-weight:600">${sum.toFixed(2)}%</span>` +
-               (f.names.length > 1 ? `　<span style="color:#777;font-size:16px">（${items}）</span>` : '') + `</div>`;
+               (f.names.length > 1 ? `　<span style="color:#777;font-size:18px">（${items}）</span>` : '') + `</div>`;
     }).join('');
 
     // 「己」字形折叠条：3 行横条首尾相连成一条蛇形；三横之间的「连接段」（圆角转折）不计入占比，用灰色特殊标注。
@@ -1091,16 +1295,16 @@ function initChart(id) {
             value: h.value,
             itemStyle: { color: h.itemStyle.color },
             label: h.value >= 4
-                ? { show: true, position: 'insideLeft', distance: 8, color: '#fff', fontSize: 16, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
-                : { show: true, position: 'right', distance: 6, color: '#333', fontSize: 16, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
+                ? { show: true, position: 'insideLeft', distance: 8, color: '#fff', fontSize: 18, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
+                : { show: true, position: 'right', distance: 6, color: '#333', fontSize: 18, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
         }));
         initChart('chart-holders-bar')?.setOption({
             backgroundColor: '#fff',
             grid: { left: 14, right: 170, top: 16, bottom: 16, containLabel: true },
-            tooltip: { trigger: 'item', textStyle: { fontSize: 16 }, formatter: p => `${names[p.dataIndex]}：${p.value}%（占总股本）` },
+            tooltip: { trigger: 'item', textStyle: { fontSize: 18 }, formatter: p => `${names[p.dataIndex]}：${p.value}%（占总股本）` },
             xAxis: {
-                type: 'value', min: 0, max: 44, name: '占总股本 %', nameTextStyle: { fontSize: 16 },
-                axisLabel: { fontSize: 16, formatter: '{value}%' }, splitLine: { lineStyle: { color: '#eee' } }
+                type: 'value', min: 0, max: 44, name: '占总股本 %', nameTextStyle: { fontSize: 18 },
+                axisLabel: { fontSize: 18, formatter: '{value}%' }, splitLine: { lineStyle: { color: '#eee' } }
             },
             yAxis: {
                 type: 'category', data: names, inverse: true,
@@ -1158,32 +1362,32 @@ function initChart(id) {
     const rev25 = [9351.1, 12138.5, 7027.0, 103.4];
     const rev24 = [8633.8, 11832.4, 7699.2, 65.9];
     initChart('chart-seg-rev')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 } },
-        legend: { data: ['2025', '2024'], bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 } },
+        legend: { data: ['2025', '2024'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 80, right: 24, top: 36, bottom: 50 },
-        xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '百万元', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '百万元', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '2025', type: 'bar', data: rev25, itemStyle: { color: '#6c3483' },
-              label: { show: true, position: 'top', fontSize: 16, formatter: p => (p.value/1000).toFixed(1)+'亿' } },
+              label: { show: true, position: 'top', fontSize: 18, formatter: p => (p.value/1000).toFixed(1)+'亿' } },
             { name: '2024', type: 'bar', data: rev24, itemStyle: { color: '#b39ddb' } }
         ]
     });
 
     // 地域：存贷款占比
     initChart('chart-geo')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 }, valueFormatter: v => v + '%' },
-        legend: { data: ['县域', '主城'], bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
+        legend: { data: ['县域', '主城'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 80, right: 24, top: 36, bottom: 50 },
-        xAxis: { type: 'category', data: ['存款', '贷款', '资产'], axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '%', max: 100, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: ['存款', '贷款', '资产'], axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '%', max: 100, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '县域', type: 'bar', stack: 'geo', data: [73.30, 50.78, 52.60], itemStyle: { color: '#1e8449' },
-              label: { show: true, position: 'inside', fontSize: 16, color: '#fff', formatter: '{c}%' } },
+              label: { show: true, position: 'inside', fontSize: 18, color: '#fff', formatter: '{c}%' } },
             { name: '主城', type: 'bar', stack: 'geo', data: [26.70, 49.22, 47.40], itemStyle: { color: '#e67e22' },
-              label: { show: true, position: 'inside', fontSize: 16, color: '#fff', formatter: '{c}%' } }
+              label: { show: true, position: 'inside', fontSize: 18, color: '#fff', formatter: '{c}%' } }
         ]
     });
 })();
@@ -1194,13 +1398,13 @@ function initChart(id) {
     const bal25 = [112105.4, 82317.3, 78384.5, 43794.5, 30826.3, 30683.1, 18149.8, 7226.6, 6375.5, 5858.1, 19253.3];
     const bal24 = [93852.9, 65673.1, 76096.3, 34806.5, 21350.0, 27601.5, 11911.1, 4422.4, 6828.8, 3893.2, 11697.6];
     initChart('chart-loan-industry')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
             valueFormatter: v => v == null ? '' : (v/10000).toFixed(1) + ' 万亿' },
-        legend: { data: ['2025 余额', '2024 余额'], bottom: 2, textStyle: { fontSize: 16 } },
+        legend: { data: ['2025 余额', '2024 余额'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 90, right: 24, top: 36, bottom: 50 },
-        xAxis: { type: 'category', data: inds, axisLabel: { fontSize: 16, color: '#555', rotate: 30 } },
-        yAxis: { type: 'value', name: '百万元', nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: inds, axisLabel: { fontSize: 18, color: '#555', rotate: 30 } },
+        yAxis: { type: 'value', name: '百万元', nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '2025 余额', type: 'bar', data: bal25, itemStyle: { color: '#6c3483' } },
             { name: '2024 余额', type: 'bar', data: bal24, itemStyle: { color: '#b39ddb' } }
@@ -1211,12 +1415,12 @@ function initChart(id) {
 /* ────── 8. 五级分类 ────── */
 (function () {
     initChart('chart-5tier')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'item', textStyle: { fontSize: 16 }, formatter: '{b}: {c} 百万 ({d}%)' },
-        legend: { bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'item', textStyle: { fontSize: 18 }, formatter: '{b}: {c} 百万 ({d}%)' },
+        legend: { bottom: 2, textStyle: { fontSize: 18 } },
         series: [{
             type: 'pie', radius: ['36%', '64%'], center: ['50%', '48%'],
-            label: { show: true, fontSize: 16, formatter: '{b}\n{d}%' },
+            label: { show: true, fontSize: 18, formatter: '{b}\n{d}%' },
             data: [
                 { value: 777351.2, name: '正常', itemStyle: { color: '#1e8449' } },
                 { value: 11346.4,  name: '关注', itemStyle: { color: '#f39c12' } },
@@ -1234,12 +1438,12 @@ function initChart(id) {
     // 2019/2020 已按银保监发[2022]2号文追溯调整口径; 相邻年报重叠年份数值已交叉核对一致, 2026-08-14 提取核对
     const yrsMigrate = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
     initChart('chart-migrate')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + '%' },
-        legend: { bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
+        legend: { bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 56, right: 24, top: 36, bottom: 52 },
-        xAxis: { type: 'category', data: yrsMigrate, axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: yrsMigrate, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '关注类', type: 'line', data: [9.64, 49.53, 60.98, 38.49, 26.60, 31.39, 19.73], symbolSize: 7, lineStyle: { width: 3, color: '#f39c12' }, itemStyle: { color: '#f39c12' } },
             { name: '次级类', type: 'line', data: [21.36, 10.89, 65.23, 29.81, 51.25, 41.55, 73.54], symbolSize: 7, lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' } },
@@ -1254,12 +1458,12 @@ function initChart(id) {
     const ynshbNormal = [null,null,null,null,null,null,null,null,null,1.70,3.20,1.93,1.54,1.43,1.73,1.31];
     const abcNormal   = [3.10,2.26,2.49,2.53,3.60,4.96,3.00,2.13,1.72,1.54,3.19,1.10,1.30,1.39,null,null];
     initChart('chart-migrate-normal')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行'], bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
+        legend: { data: ['渝农商行', '农业银行'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 56, right: 24, top: 36, bottom: 52 },
-        xAxis: { type: 'category', data: yrsNormal, boundaryGap: false, axisLabel: { fontSize: 16, color: '#555', rotate: 40 } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: yrsNormal, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '渝农商行', type: 'line', data: ynshbNormal, connectNulls: false, symbolSize: 7, lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
             { name: '农业银行', type: 'line', data: abcNormal, connectNulls: false, symbolSize: 6, lineStyle: { width: 2.5, color: '#2980b9', type: 'dashed' }, itemStyle: { color: '#2980b9' } }
@@ -1274,15 +1478,15 @@ function initChart(id) {
     const rate25 = [3.64, 2.73, 1.60, 1.93, 3.06, 1.45, 1.86, 1.66, 1.87, 1.55];
     const rate24 = [3.92, 3.08, 1.57, 2.25, 3.37, 1.73, 2.20, 2.05, 2.28, 1.86];
     initChart('chart-nim')?.setOption({
-        backgroundColor: '#fff', textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, valueFormatter: v => v + '%' },
-        legend: { data: ['2025 收益率/成本率', '2024 收益率/成本率'], bottom: 2, textStyle: { fontSize: 16 } },
+        backgroundColor: '#fff', textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
+        legend: { data: ['2025 收益率/成本率', '2024 收益率/成本率'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 56, right: 24, top: 36, bottom: 56 },
-        xAxis: { type: 'category', data: items, axisLabel: { fontSize: 16, color: '#555', rotate: 35 } },
-        yAxis: { type: 'value', name: '%', min: 0, max: 5, nameTextStyle: { fontSize: 16 }, axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        xAxis: { type: 'category', data: items, axisLabel: { fontSize: 18, color: '#555', rotate: 35 } },
+        yAxis: { type: 'value', name: '%', min: 0, max: 5, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '2025 收益率/成本率', type: 'bar', data: rate25, itemStyle: { color: '#6c3483' },
-              label: { show: true, position: 'top', fontSize: 16, formatter: '{c}%' } },
+              label: { show: true, position: 'top', fontSize: 18, formatter: '{c}%' } },
             { name: '2024 收益率/成本率', type: 'bar', data: rate24, itemStyle: { color: '#b39ddb' } }
         ]
     });
@@ -1309,19 +1513,19 @@ function initChart(id) {
     const mk = (items, col) => items.map(it => ({
         name: it.name, type: 'bar', stack: 'bs', barMaxWidth: 160,
         emphasis: { focus: 'series' },
-        label: { show: true, position: 'inside', color: '#fff', fontSize: 16,
+        label: { show: true, position: 'inside', color: '#fff', fontSize: 18,
                  formatter: p => (p.value/total*100) < 4 ? '' : it.name },
         data: CAT.map((_, i) => i === col ? it.value : '-')
     }));
     initChart('chart-bs')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
             valueFormatter: v => (v === '-' || v == null) ? '' : Number(v).toLocaleString() },
-        legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 16 }, itemWidth: 14, itemHeight: 12 },
+        legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 18 }, itemWidth: 14, itemHeight: 12 },
         grid: { left: 76, right: 30, top: 26, bottom: 54 },
-        xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 16, fontWeight: 600, color: '#333' } },
-        yAxis: { type: 'value', axisLabel: { fontSize: 16, formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
+        xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 18, fontWeight: 600, color: '#333' } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 18, formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
                  splitLine: { lineStyle: { color: '#eee' } } },
         color: ['#8e44ad','#9b59b6','#af7ac5','#c39bd3','#d7bde2','#ebdef0','#e74c3c','#ec7063','#27ae60','#7dcea0'],
         series: [...mk(assets, 0), ...mk(claims, 1)]
@@ -1332,15 +1536,15 @@ function initChart(id) {
 (function () {
     initChart('chart-cf')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', valueFormatter: v => Number(v).toLocaleString(), textStyle: { fontSize: 16 } },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', valueFormatter: v => Number(v).toLocaleString(), textStyle: { fontSize: 18 } },
         grid: { left: 72, right: 24, top: 26, bottom: 36 },
         xAxis: { type: 'category', data: ['Q1','Q2','Q3','Q4'],
-                 axisLabel: { fontSize: 16, color: '#555' } },
-        yAxis: { type: 'value', axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+                 axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [{ type: 'bar', data: [22569.6, -19134.4, 15532.8, -18595.7], barWidth: '48%',
             itemStyle: { color: p => p.value >= 0 ? '#8e44ad' : '#e74c3c', borderRadius: [4,4,0,0] },
-            label: { show: true, position: 'top', fontSize: 16,
+            label: { show: true, position: 'top', fontSize: 18,
                      formatter: p => Number(p.value).toLocaleString() } }]
     });
 })();
@@ -1364,15 +1568,15 @@ window.addEventListener('resize', () => {
     ];
     initChart('chart-staff-role')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'item', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'item', textStyle: { fontSize: 18 },
             formatter: p => `${p.marker}${p.name}<br><b>${p.value.toLocaleString()} 人</b>（${p.percent}%）` },
-        legend: { top: 8, textStyle: { fontSize: 16 } },
+        legend: { top: 8, textStyle: { fontSize: 18 } },
         series: [{
             type: 'pie', radius: ['38%', '68%'], center: ['50%', '58%'],
             avoidLabelOverlap: true,
             itemStyle: { borderColor: '#fff', borderWidth: 2 },
-            label: { fontSize: 15, color: '#333',
+            label: { fontSize: 17, color: '#333',
                 formatter: p => `${p.name}\n${p.value.toLocaleString()}（${p.percent}%）` },
             labelLine: { length: 12, length2: 10 },
             data: roles,
@@ -1391,20 +1595,94 @@ window.addEventListener('resize', () => {
     ];
     initChart('chart-staff-edu')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'item', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'item', textStyle: { fontSize: 18 },
             formatter: p => `${p.marker}${p.name}<br><b>${p.value.toLocaleString()} 人</b>（${p.percent}%）` },
-        legend: { top: 8, textStyle: { fontSize: 16 } },
+        legend: { top: 8, textStyle: { fontSize: 18 } },
         series: [{
             type: 'pie', radius: ['38%', '68%'], center: ['50%', '58%'],
             avoidLabelOverlap: true,
             itemStyle: { borderColor: '#fff', borderWidth: 2 },
-            label: { fontSize: 15, color: '#333',
+            label: { fontSize: 17, color: '#333',
                 formatter: p => `${p.name}\n${p.value.toLocaleString()}（${p.percent}%）` },
             labelLine: { length: 12, length2: 10 },
             data: edu,
             color: ['#6c3483', '#95a5a6', '#af7ac5']
         }]
+    });
+})();
+
+/* ────── intro.html · 历年董事长 / 行长薪酬披露（2010-2025，税前，万元） ──────
+ * 2010-2018: H股03618年报「董事、监事及高级管理层人员」章节；2019-2025: A股601077年报「公司治理报告」章节。
+ * 董事长换人：2022年4月刘建忠→谢文辉；2024年10月谢文辉离任后行长隋军代行职务（未列为董事长，未纳入）；
+ * 2025年"董事长"栏为刘小军（2025-05选举，2026-01-08监管核准正式履职后取得的年度报酬）。
+ * 行长换人：2013年12月谭远胜退休→谢文辉（任职资格待核准，2013年谢文辉部分未披露，故留空）；
+ * 2023年4月起行长为隋军。
+ * 注意：2010-2021年董事长(刘建忠)与行长(谢文辉/谭远胜)始终是两个不同的人，2014年报"董事长及行长"
+ * 一节原文强调"角色相互分立"；真正"一人兼两职"仅发生在2022年4月(谢文辉升任董事长后兼任行长)至
+ * 2023年3月(隋军4月接任行长)这一段——该段两条线数值相同，图上用虚线叠画并标注"一人兼两职"。
+ * 各年数值均为年报"税前薪酬合计"列，历年年报均注明非最终考核数。 */
+(function () {
+    if (!document.getElementById('chart-chairman-pay')) return;
+    const years = ['2010','2011','2012','2013','2014','2015','2016','2017','2018',
+                    '2019','2020','2021','2022','2023','2024','2025'];
+    const chairmanNames = ['刘建忠','刘建忠','刘建忠','刘建忠','刘建忠','刘建忠','刘建忠','刘建忠','刘建忠',
+                    '刘建忠','刘建忠','刘建忠','谢文辉','谢文辉','谢文辉','刘小军'];
+    const chairmanPay   = [ 77.4, 90.5,111.7,121.7,130.4, 77.3, 34.6, 42.0, 79.6,
+                     49.14, 44.58, 52.04, 52.79, 54.29, 41.24, 42.07];
+    // 2013 谢文辉当年任职资格未获监管核准，年报未披露报酬数，留空
+    const presidentNames = ['谭远胜','谭远胜','谭远胜','谭远胜','谢文辉','谢文辉','谢文辉','谢文辉','谢文辉',
+                    '谢文辉','谢文辉','谢文辉','谢文辉(兼董事长)','隋军','隋军','隋军'];
+    const presidentPay   = [ 77.4, 89.9,111.8,121.7, 79.4, 77.8, 34.6, 42.0, 90.8,
+                     49.14, 44.58, 52.04, 52.79, 43.38, 59.75, 60.84];
+    // 一人兼两职区间：2022(谢文辉兼)。用虚线线型区分「一人兼两职」的这一段与前后「两人分任」的实线段
+    const dashedIdx = new Set([12]);
+
+    initChart('chart-chairman-pay')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
+            formatter: p => `<b>${p[0].axisValue} 年</b><br>` + p.map(x => {
+                const idx = x.dataIndex;
+                const who = x.seriesIndex === 0 ? chairmanNames[idx] : presidentNames[idx];
+                const note = dashedIdx.has(idx) ? '（一人兼两职）' : '';
+                return x.value == null ? '' : `${x.marker}${x.seriesName}（${who}）${note}：${x.value} 万元`;
+            }).filter(Boolean).join('<br>') },
+        legend: { data: ['董事长', '行长'], top: 4, textStyle: { fontSize: 18 } },
+        grid: { left: 68, right: 30, top: 52, bottom: 40 },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '万元', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: [
+            {
+                name: '董事长', type: 'line', data: chairmanPay, smooth: true, symbolSize: 8,
+                lineStyle: {
+                    width: 2.5, color: '#c9a24a',
+                    type: p => dashedIdx.has(p.dataIndex) || dashedIdx.has(p.dataIndex - 1) ? 'dashed' : 'solid'
+                },
+                itemStyle: { color: '#c9a24a' },
+                markLine: {
+                    symbol: 'none', silent: true,
+                    lineStyle: { color: '#999', type: 'dashed', width: 1 },
+                    label: { fontSize: 16, color: '#888', formatter: p => p.name },
+                    data: [
+                        { xAxis: '2022', name: '谢文辉接任' },
+                        { xAxis: '2025', name: '刘小军接任' }
+                    ]
+                },
+                label: { show: true, position: 'top', fontSize: 15, color: '#8a6d1f', formatter: '{c}' }
+            },
+            {
+                name: '行长', type: 'line', data: presidentPay, smooth: true, symbolSize: 8,
+                lineStyle: {
+                    width: 2.5, color: '#2980b9',
+                    type: p => dashedIdx.has(p.dataIndex) || dashedIdx.has(p.dataIndex - 1) ? 'dashed' : 'solid'
+                },
+                itemStyle: { color: '#2980b9' },
+                label: { show: true, position: 'bottom', fontSize: 15, color: '#1f618d',
+                         formatter: p => p.value == null ? '' : p.value }
+            }
+        ]
     });
 })();
 
@@ -1416,25 +1694,25 @@ window.addEventListener('resize', () => {
     const total   = vals.reduce((s, v) => s + v, 0);
     initChart('chart-staff-age')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: p => {
                 const x = p[0];
                 const pct = (x.value / total * 100).toFixed(1);
                 return `<b>${x.axisValue}</b><br>${x.marker}人数：${x.value.toLocaleString()} 人（${pct}%）`;
             } },
         grid: { left: 100, right: 60, top: 20, bottom: 40 },
-        xAxis: { type: 'value', name: '人数', nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555' },
+        xAxis: { type: 'value', name: '人数', nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' },
                  splitLine: { lineStyle: { color: '#eee' } } },
         yAxis: { type: 'category', data: buckets, inverse: true,
-                 axisLabel: { fontSize: 16, color: '#333' } },
+                 axisLabel: { fontSize: 18, color: '#333' } },
         series: [{
             type: 'bar', data: vals,
             itemStyle: { color: '#6c3483' },
             barWidth: 26,
-            label: { show: true, position: 'right', fontSize: 15, color: '#333',
+            label: { show: true, position: 'right', fontSize: 17, color: '#333',
                 formatter: p => `${p.value.toLocaleString()}（${(p.value / total * 100).toFixed(1)}%）` }
         }]
     });
@@ -1455,9 +1733,9 @@ window.addEventListener('resize', () => {
 
     initChart('chart-maturity')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: p => {
                 let s = `<b>${p[0].axisValue}</b>`;
                 p.forEach(x => {
@@ -1466,26 +1744,26 @@ window.addEventListener('resize', () => {
                 });
                 return s;
             } },
-        legend: { data: ['金融资产', '金融负债', '净头寸（资产 − 负债）'], top: 4, textStyle: { fontSize: 16 } },
+        legend: { data: ['金融资产', '金融负债', '净头寸（资产 − 负债）'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 80, right: 24, top: 46, bottom: 60 },
-        xAxis: { type: 'category', data: buckets, axisLabel: { fontSize: 15, color: '#555', interval: 0 },
+        xAxis: { type: 'category', data: buckets, axisLabel: { fontSize: 17, color: '#555', interval: 0 },
                  axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16 },
-                 axisLabel: { fontSize: 16, color: '#555',
+        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555',
                      formatter: v => (Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + '千' : v) },
                  splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '金融资产', type: 'bar', data: asset2025, barGap: '10%',
               itemStyle: { color: '#6c3483' },
-              label: { show: true, position: 'top', fontSize: 13, color: '#555',
+              label: { show: true, position: 'top', fontSize: 14, color: '#555',
                        formatter: p => Number(p.value).toLocaleString() } },
             { name: '金融负债', type: 'bar', data: debt2025,
               itemStyle: { color: '#95a5a6' },
-              label: { show: true, position: 'top', fontSize: 13, color: '#888',
+              label: { show: true, position: 'top', fontSize: 14, color: '#888',
                        formatter: p => Number(p.value).toLocaleString() } },
             { name: '净头寸（资产 − 负债）', type: 'line', data: net2025, smooth: false,
               symbolSize: 8, lineStyle: { width: 2.5, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              label: { show: true, fontSize: 13, color: '#c0392b',
+              label: { show: true, fontSize: 14, color: '#c0392b',
                        position: p => p.value >= 0 ? 'top' : 'bottom',
                        formatter: p => Number(p.value).toLocaleString() } }
         ]
@@ -1511,15 +1789,15 @@ window.addEventListener('resize', () => {
     const equity     = [526,542,639,597,584,1051,615,479,349,121,568,1518,1469,810,562,951,1073,1158,1135,1075,1368,1125,861,828,1225,570,800,769,458,487,536,653,519,601,1324,817,500,379,404,533,438,258,175,141,272,176,200,130,289,119,122,262,259,153,593,256,289,180,524,432,609,449,198,315,353,538,1215,1282,1141,927,771,1126,991,693,783,814,717,956,938,1478,772,846,1294,1851,1439,585,958,1166,292,589,1437,1251,1022,788,788,1443,964,571,614,993,753,700,786,1036,326,321,359,508,422,114,227,186,111,154,231,132,128,284,428,484,473,76,412,391,152,203,505,456,499,695,341,559,291,454,428,835,298,628,1128];
 
     /* 只在每年 1 月显示年份 */
-    const xLabel = { fontSize: 16, color: '#555',
+    const xLabel = { fontSize: 18, color: '#555',
         formatter: (v, i) => (v.slice(-2) === '01' ? v.slice(0, 4) : ''),
         interval: 0 };
 
     /* ---------- 图 1：存量 + 同比 ---------- */
     initChart('chart-tsf-stock')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
             formatter: p => {
                 const d = p[0].axisValue;
                 let s = `<b>${d}</b>`;
@@ -1530,15 +1808,15 @@ window.addEventListener('resize', () => {
                 });
                 return s;
             } },
-        legend: { data: ['社融存量', '同比 YoY'], top: 4, textStyle: { fontSize: 16 } },
+        legend: { data: ['社融存量', '同比 YoY'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 72, right: 64, top: 42, bottom: 40 },
         xAxis: { type: 'category', data: months, boundaryGap: false,
             axisLabel: xLabel, axisLine: { lineStyle: { color: '#bbb' } } },
         yAxis: [
-            { type: 'value', name: '万亿元', min: 0, nameTextStyle: { fontSize: 16, color: '#555' },
-              axisLabel: { fontSize: 16, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: 'YoY %', min: 0, max: 16, nameTextStyle: { fontSize: 16, color: '#c0392b' },
-              axisLabel: { fontSize: 16, color: '#c0392b', formatter: '{value}%' }, splitLine: { show: false } }
+            { type: 'value', name: '万亿元', min: 0, nameTextStyle: { fontSize: 18, color: '#555' },
+              axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+            { type: 'value', name: 'YoY %', min: 0, max: 16, nameTextStyle: { fontSize: 18, color: '#c0392b' },
+              axisLabel: { fontSize: 18, color: '#c0392b', formatter: '{value}%' }, splitLine: { show: false } }
         ],
         series: [
             { name: '社融存量', type: 'line', data: stock, connectNulls: true,
@@ -1551,13 +1829,13 @@ window.addEventListener('resize', () => {
               markLine: { silent: true, symbol: 'none', label: { show: false },
                 data: [
                     { xAxis: '2018-07', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2018.07\nABS+核销', position: 'insideEndTop', fontSize: 13, color: '#666' } },
+                      label: { show: true, formatter: '2018.07\nABS+核销', position: 'insideEndTop', fontSize: 14, color: '#666' } },
                     { xAxis: '2018-09', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2018.09\n政府专项债', position: 'insideEndBottom', fontSize: 13, color: '#666' } },
+                      label: { show: true, formatter: '2018.09\n政府专项债', position: 'insideEndBottom', fontSize: 14, color: '#666' } },
                     { xAxis: '2020-03', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2020Q1\n疫情信用扩张', position: 'insideEndTop', fontSize: 13, color: '#666' } },
+                      label: { show: true, formatter: '2020Q1\n疫情信用扩张', position: 'insideEndTop', fontSize: 14, color: '#666' } },
                     { xAxis: '2023-01', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2023\n三类非存款金融纳入', position: 'insideEndBottom', fontSize: 13, color: '#666' } }
+                      label: { show: true, formatter: '2023\n三类非存款金融纳入', position: 'insideEndBottom', fontSize: 14, color: '#666' } }
                 ] } }
         ]
     });
@@ -1566,8 +1844,8 @@ window.addEventListener('resize', () => {
     /* 分项配色：贷款主体走紫，政府债走橙，企业债走蓝，影子银行三剑客走灰，其他走浅色 */
     initChart('chart-tsf-flow')?.setOption({
         backgroundColor: '#fff',
-        textStyle: { fontSize: 16 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 16 },
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
             formatter: p => {
                 const d = p[0].axisValue;
                 let s = `<b>${d}</b>`;
@@ -1577,13 +1855,13 @@ window.addEventListener('resize', () => {
                  .forEach(x => { s += `<br>${x.marker}${x.seriesName}：${Number(x.value).toLocaleString()} 亿`; });
                 return s;
             } },
-        legend: { top: 4, textStyle: { fontSize: 16 },
+        legend: { top: 4, textStyle: { fontSize: 18 },
             data: ['人民币贷款','政府债券','企业债券','未贴现票据','委托贷款','信托贷款','非金融企业股票','社融合计'] },
         grid: { left: 80, right: 24, top: 46, bottom: 40 },
         xAxis: { type: 'category', data: months, axisLabel: xLabel,
             axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 16, color: '#555' },
-            axisLabel: { fontSize: 16, color: '#555',
+        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 18, color: '#555' },
+            axisLabel: { fontSize: 18, color: '#555',
                 formatter: v => (Math.abs(v) >= 10000 ? (v / 10000).toFixed(1) + '万' : v) },
             splitLine: { lineStyle: { color: '#eee' } } },
         series: [

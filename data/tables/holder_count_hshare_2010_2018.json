@@ -1,0 +1,94 @@
+{
+  "source": "HKEXnews 03618 年报, HKEX docsearch stockId=56657",
+  "fetch_date": "2026-08-15",
+  "unit": "户",
+  "coverage": "年末口径, 2010-12-31 至 2018-12-31",
+  "notes": "H 股登记股东数量的标准披露口径始于 2017 年报（在\"股本变动及股东情况\"章节的股份变动表脚注中，写作\"本行非境外上市股东总数 X,XXX 户；H 股登记股东 X,XXX 户\"）。2010-2016 年报（中英文版本）均未披露 H 股登记股东户数：中文报告在\"股本变动及股东情况\"章节仅列示前十名股东、主要股东、公众持股量百分比；英文报告 (仅 2010-2013 有 EN 版本) 亦无对应披露。因此 2010-2016 年数据以 null 记录，不做插值或估算。",
+  "data": [
+    {
+      "year_end": "2010-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2011/0329/ltn20110329407_c.pdf",
+      "pdf_url_en": "https://www1.hkexnews.hk/listedco/listconews/sehk/2011/0329/ltn20110329406.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2010.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2010 年报（中/英文版）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量为 24.28%、前十名股东、主要股东（渝富、城投、隆鑫等）。此项披露口径 2017 年才引入。"
+    },
+    {
+      "year_end": "2011-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2012/0327/ltn20120327675_c.pdf",
+      "pdf_url_en": "https://www1.hkexnews.hk/listedco/listconews/sehk/2012/0327/ltn20120327676.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2011.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2011 年报（中/英文版）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.02%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2012-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2013/0322/ltn20130322980_c.pdf",
+      "pdf_url_en": "https://www1.hkexnews.hk/listedco/listconews/sehk/2013/0322/ltn20130322979.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2012.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2012 年报（中/英文版）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.02%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2013-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2014/0408/ltn20140408191_c.pdf",
+      "pdf_url_en": "https://www1.hkexnews.hk/listedco/listconews/sehk/2014/0408/ltn20140408190.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2013.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2013 年报（中/英文版）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.02%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2014-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2015/0410/ltn20150410236_c.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2014.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2014 年报（仅中文版发布）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.03%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2015-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2016/0329/ltn20160329374_c.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2015.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2015 年报（仅中文版发布）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.03%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2016-12-31",
+      "h_shareholders": null,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2017/0411/ltn20170411665_c.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2016.pdf",
+      "page": null,
+      "quote": null,
+      "note": "2016 年报（仅中文版发布）\"股本变动及股东情况\"章节未披露 H 股登记股东户数；仅披露公众持 H 股量 27.03%、前十名股东、主要股东。"
+    },
+    {
+      "year_end": "2017-12-31",
+      "h_shareholders": 1420,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2018/0403/ltn201804031719_c.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2017.pdf",
+      "page": 85,
+      "quote": "於報告期末，本行非境外上市股東總數79,913戶；H股登記股東1,420戶。",
+      "note": "2017 年报\"股本变动及股东情况\"章节股份变动表的注(1)。"
+    },
+    {
+      "year_end": "2018-12-31",
+      "h_shareholders": 1316,
+      "pdf_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2019/0403/ltn201904031666_c.pdf",
+      "local_pdf": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_03618_2018.pdf",
+      "page": 89,
+      "quote": "於報告期末，本行非境外上市股東總數79,900戶；H股登記股東1,316戶。",
+      "note": "2018 年报\"股本变动及股东情况\"章节股份变动表的注(1)。"
+    }
+  ]
+}

@@ -10,8 +10,8 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #f5f7fa; font-family: Arial, "Microsoft YaHei", sans-serif; }
-        #loading { text-align: center; padding: 60px; color: #666; font-size: 16px; }
-        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 16px; }
+        #loading { text-align: center; padding: 60px; color: #666; font-size: 18px; }
+        #error-msg { display: none; text-align: center; padding: 20px; color: #d32f2f; font-size: 18px; }
         /* 圆角/投影/白底见 common/base.css 的 .chart-card，这里只加卡片间距 */
         .chart-block { width: 100%; margin-bottom: 24px; }
         #container { max-width: 1800px; margin: 0 auto; padding: 20px 24px 40px; }
@@ -131,7 +131,7 @@ function render(compare) {
             backgroundColor: '#ffffff',
             tooltip: {
                 trigger: 'axis',
-                textStyle: { fontSize: 16 },
+                textStyle: { fontSize: 18 },
                 axisPointer: { type: 'shadow' },
                 formatter: params => {
                     const name = params[0].axisValue;
@@ -150,7 +150,7 @@ function render(compare) {
                 data: ['保留', '增加', '减少'],
                 top: 8, right: 20,
                 itemGap: 20,
-                textStyle: { color: '#333', fontSize: 16 }
+                textStyle: { color: '#333', fontSize: 18 }
             },
             /* 左右留白按 16px 字号给：'Other Southern Africa' 这类长国名和 ±数值都要放得下 */
             grid: { left: 210, right: 96, top: 40, bottom: 30 },
@@ -158,13 +158,13 @@ function render(compare) {
                 type: 'value',
                 min: 0,
                 max: globalMax,
-                axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0)+'k' },
+                axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0)+'k' },
                 splitLine: { lineStyle: { color: '#eee' } }
             },
             yAxis: {
                 type: 'category',
                 data: countries,
-                axisLabel: { color: '#333', fontSize: 16 },
+                axisLabel: { color: '#333', fontSize: 18 },
                 axisLine: { lineStyle: { color: '#ddd' } },
                 axisTick: { show: false }
             },
@@ -184,7 +184,7 @@ function render(compare) {
                     // 16px 的数值放不下时宁可不画：明细看 tooltip
                     labelLayout: { hideOverlap: true },
                     label: {
-                        show: true, position: 'right', fontSize: 16, color: '#1a7a3a',
+                        show: true, position: 'right', fontSize: 18, color: '#1a7a3a',
                         formatter: p => p.value > 0 ? '+' + p.value.toLocaleString() : ''
                     }
                 },
@@ -195,7 +195,7 @@ function render(compare) {
                     data: losses.map(v => ({ value: v, itemStyle: { color: stripePattern } })),
                     labelLayout: { hideOverlap: true },
                     label: {
-                        show: true, position: 'right', fontSize: 16, color: '#6b7280',
+                        show: true, position: 'right', fontSize: 18, color: '#6b7280',
                         formatter: p => p.value > 0 ? '-' + p.value.toLocaleString() : ''
                     }
                 }

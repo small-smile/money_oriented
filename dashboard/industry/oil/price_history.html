@@ -63,7 +63,7 @@
             align-items: center;
             gap: 9px;
             font: inherit;
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1.4;
             padding: 10px 24px;
             background: transparent;
@@ -136,7 +136,7 @@
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
             color: #111827;
             margin: 2px 4px 10px;
@@ -152,13 +152,13 @@
             margin-top: 12px;
             padding-top: 10px;
             border-top: 1px solid #f3f4f6;
-            font-size: 16px;
+            font-size: 18px;
             color: #6b7280;
             text-align: center;
         }
 
         .chart-note {
-            font-size: 16px;
+            font-size: 18px;
             color: #6b7280;
             line-height: 1.7;
             margin: 16px 2px 0;
@@ -214,7 +214,7 @@
             right: 18px;
             background: transparent;
             border: none;
-            font-size: 32px;
+            font-size: 36px;
             color: #9ca3af;
             cursor: pointer;
             line-height: 1;
@@ -228,7 +228,7 @@
         }
 
         .modal-year {
-            font-size: 26px;
+            font-size: 29px;
             font-weight: bold;
             color: #111827;
             font-family: "SF Mono", Consolas, monospace;
@@ -248,26 +248,26 @@
         }
 
         .modal-events .m-event-name {
-            font-size: 20px;
+            font-size: 23px;
             font-weight: 700;
             margin-bottom: 6px;
         }
 
         .modal-events .m-event-time {
             font-family: "SF Mono", Consolas, monospace;
-            font-size: 16px;
+            font-size: 18px;
             color: #6b7280;
             margin-bottom: 10px;
         }
 
         .modal-events .m-event-desc {
-            font-size: 24px;
+            font-size: 27px;
             color: #374151;
             line-height: 1.7;
         }
 
         .modal-empty {
-            font-size: 16px;
+            font-size: 18px;
             color: #6b7280;
             padding: 24px 0;
             text-align: center;
@@ -284,7 +284,7 @@
 
         #annotations-section h2 {
             margin: 0 0 16px;
-            font-size: 18px;
+            font-size: 20px;
             color: #111827;
             font-weight: bold;
         }
@@ -292,7 +292,7 @@
         #annotation-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 16px;
+            font-size: 18px;
             color: #1f2937;
         }
 
@@ -301,7 +301,7 @@
             padding: 10px 12px;
             text-align: left;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 18px;
             color: #4b5563;
             border-bottom: 2px solid #d1d5db;
             white-space: nowrap;
@@ -322,7 +322,7 @@
             font-family: "SF Mono", Consolas, monospace;
             white-space: nowrap;
             color: #4b5563;
-            font-size: 16px;
+            font-size: 18px;
         }
 
         #annotation-table td.event {
@@ -333,7 +333,7 @@
         }
 
         #annotation-table td:last-child {
-            font-size: 18px;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -515,7 +515,7 @@
         const conf = {
             trigger: 'axis',
             axisPointer: {type: 'cross'},
-            textStyle: {fontSize: 16},
+            textStyle: {fontSize: 18},
             formatter: params => {
                 const rows = params.map(p => {
                     const d = p.data;
@@ -528,11 +528,11 @@
                         value = '<b>' + d + '</b>';
                     }
                     const unit = SERIES_UNIT[p.seriesName];
-                    return '<div style="font-size:16px;line-height:1.7">'
+                    return '<div style="font-size:18px;line-height:1.7">'
                         + p.marker + p.seriesName + '&nbsp;&nbsp;' + value
                         + (unit ? ' ' + unit : '') + '</div>';
                 }).join('');
-                return '<div style="font-weight:600;font-size:18px;margin-bottom:6px">'
+                return '<div style="font-weight:600;font-size:20px;margin-bottom:6px">'
                     + params[0].axisValue + '</div>' + rows;
             }
         };
@@ -566,31 +566,31 @@
                     legend: {
                         data: ['黄金', '原油', '金油比'],
                         bottom: 0,
-                        textStyle: {fontSize: 16}
+                        textStyle: {fontSize: 18}
                     },
                     grid: {left: 90, right: 260, top: 40, bottom: 70},
                     xAxis: {
                         type: 'category',
                         data: xAxis,
-                        axisLabel: {rotate: 45, fontSize: 16}
+                        axisLabel: {rotate: 45, fontSize: 18}
                     },
                     yAxis: [
                         {
                             type: 'value',
                             name: '黄金 (美元/盎司)',
                             position: 'left',
-                            nameTextStyle: {fontSize: 16, color: '#d4a017'},
+                            nameTextStyle: {fontSize: 18, color: '#d4a017'},
                             axisLine: {show: true, lineStyle: {color: '#d4a017'}},
-                            axisLabel: {fontSize: 16},
+                            axisLabel: {fontSize: 18},
                             splitLine: {lineStyle: {color: '#eef0f3'}}
                         },
                         {
                             type: 'value',
                             name: '原油 (美元/桶)',
                             position: 'right',
-                            nameTextStyle: {fontSize: 16, color: '#c0392b'},
+                            nameTextStyle: {fontSize: 18, color: '#c0392b'},
                             axisLine: {show: true, lineStyle: {color: '#c0392b'}},
-                            axisLabel: {fontSize: 16},
+                            axisLabel: {fontSize: 18},
                             splitLine: {show: false}
                         },
                         {
@@ -598,9 +598,9 @@
                             name: '金油比 (桶/盎司)',
                             position: 'right',
                             offset: 150,
-                            nameTextStyle: {fontSize: 16, color: '#7c3aed'},
+                            nameTextStyle: {fontSize: 18, color: '#7c3aed'},
                             axisLine: {show: true, lineStyle: {color: '#7c3aed'}},
-                            axisLabel: {fontSize: 16},
+                            axisLabel: {fontSize: 18},
                             splitLine: {show: false}
                         }
                     ],
@@ -641,7 +641,7 @@
                                 lineStyle: {color: '#7c3aed', type: 'dotted'},
                                 label: {
                                     formatter: '金油比均值 {c}',
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     color: '#7c3aed',
                                     position: 'insideEndTop'
                                 },
@@ -655,7 +655,7 @@
             .catch(err => {
                 chart.hideLoading();
                 console.error(err);
-                dom.innerHTML = '<div style="padding:24px;font-size:16px;color:#6b7280">'
+                dom.innerHTML = '<div style="padding:24px;font-size:18px;color:#6b7280">'
                     + '金油比数据加载失败，请检查后端服务 (/api/gold_oil)</div>';
             });
     })();
@@ -745,20 +745,20 @@
                     left: '50%',
                     bottom: 0,
                     selected: {"原油K线": true, "2024平价价格": false},
-                    textStyle: {fontSize: 16}
+                    textStyle: {fontSize: 18}
                 },
                 grid: {bottom: 60},
                 xAxis: [
-                    {type: "category", data: xAxis, axisLabel: {rotate: 45, fontSize: 16}},
+                    {type: "category", data: xAxis, axisLabel: {rotate: 45, fontSize: 18}},
                 ],
                 yAxis: [
                     {type: "value", name: "价格", scale: true,
-                        nameTextStyle: {fontSize: 16}, axisLabel: {fontSize: 16}},
+                        nameTextStyle: {fontSize: 18}, axisLabel: {fontSize: 18}},
                     {
                         type: "value", name: "2024平价价格", scale: true,
                         position: 'right',
-                        nameTextStyle: {fontSize: 16},
-                        axisLabel: {margin: 8, fontSize: 16},
+                        nameTextStyle: {fontSize: 18},
+                        axisLabel: {margin: 8, fontSize: 18},
                     },
                 ],
                 dataZoom: [
@@ -781,7 +781,7 @@
                             symbol: 'none',
                             silent: true,
                             lineStyle: {color: '#be123c', type: 'dashed', width: 1.5},
-                            label: {fontSize: 16},
+                            label: {fontSize: 18},
                             data: [
                                 {
                                     name: 'Standard Oil 拆分',
@@ -810,7 +810,7 @@
                         },
                         markArea: {
                             silent: true,
-                            label: {fontSize: 16, fontWeight: 'bold', rotate: 0},
+                            label: {fontSize: 18, fontWeight: 'bold', rotate: 0},
                             data: [
                                 [
                                     {

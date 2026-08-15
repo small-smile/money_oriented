@@ -14,7 +14,7 @@
             background: #f5f7fa;
             color: #1a1a2e;
         }
-        #loading, #error-msg { max-width: 1800px; margin: 16px auto; font-size: 16px; }
+        #loading, #error-msg { max-width: 1800px; margin: 16px auto; font-size: 18px; }
 
         #cards { max-width: 1800px; margin: 0 auto; padding: 20px 24px 40px; }
 
@@ -30,8 +30,8 @@
         }
 
         /* Selectable/copyable HTML chart titles (ECharts canvas titles can't be selected) */
-        .chart-title { text-align: center; font-size: 18px; font-weight: 600; color: #1a1a2e; padding: 8px 0 2px; }
-        .chart-title .sub { display: block; font-size: 16px; font-weight: 400; color: #666; margin-top: 2px; }
+        .chart-title { text-align: center; font-size: 20px; font-weight: 600; color: #1a1a2e; padding: 8px 0 2px; }
+        .chart-title .sub { display: block; font-size: 18px; font-weight: 400; color: #666; margin-top: 2px; }
 
         /* Card 0: 全球总产量 + 回归趋势 */
         #chart-total { width: 100%; height: 680px; }
@@ -67,7 +67,7 @@
             align-items: center;
             gap: 9px;
             font: inherit;
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1.4;
             padding: 10px 24px;
             background: transparent;
@@ -122,7 +122,7 @@
             margin-top: 12px;
             padding-top: 10px;
             border-top: 1px solid #f3f4f6;
-            font-size: 16px;
+            font-size: 18px;
             color: #6b7280;
             text-align: center;
         }
@@ -144,7 +144,7 @@
         /* 滚到底后详情图才是主角，标题要一眼看到是哪个地区/国家 */
         .stack-detail-title {
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
             color: #111827;
             letter-spacing: 0.2px;
@@ -215,13 +215,13 @@
         .cl-items { column-gap: 14px; column-fill: auto; }
         .cl-head {
             flex: 0 0 auto;
-            font-size: 16px; font-weight: 600; margin-bottom: 10px;
+            font-size: 18px; font-weight: 600; margin-bottom: 10px;
             white-space: nowrap; letter-spacing: 0.01em;
         }
         .cl-item {
             flex: 0 0 auto; width: 124px; box-sizing: border-box;
             display: flex; align-items: center; gap: 8px;
-            font-size: 16px; line-height: 22px; color: #1d1d1f;
+            font-size: 18px; line-height: 22px; color: #1d1d1f;
             cursor: pointer; white-space: nowrap; overflow: hidden; user-select: none;
             padding: 3px 8px; border-radius: 9px; margin: 1px 0;
             transition: background 0.15s ease, opacity 0.15s ease;
@@ -466,7 +466,7 @@ function initTotal() {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: params => {
                 const year = params[0].axisValue;
                 const act = params.find(p => p.seriesName === '实际总产量');
@@ -489,18 +489,18 @@ function initTotal() {
                 return html;
             }
         },
-        legend: { data: ['实际总产量', '回归趋势'], top: 8, textStyle: { color: '#333', fontSize: 16 } },
+        legend: { data: ['实际总产量', '回归趋势'], top: 8, textStyle: { color: '#333', fontSize: 18 } },
         grid: { left: 72, right: 120, top: 46, bottom: 30 },
         toolbox: { feature: { saveAsImage: {}, dataZoom: { yAxisIndex: 'none' }, restore: {} }, right: 8, top: 4 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 18, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series: [
@@ -518,7 +518,7 @@ function initTotal() {
                 itemStyle: { color: '#ee6666' },
                 // 把回归增速直接标在趋势线末端，不用去看副标题
                 endLabel: {
-                    show: true, color: '#ee6666', fontSize: 16, fontWeight: 'bold',
+                    show: true, color: '#ee6666', fontSize: 18, fontWeight: 'bold',
                     formatter: () => _totalFit
                         ? `${_totalFit.cagr >= 0 ? '+' : ''}${(_totalFit.cagr * 100).toFixed(2)}%/年`
                         : ''
@@ -544,7 +544,7 @@ function buildRegionOption(dataMap, isAbs) {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
             position: [12, 12],
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: params => {
                 const year = params[0].axisValue;
                 // 找出当前悬浮地区并置顶
@@ -557,7 +557,7 @@ function buildRegionOption(dataMap, isAbs) {
                     const label = isAbs
                         ? `${(cur.value || 0).toLocaleString()}（占 ${share}%）`
                         : `${(cur.value || 0).toFixed(1)}%`;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:18px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${label}</b>
                              </div>`;
                 }
@@ -573,7 +573,7 @@ function buildRegionOption(dataMap, isAbs) {
         },
         legend: {
             data: _regions, top: 8, type: 'scroll',
-            textStyle: { color: '#333', fontSize: 16 },
+            textStyle: { color: '#333', fontSize: 18 },
             formatter: name => {
                 const d = dataMap[name];
                 const change = d[d.length - 1] - d[0];
@@ -588,17 +588,17 @@ function buildRegionOption(dataMap, isAbs) {
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: isAbs ? {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 18, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         } : {
             type: 'value', name: '%', min: 0, max: 100,
-            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
+            nameTextStyle: { color: '#555', fontSize: 18, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series
@@ -725,22 +725,22 @@ function showRegionDetailInto(region, titleId, chart, isPct) {
         backgroundColor: '#fafafa',
         tooltip: {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             valueFormatter: v => isPct ? (v || 0).toFixed(2) + '%' : Math.round(v || 0).toLocaleString()
         },
         grid: { left: 72, right: 96, top: 24, bottom: 24 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: isPct ? {
             type: 'value', min: 0,
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#eee' } }
         } : {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{
@@ -780,7 +780,7 @@ function initCountry() {
             trigger: 'axis',
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: params => {
                 let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
@@ -788,9 +788,9 @@ function initCountry() {
                 const cur = items.find(p => p.seriesName === currentCountry);
                 if (cur) {
                     const rank = items.indexOf(cur) + 1;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:18px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toLocaleString()}</b>　千桶/日
-                                <span style="color:#888;font-size:16px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                                <span style="color:#888;font-size:18px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
                              </div>`;
                 }
                 items.filter(p => p.seriesName !== currentCountry)
@@ -808,12 +808,12 @@ function initCountry() {
         // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '千桶/日',
-            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            nameTextStyle: { color: '#555', fontSize: 18, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series
@@ -864,17 +864,17 @@ function showCountryDetail(country) {
     const color = REGION_COLORS[_countryMeta[country].continent] || '#5470c6';
     countryDetailChart.setOption({
         backgroundColor: '#fafafa',
-        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } }, textStyle: { fontSize: 16 } },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } }, textStyle: { fontSize: 18 } },
         grid: { left: 72, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 18 },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{
@@ -991,7 +991,7 @@ function initPercent() {
             trigger: 'axis',
             position: [12, 12],
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             formatter: params => {
                 let html = `<b>${params[0].axisValue} 年</b>`;
                 const items = params.filter(p => p.value != null && p.value > 0)
@@ -999,9 +999,9 @@ function initPercent() {
                 const cur = items.find(p => p.seriesName === currentPercentCountry);
                 if (cur) {
                     const rank = items.indexOf(cur) + 1;
-                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:16px;">
+                    html += `<div style="margin:4px 0;padding:6px 8px;background:#fff6d6;border-left:3px solid #f0a500;border-radius:2px;font-size:18px;">
                                 ${cur.marker}<b>${cur.seriesName}</b>：<b>${cur.value.toFixed(2)}%</b>
-                                <span style="color:#888;font-size:16px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
+                                <span style="color:#888;font-size:18px;">（当年第 ${rank} 名 / 共 ${items.length}）</span>
                              </div>`;
                 }
                 items.filter(p => p.seriesName !== currentPercentCountry)
@@ -1019,12 +1019,12 @@ function initPercent() {
         // 不加 dataZoom：年度点一次画全，看局部用 toolbox 的框选缩放
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', name: '%',
-            nameTextStyle: { color: '#555', fontSize: 16, align: 'right' },
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
+            nameTextStyle: { color: '#555', fontSize: 18, align: 'right' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#e8e8e8' } }
         },
         series: _sortedByPct.map(c => ({
@@ -1082,17 +1082,17 @@ function showPercentDetail(country) {
         tooltip: {
             trigger: 'axis', axisPointer: { type: 'cross', lineStyle: { width: 1 } },
             valueFormatter: v => (v || 0).toFixed(2) + '%',
-            textStyle: { fontSize: 16 }
+            textStyle: { fontSize: 18 }
         },
         grid: { left: 72, right: 96, top: 12, bottom: 40 },
         // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
         xAxis: {
             type: 'category', data: _years, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 }, axisLine: { lineStyle: { color: '#bbb' } }
+            axisLabel: { color: '#555', fontSize: 18 }, axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value', min: 0,
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => v + '%' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => v + '%' },
             splitLine: { lineStyle: { color: '#eee' } }
         },
         series: [{

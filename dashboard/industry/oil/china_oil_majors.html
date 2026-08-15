@@ -111,7 +111,7 @@ function renderWaterfall(divId, company, data, colors) {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'shadow' },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             position: (point, params, dom, rect, size) => {
                 const [x] = point;
                 const tw = size.contentSize[0];
@@ -134,12 +134,12 @@ function renderWaterfall(divId, company, data, colors) {
         grid: { left: 64, right: 20, top: 24, bottom: 32 },
         xAxis: {
             type: 'category', data: years, boundaryGap: true,
-            axisLabel: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 18 },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0
         },
@@ -155,7 +155,7 @@ function renderWaterfall(divId, company, data, colors) {
                 barMaxWidth: 30,
                 labelLayout: { hideOverlap: true },
                 label: {
-                    show: true, position: 'top', fontSize: 16, fontWeight: 'bold', color: colors.label,
+                    show: true, position: 'top', fontSize: 18, fontWeight: 'bold', color: colors.label,
                     formatter: p => p.value > 0 ? '+' + p.value.toLocaleString() : ''
                 }
             },
@@ -165,7 +165,7 @@ function renderWaterfall(divId, company, data, colors) {
                 barMaxWidth: 30,
                 labelLayout: { hideOverlap: true },
                 label: {
-                    show: true, position: 'top', fontSize: 16, fontWeight: 'bold', color: '#666666',
+                    show: true, position: 'top', fontSize: 18, fontWeight: 'bold', color: '#666666',
                     formatter: p => p.value > 0 ? '-' + p.value.toLocaleString() : ''
                 }
             }
@@ -198,7 +198,7 @@ function renderCompare(ptrData, cncData) {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             position: (point, params, dom, rect, size) => {
                 const [x] = point;
                 const tw = size.contentSize[0];
@@ -225,17 +225,17 @@ function renderCompare(ptrData, cncData) {
         legend: {
             data: ['中石油', '中海油'],
             top: 4,
-            textStyle: { fontSize: 16, color: '#333' }
+            textStyle: { fontSize: 18, color: '#333' }
         },
         grid: { left: 64, right: 20, top: 40, bottom: 32 },
         xAxis: {
             type: 'category', data: allYears, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 18 },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 16, formatter: v => (v/1000).toFixed(0) + 'k' },
+            axisLabel: { color: '#555', fontSize: 18, formatter: v => (v/1000).toFixed(0) + 'k' },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0
         },
@@ -285,7 +285,7 @@ function renderProduction(ptrData, cncData) {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross', lineStyle: { width: 2 } },
-            textStyle: { fontSize: 16 },
+            textStyle: { fontSize: 18 },
             position: (point, params, dom, rect, size) => {
                 const [x] = point;
                 const tw = size.contentSize[0];
@@ -309,17 +309,17 @@ function renderProduction(ptrData, cncData) {
         legend: {
             data: ['中石油', '中海油'],
             top: 4,
-            textStyle: { fontSize: 16, color: '#333' }
+            textStyle: { fontSize: 18, color: '#333' }
         },
         grid: { left: 64, right: 20, top: 40, bottom: 32 },
         xAxis: {
             type: 'category', data: allYears, boundaryGap: false,
-            axisLabel: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 18 },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: {
             type: 'value',
-            axisLabel: { color: '#555', fontSize: 16 },
+            axisLabel: { color: '#555', fontSize: 18 },
             splitLine: { lineStyle: { color: '#e8e8e8' } },
             min: 0
         },
