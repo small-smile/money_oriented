@@ -26,6 +26,20 @@
                 {href: 'industry/oil/china_oil_majors.html',             title: '油企'},
                 {href: 'industry/oil/cnooc_roa_oil.html',                title: '中海油 油价·ROA'}
             ]
+        },
+        {
+            label: '银行',
+            pages: [
+                {href: 'industry/bank/overview.html',                    title: 'A/H 股概览'},
+                {href: 'industry/bank/reform_timeline.html',             title: '重要变革时间线'}
+            ]
+        },
+        {
+            label: '保险',
+            pages: [
+                {href: 'industry/insurance/overview.html',               title: 'A/H 股概览'},
+                {href: 'industry/insurance/peers.html',                  title: '五大险企对比'}
+            ]
         }
     ];
 

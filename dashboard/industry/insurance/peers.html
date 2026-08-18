@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <script src="../../common/site-header.js" defer></script>
+    <title>五大上市险企同业对比</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { padding: 0; background: #f5f6f8; }
+        .page { max-width: 1800px; margin: 0 auto; padding: 20px 16px 48px; }
+        h1 { text-align: center; color: #2c3e50; font-size: 29px; margin: 12px 0 6px; }
+        .lede { text-align: center; color: #6b7280; font-size: 17px; margin-bottom: 20px; }
+        .chart-card { padding: 16px 18px 22px; margin-bottom: 22px; }
+        .chart-box { height: 70vh; }
+        .note { font-size: 16px; color: #6b7280; line-height: 1.7; margin-top: 10px; }
+        .note b { color: #b45309; }
+        details.note > summary { cursor: pointer; color: #4b5563; }
+        a { color: #1d4ed8; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>五大上市险企同业对比</h1>
+    <div class="lede">
+        中国平安 601318 · 中国人寿 601628 · 中国太保 601601 · 新华保险 601336 · 中国人保 601319 ——
+        数据源自东方财富 F10 接口（取值源自各期 <b>A 股年度报告</b>合并口径），2025 年度 84 项已逐项对照五家 A 股年报原文核验一致；
+        2022 年（中国人寿含 2023 年）为新旧准则混排行，<a href="overview.html">名录与变革时间线</a>
+    </div>
+
+    <div id="loading">加载中…（需先启动 backend_python.py，端口 5000）</div>
+    <div id="error-msg"></div>
+    <div id="charts"></div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000/api/insurer_peers';
+const ORDER = ['601318', '601628', '601601', '601336', '601319'];
+const COLORS = {
+    '601318': '#c0392b',   // 平安
+    '601628': '#1f6feb',   // 国寿
+    '601601': '#0f766e',   // 太保
+    '601336': '#b45309',   // 新华
+    '601319': '#6c3483'    // 人保
+};
+
+/* 每张图：key 取 annual 记录里的字段，scale 除数（1e8 = 亿元），unit 轴单位，decimals 提示框小数位 */
+const CHARTS = [
+    {
+        id: 'premium', key: 'earned_premium', scale: 1e8, unit: '亿元', decimals: 0,
+        title: '已赚保费 / 保险服务收入',
+        sub: '2023 年起为 IFRS17 下「保险服务收入」，投资成分不再计入，与此前的已赚保费不可比',
+        note: '<b>口径断点：</b>2023 年（新保险合同准则），2022 年为重述后的可比期。中国人保以财险为主，保费规模与寿险公司的业务结构不同质。'
+    },
+    {
+        id: 'profit', key: 'parent_netprofit', scale: 1e8, unit: '亿元', decimals: 0,
+        title: '归母净利润',
+        sub: 'IFRS9 下权益资产公允价值变动直接进利润表，2023 年起利润波动明显放大',
+        note: '2023 年起 IFRS17+IFRS9 同步实施，2022 年为重述数；此前年份为原准则口径。'
+    },
+    {
+        id: 'roe', key: 'roe_weighted', scale: 1, unit: '%', decimals: 2,
+        title: '加权平均净资产收益率（ROE）',
+        sub: '东财主要财务指标口径（ROEJQ）',
+        note: '分母为加权平均净资产，与准则切换同步变化；新华保险 2008 年前、中国人保 2014 年前接口无值。'
+    },
+    {
+        id: 'net-roi', key: 'net_roi', scale: 1, unit: '%', decimals: 2,
+        title: '净投资收益率',
+        sub: '仅含利息、股息等票息类收益，不含公允价值变动与买卖价差',
+        note: '净投资收益率长期下行，反映固收资产再投资收益率随利率中枢下移。'
+    },
+    {
+        id: 'total-roi', key: 'total_roi', scale: 1, unit: '%', decimals: 2,
+        title: '总投资收益率',
+        sub: '含价差与公允价值变动，权益市场行情决定其与净投资收益率的差额',
+        note: '中国平安 2024 年起接口未提供总投资收益率（年报改按新准则综合投资收益率披露），序列止于 2023 年。'
+    },
+    {
+        id: 'solvency', key: 'solvency_ar', scale: 1, unit: '%', decimals: 1,
+        title: '综合偿付能力充足率',
+        sub: '三段口径：偿一代（≤2015）· 偿二代一期（2016–2021）· 偿二代二期（2022 起）',
+        note: '<b>跨段不可比：</b>偿一代下常见数百个百分点，2016 年切偿二代、2022 年切二期后台阶式下移。监管红线为综合 100%／核心 50%。'
+    },
+    {
+        id: 'nbv', key: 'nbv_life', scale: 1e8, unit: '亿元', decimals: 0,
+        title: '寿险新业务价值（NBV）',
+        sub: '接口自 2017 年起提供（太保自 2010 年起），各家精算假设不同（投资收益率与风险贴现率）',
+        note: '2021 年前后普遍负增长，与重疾定义切换后的需求透支、代理人渠道收缩同期；2023 年起受预定利率下调前的停售脉冲影响。各家假设不一致，绝对值横比需谨慎。'
+    },
+    {
+        id: 'surrender', key: 'surrender_rate_life', scale: 1, unit: '%', decimals: 2,
+        title: '寿险退保率',
+        sub: '东财主要财务指标口径（SURRENDER_RATE_LIFE）',
+        note: '退保率高点多对应中短存续期产品到期集中退保；IFRS17 后退保金不再单列于利润表，但该比率指标仍延续披露。'
+    },
+    {
+        id: 'invest-asset', key: 'invest_asset_total', scale: 1e8, unit: '亿元', decimals: 0,
+        title: '投资资产合计（自建口径）',
+        sub: '定期存款 + 交易性/FVTPL + 三分类债权与权益投资 + 长期股权投资 + 投资性房地产，新旧准则字段择一计入避免重复',
+        note: '<b>自建口径：</b>由 data/extract/fetch_insurer_financials.py 按资产负债表科目相加，非年报「投资资产」原文披露值，仅用于观察量级与趋势。中国平安含平安银行相关资产。'
+    },
+    {
+        id: 'assets', key: 'total_assets', scale: 1e8, unit: '亿元', decimals: 0,
+        title: '总资产',
+        sub: '中国平安合并平安银行，与四家纯保险主体不同质',
+        note: '<b>不可直接横比：</b>平安表内含吸收存款与发放贷款及垫款（2025 年末各约 3.6／3.4 万亿元），总资产、ROA、权益乘数均受银行业务影响。'
+    }
+];
+
+function fmt(v, decimals) {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('zh-CN', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+}
+
+function buildChart(cfg, peers, focus) {
+    // 全部险企的年份并集，升序
+    const yearSet = new Set();
+    for (const code of ORDER) {
+        const p = peers[code];
+        if (!p) continue;
+        for (const y of Object.keys(p.annual)) yearSet.add(y);
+    }
+    const years = Array.from(yearSet).sort();
+
+    const series = ORDER.filter(c => peers[c]).map(code => {
+        const p = peers[code];
+        return {
+            name: p.name,
+            type: 'line',
+            symbol: 'circle',
+            symbolSize: 6,
+            connectNulls: false,
+            lineStyle: {width: focus && focus !== code ? 1.5 : 2.6, opacity: focus && focus !== code ? 0.45 : 1},
+            itemStyle: {color: COLORS[code], opacity: focus && focus !== code ? 0.5 : 1},
+            emphasis: {focus: 'series'},
+            data: years.map(y => {
+                const rec = p.annual[y];
+                const v = rec ? rec[cfg.key] : null;
+                return (v === null || v === undefined) ? null : +(v / cfg.scale).toFixed(cfg.decimals + 2);
+            })
+        };
+    });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-card';
+    wrap.innerHTML = `
+        <div class="chart-title">${cfg.title}<span class="sub">${cfg.sub}</span></div>
+        <div class="chart-box" id="chart-${cfg.id}"></div>
+        <div class="note">${cfg.note}</div>`;
+    document.getElementById('charts').appendChild(wrap);
+
+    const chart = echarts.init(document.getElementById('chart-' + cfg.id));
+    chart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {type: 'line'},
+            formatter: function (ps) {
+                const rows = ps.filter(p => p.value !== null && p.value !== undefined)
+                    .sort((a, b) => b.value - a.value)
+                    .map(p => `${p.marker}${p.seriesName}　<b>${fmt(p.value, cfg.decimals)}</b> ${cfg.unit}`);
+                return `<b>${ps[0].axisValue} 年</b><br>` + (rows.length ? rows.join('<br>') : '无数据');
+            }
+        },
+        legend: {top: 0, itemGap: 18, textStyle: {fontSize: 15}},
+        grid: {left: 78, right: 40, top: 46, bottom: 40},
+        xAxis: {
+            type: 'category',
+            data: years,
+            axisLabel: {fontSize: 14, rotate: years.length > 18 ? 45 : 0},
+            axisTick: {alignWithLabel: true}
+        },
+        yAxis: {
+            type: 'value',
+            name: cfg.unit,
+            nameTextStyle: {fontSize: 14},
+            axisLabel: {fontSize: 14, formatter: v => v.toLocaleString('zh-CN')},
+            splitLine: {lineStyle: {type: 'dashed', color: '#e5e7eb'}}
+        },
+        series: series
+    });
+    window.addEventListener('resize', () => chart.resize());
+}
+
+axios.get(API).then(function (res) {
+    if (!res.data || res.data.code !== 200) throw new Error((res.data && res.data.msg) || 'load failed');
+    const peers = res.data.data;
+    document.getElementById('loading').style.display = 'none';
+    const focus = new URLSearchParams(location.search).get('focus');
+    for (const cfg of CHARTS) buildChart(cfg, peers, ORDER.includes(focus) ? focus : null);
+
+    // 口径说明（各家 caliber_note 一致，取首家展示）
+    const first = peers[ORDER.find(c => peers[c])];
+    if (first && first.caliber_note) {
+        const d = document.createElement('details');
+        d.className = 'note';
+        d.innerHTML = `<summary>数据口径与来源说明</summary>
+            <div>${first.caliber_note}</div>
+            <div>${first.unit_note || ''}　来源：${first.source || ''}</div>
+            <div>抓取脚本：<code>data/extract/fetch_insurer_financials.py</code>，落盘 <code>data/tables/insurer_&lt;code&gt;_annual.json</code>，
+            后端接口 <code>/api/insurer_peers</code>。同一年份 A/H 年报都存在时按项目规则优先取 A 股口径，未使用港交所披露的 H 股年报。</div>
+            <div><b>交叉核验（2026-08-18）：</b>已下载五家 2025 年 A 股年报 PDF（东财镜像），按章节语义通读后逐项核对
+            营业收入／保险服务收入／归母净利润／总资产／股东权益／偿付能力充足率／净与总投资收益率／新业务价值及价值率／
+            加权 ROE／EPS／BPS／员工数／总股本／退保率共 84 项，与年报原文全部一致；中国人保新业务价值率为空系年报确未披露。
+            另核对中国平安 2022 年报后发现：该年接口行为<b>新旧准则混排</b> —— 营业收入 8,804 亿元、保险服务收入 5,260 亿元、
+            归母净利润 1,110 亿元、EPS 6.36、加权 ROE 13.2% 取自 2023-07-19《基于新保险合同准则编制的 2022 年财务信息》的重述数
+            （年报原披露为 11,106 亿元／已赚保费 7,424 亿元／838 亿元／4.80／10.1%），而同一行的退保金、赔付支出、
+            手续费及佣金支出、每股净资产仍是旧准则原披露值，<b>该年不可整年当作任一口径同比</b>。
+            此外 <code>extract_insurance_reserve</code> 在 2022—2023 年为接口错行取值（平安 2022 年取到「提取保费准备金」0.78 亿元
+            而非「提取保险责任准备金」2,623 亿元），仅 2021 年及以前可信。明细见
+            <code>data/tables/data_sources.txt</code>。</div>`;
+        document.getElementById('charts').appendChild(d);
+    }
+}).catch(function (e) {
+    console.error('fetch error', e);
+    document.getElementById('loading').style.display = 'none';
+    const box = document.getElementById('error-msg');
+    box.style.display = 'block';
+    box.textContent = '数据加载失败：' + e.message + '（请确认 backend_python.py 已在 127.0.0.1:5000 运行）';
+});
+</script>
+</body>
+</html>

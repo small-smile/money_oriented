@@ -1,0 +1,9161 @@
+{
+  "chart-perf": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "营业收入",
+        "归母净利润"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 24,
+      "top": 46,
+      "bottom": 60
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#bbb"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "营业收入",
+        "type": "line",
+        "data": [
+          56.77,
+          78.11,
+          110.24,
+          135.54,
+          162.1,
+          197.1,
+          217.43,
+          217.05,
+          239.88,
+          261.16,
+          266.3,
+          281.86,
+          308.42,
+          289.91,
+          279.56,
+          282.31,
+          286.2
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        }
+      },
+      {
+        "name": "归母净利润",
+        "type": "line",
+        "data": [
+          18.88,
+          30.64,
+          42.47,
+          53.61,
+          59.91,
+          68.28,
+          72.23,
+          79.45,
+          89.36,
+          90.58,
+          97.6,
+          84.01,
+          95.6,
+          102.76,
+          109.02,
+          115.13,
+          121.28
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        }
+      }
+    ]
+  },
+  "chart-roe": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "简单ROE（净利/平均权益）",
+        "ROE（旧准则·年报）",
+        "ROE（新准则·年报）"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 56,
+      "right": 24,
+      "top": 36,
+      "bottom": 68
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "简单ROE（净利/平均权益）",
+        "type": "line",
+        "data": [
+          21.75,
+          19.89,
+          17.01,
+          18.07,
+          17.81,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#af7ac5",
+          "type": "dotted"
+        },
+        "itemStyle": {
+          "color": "#af7ac5"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 16,
+          "color": "#af7ac5",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "ROE（旧准则·年报）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          17.81,
+          17.27,
+          17.06,
+          16.38,
+          15.99,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 16,
+          "color": "#6c3483",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "ROE（新准则·年报）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13.55,
+          12.82,
+          9.28,
+          9.87,
+          9.76,
+          9.58,
+          9.28,
+          9.18
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 16,
+          "color": "#6c3483",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-scale-dep": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "客户存款",
+        "指数回归",
+        "线性回归"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 170,
+      "top": 30,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "客户存款",
+        "type": "line",
+        "data": [
+          2055.63,
+          2461.41,
+          2945.1,
+          3478.83,
+          4097.2,
+          4702.28,
+          5181.86,
+          5721.84,
+          6161.66,
+          6734.02,
+          7250,
+          7593.6,
+          8249.47,
+          8962.02,
+          9419.46,
+          10287.28
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        }
+      },
+      {
+        "name": "指数回归",
+        "type": "line",
+        "data": [
+          2512.05,
+          2780.16,
+          3076.88,
+          3405.27,
+          3768.71,
+          4170.94,
+          4616.1,
+          5108.77,
+          5654.03,
+          6257.47,
+          6925.32,
+          7664.45,
+          8482.47,
+          9387.79,
+          10389.74,
+          11498.62
+        ],
+        "symbol": "none",
+        "z": 3,
+        "silent": true,
+        "lineStyle": {
+          "width": 2,
+          "type": "dashed",
+          "color": "#6c3483",
+          "opacity": 0.8
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "distance": 6,
+          "formatter": "指数 +10.67%/年"
+        }
+      },
+      {
+        "name": "线性回归",
+        "type": "line",
+        "data": [
+          1926.64,
+          2463.93,
+          3001.23,
+          3538.52,
+          4075.82,
+          4613.11,
+          5150.41,
+          5687.71,
+          6225,
+          6762.3,
+          7299.59,
+          7836.89,
+          8374.18,
+          8911.48,
+          9448.77,
+          9986.07
+        ],
+        "symbol": "none",
+        "z": 3,
+        "silent": true,
+        "lineStyle": {
+          "width": 2,
+          "type": "dotted",
+          "color": "#7f8c8d"
+        },
+        "itemStyle": {
+          "color": "#7f8c8d"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#7f8c8d",
+          "distance": 6,
+          "formatter": "线性 +537 亿/年"
+        }
+      }
+    ]
+  },
+  "chart-scale-loan": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "客户贷款及垫款",
+        "指数回归",
+        "线性回归"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 170,
+      "top": 30,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "客户贷款及垫款",
+        "type": "line",
+        "data": [
+          1221.45,
+          1388.22,
+          1735.59,
+          2052.52,
+          2421.98,
+          2685.86,
+          3004.21,
+          3383.47,
+          3811.36,
+          4370.85,
+          5078.9,
+          5821.67,
+          6326.77,
+          6767.11,
+          7142.73,
+          7972.87
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "areaStyle": {
+          "color": "rgba(230,126,34,0.08)"
+        }
+      },
+      {
+        "name": "指数回归",
+        "type": "line",
+        "data": [
+          1364.32,
+          1546.21,
+          1752.35,
+          1985.97,
+          2250.74,
+          2550.81,
+          2890.88,
+          3276.29,
+          3713.09,
+          4208.12,
+          4769.14,
+          5404.96,
+          6125.55,
+          6942.21,
+          7867.75,
+          8916.67
+        ],
+        "symbol": "none",
+        "z": 3,
+        "silent": true,
+        "lineStyle": {
+          "width": 2,
+          "type": "dashed",
+          "color": "#e67e22",
+          "opacity": 0.8
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#e67e22",
+          "distance": 6,
+          "formatter": "指数 +13.33%/年"
+        }
+      },
+      {
+        "name": "线性回归",
+        "type": "line",
+        "data": [
+          652.93,
+          1109.09,
+          1565.24,
+          2021.4,
+          2477.55,
+          2933.71,
+          3389.86,
+          3846.02,
+          4302.18,
+          4758.33,
+          5214.49,
+          5670.64,
+          6126.8,
+          6582.95,
+          7039.11,
+          7495.26
+        ],
+        "symbol": "none",
+        "z": 3,
+        "silent": true,
+        "lineStyle": {
+          "width": 2,
+          "type": "dotted",
+          "color": "#7f8c8d"
+        },
+        "itemStyle": {
+          "color": "#7f8c8d"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#7f8c8d",
+          "distance": 6,
+          "formatter": "线性 +456 亿/年"
+        }
+      }
+    ]
+  },
+  "chart-npl": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "渝农商行",
+        "农业银行",
+        "招商银行"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 56,
+      "bottom": 60
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "不良率%",
+      "min": 0,
+      "max": 3,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#c0392b",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "渝农商行",
+        "type": "line",
+        "data": [
+          2.38,
+          1.44,
+          0.98,
+          0.8,
+          0.78,
+          0.98,
+          0.96,
+          0.98,
+          1.29,
+          1.25,
+          1.31,
+          1.25,
+          1.22,
+          1.19,
+          1.18,
+          1.08
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.07)"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "农业银行",
+        "type": "line",
+        "data": [
+          2.03,
+          1.55,
+          1.33,
+          1.22,
+          1.54,
+          2.39,
+          2.37,
+          1.81,
+          1.59,
+          1.4,
+          1.57,
+          1.43,
+          1.37,
+          1.33,
+          1.3,
+          1.27
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#2874a6",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2874a6"
+        }
+      },
+      {
+        "name": "招商银行",
+        "type": "line",
+        "data": [
+          0.68,
+          0.56,
+          0.61,
+          0.83,
+          1.11,
+          1.68,
+          1.87,
+          1.61,
+          1.36,
+          1.16,
+          1.07,
+          0.91,
+          0.96,
+          0.95,
+          0.95,
+          0.94
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#229954",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#229954"
+        }
+      }
+    ]
+  },
+  "chart-quality": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "资本充足率",
+        "核心一级资本充足率"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 20,
+      "top": 36,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "max": 18,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#1e8449",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "资本充足率",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          12.45,
+          12.09,
+          12.7,
+          13.03,
+          13.52,
+          14.88,
+          14.28,
+          14.77,
+          15.62,
+          15.99,
+          16.12,
+          14.46
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#1e8449"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        }
+      },
+      {
+        "name": "核心一级资本充足率",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          10.12,
+          9.88,
+          9.85,
+          10.39,
+          10.95,
+          12.42,
+          11.96,
+          12.47,
+          13.1,
+          13.53,
+          14.24,
+          12.67
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 5,
+        "lineStyle": {
+          "width": 2,
+          "color": "#27ae60",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#27ae60"
+        }
+      }
+    ]
+  },
+  "chart-nim-trend": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "净息差 NIM",
+        "净利差 NIS"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "净息差 NIM",
+        "type": "line",
+        "data": [
+          3.07,
+          3.36,
+          3.5,
+          3.41,
+          3.37,
+          3.2,
+          2.74,
+          2.62,
+          2.45,
+          2.33,
+          2.25,
+          2.17,
+          1.97,
+          1.73,
+          1.61,
+          1.6
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        }
+      },
+      {
+        "name": "净利差 NIS",
+        "type": "line",
+        "data": [
+          2.97,
+          3.13,
+          3.26,
+          3.19,
+          3.14,
+          2.99,
+          2.57,
+          2.44,
+          2.4,
+          2.16,
+          2.08,
+          2.01,
+          1.84,
+          1.64,
+          1.51,
+          1.51
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 5,
+        "lineStyle": {
+          "width": 2,
+          "color": "#9b59b6",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#9b59b6"
+        }
+      }
+    ]
+  },
+  "chart-costincome": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "非息收入占比",
+        "成本收入比"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "非息收入占比",
+        "type": "line",
+        "data": [
+          3.14,
+          5.52,
+          4.11,
+          3.75,
+          7.34,
+          7.87,
+          10.42,
+          10.3,
+          23.37,
+          12.23,
+          13.97,
+          14.94,
+          12.37,
+          15.96,
+          20.41,
+          15.32
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#16a085"
+        },
+        "itemStyle": {
+          "color": "#16a085"
+        }
+      },
+      {
+        "name": "成本收入比",
+        "type": "line",
+        "data": [
+          44.4,
+          36.64,
+          37.7,
+          37.66,
+          35.74,
+          34.69,
+          35.95,
+          33.96,
+          30.33,
+          28.54,
+          27.09,
+          27.52,
+          31.84,
+          33.94,
+          31.86,
+          31.22
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        }
+      }
+    ]
+  },
+  "chart-creditcost": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "资产减值/营收（旧准则）",
+        "信用减值/营收（新准则）"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 46,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "资产减值/营收（旧准则）",
+        "type": "line",
+        "data": [
+          -0.58,
+          7.63,
+          3.75,
+          7.24,
+          11.6,
+          14.78,
+          12.36,
+          15.48,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#e67e22",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "信用减值/营收（新准则）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          23.7,
+          24.68,
+          36.22,
+          35.19,
+          27.04,
+          21.25,
+          21.08,
+          19
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-creditcost-tcb": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "资产减值/营收（旧准则）",
+        "信用减值/营收（新准则）",
+        "天津银行·减值/营收"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 46,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "资产减值/营收（旧准则）",
+        "type": "line",
+        "data": [
+          -0.58,
+          7.63,
+          3.75,
+          7.24,
+          11.6,
+          14.78,
+          12.36,
+          15.48,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#e67e22",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "信用减值/营收（新准则）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          23.7,
+          24.68,
+          36.22,
+          35.19,
+          27.04,
+          21.25,
+          21.08,
+          19
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "天津银行·减值/营收",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          28.69,
+          43.57,
+          47.86,
+          55.68,
+          47.75,
+          47.22,
+          45.39,
+          45.37
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#2874a6",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2874a6"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#2874a6",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-creditcost-abc": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "资产减值/营收（旧准则）",
+        "信用减值/营收（新准则）",
+        "农业银行·旧准则",
+        "农业银行·新准则"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 48,
+      "right": 24,
+      "top": 46,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "资产减值/营收（旧准则）",
+        "type": "line",
+        "data": [
+          -0.58,
+          7.63,
+          3.75,
+          7.24,
+          11.6,
+          14.78,
+          12.36,
+          15.48,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#e67e22",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "信用减值/营收（新准则）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          23.7,
+          24.68,
+          36.22,
+          35.19,
+          27.04,
+          21.25,
+          21.08,
+          19
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "农业银行·旧准则",
+        "type": "line",
+        "data": [
+          14.95,
+          17,
+          12.85,
+          11.45,
+          13.05,
+          15.7,
+          17.08,
+          18.28,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#229954",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#229954"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#229954",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "农业银行·新准则",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          22.83,
+          22.1,
+          25.03,
+          23.04,
+          20.91,
+          19.53,
+          18.41,
+          17.54
+        ],
+        "smooth": true,
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#196f3d",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#196f3d"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#196f3d",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-provision": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "拨备覆盖率",
+        "拨贷比"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 64,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "拨备覆盖率%",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#1e8449",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#1e8449",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "拨贷比%",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "拨备覆盖率",
+        "type": "line",
+        "data": [
+          430.6,
+          459.79,
+          420.03,
+          428.37,
+          431.24,
+          347.79,
+          380.31,
+          314.95,
+          340.25,
+          357.74,
+          366.7,
+          363.44,
+          367.26
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#1e8449"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        },
+        "areaStyle": {
+          "color": "rgba(30,132,73,0.08)"
+        }
+      },
+      {
+        "name": "拨贷比",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          3.46,
+          3.58,
+          4.11,
+          4.1,
+          4.21,
+          4.5,
+          4.75,
+          4.12,
+          4.27,
+          4.36,
+          4.37,
+          4.28,
+          3.96
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#2980b9",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      }
+    ]
+  },
+  "chart-writeoff": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "本期核销",
+        "收回已核销",
+        "净核销（2018–2021）"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 24,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "人民币百万元",
+      "min": 0,
+      "nameTextStyle": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "本期核销",
+        "type": "line",
+        "data": [
+          867.8,
+          1943.4,
+          10051.6,
+          7933.3,
+          7064.8,
+          4209.8,
+          5805.2,
+          6619.1
+        ],
+        "connectNulls": true,
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        }
+      },
+      {
+        "name": "收回已核销",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          2112,
+          1931.6,
+          1328.5,
+          2477.9
+        ],
+        "connectNulls": false,
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#1e8449"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        }
+      },
+      {
+        "name": "净核销（2018–2021）",
+        "type": "line",
+        "data": [
+          867.8,
+          1943.4,
+          10051.6,
+          7933.3,
+          null,
+          null,
+          null,
+          null
+        ],
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#8e8e8e",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#8e8e8e"
+        }
+      }
+    ]
+  },
+  "chart-creditamount": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "信用减值损失（绝对值）",
+        "信用减值/总资产"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 72,
+      "right": 72,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "百万元",
+        "nameTextStyle": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "%",
+        "nameTextStyle": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "信用减值损失（绝对值）",
+        "type": "line",
+        "data": [
+          -45.2,
+          848,
+          511.4,
+          1181.3,
+          2297.2,
+          3236,
+          2676.5,
+          3710.6,
+          6189.5,
+          6572.6,
+          10208.6,
+          10852.1,
+          7840.5,
+          5941.3,
+          5956.9,
+          5444.1
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        }
+      },
+      {
+        "name": "信用减值/总资产",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          -0.02,
+          0.25,
+          0.12,
+          0.24,
+          0.37,
+          0.45,
+          0.33,
+          0.41,
+          0.65,
+          0.64,
+          0.9,
+          0.86,
+          0.58,
+          0.41,
+          0.39,
+          0.33
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#2980b9",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      }
+    ]
+  },
+  "chart-oci": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "其他综合收益"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 64,
+      "right": 64,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "其他综合收益(亿元)",
+      "nameTextStyle": {
+        "color": "#c0392b",
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#c0392b",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "其他综合收益",
+        "type": "line",
+        "data": [
+          -0.49,
+          -0.35,
+          0.09,
+          -0.66,
+          1.13,
+          -0.26,
+          -2.54,
+          0.2,
+          -0.87,
+          -1.82,
+          -2.44,
+          2.47,
+          -4.77,
+          8.98,
+          41.72,
+          -28.97
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "areaStyle": {
+          "color": "rgba(192,57,43,0.08)"
+        },
+        "markLine": {
+          "symbol": "none",
+          "silent": true,
+          "lineStyle": {
+            "color": "#8e8e8e",
+            "type": "dashed",
+            "width": 1.5
+          },
+          "label": {
+            "formatter": "2018 IFRS9 新准则",
+            "position": "end",
+            "distance": 6,
+            "fontSize": 16,
+            "color": "#8e8e8e"
+          },
+          "data": [
+            {
+              "xAxis": "2018"
+            },
+            {
+              "yAxis": 0,
+              "lineStyle": {
+                "color": "#bbb",
+                "type": "solid",
+                "width": 1
+              },
+              "label": {
+                "show": false
+              }
+            }
+          ]
+        },
+        "markPoint": {
+          "symbol": "circle",
+          "symbolSize": 11,
+          "silent": true,
+          "label": {
+            "fontSize": 16,
+            "fontWeight": "bold",
+            "position": "left",
+            "distance": 8,
+            "formatter": "{c} 亿"
+          },
+          "data": [
+            {
+              "type": "max",
+              "name": "最大",
+              "itemStyle": {
+                "color": "#c0392b"
+              },
+              "label": {
+                "color": "#c0392b"
+              }
+            },
+            {
+              "type": "min",
+              "name": "最小",
+              "itemStyle": {
+                "color": "#2c6fb3"
+              },
+              "label": {
+                "color": "#2c6fb3"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "chart-pershare": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "基本每股收益(EPS)",
+        "每股净资产(BVPS)"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 60,
+      "right": 60,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "EPS(元)",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#6c3483",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#6c3483",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "BVPS(元)",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "基本每股收益(EPS)",
+        "type": "line",
+        "data": [
+          0.45,
+          0.46,
+          0.58,
+          0.64,
+          0.73,
+          0.78,
+          0.85,
+          0.94,
+          0.91,
+          0.95,
+          0.74,
+          0.84,
+          0.89,
+          0.94,
+          0.99,
+          1.05
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "formatter": "{c}"
+        }
+      },
+      {
+        "name": "每股净资产(BVPS)",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          3.26,
+          3,
+          3.43,
+          3.9,
+          4.45,
+          5.03,
+          5.66,
+          6.37,
+          7.07,
+          7.73,
+          8.21,
+          8.85,
+          9.45,
+          10.19,
+          11.07,
+          11.55
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#2980b9",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#2980b9",
+          "formatter": "{c}"
+        }
+      }
+    ]
+  },
+  "chart-dividend-per10": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 60,
+      "right": 40,
+      "top": 30,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "每10股分红(元)",
+      "min": 0,
+      "nameTextStyle": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "color": "#555",
+        "fontSize": 18
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "每10股分红(含税)",
+        "type": "bar",
+        "data": [
+          1.4,
+          1.7,
+          1.9,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2.3,
+          2.22,
+          2.525,
+          2.714,
+          2.885,
+          3.046,
+          3.2091
+        ],
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "barMaxWidth": 44,
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}"
+        }
+      }
+    ]
+  },
+  "chart-holder-count": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "legend": {
+      "data": [
+        "股东总数（A+H · 左轴 · 万户）",
+        "H 股登记股东数（右轴 · 户）"
+      ],
+      "top": 4,
+      "left": "center",
+      "textStyle": {
+        "fontSize": 16
+      },
+      "icon": "roundRect"
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 88,
+      "right": 160,
+      "top": 56,
+      "bottom": 70
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2017-12-31",
+        "2018-12-31",
+        "2019-10-29",
+        "2019-10-31",
+        "2019-11-20",
+        "2019-12-10",
+        "2019-12-31",
+        "2020-02-29",
+        "2020-03-31",
+        "2020-06-30",
+        "2020-07-31",
+        "2020-09-30",
+        "2020-12-31",
+        "2021-02-28",
+        "2021-03-31",
+        "2021-06-30",
+        "2021-07-31",
+        "2021-09-30",
+        "2021-12-31",
+        "2022-02-28",
+        "2022-03-31",
+        "2022-06-30",
+        "2022-07-31",
+        "2022-09-30",
+        "2022-12-31",
+        "2023-02-28",
+        "2023-03-31",
+        "2023-06-30",
+        "2023-07-31",
+        "2023-09-30",
+        "2023-12-31",
+        "2024-02-29",
+        "2024-03-31",
+        "2024-06-30",
+        "2024-07-31",
+        "2024-09-30",
+        "2024-12-31",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-06-30",
+        "2025-07-31",
+        "2025-09-30",
+        "2025-12-31",
+        "2026-02-28",
+        "2026-03-31"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 16,
+        "color": "#555",
+        "rotate": 40,
+        "interval": 2
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#bbb"
+        }
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "股东总数（万户）",
+        "min": 0,
+        "position": "left",
+        "nameTextStyle": {
+          "color": "#6c3483",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#6c3483",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "H 股股东（户）",
+        "min": 1000,
+        "max": 1500,
+        "interval": 100,
+        "position": "right",
+        "nameTextStyle": {
+          "color": "#16a085",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#16a085",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "股东总数（A+H · 左轴 · 万户）",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          948725,
+          583060,
+          452600,
+          419500,
+          394155,
+          332330,
+          314762,
+          303597,
+          292747,
+          277555,
+          275965,
+          274738,
+          271460,
+          266913,
+          262138,
+          254077,
+          252817,
+          244222,
+          241964,
+          237764,
+          236283,
+          230787,
+          228767,
+          227672,
+          225817,
+          216900,
+          214738,
+          207940,
+          195606,
+          189461,
+          186110,
+          175010,
+          169389,
+          186110,
+          149711,
+          146121,
+          137910,
+          124514,
+          125825,
+          123765,
+          116634,
+          112716,
+          107028
+        ],
+        "smooth": true,
+        "symbolSize": 7,
+        "connectNulls": false,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.10)"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483"
+        },
+        "markPoint": {
+          "symbol": "circle",
+          "symbolSize": 11,
+          "silent": true,
+          "label": {
+            "fontSize": 16,
+            "fontWeight": "bold",
+            "color": "#fff"
+          },
+          "data": [
+            {
+              "type": "max",
+              "name": "IPO 峰值",
+              "itemStyle": {
+                "color": "#c0392b"
+              },
+              "label": {
+                "color": "#fff"
+              }
+            },
+            {
+              "type": "min",
+              "name": "当前最低",
+              "itemStyle": {
+                "color": "#2c6fb3"
+              },
+              "label": {
+                "color": "#fff"
+              }
+            }
+          ]
+        },
+        "markLine": {
+          "symbol": "none",
+          "silent": true,
+          "lineStyle": {
+            "color": "#8e8e8e",
+            "type": "dashed",
+            "width": 1.5
+          },
+          "label": {
+            "fontSize": 16,
+            "color": "#8e8e8e",
+            "position": "insideEndTop",
+            "formatter": "{b}"
+          },
+          "data": [
+            {
+              "name": "2019-10-29 A 股上市",
+              "xAxis": "2019-10-29"
+            }
+          ]
+        }
+      },
+      {
+        "name": "H 股登记股东数（右轴 · 户）",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          1420,
+          1316,
+          null,
+          null,
+          null,
+          null,
+          1281,
+          1277,
+          1280,
+          1278,
+          1270,
+          1266,
+          1251,
+          1242,
+          null,
+          1226,
+          1224,
+          null,
+          1212,
+          1209,
+          null,
+          1197,
+          1190,
+          null,
+          1187,
+          1187,
+          null,
+          1181,
+          1179,
+          null,
+          1167,
+          1161,
+          null,
+          1158,
+          1157,
+          null,
+          1131,
+          1123,
+          null,
+          1105,
+          1098,
+          null,
+          1087,
+          1083,
+          null
+        ],
+        "smooth": true,
+        "symbolSize": 8,
+        "connectNulls": true,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#16a085",
+          "type": "solid"
+        },
+        "itemStyle": {
+          "color": "#16a085"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 16,
+          "color": "#16a085"
+        }
+      }
+    ]
+  },
+  "chart-complaint": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "处理消费投诉数",
+        "消费投诉处理客户满意度"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 60,
+      "right": 60,
+      "top": 40,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "投诉数(件)",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "满意度(%)",
+        "min": 0,
+        "max": 100,
+        "nameTextStyle": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#2980b9",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "处理消费投诉数",
+        "type": "bar",
+        "data": [
+          1615,
+          1662,
+          2602
+        ],
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "barMaxWidth": 60,
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}"
+        }
+      },
+      {
+        "name": "消费投诉处理客户满意度",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          86.07,
+          83.51,
+          70.88
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#2980b9"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#2980b9",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-invest": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "债权投资(AC/摊余成本)",
+        "其他债权投资(FVOCI债)",
+        "其他权益工具(FVOCI股)",
+        "交易性金融资产(FVTPL)"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 68,
+      "right": 30,
+      "top": 40,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "债权投资(AC/摊余成本)",
+        "type": "bar",
+        "stack": "inv",
+        "data": [
+          2895.6,
+          3464.2,
+          3831.6,
+          4244.2,
+          4011.4,
+          3217.7,
+          2972.5,
+          2489
+        ],
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      },
+      {
+        "name": "其他债权投资(FVOCI债)",
+        "type": "bar",
+        "stack": "inv",
+        "data": [
+          71,
+          66.8,
+          160.6,
+          480.4,
+          1053.7,
+          1649.3,
+          2448.2,
+          3111.7
+        ],
+        "itemStyle": {
+          "color": "#16a085"
+        }
+      },
+      {
+        "name": "其他权益工具(FVOCI股)",
+        "type": "bar",
+        "stack": "inv",
+        "data": [
+          6.2,
+          5.8,
+          5.7,
+          8,
+          6.3,
+          13.1,
+          13.8,
+          24.4
+        ],
+        "itemStyle": {
+          "color": "#f39c12"
+        }
+      },
+      {
+        "name": "交易性金融资产(FVTPL)",
+        "type": "bar",
+        "stack": "inv",
+        "data": [
+          150.9,
+          236.8,
+          301.6,
+          483.5,
+          658.4,
+          1107.7,
+          845.5,
+          811.2
+        ],
+        "itemStyle": {
+          "color": "#c0392b"
+        }
+      }
+    ]
+  },
+  "chart-fvtpl-mix": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "2025 年末",
+        "2024 年末"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 116,
+      "right": 84,
+      "top": 20,
+      "bottom": 48
+    },
+    "xAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": [
+        "其他投资",
+        "信托计划",
+        "资产管理计划",
+        "理财产品投资",
+        "债券投资",
+        "同业存单",
+        "基金投资"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "series": [
+      {
+        "name": "2025 年末",
+        "type": "bar",
+        "data": [
+          2.98,
+          4.58,
+          9.73,
+          15.75,
+          152.5,
+          154.39,
+          471.26
+        ],
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "label": {
+          "show": true,
+          "position": "right",
+          "fontSize": 18,
+          "color": "#c0392b"
+        }
+      },
+      {
+        "name": "2024 年末",
+        "type": "bar",
+        "data": [
+          3.29,
+          3.24,
+          8.57,
+          8.48,
+          149.41,
+          100.86,
+          571.7
+        ],
+        "itemStyle": {
+          "color": "#e8a49c"
+        }
+      }
+    ]
+  },
+  "chart-fvlevel": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "第一层次 L1",
+        "第二层次 L2",
+        "第三层次 L3"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 84,
+      "right": 30,
+      "top": 30,
+      "bottom": 48
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2024 年末",
+        "2025 年末"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "第一层次 L1",
+        "type": "bar",
+        "stack": "fv",
+        "barWidth": "46%",
+        "data": [
+          373.16,
+          312.5
+        ],
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      },
+      {
+        "name": "第二层次 L2",
+        "type": "bar",
+        "stack": "fv",
+        "data": [
+          2926.37,
+          3632.83
+        ],
+        "itemStyle": {
+          "color": "#16a085"
+        }
+      },
+      {
+        "name": "第三层次 L3",
+        "type": "bar",
+        "stack": "fv",
+        "data": [
+          644.41,
+          624.28
+        ],
+        "itemStyle": {
+          "color": "#f39c12"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18,
+          "color": "#555"
+        }
+      }
+    ]
+  },
+  "chart-staff": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "年末员工数",
+        "人均营业收入",
+        "人均归母净利润"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 72,
+      "right": 66,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "员工数(人)",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#95a5a6",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#95a5a6",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "万元/人",
+        "min": 0,
+        "nameTextStyle": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "color": "#555",
+          "fontSize": 18
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "年末员工数",
+        "type": "bar",
+        "data": [
+          13524,
+          14800,
+          15443,
+          15740,
+          16182,
+          16245,
+          15892,
+          15688,
+          15653,
+          15431,
+          15270,
+          15167,
+          15017,
+          14542,
+          14266
+        ],
+        "itemStyle": {
+          "color": "#d5dbdb"
+        },
+        "barWidth": "55%",
+        "z": 1
+      },
+      {
+        "name": "人均营业收入",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          81.5,
+          91.6,
+          105,
+          125.2,
+          134.4,
+          133.6,
+          150.9,
+          166.5,
+          170.1,
+          182.7,
+          202,
+          191.1,
+          186.2,
+          194.3,
+          200.8
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "z": 3,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}"
+        }
+      },
+      {
+        "name": "人均归母净利润",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          31.6,
+          36.2,
+          38.8,
+          43.4,
+          44.6,
+          48.9,
+          56.2,
+          57.7,
+          62.4,
+          54.4,
+          62.6,
+          67.7,
+          72.6,
+          79.2,
+          85
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "z": 3,
+        "lineStyle": {
+          "width": 3,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#e67e22",
+          "formatter": "{c}"
+        }
+      }
+    ]
+  },
+  "chart-loanmix-bal": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "公司贷款",
+        "个人(零售)贷款",
+        "票据贴现",
+        "客户贷款合计"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 76,
+      "right": 128,
+      "top": 36,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "公司贷款",
+        "type": "line",
+        "data": [
+          2866.1,
+          2907.41,
+          3215.47,
+          3486.93,
+          4051.26
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "name": "个人(零售)贷款",
+        "type": "line",
+        "data": [
+          2514.68,
+          2749.6,
+          2897.81,
+          2904.71,
+          2978.51
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#2980b9"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#2980b9",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "name": "票据贴现",
+        "type": "line",
+        "data": [
+          173.07,
+          467.76,
+          550.68,
+          620.59,
+          529.7
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#16a085"
+        },
+        "itemStyle": {
+          "color": "#16a085"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#16a085",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "name": "客户贷款合计",
+        "type": "line",
+        "data": [
+          5553.85,
+          6124.77,
+          6663.95,
+          7012.22,
+          7559.47
+        ],
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  "chart-loanmix-yld": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "公司贷款",
+        "个人(零售)贷款",
+        "票据贴现",
+        "客户贷款合计"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 76,
+      "right": 128,
+      "top": 36,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "平均收益率%",
+      "min": 0,
+      "max": 6,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "公司贷款",
+        "type": "line",
+        "data": [
+          4.93,
+          4.68,
+          4.45,
+          4.15,
+          3.87
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "offset": [
+            0,
+            -14
+          ]
+        }
+      },
+      {
+        "name": "个人(零售)贷款",
+        "type": "line",
+        "data": [
+          5.7,
+          5.48,
+          4.83,
+          4.21,
+          3.81
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#2980b9"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#2980b9",
+          "offset": [
+            0,
+            8
+          ]
+        }
+      },
+      {
+        "name": "票据贴现",
+        "type": "line",
+        "data": [
+          2.57,
+          1.76,
+          1.51,
+          1.29,
+          0.89
+        ],
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#16a085"
+        },
+        "itemStyle": {
+          "color": "#16a085"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#16a085",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "name": "客户贷款合计",
+        "type": "line",
+        "data": [
+          5.2,
+          4.82,
+          4.37,
+          3.92,
+          3.64
+        ],
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "offset": [
+            0,
+            28
+          ]
+        }
+      }
+    ]
+  },
+  "chart-depterm": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "title": [
+      {
+        "text": "定期 74.27%\n活期 25.30%",
+        "left": "center",
+        "top": "center",
+        "textAlign": "center",
+        "textStyle": {
+          "fontSize": 18,
+          "color": "#6c3483",
+          "fontWeight": 700,
+          "lineHeight": 22
+        }
+      }
+    ],
+    "tooltip": {
+      "trigger": "item",
+      "formatter": "{b}: {c} 亿元 ({d}%)",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "series": [
+      {
+        "name": "存款期限结构",
+        "type": "pie",
+        "radius": [
+          "46%",
+          "68%"
+        ],
+        "center": [
+          "50%",
+          "52%"
+        ],
+        "avoidLabelOverlap": true,
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "formatter": "{b}\n{d}%"
+        },
+        "data": [
+          {
+            "value": 7640.86,
+            "name": "定期存款",
+            "itemStyle": {
+              "color": "#6c3483"
+            }
+          },
+          {
+            "value": 2601.74,
+            "name": "活期存款",
+            "itemStyle": {
+              "color": "#e67e22"
+            }
+          },
+          {
+            "value": 44.68,
+            "name": "保证金及其他",
+            "itemStyle": {
+              "color": "#b0a0bd"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "chart-depcost": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 60,
+      "right": 66,
+      "top": 30,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "付息率%",
+      "min": 1.3,
+      "max": 2.1,
+      "nameTextStyle": {
+        "fontSize": 18,
+        "color": "#c0392b"
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "formatter": "{value}%"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "客户存款平均付息率",
+        "type": "line",
+        "data": [
+          1.93,
+          1.97,
+          1.98,
+          1.97,
+          1.88,
+          1.73,
+          1.45
+        ],
+        "smooth": true,
+        "symbolSize": 7,
+        "z": 3,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%",
+          "position": "top"
+        }
+      }
+    ]
+  },
+  "chart-demandratio": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 60,
+      "right": 66,
+      "top": 30,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "活期占比%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18,
+        "color": "#6c3483"
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "formatter": "{value}%"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "活期存款占比",
+        "type": "line",
+        "data": [
+          35.81,
+          34.66,
+          30.48,
+          30.4,
+          26.9,
+          26.14,
+          25.3
+        ],
+        "smooth": true,
+        "symbolSize": 7,
+        "z": 3,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.10)"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "formatter": "{c}%",
+          "position": "top"
+        }
+      }
+    ]
+  },
+  "chart-repricing": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "2025",
+        "2024"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 76,
+      "right": 24,
+      "top": 44,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "3个月以内",
+        "3个月至1年",
+        "1年至5年",
+        "5年以上",
+        "不计息"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "缺口 亿元",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "2025",
+        "type": "bar",
+        "data": [
+          -1887.4,
+          -1359.7,
+          1978.1,
+          2250.6,
+          266.6
+        ],
+        "barGap": "10%",
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 16,
+          "color": "#555",
+          "formatter": "{c}"
+        }
+      },
+      {
+        "name": "2024",
+        "type": "bar",
+        "data": [
+          -1747.6,
+          -990.3,
+          1649.7,
+          1959,
+          357.5
+        ],
+        "itemStyle": {
+          "color": "#95a5a6"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 16,
+          "color": "#888",
+          "formatter": "{c}"
+        }
+      }
+    ]
+  },
+  "chart-loantrend": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "公司贷款",
+        "零售贷款",
+        "公司贷款不良率"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 68,
+      "right": 60,
+      "top": 36,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "亿元",
+        "min": 0,
+        "nameTextStyle": {
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#555"
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "不良率%",
+        "min": 0,
+        "position": "right",
+        "nameTextStyle": {
+          "color": "#c0392b",
+          "fontSize": 18
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#c0392b"
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "公司贷款",
+        "type": "line",
+        "data": [
+          1062.05,
+          1188.17,
+          1395.85,
+          1653.02,
+          1899.12,
+          2147.53,
+          2276.87,
+          2547.6,
+          2736.31,
+          2802.85,
+          2986.87,
+          3277.84,
+          3581.33,
+          4349.74
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        }
+      },
+      {
+        "name": "零售贷款",
+        "type": "line",
+        "data": [
+          620.98,
+          849.28,
+          971.51,
+          963.01,
+          981.82,
+          1135.51,
+          1332.56,
+          1622.38,
+          2165.44,
+          2755.55,
+          2827.69,
+          2909.2,
+          2925.06,
+          3010.22
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        }
+      },
+      {
+        "name": "公司贷款不良率",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          0.88,
+          0.81,
+          0.92,
+          0.74,
+          0.78,
+          0.96,
+          1.59,
+          1.69,
+          1.94,
+          1.95,
+          1.47,
+          1.04,
+          1.04,
+          0.55
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2,
+          "color": "#c0392b",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "endLabel": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-perloan-bal": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "住房按揭",
+        "个人经营",
+        "信用卡",
+        "个人消费"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 66,
+      "right": 24,
+      "top": 36,
+      "bottom": 50
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "住房按揭",
+        "type": "line",
+        "data": [
+          603.74,
+          730.91,
+          913.37,
+          1009.8,
+          969.65,
+          914.89,
+          886.98,
+          874.53
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        }
+      },
+      {
+        "name": "个人经营",
+        "type": "line",
+        "data": [
+          429.98,
+          505.16,
+          668,
+          897.96,
+          1018.8,
+          1201.19,
+          1235.83,
+          1186.22
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        }
+      },
+      {
+        "name": "信用卡",
+        "type": "line",
+        "data": [
+          39.55,
+          45.06,
+          50.03,
+          91.43,
+          124.64,
+          149.99,
+          166.83,
+          167.82
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#e67e22"
+        },
+        "itemStyle": {
+          "color": "#e67e22"
+        }
+      },
+      {
+        "name": "个人消费",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          643.12,
+          635.43,
+          781.66
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#1e8449",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        }
+      }
+    ]
+  },
+  "chart-perloan-npl": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "住房按揭",
+        "个人经营",
+        "其他（含消费/信用卡）"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 56,
+      "right": 24,
+      "top": 36,
+      "bottom": 50
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "住房按揭",
+        "type": "line",
+        "data": [
+          0.43,
+          0.33,
+          0.31,
+          0.46,
+          0.77,
+          1.11,
+          1.15,
+          1.6
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#6c3483",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "个人经营",
+        "type": "line",
+        "data": [
+          1.36,
+          0.87,
+          0.82,
+          0.73,
+          1.49,
+          2.05,
+          1.67,
+          1.97
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "其他（含消费/信用卡）",
+        "type": "line",
+        "data": [
+          1.55,
+          1.23,
+          0.86,
+          0.83,
+          1.25,
+          1.49,
+          2,
+          2.61
+        ],
+        "smooth": true,
+        "connectNulls": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#7f8c8d",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#7f8c8d"
+        }
+      }
+    ]
+  },
+  "chart-holders": {
+    "backgroundColor": "#fff",
+    "title": [
+      {
+        "text": "前十大\n58.29%",
+        "left": "center",
+        "top": "center",
+        "textAlign": "center",
+        "textStyle": {
+          "fontSize": 20,
+          "color": "#6c3483",
+          "fontWeight": 700,
+          "lineHeight": 24
+        }
+      }
+    ],
+    "tooltip": {
+      "trigger": "item",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "series": [
+      {
+        "type": "pie",
+        "radius": [
+          "40%",
+          "74%"
+        ],
+        "center": [
+          "50%",
+          "54%"
+        ],
+        "startAngle": 90,
+        "sort": null,
+        "minShowLabelAngle": 12,
+        "avoidLabelOverlap": true,
+        "data": [
+          {
+            "name": "其他流通股东",
+            "value": 41.71,
+            "itemStyle": {
+              "color": "#95a5a6"
+            }
+          },
+          {
+            "name": "香港代理人(H股)",
+            "value": 22.08,
+            "itemStyle": {
+              "color": "#16a085"
+            }
+          },
+          {
+            "name": "渝富资本",
+            "value": 8.7,
+            "itemStyle": {
+              "color": "#6c3483"
+            }
+          },
+          {
+            "name": "城投集团",
+            "value": 7.02,
+            "itemStyle": {
+              "color": "#e67e22"
+            }
+          },
+          {
+            "name": "发展置业",
+            "value": 5.19,
+            "itemStyle": {
+              "color": "#2980b9"
+            }
+          },
+          {
+            "name": "水利投资",
+            "value": 4.99,
+            "itemStyle": {
+              "color": "#6c3483"
+            }
+          },
+          {
+            "name": "发展投资",
+            "value": 4.6,
+            "itemStyle": {
+              "color": "#2980b9"
+            }
+          },
+          {
+            "name": "沪股通(A股)",
+            "value": 2.79,
+            "itemStyle": {
+              "color": "#16a085"
+            }
+          },
+          {
+            "name": "水务集团",
+            "value": 1.1,
+            "itemStyle": {
+              "color": "#6c3483"
+            }
+          },
+          {
+            "name": "财信集团",
+            "value": 0.99,
+            "itemStyle": {
+              "color": "#c0392b"
+            }
+          },
+          {
+            "name": "社保116",
+            "value": 0.83,
+            "itemStyle": {
+              "color": "#f1c40f"
+            }
+          }
+        ],
+        "label": {
+          "show": true,
+          "position": "outside",
+          "formatter": "{b}\n{c}%",
+          "fontSize": 18,
+          "color": "#333"
+        },
+        "labelLine": {
+          "show": true,
+          "length": 12,
+          "length2": 10
+        },
+        "itemStyle": {
+          "borderColor": "#fff",
+          "borderWidth": 2
+        }
+      }
+    ]
+  },
+  "chart-holders-bar": {
+    "backgroundColor": "#fff",
+    "grid": {
+      "left": 14,
+      "right": 170,
+      "top": 16,
+      "bottom": 16,
+      "containLabel": true
+    },
+    "tooltip": {
+      "trigger": "item",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "xAxis": {
+      "type": "value",
+      "min": 0,
+      "max": 44,
+      "name": "占总股本 %",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "formatter": "{value}%"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": [
+        "其他流通股东",
+        "香港代理人(H股)",
+        "渝富资本",
+        "城投集团",
+        "发展置业",
+        "水利投资",
+        "发展投资",
+        "沪股通(A股)",
+        "水务集团",
+        "财信集团",
+        "社保116"
+      ],
+      "inverse": true,
+      "axisLabel": {
+        "show": false
+      },
+      "axisTick": {
+        "show": false
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#ccc"
+        }
+      }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "data": [
+          {
+            "value": 41.71,
+            "itemStyle": {
+              "color": "#95a5a6"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "其他流通股东  41.71%"
+            }
+          },
+          {
+            "value": 22.08,
+            "itemStyle": {
+              "color": "#16a085"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "香港代理人(H股)  22.08%"
+            }
+          },
+          {
+            "value": 8.7,
+            "itemStyle": {
+              "color": "#6c3483"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "渝富资本  8.7%"
+            }
+          },
+          {
+            "value": 7.02,
+            "itemStyle": {
+              "color": "#e67e22"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "城投集团  7.02%"
+            }
+          },
+          {
+            "value": 5.19,
+            "itemStyle": {
+              "color": "#2980b9"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "发展置业  5.19%"
+            }
+          },
+          {
+            "value": 4.99,
+            "itemStyle": {
+              "color": "#6c3483"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "水利投资  4.99%"
+            }
+          },
+          {
+            "value": 4.6,
+            "itemStyle": {
+              "color": "#2980b9"
+            },
+            "label": {
+              "show": true,
+              "position": "insideLeft",
+              "distance": 8,
+              "color": "#fff",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "发展投资  4.6%"
+            }
+          },
+          {
+            "value": 2.79,
+            "itemStyle": {
+              "color": "#16a085"
+            },
+            "label": {
+              "show": true,
+              "position": "right",
+              "distance": 6,
+              "color": "#333",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "沪股通(A股)  2.79%"
+            }
+          },
+          {
+            "value": 1.1,
+            "itemStyle": {
+              "color": "#6c3483"
+            },
+            "label": {
+              "show": true,
+              "position": "right",
+              "distance": 6,
+              "color": "#333",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "水务集团  1.1%"
+            }
+          },
+          {
+            "value": 0.99,
+            "itemStyle": {
+              "color": "#c0392b"
+            },
+            "label": {
+              "show": true,
+              "position": "right",
+              "distance": 6,
+              "color": "#333",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "财信集团  0.99%"
+            }
+          },
+          {
+            "value": 0.83,
+            "itemStyle": {
+              "color": "#f1c40f"
+            },
+            "label": {
+              "show": true,
+              "position": "right",
+              "distance": 6,
+              "color": "#333",
+              "fontSize": 18,
+              "fontWeight": 600,
+              "formatter": "社保116  0.83%"
+            }
+          }
+        ],
+        "barCategoryGap": "35%",
+        "itemStyle": {
+          "borderColor": "#fff",
+          "borderWidth": 1
+        }
+      }
+    ]
+  },
+  "chart-seg-rev": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "2025",
+        "2024"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 80,
+      "right": 24,
+      "top": 36,
+      "bottom": 50
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "公司金融",
+        "零售金融",
+        "金融市场",
+        "未分配"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "百万元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "2025",
+        "type": "bar",
+        "data": [
+          9351.1,
+          12138.5,
+          7027,
+          103.4
+        ],
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18
+        }
+      },
+      {
+        "name": "2024",
+        "type": "bar",
+        "data": [
+          8633.8,
+          11832.4,
+          7699.2,
+          65.9
+        ],
+        "itemStyle": {
+          "color": "#b39ddb"
+        }
+      }
+    ]
+  },
+  "chart-geo": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "县域",
+        "主城"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 80,
+      "right": 24,
+      "top": 36,
+      "bottom": 50
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "存款",
+        "贷款",
+        "资产"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "max": 100,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "县域",
+        "type": "bar",
+        "stack": "geo",
+        "data": [
+          73.3,
+          50.78,
+          52.6
+        ],
+        "itemStyle": {
+          "color": "#1e8449"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "fontSize": 18,
+          "color": "#fff",
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "主城",
+        "type": "bar",
+        "stack": "geo",
+        "data": [
+          26.7,
+          49.22,
+          47.4
+        ],
+        "itemStyle": {
+          "color": "#e67e22"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "fontSize": 18,
+          "color": "#fff",
+          "formatter": "{c}%"
+        }
+      }
+    ]
+  },
+  "chart-loan-industry": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "2025 余额",
+        "2024 余额"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 90,
+      "right": 24,
+      "top": 36,
+      "bottom": 50
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "租赁商务",
+        "水利环境",
+        "制造业",
+        "交通仓储",
+        "批发零售",
+        "电力燃气",
+        "建筑业",
+        "房地产",
+        "卫生社会",
+        "农林牧渔",
+        "其他"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 30
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "百万元",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "2025 余额",
+        "type": "bar",
+        "data": [
+          112105.4,
+          82317.3,
+          78384.5,
+          43794.5,
+          30826.3,
+          30683.1,
+          18149.8,
+          7226.6,
+          6375.5,
+          5858.1,
+          19253.3
+        ],
+        "itemStyle": {
+          "color": "#6c3483"
+        }
+      },
+      {
+        "name": "2024 余额",
+        "type": "bar",
+        "data": [
+          93852.9,
+          65673.1,
+          76096.3,
+          34806.5,
+          21350,
+          27601.5,
+          11911.1,
+          4422.4,
+          6828.8,
+          3893.2,
+          11697.6
+        ],
+        "itemStyle": {
+          "color": "#b39ddb"
+        }
+      }
+    ]
+  },
+  "chart-5tier": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "item",
+      "textStyle": {
+        "fontSize": 18
+      },
+      "formatter": "{b}: {c} 百万 ({d}%)"
+    },
+    "legend": {
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "series": [
+      {
+        "type": "pie",
+        "radius": [
+          "36%",
+          "64%"
+        ],
+        "center": [
+          "50%",
+          "48%"
+        ],
+        "label": {
+          "show": true,
+          "fontSize": 18,
+          "formatter": "{b}\n{d}%"
+        },
+        "data": [
+          {
+            "value": 777351.2,
+            "name": "正常",
+            "itemStyle": {
+              "color": "#1e8449"
+            }
+          },
+          {
+            "value": 11346.4,
+            "name": "关注",
+            "itemStyle": {
+              "color": "#f39c12"
+            }
+          },
+          {
+            "value": 3759.4,
+            "name": "次级",
+            "itemStyle": {
+              "color": "#e67e22"
+            }
+          },
+          {
+            "value": 2888.4,
+            "name": "可疑",
+            "itemStyle": {
+              "color": "#c0392b"
+            }
+          },
+          {
+            "value": 1941.6,
+            "name": "损失",
+            "itemStyle": {
+              "color": "#7b241c"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "chart-migrate": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 56,
+      "right": 24,
+      "top": 36,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "关注类",
+        "type": "line",
+        "data": [
+          9.64,
+          49.53,
+          60.98,
+          38.49,
+          26.6,
+          31.39,
+          19.73
+        ],
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#f39c12"
+        },
+        "itemStyle": {
+          "color": "#f39c12"
+        }
+      },
+      {
+        "name": "次级类",
+        "type": "line",
+        "data": [
+          21.36,
+          10.89,
+          65.23,
+          29.81,
+          51.25,
+          41.55,
+          73.54
+        ],
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        }
+      },
+      {
+        "name": "可疑类",
+        "type": "line",
+        "data": [
+          2.67,
+          2.04,
+          1.78,
+          2.77,
+          16.98,
+          19.75,
+          36.21
+        ],
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#7b241c",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#7b241c"
+        }
+      }
+    ]
+  },
+  "chart-migrate-normal": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "渝农商行",
+        "农业银行"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 56,
+      "right": 24,
+      "top": 36,
+      "bottom": 52
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 40
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "渝农商行",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1.7,
+          3.2,
+          1.93,
+          1.54,
+          1.43,
+          1.73,
+          1.31
+        ],
+        "connectNulls": false,
+        "symbolSize": 7,
+        "lineStyle": {
+          "width": 3,
+          "color": "#1e8449"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        }
+      },
+      {
+        "name": "农业银行",
+        "type": "line",
+        "data": [
+          3.1,
+          2.26,
+          2.49,
+          2.53,
+          3.6,
+          4.96,
+          3,
+          2.13,
+          1.72,
+          1.54,
+          3.19,
+          1.1,
+          1.3,
+          1.39,
+          null,
+          null
+        ],
+        "connectNulls": false,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#2980b9",
+          "type": "dashed"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      }
+    ]
+  },
+  "chart-nim": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "2025 收益率/成本率",
+        "2024 收益率/成本率"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 56,
+      "right": 24,
+      "top": 36,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "贷款3.64%",
+        "金融投资2.73%",
+        "央行1.60%",
+        "同业1.93%",
+        "生息资产3.06%",
+        "存款1.45%",
+        "央行借款1.86%",
+        "同业1.66%",
+        "债券1.87%",
+        "计息负债1.55%"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "rotate": 35
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "%",
+      "min": 0,
+      "max": 5,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "2025 收益率/成本率",
+        "type": "bar",
+        "data": [
+          3.64,
+          2.73,
+          1.6,
+          1.93,
+          3.06,
+          1.45,
+          1.86,
+          1.66,
+          1.87,
+          1.55
+        ],
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18,
+          "formatter": "{c}%"
+        }
+      },
+      {
+        "name": "2024 收益率/成本率",
+        "type": "bar",
+        "data": [
+          3.92,
+          3.08,
+          1.57,
+          2.25,
+          3.37,
+          1.73,
+          2.2,
+          2.05,
+          2.28,
+          1.86
+        ],
+        "itemStyle": {
+          "color": "#b39ddb"
+        }
+      }
+    ]
+  },
+  "chart-bs-trend": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "资产总额",
+        "负债总额",
+        "股东权益合计"
+      ],
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 88,
+      "right": 24,
+      "top": 36,
+      "bottom": 56
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "百万元（资产/负债）",
+        "min": 0,
+        "nameTextStyle": {
+          "fontSize": 16,
+          "color": "#555"
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#555"
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "百万元（权益）",
+        "min": 0,
+        "nameTextStyle": {
+          "fontSize": 16,
+          "color": "#555"
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#555"
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "资产总额",
+        "type": "line",
+        "data": [
+          285545.7,
+          344820,
+          433822.5,
+          502446,
+          618889,
+          716805.2,
+          803157.7,
+          905778.1,
+          950618,
+          1029790.1,
+          1135926.4,
+          1265851.1,
+          1351861.1,
+          1441081.9,
+          1514941.7,
+          1665744.1
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.08)"
+        }
+      },
+      {
+        "name": "负债总额",
+        "type": "line",
+        "data": [
+          263115.3,
+          316809.1,
+          401593,
+          465556.7,
+          576040.6,
+          668517.4,
+          748967.9,
+          840532.4,
+          878469.2,
+          940427.9,
+          1041294.4,
+          1159807.1,
+          1236845,
+          1317580.3,
+          1381332.9,
+          1526448.3
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        }
+      },
+      {
+        "name": "股东权益合计",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": [
+          22430.4,
+          28010.9,
+          32229.5,
+          36889.3,
+          42848.4,
+          48287.8,
+          54189.8,
+          65245.7,
+          72148.8,
+          89362.2,
+          94632.1,
+          106044,
+          115016.2,
+          123501.6,
+          133608.8,
+          139295.8
+        ],
+        "smooth": true,
+        "symbolSize": 6,
+        "lineStyle": {
+          "width": 3,
+          "color": "#1e8449"
+        },
+        "itemStyle": {
+          "color": "#1e8449"
+        }
+      }
+    ]
+  },
+  "chart-bs": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "type": "scroll",
+      "bottom": 2,
+      "textStyle": {
+        "fontSize": 18
+      },
+      "itemWidth": 14,
+      "itemHeight": 12
+    },
+    "grid": {
+      "left": 76,
+      "right": 30,
+      "top": 26,
+      "bottom": 54
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "资产",
+        "负债 + 权益"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "fontWeight": 600,
+        "color": "#333"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "color": [
+      "#8e44ad",
+      "#9b59b6",
+      "#af7ac5",
+      "#c39bd3",
+      "#d7bde2",
+      "#ebdef0",
+      "#e74c3c",
+      "#ec7063",
+      "#27ae60",
+      "#7dcea0"
+    ],
+    "series": [
+      {
+        "name": "客户贷款和垫款（净额）",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          765892.7,
+          "-"
+        ]
+      },
+      {
+        "name": "金融投资",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          643629,
+          "-"
+        ]
+      },
+      {
+        "name": "存放同业及拆出资金",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          142441,
+          "-"
+        ]
+      },
+      {
+        "name": "现金及存放中央银行",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          55091,
+          "-"
+        ]
+      },
+      {
+        "name": "买入返售金融资产",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          34197,
+          "-"
+        ]
+      },
+      {
+        "name": "其他资产",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          24493.4,
+          "-"
+        ]
+      },
+      {
+        "name": "客户存款",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          "-",
+          1028727.5
+        ]
+      },
+      {
+        "name": "其他负债",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          "-",
+          497720.8
+        ]
+      },
+      {
+        "name": "归属于本行股东权益",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          "-",
+          137126.7
+        ]
+      },
+      {
+        "name": "少数股东权益",
+        "type": "bar",
+        "stack": "bs",
+        "barMaxWidth": 160,
+        "emphasis": {
+          "focus": "series"
+        },
+        "label": {
+          "show": true,
+          "position": "inside",
+          "color": "#fff",
+          "fontSize": 18
+        },
+        "data": [
+          "-",
+          2169.1
+        ]
+      }
+    ]
+  },
+  "chart-cf": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 72,
+      "right": 24,
+      "top": 26,
+      "bottom": 36
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "data": [
+          22569.6,
+          -19134.4,
+          15532.8,
+          -18595.7
+        ],
+        "barWidth": "48%",
+        "itemStyle": {
+          "borderRadius": [
+            4,
+            4,
+            0,
+            0
+          ]
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 18
+        }
+      }
+    ]
+  },
+  "chart-staff-role": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "item",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "top": 8,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "series": [
+      {
+        "type": "pie",
+        "radius": [
+          "38%",
+          "68%"
+        ],
+        "center": [
+          "50%",
+          "58%"
+        ],
+        "avoidLabelOverlap": true,
+        "itemStyle": {
+          "borderColor": "#fff",
+          "borderWidth": 2
+        },
+        "label": {
+          "fontSize": 17,
+          "color": "#333"
+        },
+        "labelLine": {
+          "length": 12,
+          "length2": 10
+        },
+        "data": [
+          {
+            "value": 10411,
+            "name": "业务发展"
+          },
+          {
+            "value": 1834,
+            "name": "运营及综合管理"
+          },
+          {
+            "value": 1025,
+            "name": "风险控制"
+          },
+          {
+            "value": 583,
+            "name": "科技信息"
+          }
+        ],
+        "color": [
+          "#6c3483",
+          "#af7ac5",
+          "#c0392b",
+          "#e67e22"
+        ]
+      }
+    ]
+  },
+  "chart-staff-edu": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "item",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "top": 8,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "series": [
+      {
+        "type": "pie",
+        "radius": [
+          "38%",
+          "68%"
+        ],
+        "center": [
+          "50%",
+          "58%"
+        ],
+        "avoidLabelOverlap": true,
+        "itemStyle": {
+          "borderColor": "#fff",
+          "borderWidth": 2
+        },
+        "label": {
+          "fontSize": 17,
+          "color": "#333"
+        },
+        "labelLine": {
+          "length": 12,
+          "length2": 10
+        },
+        "data": [
+          {
+            "value": 10413,
+            "name": "本科"
+          },
+          {
+            "value": 2212,
+            "name": "专科及以下"
+          },
+          {
+            "value": 1228,
+            "name": "硕士研究生及以上"
+          }
+        ],
+        "color": [
+          "#6c3483",
+          "#95a5a6",
+          "#af7ac5"
+        ]
+      }
+    ]
+  },
+  "chart-chairman-pay": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "董事长",
+        "行长"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 68,
+      "right": 30,
+      "top": 52,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "万元",
+      "min": 0,
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "董事长",
+        "type": "line",
+        "data": [
+          77.4,
+          90.5,
+          111.7,
+          121.7,
+          130.4,
+          77.3,
+          34.6,
+          42,
+          79.6,
+          49.14,
+          44.58,
+          52.04,
+          52.79,
+          54.29,
+          59.75,
+          60.84
+        ],
+        "smooth": true,
+        "symbolSize": 8,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#c9a24a"
+        },
+        "itemStyle": {
+          "color": "#c9a24a"
+        },
+        "markLine": {
+          "symbol": "none",
+          "silent": true,
+          "lineStyle": {
+            "color": "#999",
+            "type": "dashed",
+            "width": 1
+          },
+          "label": {
+            "fontSize": 16,
+            "color": "#888"
+          },
+          "data": [
+            {
+              "xAxis": "2022",
+              "name": "谢文辉接任"
+            },
+            {
+              "xAxis": "2024",
+              "name": "隋军代行"
+            }
+          ]
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 15,
+          "color": "#8a6d1f",
+          "formatter": "{c}"
+        }
+      },
+      {
+        "name": "行长",
+        "type": "line",
+        "data": [
+          77.4,
+          89.9,
+          111.8,
+          null,
+          79.4,
+          77.8,
+          34.6,
+          42,
+          90.8,
+          49.14,
+          44.58,
+          52.04,
+          52.79,
+          43.38,
+          59.75,
+          60.84
+        ],
+        "smooth": true,
+        "symbolSize": 8,
+        "connectNulls": true,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#2980b9"
+        },
+        "itemStyle": {
+          "color": "#2980b9"
+        },
+        "label": {
+          "show": true,
+          "position": "bottom",
+          "fontSize": 15,
+          "color": "#1f618d"
+        }
+      }
+    ]
+  },
+  "chart-staff-age": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 100,
+      "right": 60,
+      "top": 20,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "value",
+      "name": "人数",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": [
+        "30 岁以下",
+        "31–40 岁",
+        "41–50 岁",
+        "51 岁以上"
+      ],
+      "inverse": true,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#333"
+      }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "data": [
+          1515,
+          6431,
+          3351,
+          2556
+        ],
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "barWidth": 26,
+        "label": {
+          "show": true,
+          "position": "right",
+          "fontSize": 17,
+          "color": "#333"
+        }
+      }
+    ]
+  },
+  "chart-maturity": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "金融资产",
+        "金融负债",
+        "净头寸（资产 − 负债）"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 80,
+      "right": 24,
+      "top": 46,
+      "bottom": 60
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "逾期/无期限",
+        "即期偿还",
+        "1 个月内",
+        "1–3 个月",
+        "3 个月至 1 年",
+        "1–5 年",
+        "5 年以上"
+      ],
+      "axisLabel": {
+        "fontSize": 17,
+        "color": "#555",
+        "interval": 0
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#bbb"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "nameTextStyle": {
+        "fontSize": 18
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "金融资产",
+        "type": "bar",
+        "data": [
+          572.93,
+          453.99,
+          953.75,
+          958.57,
+          3706.18,
+          5156.38,
+          4633.39
+        ],
+        "barGap": "10%",
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 14,
+          "color": "#555"
+        }
+      },
+      {
+        "name": "金融负债",
+        "type": "bar",
+        "data": [
+          0,
+          2963.9,
+          2349.41,
+          2955.91,
+          5020.12,
+          1891.77,
+          5.9
+        ],
+        "itemStyle": {
+          "color": "#95a5a6"
+        },
+        "label": {
+          "show": true,
+          "position": "top",
+          "fontSize": 14,
+          "color": "#888"
+        }
+      },
+      {
+        "name": "净头寸（资产 − 负债）",
+        "type": "line",
+        "data": [
+          572.93,
+          -2509.91,
+          -1395.66,
+          -1997.34,
+          -1313.94,
+          3264.61,
+          4627.49
+        ],
+        "smooth": false,
+        "symbolSize": 8,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "label": {
+          "show": true,
+          "fontSize": 14,
+          "color": "#c0392b"
+        }
+      }
+    ]
+  },
+  "chart-tsf-stock": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "data": [
+        "社融存量",
+        "同比 YoY"
+      ],
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "grid": {
+      "left": 72,
+      "right": 64,
+      "top": 42,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2015-01",
+        "2015-02",
+        "2015-03",
+        "2015-04",
+        "2015-05",
+        "2015-06",
+        "2015-07",
+        "2015-08",
+        "2015-09",
+        "2015-10",
+        "2015-11",
+        "2015-12",
+        "2016-01",
+        "2016-02",
+        "2016-03",
+        "2016-04",
+        "2016-05",
+        "2016-06",
+        "2016-07",
+        "2016-08",
+        "2016-09",
+        "2016-10",
+        "2016-11",
+        "2016-12",
+        "2017-01",
+        "2017-02",
+        "2017-03",
+        "2017-04",
+        "2017-05",
+        "2017-06",
+        "2017-07",
+        "2017-08",
+        "2017-09",
+        "2017-10",
+        "2017-11",
+        "2017-12",
+        "2018-01",
+        "2018-02",
+        "2018-03",
+        "2018-04",
+        "2018-05",
+        "2018-06",
+        "2018-07",
+        "2018-08",
+        "2018-09",
+        "2018-10",
+        "2018-11",
+        "2018-12",
+        "2019-01",
+        "2019-02",
+        "2019-03",
+        "2019-04",
+        "2019-05",
+        "2019-06",
+        "2019-07",
+        "2019-08",
+        "2019-09",
+        "2019-10",
+        "2019-11",
+        "2019-12",
+        "2020-01",
+        "2020-02",
+        "2020-03",
+        "2020-04",
+        "2020-05",
+        "2020-06",
+        "2020-07",
+        "2020-08",
+        "2020-09",
+        "2020-10",
+        "2020-11",
+        "2020-12",
+        "2021-01",
+        "2021-02",
+        "2021-03",
+        "2021-04",
+        "2021-05",
+        "2021-06",
+        "2021-07",
+        "2021-08",
+        "2021-09",
+        "2021-10",
+        "2021-11",
+        "2021-12",
+        "2022-01",
+        "2022-02",
+        "2022-03",
+        "2022-04",
+        "2022-05",
+        "2022-06",
+        "2022-07",
+        "2022-08",
+        "2022-09",
+        "2022-10",
+        "2022-11",
+        "2022-12",
+        "2023-01",
+        "2023-02",
+        "2023-03",
+        "2023-04",
+        "2023-05",
+        "2023-06",
+        "2023-07",
+        "2023-08",
+        "2023-09",
+        "2023-10",
+        "2023-11",
+        "2023-12",
+        "2024-01",
+        "2024-02",
+        "2024-03",
+        "2024-04",
+        "2024-05",
+        "2024-06",
+        "2024-07",
+        "2024-08",
+        "2024-09",
+        "2024-10",
+        "2024-11",
+        "2024-12",
+        "2025-01",
+        "2025-02",
+        "2025-03",
+        "2025-04",
+        "2025-05",
+        "2025-06",
+        "2025-07",
+        "2025-08",
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "boundaryGap": false,
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "interval": 0
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#bbb"
+        }
+      }
+    },
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "万亿元",
+        "min": 0,
+        "nameTextStyle": {
+          "fontSize": 18,
+          "color": "#555"
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#555"
+        },
+        "splitLine": {
+          "lineStyle": {
+            "color": "#eee"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "YoY %",
+        "min": 0,
+        "max": 16,
+        "nameTextStyle": {
+          "fontSize": 18,
+          "color": "#c0392b"
+        },
+        "axisLabel": {
+          "fontSize": 18,
+          "color": "#c0392b",
+          "formatter": "{value}%"
+        },
+        "splitLine": {
+          "show": false
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": "社融存量",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          127.68,
+          null,
+          null,
+          131.7,
+          null,
+          null,
+          134.7,
+          null,
+          null,
+          138.28,
+          141.57,
+          142.52,
+          144.75,
+          145.59,
+          146.33,
+          147.99,
+          148.37,
+          149.81,
+          151.51,
+          152.43,
+          154.35,
+          156,
+          159.61,
+          160.69,
+          162.8,
+          164.14,
+          165.17,
+          166.86,
+          167.95,
+          169.36,
+          171.14,
+          172.11,
+          173.66,
+          174.71,
+          185.77,
+          186.92,
+          188.37,
+          190.02,
+          190.94,
+          192.37,
+          193.46,
+          195.24,
+          197.27,
+          197.89,
+          199.29,
+          200.75,
+          231.55,
+          232.41,
+          235.24,
+          236.81,
+          238.5,
+          241.05,
+          242.19,
+          244.31,
+          246.68,
+          247.42,
+          249.27,
+          251.41,
+          256.34,
+          257.17,
+          262.27,
+          265.22,
+          268.38,
+          271.78,
+          273.33,
+          276.73,
+          280.05,
+          281.25,
+          283.25,
+          284.75,
+          289.74,
+          291.36,
+          294.56,
+          296.15,
+          297.98,
+          301.56,
+          302.47,
+          305.29,
+          308.05,
+          309.45,
+          311.9,
+          314.12,
+          320.03,
+          321.12,
+          325.63,
+          326.47,
+          329.2,
+          334.28,
+          334.9,
+          337.22,
+          340.65,
+          341.42,
+          343.19,
+          344.22,
+          350.93,
+          353.97,
+          359.02,
+          359.95,
+          361.42,
+          365.45,
+          365.77,
+          368.61,
+          372.5,
+          374.17,
+          376.39,
+          378.08,
+          384.32,
+          385.71,
+          390.32,
+          389.93,
+          391.93,
+          395.1,
+          395.72,
+          398.56,
+          402.19,
+          403.45,
+          405.6,
+          408.34,
+          415.19,
+          417.29,
+          422.97,
+          424,
+          426.16,
+          430.24,
+          431.25,
+          433.65,
+          437.08,
+          437.71,
+          440.07,
+          442.12,
+          449.11,
+          451.4,
+          456.46,
+          456.88,
+          458.81,
+          462.06,
+          463.27
+        ],
+        "connectNulls": true,
+        "yAxisIndex": 0,
+        "showSymbol": false,
+        "smooth": true,
+        "lineStyle": {
+          "width": 2.5,
+          "color": "#6c3483"
+        },
+        "itemStyle": {
+          "color": "#6c3483"
+        },
+        "areaStyle": {
+          "color": "rgba(108,52,131,0.10)"
+        }
+      },
+      {
+        "name": "同比 YoY",
+        "type": "line",
+        "data": [
+          null,
+          null,
+          13.1,
+          null,
+          null,
+          12,
+          null,
+          null,
+          12.5,
+          null,
+          null,
+          12.5,
+          13.1,
+          12.7,
+          13.4,
+          13.1,
+          12.6,
+          12.4,
+          12.2,
+          12.3,
+          12.5,
+          12.8,
+          13.3,
+          12.8,
+          12.7,
+          12.8,
+          12.5,
+          12.7,
+          12.9,
+          12.8,
+          13.2,
+          13.1,
+          13,
+          12.9,
+          12.5,
+          12,
+          12.7,
+          12.7,
+          11.9,
+          11.9,
+          11.6,
+          11.1,
+          10.8,
+          10.8,
+          10.6,
+          10.2,
+          9.9,
+          9.8,
+          10.9,
+          10.6,
+          11.2,
+          10.8,
+          11,
+          11.2,
+          10.8,
+          10.7,
+          10.7,
+          10.6,
+          10.7,
+          10.7,
+          10.7,
+          10.7,
+          11.5,
+          12,
+          12.5,
+          12.8,
+          12.9,
+          13.3,
+          13.5,
+          13.7,
+          13.6,
+          13.3,
+          13,
+          13.3,
+          12.3,
+          11.7,
+          11,
+          11,
+          10.7,
+          10.3,
+          10,
+          10,
+          10.1,
+          10.3,
+          10.5,
+          10.2,
+          10.5,
+          10.2,
+          10.5,
+          10.8,
+          10.7,
+          10.5,
+          10.6,
+          10.3,
+          10,
+          9.6,
+          9.4,
+          9.9,
+          10,
+          10,
+          9.5,
+          9,
+          8.9,
+          9,
+          9,
+          9.3,
+          9.4,
+          9.5,
+          9.5,
+          9,
+          8.7,
+          8.3,
+          8.4,
+          8.1,
+          8.2,
+          8.1,
+          8,
+          7.8,
+          7.8,
+          8,
+          8,
+          8.2,
+          8.4,
+          8.7,
+          8.7,
+          8.9,
+          9,
+          8.8,
+          8.7,
+          8.5,
+          8.5,
+          8.3,
+          8.2,
+          8.2,
+          7.9,
+          7.8,
+          7.7,
+          7.4,
+          7.4
+        ],
+        "connectNulls": true,
+        "yAxisIndex": 1,
+        "showSymbol": false,
+        "smooth": true,
+        "lineStyle": {
+          "width": 2,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "markLine": {
+          "silent": true,
+          "symbol": "none",
+          "label": {
+            "show": false
+          },
+          "data": [
+            {
+              "xAxis": "2018-07",
+              "lineStyle": {
+                "color": "#999",
+                "type": "dashed"
+              },
+              "label": {
+                "show": true,
+                "formatter": "2018.07\nABS+核销",
+                "position": "insideEndTop",
+                "fontSize": 14,
+                "color": "#666"
+              }
+            },
+            {
+              "xAxis": "2018-09",
+              "lineStyle": {
+                "color": "#999",
+                "type": "dashed"
+              },
+              "label": {
+                "show": true,
+                "formatter": "2018.09\n政府专项债",
+                "position": "insideEndBottom",
+                "fontSize": 14,
+                "color": "#666"
+              }
+            },
+            {
+              "xAxis": "2020-03",
+              "lineStyle": {
+                "color": "#999",
+                "type": "dashed"
+              },
+              "label": {
+                "show": true,
+                "formatter": "2020Q1\n疫情信用扩张",
+                "position": "insideEndTop",
+                "fontSize": 14,
+                "color": "#666"
+              }
+            },
+            {
+              "xAxis": "2023-01",
+              "lineStyle": {
+                "color": "#999",
+                "type": "dashed"
+              },
+              "label": {
+                "show": true,
+                "formatter": "2023\n三类非存款金融纳入",
+                "position": "insideEndBottom",
+                "fontSize": 14,
+                "color": "#666"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "chart-tsf-flow": {
+    "backgroundColor": "#fff",
+    "textStyle": {
+      "fontSize": 18
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      },
+      "textStyle": {
+        "fontSize": 18
+      }
+    },
+    "legend": {
+      "top": 4,
+      "textStyle": {
+        "fontSize": 18
+      },
+      "data": [
+        "人民币贷款",
+        "政府债券",
+        "企业债券",
+        "未贴现票据",
+        "委托贷款",
+        "信托贷款",
+        "非金融企业股票",
+        "社融合计"
+      ]
+    },
+    "grid": {
+      "left": 80,
+      "right": 24,
+      "top": 46,
+      "bottom": 40
+    },
+    "xAxis": {
+      "type": "category",
+      "data": [
+        "2015-01",
+        "2015-02",
+        "2015-03",
+        "2015-04",
+        "2015-05",
+        "2015-06",
+        "2015-07",
+        "2015-08",
+        "2015-09",
+        "2015-10",
+        "2015-11",
+        "2015-12",
+        "2016-01",
+        "2016-02",
+        "2016-03",
+        "2016-04",
+        "2016-05",
+        "2016-06",
+        "2016-07",
+        "2016-08",
+        "2016-09",
+        "2016-10",
+        "2016-11",
+        "2016-12",
+        "2017-01",
+        "2017-02",
+        "2017-03",
+        "2017-04",
+        "2017-05",
+        "2017-06",
+        "2017-07",
+        "2017-08",
+        "2017-09",
+        "2017-10",
+        "2017-11",
+        "2017-12",
+        "2018-01",
+        "2018-02",
+        "2018-03",
+        "2018-04",
+        "2018-05",
+        "2018-06",
+        "2018-07",
+        "2018-08",
+        "2018-09",
+        "2018-10",
+        "2018-11",
+        "2018-12",
+        "2019-01",
+        "2019-02",
+        "2019-03",
+        "2019-04",
+        "2019-05",
+        "2019-06",
+        "2019-07",
+        "2019-08",
+        "2019-09",
+        "2019-10",
+        "2019-11",
+        "2019-12",
+        "2020-01",
+        "2020-02",
+        "2020-03",
+        "2020-04",
+        "2020-05",
+        "2020-06",
+        "2020-07",
+        "2020-08",
+        "2020-09",
+        "2020-10",
+        "2020-11",
+        "2020-12",
+        "2021-01",
+        "2021-02",
+        "2021-03",
+        "2021-04",
+        "2021-05",
+        "2021-06",
+        "2021-07",
+        "2021-08",
+        "2021-09",
+        "2021-10",
+        "2021-11",
+        "2021-12",
+        "2022-01",
+        "2022-02",
+        "2022-03",
+        "2022-04",
+        "2022-05",
+        "2022-06",
+        "2022-07",
+        "2022-08",
+        "2022-09",
+        "2022-10",
+        "2022-11",
+        "2022-12",
+        "2023-01",
+        "2023-02",
+        "2023-03",
+        "2023-04",
+        "2023-05",
+        "2023-06",
+        "2023-07",
+        "2023-08",
+        "2023-09",
+        "2023-10",
+        "2023-11",
+        "2023-12",
+        "2024-01",
+        "2024-02",
+        "2024-03",
+        "2024-04",
+        "2024-05",
+        "2024-06",
+        "2024-07",
+        "2024-08",
+        "2024-09",
+        "2024-10",
+        "2024-11",
+        "2024-12",
+        "2025-01",
+        "2025-02",
+        "2025-03",
+        "2025-04",
+        "2025-05",
+        "2025-06",
+        "2025-07",
+        "2025-08",
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555",
+        "interval": 0
+      },
+      "axisLine": {
+        "lineStyle": {
+          "color": "#bbb"
+        }
+      }
+    },
+    "yAxis": {
+      "type": "value",
+      "name": "亿元",
+      "nameTextStyle": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "axisLabel": {
+        "fontSize": 18,
+        "color": "#555"
+      },
+      "splitLine": {
+        "lineStyle": {
+          "color": "#eee"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "人民币贷款",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          14708,
+          11437,
+          9920,
+          8045,
+          8510,
+          13240,
+          5890,
+          7756,
+          10417,
+          5574,
+          8873,
+          8323,
+          25370,
+          8105,
+          13176,
+          5642,
+          9374,
+          13141,
+          4550,
+          7969,
+          12628,
+          6010,
+          8463,
+          9943,
+          23133,
+          10317,
+          11586,
+          10806,
+          11780,
+          14474,
+          9152,
+          11466,
+          11885,
+          6635,
+          11428,
+          5769,
+          26850,
+          10199,
+          11425,
+          10987,
+          11396,
+          16787,
+          12861,
+          13140,
+          14341,
+          7141,
+          12302,
+          9281,
+          35668,
+          7641,
+          19584,
+          8733,
+          11855,
+          16737,
+          8086,
+          13045,
+          17612,
+          5470,
+          13633,
+          10770,
+          34924,
+          7202,
+          30390,
+          16239,
+          15502,
+          19029,
+          10221,
+          14201,
+          19171,
+          6663,
+          15309,
+          11458,
+          38182,
+          13413,
+          27511,
+          12840,
+          14294,
+          23182,
+          8391,
+          12713,
+          17755,
+          7752,
+          13021,
+          10350,
+          41988,
+          9084,
+          32291,
+          3616,
+          18230,
+          30540,
+          4088,
+          13344,
+          25686,
+          4431,
+          11448,
+          14401,
+          49314,
+          18184,
+          39487,
+          4431,
+          12219,
+          32413,
+          364,
+          13412,
+          25369,
+          4837,
+          11120,
+          11092,
+          48401,
+          9773,
+          32920,
+          3349,
+          8197,
+          21927,
+          -808,
+          10411,
+          19742,
+          2965,
+          5216,
+          8402,
+          52194,
+          6528,
+          38234,
+          884,
+          5923,
+          23600,
+          -4296,
+          6253,
+          16081,
+          -154,
+          4096,
+          9804,
+          49016,
+          8458,
+          31522,
+          -4006,
+          4965,
+          17650,
+          -5896
+        ],
+        "itemStyle": {
+          "color": "#6c3483"
+        }
+      },
+      {
+        "name": "政府债券",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          0,
+          108,
+          662,
+          808,
+          1012,
+          1019,
+          1851,
+          4106,
+          7389,
+          868,
+          -332,
+          362,
+          1700,
+          4347,
+          3412,
+          4433,
+          3857,
+          6867,
+          6427,
+          5059,
+          3777,
+          1871,
+          1716,
+          3738,
+          7613,
+          1824,
+          6344,
+          3357,
+          11362,
+          7450,
+          5459,
+          13788,
+          10116,
+          4931,
+          4000,
+          6973,
+          2437,
+          1017,
+          3131,
+          3739,
+          6701,
+          7508,
+          1820,
+          9738,
+          8066,
+          6167,
+          8158,
+          11674,
+          6026,
+          2722,
+          7074,
+          3912,
+          10582,
+          16216,
+          3998,
+          3045,
+          5533,
+          2791,
+          6520,
+          2809,
+          4140,
+          8138,
+          6015,
+          4548,
+          5571,
+          5371,
+          4109,
+          11759,
+          9920,
+          15638,
+          11512,
+          9324,
+          2947,
+          6011,
+          4626,
+          -937,
+          12266,
+          8476,
+          6881,
+          16177,
+          15357,
+          10495,
+          13089,
+          17566,
+          6933,
+          16939,
+          14866,
+          9729,
+          14585,
+          13508,
+          12482,
+          13672,
+          11893,
+          4852,
+          12077,
+          6833,
+          9764,
+          14014,
+          11658,
+          9041,
+          12236,
+          7683,
+          13176
+        ],
+        "itemStyle": {
+          "color": "#e67e22"
+        }
+      },
+      {
+        "name": "企业债券",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          1868,
+          716,
+          1344,
+          1616,
+          1710,
+          2132,
+          2832,
+          3121,
+          3805,
+          3331,
+          3378,
+          3535,
+          5083,
+          1386,
+          7081,
+          2366,
+          -250,
+          2008,
+          2208,
+          3236,
+          2872,
+          2192,
+          3859,
+          -2016,
+          -510,
+          -1125,
+          129,
+          501,
+          -2488,
+          -169,
+          2621,
+          1137,
+          1654,
+          1482,
+          853,
+          337,
+          1222,
+          644,
+          3536,
+          4047,
+          -382,
+          1349,
+          2195,
+          3402,
+          382,
+          1476,
+          3127,
+          3757,
+          4829,
+          875,
+          3546,
+          3949,
+          1033,
+          1439,
+          2944,
+          3384,
+          2431,
+          2032,
+          3330,
+          3593,
+          3967,
+          3894,
+          9931,
+          9237,
+          2879,
+          3686,
+          2358,
+          3659,
+          1316,
+          2263,
+          840,
+          -281,
+          3917,
+          1356,
+          3807,
+          3624,
+          -1077,
+          3927,
+          3091,
+          4649,
+          1137,
+          2261,
+          4006,
+          2167,
+          5838,
+          3610,
+          3750,
+          3652,
+          366,
+          2346,
+          960,
+          1512,
+          345,
+          2413,
+          604,
+          -4887,
+          1638,
+          3662,
+          3357,
+          2940,
+          -2144,
+          2249,
+          1290,
+          2788,
+          650,
+          1178,
+          1388,
+          -2741,
+          4320,
+          1423,
+          4237,
+          1707,
+          285,
+          2100,
+          2036,
+          1703,
+          -1926,
+          987,
+          2381,
+          -159,
+          4454,
+          1702,
+          -905,
+          2340,
+          1496,
+          2422,
+          2748,
+          1338,
+          136,
+          2500,
+          4145,
+          1541,
+          5033,
+          1522,
+          3910,
+          4520,
+          1680,
+          4012,
+          4536
+        ],
+        "itemStyle": {
+          "color": "#2980b9"
+        }
+      },
+      {
+        "name": "未贴现票据",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          1946,
+          -592,
+          -910,
+          -74,
+          961,
+          -1028,
+          -3317,
+          -1577,
+          -1279,
+          -3697,
+          -2545,
+          1546,
+          1327,
+          -3705,
+          173,
+          -2776,
+          -5067,
+          -2720,
+          -5118,
+          -376,
+          -2230,
+          -1801,
+          1171,
+          1606,
+          6130,
+          -1719,
+          2390,
+          345,
+          -1245,
+          -230,
+          -2037,
+          242,
+          784,
+          12,
+          15,
+          676,
+          1437,
+          106,
+          -323,
+          1454,
+          -1741,
+          -3649,
+          -2744,
+          -779,
+          -548,
+          -453,
+          -127,
+          1023,
+          3787,
+          -3103,
+          1365,
+          -357,
+          -768,
+          -1311,
+          -4562,
+          157,
+          -431,
+          -1053,
+          570,
+          951,
+          1403,
+          -3961,
+          2818,
+          577,
+          836,
+          2190,
+          -1130,
+          1441,
+          1503,
+          -1089,
+          -625,
+          -2216,
+          4902,
+          639,
+          -2296,
+          -2152,
+          -926,
+          -221,
+          -2316,
+          127,
+          14,
+          -886,
+          -383,
+          -1419,
+          4733,
+          -4228,
+          287,
+          -2557,
+          -1068,
+          1066,
+          -2744,
+          3486,
+          132,
+          -2156,
+          191,
+          -554,
+          2963,
+          -69,
+          1792,
+          -1345,
+          -1795,
+          -691,
+          -1963,
+          1129,
+          2397,
+          -2536,
+          202,
+          -1865,
+          5636,
+          -3686,
+          3552,
+          -4490,
+          -1331,
+          -2045,
+          -1075,
+          651,
+          1312,
+          -1396,
+          910,
+          -1330,
+          4654,
+          -2987,
+          3632,
+          -2794,
+          -1164,
+          -1900,
+          -1638,
+          1973,
+          3234,
+          -2895,
+          1488,
+          -1492,
+          6293,
+          -1755,
+          1258,
+          -5284,
+          -685,
+          -1084,
+          -530
+        ],
+        "itemStyle": {
+          "color": "#7f8c8d"
+        }
+      },
+      {
+        "name": "委托贷款",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          832,
+          1299,
+          1111,
+          344,
+          324,
+          1414,
+          1137,
+          1198,
+          2422,
+          1390,
+          910,
+          3530,
+          2175,
+          1650,
+          1660,
+          1694,
+          1566,
+          1721,
+          1775,
+          1432,
+          1451,
+          725,
+          1994,
+          4011,
+          3136,
+          1172,
+          2039,
+          -48,
+          -278,
+          -32,
+          163,
+          -82,
+          775,
+          43,
+          280,
+          601,
+          -714,
+          -750,
+          -1850,
+          -1481,
+          -1570,
+          -1642,
+          -950,
+          -1207,
+          -1432,
+          -949,
+          -1310,
+          -2210,
+          -699,
+          -508,
+          -1070,
+          -1197,
+          -631,
+          -827,
+          -987,
+          -513,
+          -22,
+          -667,
+          -959,
+          -1316,
+          -26,
+          -356,
+          -588,
+          -579,
+          -273,
+          -484,
+          -152,
+          -415,
+          -317,
+          -174,
+          -31,
+          -559,
+          91,
+          -100,
+          -42,
+          -213,
+          -408,
+          -474,
+          -151,
+          177,
+          -22,
+          -173,
+          35,
+          -416,
+          428,
+          -74,
+          107,
+          -2,
+          -132,
+          -380,
+          89,
+          1755,
+          1508,
+          470,
+          -88,
+          -101,
+          584,
+          -77,
+          175,
+          83,
+          35,
+          -56,
+          8,
+          97,
+          208,
+          -429,
+          -386,
+          -43,
+          -359,
+          -172,
+          -465,
+          89,
+          -9,
+          -3,
+          345,
+          25,
+          392,
+          -219,
+          -183,
+          -20,
+          449,
+          -228,
+          -165,
+          -2,
+          -166,
+          -400,
+          -177,
+          -165,
+          283,
+          1654,
+          -187,
+          308,
+          -192,
+          -181,
+          -284,
+          -283,
+          -90,
+          243,
+          -22
+        ],
+        "itemStyle": {
+          "color": "#95a5a6"
+        }
+      },
+      {
+        "name": "信托贷款",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          52,
+          38,
+          -77,
+          -46,
+          -195,
+          536,
+          99,
+          317,
+          -159,
+          -201,
+          -301,
+          370,
+          552,
+          308,
+          732,
+          269,
+          121,
+          809,
+          210,
+          736,
+          1057,
+          530,
+          1625,
+          1643,
+          3175,
+          1062,
+          3113,
+          1473,
+          1812,
+          2481,
+          1232,
+          1143,
+          2368,
+          1019,
+          1434,
+          2245,
+          455,
+          660,
+          -357,
+          -94,
+          -904,
+          -1623,
+          -1192,
+          -688,
+          -909,
+          -1273,
+          -467,
+          -509,
+          345,
+          -37,
+          528,
+          129,
+          -52,
+          15,
+          -676,
+          -658,
+          -672,
+          -624,
+          -673,
+          -1092,
+          432,
+          -540,
+          -21,
+          23,
+          -337,
+          -852,
+          -1367,
+          -316,
+          -1159,
+          -875,
+          -1387,
+          -4620,
+          -842,
+          -936,
+          -1791,
+          -1328,
+          -1295,
+          -1046,
+          -1571,
+          -1362,
+          -2098,
+          -1061,
+          -2190,
+          -4553,
+          -680,
+          -751,
+          -259,
+          -615,
+          -619,
+          -828,
+          -398,
+          -472,
+          -191,
+          -61,
+          -365,
+          -764,
+          -62,
+          66,
+          -45,
+          119,
+          303,
+          -154,
+          230,
+          -221,
+          402,
+          393,
+          197,
+          347,
+          732,
+          571,
+          681,
+          142,
+          224,
+          748,
+          -26,
+          484,
+          6,
+          172,
+          91,
+          151,
+          623,
+          -330,
+          238,
+          -77,
+          173,
+          816,
+          149,
+          350,
+          62,
+          155,
+          843,
+          679,
+          -4,
+          310,
+          -173,
+          -129,
+          53,
+          -503,
+          -226
+        ],
+        "itemStyle": {
+          "color": "#bdc3c7"
+        }
+      },
+      {
+        "name": "非金融企业股票",
+        "type": "bar",
+        "stack": "flow",
+        "data": [
+          526,
+          542,
+          639,
+          597,
+          584,
+          1051,
+          615,
+          479,
+          349,
+          121,
+          568,
+          1518,
+          1469,
+          810,
+          562,
+          951,
+          1073,
+          1158,
+          1135,
+          1075,
+          1368,
+          1125,
+          861,
+          828,
+          1225,
+          570,
+          800,
+          769,
+          458,
+          487,
+          536,
+          653,
+          519,
+          601,
+          1324,
+          817,
+          500,
+          379,
+          404,
+          533,
+          438,
+          258,
+          175,
+          141,
+          272,
+          176,
+          200,
+          130,
+          289,
+          119,
+          122,
+          262,
+          259,
+          153,
+          593,
+          256,
+          289,
+          180,
+          524,
+          432,
+          609,
+          449,
+          198,
+          315,
+          353,
+          538,
+          1215,
+          1282,
+          1141,
+          927,
+          771,
+          1126,
+          991,
+          693,
+          783,
+          814,
+          717,
+          956,
+          938,
+          1478,
+          772,
+          846,
+          1294,
+          1851,
+          1439,
+          585,
+          958,
+          1166,
+          292,
+          589,
+          1437,
+          1251,
+          1022,
+          788,
+          788,
+          1443,
+          964,
+          571,
+          614,
+          993,
+          753,
+          700,
+          786,
+          1036,
+          326,
+          321,
+          359,
+          508,
+          422,
+          114,
+          227,
+          186,
+          111,
+          154,
+          231,
+          132,
+          128,
+          284,
+          428,
+          484,
+          473,
+          76,
+          412,
+          391,
+          152,
+          203,
+          505,
+          456,
+          499,
+          695,
+          341,
+          559,
+          291,
+          454,
+          428,
+          835,
+          298,
+          628,
+          1128
+        ],
+        "itemStyle": {
+          "color": "#af7ac5"
+        }
+      },
+      {
+        "name": "社融合计",
+        "type": "line",
+        "data": [
+          20516,
+          13609,
+          12433,
+          10582,
+          12397,
+          18384,
+          7511,
+          11097,
+          13571,
+          5593,
+          10255,
+          18114,
+          34758,
+          8312,
+          23931,
+          7809,
+          6770,
+          16479,
+          4791,
+          14605,
+          17115,
+          8865,
+          18328,
+          16397,
+          36970,
+          10908,
+          21186,
+          13880,
+          10631,
+          17718,
+          11956,
+          14895,
+          18335,
+          10357,
+          16128,
+          11481,
+          30793,
+          11894,
+          15848,
+          17761,
+          9518,
+          14877,
+          12254,
+          19391,
+          21691,
+          7420,
+          15239,
+          15898,
+          46791,
+          9665,
+          29602,
+          16710,
+          17124,
+          26243,
+          12872,
+          21956,
+          25142,
+          8680,
+          19937,
+          22013,
+          50535,
+          8737,
+          51838,
+          31027,
+          31866,
+          34681,
+          16928,
+          35853,
+          34693,
+          13929,
+          21355,
+          16476,
+          51884,
+          17243,
+          33762,
+          18570,
+          19522,
+          37017,
+          10752,
+          29893,
+          29026,
+          16176,
+          25983,
+          23580,
+          61759,
+          12170,
+          46565,
+          9327,
+          28415,
+          51926,
+          7785,
+          24712,
+          35411,
+          9134,
+          19837,
+          13063,
+          59956,
+          31610,
+          53867,
+          12249,
+          15560,
+          42265,
+          5366,
+          31279,
+          41326,
+          18441,
+          24554,
+          19326,
+          64734,
+          14959,
+          48335,
+          -658,
+          20623,
+          32985,
+          7707,
+          30323,
+          37635,
+          14120,
+          23288,
+          28537,
+          70546,
+          22331,
+          58961,
+          11599,
+          22900,
+          42251,
+          11307,
+          25660,
+          35299,
+          8178,
+          24926,
+          22132,
+          72185,
+          23837,
+          52240,
+          6238,
+          20293,
+          33671,
+          14017
+        ],
+        "showSymbol": false,
+        "smooth": false,
+        "lineStyle": {
+          "width": 2,
+          "color": "#c0392b"
+        },
+        "itemStyle": {
+          "color": "#c0392b"
+        },
+        "z": 5
+      }
+    ]
+  }
+}

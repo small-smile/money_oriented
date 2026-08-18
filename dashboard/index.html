@@ -55,7 +55,6 @@
             gap: 10px;
         }
         .card:hover {
-            transform: translateY(-4px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
         .card .title {
@@ -75,99 +74,110 @@
             font-weight: 500;
             width: fit-content;
         }
-        /* 尚无页面的占位卡片：不可点击，避免死链 */
-        .card.todo {
-            background: #f3f4f6;
-            border: 1px dashed #cbd5e1;
-            box-shadow: none;
-            cursor: default;
+        /* 行业卡片内的图表导航：同一行业的多张图表全部收在这里 */
+        .card .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 2px;
         }
-        .card.todo:hover { transform: none; box-shadow: none; }
-        .card.todo .title { color: #9ca3af; }
-        .tag-todo { background: #e5e7eb; color: #6b7280; }
+        .card .links a {
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #1f2937;
+            font-size: 17px;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+        .card .links a:hover { background: #1f2937; color: #fff; }
+        .card .links .grp {
+            flex: 0 0 100%;
+            font-size: 16px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+        /* 尚无页面的入口：不可点击，避免死链 */
+        .card .links .todo {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            background: #f9fafb;
+            color: #9ca3af;
+            font-size: 17px;
+        }
         .tag-price { background: #fdebd0; color: #d35400; }
         .tag-production { background: #d5f5e3; color: #1e8449; }
         .tag-consumption { background: #fce4ec; color: #ad1457; }
         .tag-reserve { background: #fdf2d0; color: #9a6700; }
         .tag-company { background: #d6eaf8; color: #1a5276; }
         .tag-bank { background: #e8daef; color: #6c3483; }
+        .tag-insurance { background: #d1f2eb; color: #0e6655; }
     </style>
 </head>
 <body>
 <h1>📊 行业数据看板</h1>
 
-<h2>行业分析</h2>
-
-<h3>石油</h3>
 <div class="grid">
-    <a class="card" href="industry/oil/price_history.html">
-        <span class="tag tag-price">量价</span>
-        <span class="title">原油历史量价</span>
-        <span class="desc">历史油价K线 + 通胀调整后油价 + 年产量 + 金价 / 金油比</span>
-    </a>
-    <a class="card" href="industry/oil/region_production.html">
-        <span class="tag tag-production">产量</span>
-        <span class="title">石油产量总览（1965-2024）</span>
-        <span class="desc">三合一：地区堆叠 / 各国堆叠 / 各国占比，Tab 切换</span>
-    </a>
-    <a class="card" href="industry/oil/country_consumption.html">
-        <span class="tag tag-consumption">消费</span>
-        <span class="title">石油消费总览（1965-2024）</span>
-        <span class="desc">各国消费量堆叠 + 分产品消费量：汽油 / 柴油 / 航空煤油 / 石脑油</span>
-    </a>
-    <a class="card" href="industry/oil/country_change_2001_2024.html">
-        <span class="tag tag-production">产量</span>
-        <span class="title">各洲产量对比：2001 vs 2024</span>
-        <span class="desc">对比各大洲在两个年份的产量差异</span>
-    </a>
-    <a class="card" href="industry/oil/china_oil_majors.html">
-        <span class="tag tag-reserve">储量</span>
-        <span class="title">证实储量：中石油 / 中海油</span>
-        <span class="desc">储量瀑布图 + 实现油价对照，含 2020 年储量下修</span>
-    </a>
-    <a class="card" href="industry/oil/cnooc_roa_oil.html">
-        <span class="tag tag-company">盈利</span>
-        <span class="title">中海油 油价 vs 单期 ROA</span>
-        <span class="desc">布伦特期内均价 × 单期总资产净利率（非累计），2001H1–2026Q1（2022 起季报，之前半年报）</span>
-    </a>
-</div>
-
-<h3>银行</h3>
-<div class="grid">
-    <a class="card" href="industry/bank/overview.html">
-        <span class="tag tag-bank">名录</span>
-        <span class="title">A/H 股上市银行概览</span>
-        <span class="desc">国有大行 / 股份制 / 城商行 / 农商行 四类分组，含 A 股与港股上市主体，点击进入个股详情</span>
-    </a>
-    <div class="card todo">
-        <span class="tag tag-todo">待建设</span>
-        <span class="title">行业层面分析</span>
-        <span class="desc">息差 / 资产质量 / 规模的同业横向对比，尚无页面；个股年报见下方「公司年报」</span>
+    <div class="card">
+        <span class="tag tag-price">石油</span>
+        <span class="title">石油</span>
+        <span class="desc">量价 · 产量 · 消费 · 储量 · 油企盈利</span>
+        <div class="links">
+            <span class="grp">行业</span>
+            <a href="industry/oil/price_history.html">历史量价 K 线</a>
+            <a href="industry/oil/region_production.html">产量总览 1965-2024</a>
+            <a href="industry/oil/country_consumption.html">消费总览 1965-2024</a>
+            <a href="industry/oil/country_change_2001_2024.html">各洲产量 2001 vs 2024</a>
+            <span class="grp">公司</span>
+            <a href="industry/oil/china_oil_majors.html">中石油 / 中海油 证实储量</a>
+            <a href="industry/oil/cnooc_roa_oil.html">中海油 油价 vs 单期 ROA</a>
+            <a href="company/oil/petro_income_waterfall.html">中石油 2025 利润→营收 瀑布</a>
+        </div>
     </div>
-</div>
 
-<h2>公司年报</h2>
-<div class="grid">
-    <a class="card" href="company/index.html">
+    <div class="card">
         <span class="tag tag-bank">银行</span>
-        <span class="title">渝农商行 2025 年报 · 业绩</span>
-        <span class="desc">601077：业绩走势 · ROE · 息差与效率 · 每股指标 · 股东 · 三张表</span>
-    </a>
-    <a class="card" href="company/asset.html">
-        <span class="tag tag-bank">银行</span>
-        <span class="title">渝农商行 2025 年报 · 资产端</span>
-        <span class="desc">贷款规模与结构 · 行业与按用途投向 · 资产质量与迁徙 · 拨备 · 金融投资</span>
-    </a>
-    <a class="card" href="company/debt.html">
-        <span class="tag tag-bank">银行</span>
-        <span class="title">渝农商行 2025 年报 · 负债端</span>
-        <span class="desc">存款规模与期限结构 · 平均付息率 · 活期占比 · 杠杆率与流动性</span>
-    </a>
-    <a class="card" href="company/petro_income_waterfall.html">
-        <span class="tag tag-company">石油</span>
-        <span class="title">中石油 2025 利润→营收 瀑布图</span>
-        <span class="desc">按金额升序的反向瀑布图</span>
-    </a>
+        <span class="title">银行</span>
+        <span class="desc">A/H 股上市银行名录 · 渝农商行 601077 年报全景</span>
+        <div class="links">
+            <span class="grp">行业</span>
+            <a href="industry/bank/overview.html">A/H 股上市银行概览</a>
+            <a href="industry/bank/reform_timeline.html">银行业重要变革时间线</a>
+            <span class="todo">同业横向对比（待建设）</span>
+            <span class="grp">渝农商行 2025 年报</span>
+            <a href="company/bank/index.html?code=601077">业绩</a>
+            <a href="company/bank/asset.html?code=601077">资产端</a>
+            <a href="company/bank/debt.html?code=601077">负债端</a>
+            <a href="company/bank/risk.html?code=601077">风控</a>
+            <a href="company/bank/shareholder.html?code=601077">股东</a>
+            <a href="company/bank/intro.html?code=601077">简介</a>
+            <a href="company/bank/balance-sheet.html?code=601077">资产负债表</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag tag-insurance">保险</span>
+        <span class="title">保险</span>
+        <span class="desc">A/H 股上市险企名录 · 五大险企历年数据横向对比</span>
+        <div class="links">
+            <span class="grp">行业</span>
+            <a href="industry/insurance/overview.html">A/H 股上市保险公司概览 + 变革时间线</a>
+            <a href="industry/insurance/peers.html">五大险企同业对比（保费 / 利润 / 投资 / 偿付能力 / NBV）</a>
+            <span class="todo">单家险企详情页（待建设）</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag tag-consumption">食品</span>
+        <span class="title">食品</span>
+        <span class="desc">巴比食品 605338 年报 · 同业对比</span>
+        <div class="links">
+            <span class="grp">公司</span>
+            <a href="company/food/babi.html">巴比食品 2025 年报 · 公司概览</a>
+            <a href="company/food/peer-comparison.html">同业对比 · 中式面点/速冻/短保/加盟批发</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

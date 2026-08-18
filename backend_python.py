@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
+import json
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -774,6 +776,76 @@ def api_bank_financials():
     if data is None:
         return jsonify({"code": 500, "msg": "财务数据文件不存在"})
     return jsonify({"code": 200, "data": data})
+
+
+def read_company_charts(code):
+    """公司详情页全部图表数据，按银行代码取 data/tables/company_charts_<code>.json。
+    数据由 data/extract/ 提取管线从 charts.js 原值程序化抽取，未经手工重录。"""
+    if not re.fullmatch(r"[0-9]{5,6}", code):
+        return {"code": 400, "msg": f"非法银行代码 {code}", "data": {}}
+    path = f"data/tables/company_charts_{code}.json"
+    if not os.path.exists(path):
+        return {"code": 404, "msg": f"银行 {code} 尚无 company_charts 数据文件", "data": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        return {"code": 200, "data": json.load(f)}
+
+
+@app.route("/api/company_charts")
+def api_company_charts():
+    """参数: code（银行 A 股 6 位代码或 H 股 5 位代码），默认渝农商行 601077"""
+    return jsonify(read_company_charts(request.args.get("code", "601077")))
+
+
+# 五家 A+H 上市险企，数据由 data/extract/fetch_insurer_financials.py 生成（A 股年报口径）
+INSURER_PEERS = ["601318", "601628", "601601", "601336", "601319"]
+
+
+def _insurer_path(code):
+    return os.path.join(os.path.dirname(__file__), "data", "tables", f"insurer_{code}_annual.json")
+
+
+def read_insurer_annual(code):
+    """单家险企历年财务数据，取 data/tables/insurer_<code>_annual.json。"""
+    if not re.fullmatch(r"[0-9]{6}", code):
+        return {"code": 400, "msg": f"非法保险公司代码 {code}", "data": {}}
+    path = _insurer_path(code)
+    if not os.path.exists(path):
+        return {"code": 404, "msg": f"保险公司 {code} 尚无年度数据文件", "data": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        return {"code": 200, "data": json.load(f)}
+
+
+def read_insurer_peers():
+    """同业对比用：code → {name, source, caliber_note, annual}，只带页面要用的字段。"""
+    peers = {}
+    for code in INSURER_PEERS:
+        path = _insurer_path(code)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            d = json.load(f)
+        peers[code] = {
+            "name": d.get("name"),
+            "source": d.get("source"),
+            "unit_note": d.get("unit_note"),
+            "caliber_note": d.get("caliber_note"),
+            "annual": d.get("annual", {}),
+        }
+    if not peers:
+        return {"code": 404, "msg": "尚无险企年度数据文件，请先运行 data/extract/fetch_insurer_financials.py", "data": {}}
+    return {"code": 200, "data": peers}
+
+
+@app.route("/api/insurer_annual")
+def api_insurer_annual():
+    """参数: code（险企 A 股 6 位代码），默认中国平安 601318"""
+    return jsonify(read_insurer_annual(request.args.get("code", "601318")))
+
+
+@app.route("/api/insurer_peers")
+def api_insurer_peers():
+    """五家上市险企同业对比数据，一次返回"""
+    return jsonify(read_insurer_peers())
 
 
 if __name__ == "__main__":
