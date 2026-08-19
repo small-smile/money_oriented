@@ -106,6 +106,43 @@ body {
     visibility: hidden;
 }
 
+/* 银行切换器（股东页，shareholder-switch.js 注入）：跟着页面链接一起放在居中的 .nav-center 里，
+ * 左侧用竖线与页面链接分隔。
+ * 为什么不靠右单独成组：上面那套「链接真正居中」靠的是右侧隐藏镜像抵消左侧 brand，
+ * 若右侧换成 ~500px 的银行按钮组，要让链接仍居中就得在左侧再留同宽占位，
+ * 1440 视口下总宽需 ~1780px，导航条必然横向溢出。放进同一居中簇里两边仍对称。
+ */
+.site-nav .nav-banks {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 2px solid #4b5563;
+}
+/* 与页面链接（.site-nav a）同一套尺寸，但选中态用实心黄底区分：
+ * 页面链接的 active 是「当前所在页」，银行按钮的 active 是「当前所选银行」，
+ * 两者同处一条导航，颜色相同会分不清。 */
+.site-nav .nav-bank {
+    font: inherit;
+    font-size: 18px;
+    color: #d1d5db;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 7px 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.site-nav .nav-bank:hover { background: #374151; color: #fff; }
+.site-nav .nav-bank.active {
+    background: #fbbf24;
+    color: #1f2937;
+    font-weight: 600;
+    cursor: default;
+}
+
 /* 图表卡片：白底 + 圆角 + 柔和投影，所有页面统一
  * 取自 region_production.html 的 .card，页面里只写各自的宽度/边距/布局，
  * 不要再各自定义 border-radius / box-shadow，圆润度以这里为准

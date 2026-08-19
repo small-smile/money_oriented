@@ -10,6 +10,19 @@
     - RPT_F10_EH_HOLDERS            前十名股东（含报告期内增减）
     - RPT_SHAREBONUS_DET            历年分红实施明细（每 10 股派现等）
 
+纯 H 股上市银行（江西银行 01916.HK，无 A 股上市）走港股 F10
+（datacenter.eastmoney.com/securities/api/data/v1/get）+ 年报手工提取覆盖层：
+    - RPT_HKF10_FN_MAININDICATOR    港股主要指标（年报 + 中期混排，需自行筛 12-31 行）
+      币种陷阱：行内 CURRENCY="HKD"、IS_CNY_CODE=0 是误标 —— 江西银行年报本身以人民币编制，
+      接口金额即人民币原值，无需折算（2024 年总资产 573,634,744,000 元 = 年报 573,634.75 百万元）。
+      与中国太平（00966.HK，港元编制、接口已折人民币）不同，这里不存在汇率漂移。
+      total_share 陷阱：ISSUED_COMMON_SHARES 各年一律回填 6,024,276,901 股，2015—2017 上市前
+      实际为 4,678,776,901 股，须用年报值覆盖；DPS_HKD 是快照字段（2015—2024 各行同为 0.0807219），
+      不能当逐年股息序列。
+      港股 F10 主要指标完全不含银行监管指标（不良率/拨备覆盖率/拨贷比/资本充足率/NIM/NIS/
+      贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层：
+    - data/tables/bank_01916_ar_manual.json   逐年年报手工提取值（列式，一行 = 年报表格一行）
+
 输出：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
     data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
@@ -36,19 +49,72 @@ RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "tables"
 
 API = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+API_HK = "https://datacenter.eastmoney.com/securities/api/data/v1/get"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
     "Referer": "https://data.eastmoney.com/",
     "Accept-Encoding": "identity",
 }
 
-# 代码 -> (交易所后缀, 简称)
+# 代码 -> (交易所后缀, 简称, 机构类型)
+# 机构类型按监管口径分组，供同业对比按组取色/分屏：国有大行 / 股份行 / 城商行 / 农商行
 BANKS = {
-    "601077": ("SH", "渝农商行"),
-    "600036": ("SH", "招商银行"),
-    "601288": ("SH", "农业银行"),
-    "601658": ("SH", "邮储银行"),
+    # 国有大行（工农中建交邮，前四家即「四大行」）
+    "601398": ("SH", "工商银行", "国有大行"),
+    "601288": ("SH", "农业银行", "国有大行"),
+    "601988": ("SH", "中国银行", "国有大行"),
+    "601939": ("SH", "建设银行", "国有大行"),
+    "601328": ("SH", "交通银行", "国有大行"),
+    "601658": ("SH", "邮储银行", "国有大行"),
+    # 股份行代表
+    "600036": ("SH", "招商银行", "股份行"),
+    "601166": ("SH", "兴业银行", "股份行"),
+    "600000": ("SH", "浦发银行", "股份行"),
+    "601998": ("SH", "中信银行", "股份行"),
+    "600016": ("SH", "民生银行", "股份行"),
+    "000001": ("SZ", "平安银行", "股份行"),
+    # 城商行代表
+    "601169": ("SH", "北京银行", "城商行"),
+    "601229": ("SH", "上海银行", "城商行"),
+    "600919": ("SH", "江苏银行", "城商行"),
+    "002142": ("SZ", "宁波银行", "城商行"),
+    # 农商行代表
+    "601077": ("SH", "渝农商行", "农商行"),
+    "601825": ("SH", "沪农商行", "农商行"),
+    "601128": ("SH", "常熟银行", "农商行"),
+    "002958": ("SZ", "青农商行", "农商行"),
 }
+
+# 纯 H 股上市银行：无 A 股年报，A 股 F10 模板（RPT_F10_FINANCE_B*）查不到，只能走港股 F10
+# + 年报手工提取覆盖层。项目规则「A/H 都有时优先取 A 股年报」在这里不适用（本就没有 A 股年报），
+# 但输出的 source/caliber_note 必须写明数据来自 H 股年报。
+BANKS_HK = {
+    "01916": ("HK", "江西银行", "城商行"),
+}
+
+# 港股 F10 主要指标（RPT_HKF10_FN_MAININDICATOR）-> 与 A 股输出字段名对齐，便于同图共用 key。
+# 江西银行年报以人民币编制，接口金额即人民币原值（CURRENCY 写 HKD 是误标），可与 A 股行直接比。
+# 只取年报正文摘要表里没有、或与年报口径一致的字段；重叠字段以年报覆盖层为准（见 build_bank_hk）。
+HK_MAIN_FIELDS = {
+    "interest_ni": "NET_INTEREST_INCOME",
+    "fee_ni": "FEE_COMMISSION_INCOME",
+    "operate_income": "OPERATE_INCOME",
+    "operate_profit": "OPERATE_PROFIT",       # 年报摘要表无此行，只由港股 F10 提供
+    "total_profit": "PRETAX_PROFIT",
+    "parent_netprofit": "HOLDER_PROFIT",
+    "total_assets": "TOTAL_ASSETS",
+    "total_liabilities": "TOTAL_LIABILITIES",
+    "parent_equity": "TOTAL_PARENT_EQUITY",
+    "netcash_operate": "NETCASH_OPERATE",     # 年报摘要表无现金流量行，只由港股 F10 提供
+    "netcash_invest": "NETCASH_INVEST",
+    "netcash_finance": "NETCASH_FINANCE",
+    "op_cf_per_share": "PER_NETCASH_OPERATE",
+    "basic_eps": "BASIC_EPS",
+    "total_share": "ISSUED_COMMON_SHARES",    # 各年回填当前股数，2015—2017 由年报覆盖层纠正
+}
+# 未采用：*_YOY / *_QOQ（同比口径与年报自算不一致）、PE_TTM/PB_TTM/TOTAL_MARKET_CAP（时点估值，
+# 非年报数）、DPS_HKD（快照值，2015—2024 各行同为 0.0807219）、LOAN_DEPOSIT（2025 年 96.61%，
+# 与年报存贷比 90.85%（贷款总额 ÷ 吸收存款）对不上，接口口径不明，故存贷比取年报覆盖层值）。
 
 STATEMENTS = {
     "income": "RPT_F10_FINANCE_BINCOME",
@@ -138,9 +204,10 @@ MAIN_FIELDS = {
 
 
 def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
-                 page_size: int = 200, retries: int = 3, timeout: int = 60) -> dict:
+                 page_size: int = 200, retries: int = 3, timeout: int = 60,
+                 api: str = API) -> dict:
     url = "%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1&pageSize=%d" % (
-        API, report_name, urllib.parse.quote(filt), sort_col, page_size)
+        api, report_name, urllib.parse.quote(filt), sort_col, page_size)
     last_err: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
@@ -185,10 +252,10 @@ def pick(row: dict, mapping: dict[str, str]) -> dict:
 
 
 def build_bank(code: str, refresh: bool) -> dict:
-    suffix, name = BANKS[code]
+    suffix, name, tier = BANKS[code]
     secucode = f"{code}.{suffix}"
     filt = f'(SECUCODE="{secucode}")'
-    print(f"[fetch] {name} {secucode}")
+    print(f"[fetch] {name} {secucode} ({tier})")
 
     payloads = {key: cached(rn, code, filt, refresh) for key, rn in STATEMENTS.items()}
     rows = {key: annual_rows(p) for key, p in payloads.items()}
@@ -205,6 +272,14 @@ def build_bank(code: str, refresh: bool) -> dict:
         annual[y] = rec
 
     # ── 派生指标：贷款减值准备余额、核销净额、不良生成额/率 ──
+    # 减值损失科目回退：工行等个别行 2018–2022 的减值在 F10 模板里仍挂「资产减值损失」，
+    # 「信用减值损失」要到 2023 才出现（口径无差异，纯模板映射差异）。这类行（首个
+    # 信用减值年份晚于 2019）在 2018 起的年份缺失时回退取资产减值损失；
+    # 首个信用减值年份在 2017–2019 的行不回退——它们 2018/2019 的资产减值损失是旧准则
+    # 数值，拆不出贷款部分，回退会破坏不良生成率自 2018 年起可比的基准。
+    credit_years = [y for y in years if annual[y].get("credit_impairment") is not None]
+    allow_asset_fallback = bool(credit_years) and min(credit_years) > "2019"
+
     prev_allowance: float | None = None
     prev_npl: float | None = None
     prev_gross: float | None = None
@@ -215,6 +290,8 @@ def build_bank(code: str, refresh: bool) -> dict:
         gl = rec.get("gross_loans")
         lpr = rec.get("loan_provision_ratio")
         ci = rec.get("credit_impairment")
+        if ci is None and allow_asset_fallback and y >= "2018":
+            ci = rec.get("asset_impairment")
 
         # 贷款减值准备余额 = 不良余额 × 拨备覆盖率 / 100（优先）或 贷款总额 × 拨贷比 / 100
         if npl and pc:
@@ -244,6 +321,11 @@ def build_bank(code: str, refresh: bool) -> dict:
             rec["npl_formation_rate"] = round(formation / prev_gross * 100, 4)
         else:
             rec["npl_formation_rate"] = None
+
+        # 权益资产比：股东权益合计 ÷ 总资产（= 1 − 资产负债率 = 1/权益乘数），衡量财务杠杆。
+        # total_equity 含少数股东权益（非归母口径），与保险五家 A 股口径一致。
+        te, ta = rec.get("total_equity"), rec.get("total_assets")
+        rec["equity_asset_ratio"] = round(te / ta * 100, 4) if te and ta else None
 
         prev_allowance = allowance
         prev_npl = npl
@@ -289,6 +371,7 @@ def build_bank(code: str, refresh: bool) -> dict:
         "code": code,
         "secucode": secucode,
         "name": name,
+        "tier": tier,
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "source": "东方财富 F10 数据接口（取值源自各期年度报告，合并口径）",
         "unit_note": "金额字段单位为元；比率字段单位为 %",
@@ -299,20 +382,133 @@ def build_bank(code: str, refresh: bool) -> dict:
     }
 
 
+def load_ar_manual(code: str) -> dict:
+    """读取年报手工提取覆盖层，把列式 series 摊平成 {年份: {字段: 值}}，金额由百万元换成元。"""
+    path = OUT_DIR / f"bank_{code}_ar_manual.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    years, series = doc["years"], doc["series"]
+    amount = set(doc["amount_fields"])
+    annual: dict[str, dict] = {y: {} for y in years}
+    for field, values in series.items():
+        if len(values) != len(years):
+            raise RuntimeError(f"{path.name}: series[{field}] 长度 {len(values)} ≠ years {len(years)}")
+        for y, v in zip(years, values):
+            if v is None:
+                continue
+            annual[y][field] = round(v * 1e6, 2) if field in amount else v
+    return {"doc": doc, "annual": annual}
+
+
+def build_bank_hk(code: str, refresh: bool) -> dict:
+    """纯 H 股上市银行（江西银行 01916.HK）：港股 F10 主要指标 + 年报手工提取覆盖层。"""
+    suffix, name, tier = BANKS_HK[code]
+    secucode = f"{code}.{suffix}"
+    filt = f'(SECURITY_CODE="{code}")'
+    print(f"[fetch] {name} {secucode} ({tier})（港股 F10 + 年报覆盖层，金额为人民币原值）")
+
+    payload = cached("RPT_HKF10_FN_MAININDICATOR", code, filt, refresh, api=API_HK)
+    # 接口把中期/三季与年报混排（DATE_TYPE_CODE 作查询参数无效），annual_rows 只留 12-31 行
+    annual = {y: pick(row, HK_MAIN_FIELDS) for y, row in annual_rows(payload).items()}
+
+    # 年报值优先覆盖接口值：重叠字段（总资产/负债/归母权益/利息净收入…）以年报原文为准，
+    # 且能纠正 total_share 在 2015—2017 上市前被回填成当前股数的问题。
+    manual = load_ar_manual(code)
+    for y, rec in manual["annual"].items():
+        annual.setdefault(y, {}).update(rec)
+
+    for y in sorted(annual):
+        rec = annual[y]
+        # 江西银行利润表科目 2015—2025 全期为「资产减值损失」，从未改写成「信用减值损失」
+        rec.setdefault("credit_impairment", None)
+        tp, np_, pnp = rec.get("total_profit"), rec.get("netprofit"), rec.get("parent_netprofit")
+        rec["income_tax"] = round(tp - np_, 2) if tp is not None and np_ is not None else None
+        rec["minority_interest"] = round(np_ - pnp, 2) if np_ is not None and pnp is not None else None
+
+    # ── 派生指标：核销净额、不良生成额/率 ──
+    # 与 19 家 A 股行的关键差别：核销取年报「贷款减值准备变动表」实测值（核销 + 转出），
+    # 不用「期初准备 + 计提 − 期末准备」反推，因此不受 F10 减值科目含非贷款资产的偏差影响。
+    prev_npl: float | None = None
+    prev_gross: float | None = None
+    for y in sorted(annual):
+        rec = annual[y]
+        npl, gross = rec.get("npl_amount"), rec.get("gross_loans")
+        wo, to = rec.get("write_off"), rec.get("transfer_out")
+        rec["net_charge_off"] = round(wo + (to or 0), 2) if wo is not None else None
+
+        nco = rec["net_charge_off"]
+        if npl is not None and prev_npl is not None and nco is not None:
+            rec["npl_formation"] = round(npl - prev_npl + nco, 2)
+        else:
+            rec["npl_formation"] = None
+
+        formation = rec["npl_formation"]
+        if formation is not None and prev_gross:
+            rec["npl_formation_rate"] = round(formation / prev_gross * 100, 4)
+        else:
+            rec["npl_formation_rate"] = None
+
+        # 权益资产比：港股 F10/年报覆盖层只给归母权益，用（总资产 − 总负债）÷ 总资产
+        # 反推全口径权益占比，与 19 家 A 股行「total_equity ÷ total_assets」同义。
+        ta, tl = rec.get("total_assets"), rec.get("total_liabilities")
+        rec["equity_asset_ratio"] = round((ta - tl) / ta * 100, 4) if ta and tl else None
+
+        prev_npl, prev_gross = npl, gross
+
+    doc = manual["doc"]
+    return {
+        "code": code,
+        "secucode": secucode,
+        "name": name,
+        "tier": tier,
+        "currency": "CNY",
+        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "source": ("① 东方财富港股 F10 主要指标 RPT_HKF10_FN_MAININDICATOR（各期年报数）提供"
+                   "现金流量、营业利润、每股经营现金流；② 其余字段（含全部银行监管指标）取自 "
+                   "江西银行历年 H 股年度报告原文，见 data/tables/bank_01916_ar_manual.json。"
+                   "江西银行 2018-06-26 仅在港交所上市（01916.HK），无 A 股年报，因此不适用"
+                   "「A/H 都有时优先取 A 股年报」的取数规则——本行序列全部为 H 股年报来源。"),
+        "unit_note": "金额字段单位为元；比率字段单位为 %（ltd_ratio 为小数，与 A 股各行一致）",
+        "caliber_note": (
+            "年报以人民币编制（港股 F10 行内 CURRENCY 写 HKD、IS_CNY_CODE 写 0 是误标，接口金额"
+            "即人民币原值，已用 2024 年总资产 573,634.75 百万元反推核验），可与 19 家 A 股行同图直接比大小。"
+            "2015/2016 两年无独立年报，比率与规模取自 2018 年报第三章五年对比列，该表不披露贷款总额、"
+            "不良余额、逾期与减值准备明细，这些字段留空，不做反推。"
+            "gross_loans 全期为「不含应计利息」口径（应计利息单列），比 A 股几家行 2019 含、2025 不含的"
+            "跨年跳档更干净；total_deposits 取吸收存款（年报不单列存款总额，存贷比即按此分母披露）。"
+            "loan_loss_allowance 为含 FVOCI 部分的合计（撥備覆蓋率/貸款撥備率 的披露分子），"
+            "loan_allowance_amortized 另列摊余成本部分。"
+            "不良生成率（npl_formation_rate）用年报实测核销：期末不良 − 期初不良 + 核销 + 转出，"
+            "除以期初贷款总额，与 A 股各行「反推核销」的近似口径不同，跨行比较时需注意；"
+            "2023—2025 年报不再单列「转出」（只给一条「其他」），这三年的分子少了转出部分、略偏低。"
+            "IFRS 9 自 2018 年起执行且未重述可比期，2017 及以前为 IAS 39 口径，跨 2017/2018 的"
+            "减值准备与减值损失不完全可比。"
+            "staff_num 在 2018—2024 为「本行正式在岗员工」，2025 年报改为「本集团」口径，跨年有台阶。"
+            "港股 F10 不提供 nsfr 以外的监管指标补充，净稳定资金比例仅 2018/2020/2022 年报披露。"),
+        "annual": annual,
+        "holders_end_date": doc.get("holders_end_date"),
+        "holders": doc.get("holders", []),
+        "holders_note": doc.get("holders_note"),
+        "holder_count": doc.get("holder_count"),
+        "dividend_per10": doc.get("dividend_per10", {}),
+        "dividend_note": doc.get("dividend_note"),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("codes", nargs="*", default=[], help="股票代码，默认全部")
     ap.add_argument("--refresh", action="store_true", help="忽略缓存重新拉取")
     args = ap.parse_args()
 
-    codes = args.codes or list(BANKS)
-    unknown = [c for c in codes if c not in BANKS]
+    codes = args.codes or list(BANKS) + list(BANKS_HK)
+    unknown = [c for c in codes if c not in BANKS and c not in BANKS_HK]
     if unknown:
-        raise SystemExit(f"未知代码：{unknown}；已支持 {list(BANKS)}")
+        raise SystemExit(f"未知代码：{unknown}；已支持 {list(BANKS) + list(BANKS_HK)}")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
-        data = build_bank(code, args.refresh)
+        data = build_bank_hk(code, args.refresh) if code in BANKS_HK \
+            else build_bank(code, args.refresh)
         out = OUT_DIR / f"bank_{code}_annual.json"
         out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
         yrs = sorted(data["annual"])

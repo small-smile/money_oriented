@@ -113,6 +113,47 @@
         </div>
     </section>
 
+    <!-- ══════════ 2.5 营业成本构成 ══════════ -->
+    <section id="sec-cost">
+        <h2>营业成本构成</h2>
+        <p class="sub">口径：主营业务成本（不含其他业务成本）· 2020–2025 · 单位：万元 · 数据取自各年年报「管理层讨论与分析——成本分析表」，分别按成本性质与分产品/业务两个口径加总</p>
+        <div class="kpis">
+            <div class="kpi"><div class="label">2025 主营业务成本合计</div><div class="value">13.28 亿</div><div class="delta up">▲ 8.4%</div></div>
+            <div class="kpi"><div class="label">2025 直接材料占比</div><div class="value">68.2%</div><div class="delta down">▼ 2020 为 76.5%</div></div>
+            <div class="kpi"><div class="label">2025 直接人工占比</div><div class="value">12.9%</div><div class="delta up">▲ 2020 为 9.0%</div></div>
+            <div class="kpi"><div class="label">2025 制造费用占比</div><div class="value">11.9%</div><div class="delta up">▲ 2020 为 8.9%</div></div>
+        </div>
+        <div class="two-col">
+            <div>
+                <h3 class="chart-title">按成本性质构成（万元）</h3>
+                <div id="chart-cost-nature" class="chart" style="height:400px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">按成本性质占比（%）</h3>
+                <div id="chart-cost-nature-pct" class="chart" style="height:400px"></div>
+            </div>
+        </div>
+        <div class="note">
+            主营业务成本从 2020 年 <b>7.03 亿元</b>增至 2025 年 <b>13.28 亿元</b>（六年 +88.9%，与营收扩张同步）。结构上呈现明显的<b>「材料占比下降、人工与制造费用刚性上升」</b>：
+            <b>直接材料</b>始终是绝对大头，但占比从 2020 年的 <b>76.5%</b> 一路降至 2025 年的 <b>68.2%</b>——反映集中采购与规模效应对猪肉、面粉、油脂等原料成本的摊薄；
+            <b>直接人工</b>占比由 9.0% 升至 12.9%、<b>制造费用</b>由 8.9% 升至 11.9%——中央厨房产能扩张带来的折旧、能源与人力刚性支出持续抬升，是压制综合毛利率的主要成本项；
+            <b>合同履约成本</b>（执行新收入准则后计入营业成本的运杂费等）稳定在 5.4%–6.1%，随配送规模同步增长。这一成本结构变化与「盈利能力」章节中扣非净利率靠精细化管理才勉强维稳的判断相互印证。<br>
+            口径说明：年报未单列全公司「纯按成本性质」汇总表，本图由「成本分析表——分行业情况」中食品类 / 加盟商管理 / 包装物及辅料三类的同性质项目加总而得（其中「其他费用」仅出现在加盟商管理类）；统计口径为<b>主营业务成本</b>，与利润表「营业成本」总额有微小尾差（如 2020 年主营业务成本 70,281.20 万元 vs 利润表营业成本 70,306.92 万元）；2020 年起「合同履约成本」为新收入准则下新增项目。<br>
+            数据来源：巴比食品 A 股各年年度报告「第三节 管理层讨论与分析——成本分析表（分行业情况）」。
+        </div>
+        <h3 class="chart-title">按产品 / 业务构成（万元）</h3>
+        <div id="chart-cost-product" class="chart" style="height:400px"></div>
+        <div class="note">
+            按<b>产品 / 业务</b>拆分同一口径的主营业务成本可见：<b>食品类三项</b>（面米类 + 馅料类 + 外购食品类）合计约占主营成本<b>九成</b>，是成本的绝对主体。
+            <b>面米类</b>（2022 年报起口径由「面点类」改称「面米类」）为最大单项，从 2020 年 <b>2.31 亿元</b>攀升至 2024 年 <b>5.28 亿元</b>，2025 年微降至 <b>5.13 亿元</b>；
+            <b>馅料类</b>与<b>外购食品类</b>在 2022 年一度回落后于 2025 年明显反弹（分别 +17.7% / +17.6%），对应终端 SKU 扩充与外采占比回升。
+            <b>外购食品类</b>系向第三方采购的成品/半成品，无自有产线加工，故成本仅由直接材料与合同履约成本构成、不含直接人工与制造费用。
+            <b>加盟商管理</b>成本（主要为服务加盟体系的人工）随加盟网络扩张持续攀升，从 2020 年 <b>1,477 万元</b>增至 2025 年 <b>5,334 万元</b>（六年 3.6 倍）。<br>
+            口径说明：分产品口径与前述按成本性质口径同源、总额一致（均为主营业务成本）；「面点类」自 2022 年年报起统一改称「面米类」，本图按最新口径统一命名；2023 年报「包装物及辅料」部分行次因分页截断，经 2024 年报「上年同期」列交叉补齐。<br>
+            数据来源：巴比食品 A 股各年年度报告「第三节 管理层讨论与分析——成本分析表（分产品情况）」，本地存档 data/raw/annual_605338_2020…2025.txt。
+        </div>
+    </section>
+
     <!-- ══════════ 3 渠道分部 ══════════ -->
     <section id="sec-channel">
         <h2>渠道分部（特许加盟 / 团餐大客户 / 直营门店）</h2>
@@ -548,6 +589,75 @@
         });
     })();
 
+    // 2.5 营业成本构成（按成本性质）
+    (function () {
+        const years = ['2020', '2021', '2022', '2023', '2024', '2025'];
+        // 主营业务成本按性质（万元）—— 由年报「成本分析表·分行业」三类同性质项加总
+        const nature = [
+            { name: '直接材料',     color: RED,        data: [53733.44, 78164.54, 78840.14, 84331.28, 84691.53, 90611.23] },
+            { name: '直接人工',     color: BLUE,       data: [6356.32, 10005.67, 15390.84, 16486.74, 16704.94, 17169.69] },
+            { name: '制造费用',     color: ORANGE,     data: [6272.43, 8612.72, 9412.78, 11693.11, 12946.37, 15860.03] },
+            { name: '合同履约成本', color: GOLD,       data: [3817.84, 5269.38, 6182.35, 6847.72, 7392.49, 8133.10] },
+            { name: '其他费用',     color: '#aeb6bf',  data: [101.17, 137.31, 422.47, 700.13, 752.23, 1005.31] }
+        ];
+        const total = years.map((_, i) => nature.reduce((s, n) => s + n.data[i], 0));
+
+        // 左：金额堆叠
+        initChart('chart-cost-nature')?.setOption({
+            backgroundColor: '#fff', textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+                valueFormatter: v => v == null ? '-' : (+v).toLocaleString() + ' 万元' },
+            legend: { top: 4, textStyle: AX },
+            grid: { left: 88, right: 24, top: 46, bottom: 44 },
+            xAxis: { type: 'category', data: years, axisLabel: AX },
+            yAxis: { type: 'value', name: '万元', min: 0, axisLabel: AX, nameTextStyle: AX },
+            series: nature.map(n => ({
+                name: n.name, type: 'bar', stack: 'cost', data: n.data, itemStyle: { color: n.color }
+            }))
+        });
+
+        // 右：占比 100% 堆叠
+        initChart('chart-cost-nature-pct')?.setOption({
+            backgroundColor: '#fff', textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+                valueFormatter: v => v == null ? '-' : v + '%' },
+            legend: { top: 4, textStyle: AX },
+            grid: { left: 56, right: 24, top: 46, bottom: 44 },
+            xAxis: { type: 'category', data: years, axisLabel: AX },
+            yAxis: { type: 'value', name: '%', min: 0, max: 100, axisLabel: AX, nameTextStyle: AX },
+            series: nature.map(n => ({
+                name: n.name, type: 'bar', stack: 'pct', itemStyle: { color: n.color },
+                data: n.data.map((v, i) => +(v / total[i] * 100).toFixed(1))
+            }))
+        });
+    })();
+
+    // 2.6 营业成本构成（按产品 / 业务）
+    (function () {
+        const years = ['2020', '2021', '2022', '2023', '2024', '2025'];
+        // 主营业务成本按产品/业务（万元）—— 年报「成本分析表·分产品」，2022 年报起「面点类」改称「面米类」
+        const product = [
+            { name: '面米类',       color: RED,       data: [23096.72, 36373.50, 48231.76, 51410.23, 52846.24, 51316.09] },
+            { name: '馅料类',       color: PURPLE,    data: [21408.66, 27364.00, 23934.49, 27805.39, 29966.90, 35268.32] },
+            { name: '外购食品类',   color: ORANGE,    data: [19158.35, 29789.92, 27984.40, 29258.15, 28202.04, 33172.66] },
+            { name: '包装物及辅料', color: BLUE,      data: [5140.71, 6439.71, 6563.22, 7041.37, 6970.78, 7688.61] },
+            { name: '加盟商管理',   color: '#aeb6bf', data: [1476.76, 2222.49, 3534.71, 4543.85, 4501.62, 5333.69] }
+        ];
+
+        initChart('chart-cost-product')?.setOption({
+            backgroundColor: '#fff', textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+                valueFormatter: v => v == null ? '-' : (+v).toLocaleString() + ' 万元' },
+            legend: { top: 4, textStyle: AX },
+            grid: { left: 88, right: 24, top: 46, bottom: 44 },
+            xAxis: { type: 'category', data: years, axisLabel: AX },
+            yAxis: { type: 'value', name: '万元', min: 0, axisLabel: AX, nameTextStyle: AX },
+            series: product.map(p => ({
+                name: p.name, type: 'bar', stack: 'prod', data: p.data, itemStyle: { color: p.color }
+            }))
+        });
+    })();
+
     // 3 渠道分部
     (function () {
         const years = ['2020', '2021', '2022', '2023', '2024'];
@@ -653,6 +763,7 @@
 
     window.addEventListener('resize', function () {
         ['chart-catering', 'chart-perf', 'chart-quarter', 'chart-margin', 'chart-channel', 'chart-store', 'chart-region',
+         'chart-cost-nature', 'chart-cost-nature-pct', 'chart-cost-product',
          'chart-unit-franchise', 'chart-unit-direct', 'chart-fairvalue']
             .forEach(id => { const el = document.getElementById(id); if (el) echarts.getInstanceByDom(el)?.resize(); });
     });

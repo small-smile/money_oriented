@@ -6,26 +6,8 @@
     <link rel="stylesheet" href="../page.css">
     <script src="../../common/bank-header.js" defer></script>
     <style>
-        /* === 银行切换：胶囊式分段控件，白色滑块随选中项平移（复用自石油行情页样式） === */
-        .stack-tabs {
-            position: relative; display: flex; width: fit-content; flex-wrap: wrap;
-            margin: 0 0 18px 0; padding: 5px; background: #eceff3; border-radius: 999px;
-            box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.07);
-        }
-        .tab-slider {
-            position: absolute; top: 5px; bottom: 5px; left: 0; border-radius: 999px;
-            background: #fff; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
-            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                        width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .stack-tab {
-            position: relative; z-index: 1; display: inline-flex; align-items: center;
-            font: inherit; font-size: 18px; line-height: 1.4; padding: 10px 22px;
-            background: transparent; border: none; border-radius: 999px; color: #6b7280;
-            white-space: nowrap; cursor: pointer; transition: color 0.25s ease;
-        }
-        .stack-tab:hover { color: #374151; }
-        .stack-tab.active { color: #0f172a; font-weight: 600; cursor: default; }
+        /* 银行切换控件已移到顶部导航条的居中链接簇里（common/base.css 的 .nav-banks +
+         * shareholder-switch.js 注入），本页正文不再放分段控件 */
         .note-generic {
             margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
             border-left: 4px solid #b7b1c4; border-radius: 6px;
@@ -48,15 +30,7 @@
         <div class="tags"><span>股东</span><span>分红</span><span>股权结构</span></div>
     </div>
 
-    <!-- 银行切换器：股东页所有图表随所选银行整体切换 -->
-    <div class="stack-tabs" id="bank-switch">
-        <div class="tab-slider"></div>
-        <button class="stack-tab active" data-bank="yns">渝农商行</button>
-        <button class="stack-tab" data-bank="601288">农业银行</button>
-        <button class="stack-tab" data-bank="600036">招商银行</button>
-        <button class="stack-tab" data-bank="600016">民生银行</button>
-        <button class="stack-tab" data-bank="01578">天津银行</button>
-    </div>
+    <!-- 银行切换器在顶部导航条的居中链接簇里（shareholder-switch.js 注入 .nav-center），切换后本页所有图表/文案随之整体切换 -->
 
     <!-- ══════════ 3 股东及股东变动 ══════════ -->
     <section id="sec-holders">
@@ -87,13 +61,16 @@
             数据来源：① 2019-10-29~2026-03-31 共 43 期 → 本行历年定期报告（年报/中报/季报）「股东情况」章节披露值；② 2017/2018 年末 H 股 2 期 → 03618 港股年报 p.85 / p.89（元数据 <code>data/tables/holder_count_hshare_2010_2018.json</code>）。
         </details>
         <div id="note-holder-count-g" class="note-generic" style="display:none"></div>
-        <h3 class="chart-title" style="margin-top:22px">历年股东持股集中度（2021-06 至今 · 按报告期）</h3>
-        <div id="chart-holder-concentration" class="chart" style="height:460px"></div>
+        <!-- 集中度序列只有渝农商行有（东财 F10 逐报告期回溯），切到对比银行时整块隐藏，
+             免得在别家银行的标题下留着渝农商行的曲线 -->
+        <div class="yns-only">
+            <h3 class="chart-title" style="margin-top:22px">历年股东持股集中度（2021-06 至今 · 按报告期）</h3>
+            <div id="chart-holder-concentration" class="chart" style="height:460px"></div>
+        </div>
         <details class="note yns-only">
             <summary>数据说明（点击展开）</summary>
             第一大股东（香港中央结算·代理人）持股比例长期稳定在 <b>22%</b> 上下——<b>该账户为 H 股名义持有人（HKSCC Nominees），代众多境外投资者集中登记持有 H 股，属代理人（名义持有）账户而非单一实益股东</b>，故其"第一大"占比虽高，并不代表股权集中于某一控股方；前三大股东合计（含渝富资本、城投集团）稳定在 <b>37.8%</b> 上下；前十大股东合计占比则从 2021 年的 <b>55%</b> 附近逐步走高至 2023 年报后的 <b>58%~59%</b>，对应地"其他流通股东"占比同步收窄，反映筹码持续向前十大机构股东集中。<b>2022-12-22</b> 一期为股权变动临时公告，未披露完整前十大名单，图中留空断线。数据来源：东方财富 F10「前十名股东」接口，按各报告期（年报/中报/季报）披露的前十大股东持股比例汇总计算。
         </details>
-        <div id="note-holder-concentration-g" class="note-generic" style="display:none"></div>
         <h3 class="chart-title" style="margin-top:22px">股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）</h3>
         <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
             <div style="flex:1;min-width:360px">

@@ -796,8 +796,9 @@ def api_company_charts():
     return jsonify(read_company_charts(request.args.get("code", "601077")))
 
 
-# 五家 A+H 上市险企，数据由 data/extract/fetch_insurer_financials.py 生成（A 股年报口径）
-INSURER_PEERS = ["601318", "601628", "601601", "601336", "601319"]
+# 六家上市险企，数据由 data/extract/fetch_insurer_financials.py 生成：前五家为 A+H 上市、取 A 股年报口径，
+# 中国太平（00966）仅在港交所上市，走港股 F10（金额已按年末汇率折人民币）
+INSURER_PEERS = ["601318", "601628", "601601", "601336", "601319", "00966"]
 
 
 def _insurer_path(code):
@@ -806,7 +807,7 @@ def _insurer_path(code):
 
 def read_insurer_annual(code):
     """单家险企历年财务数据，取 data/tables/insurer_<code>_annual.json。"""
-    if not re.fullmatch(r"[0-9]{6}", code):
+    if not re.fullmatch(r"[0-9]{5,6}", code):
         return {"code": 400, "msg": f"非法保险公司代码 {code}", "data": {}}
     path = _insurer_path(code)
     if not os.path.exists(path):

@@ -10,6 +10,22 @@
     - RPT_F10_EH_HOLDERS            前十名股东（含报告期内增减）
     - RPT_SHAREBONUS_DET            历年分红实施明细（每 10 股派现等）
 
+纯 H 股险企（中国太平 00966.HK，无 A 股上市）走港股 F10（datacenter.eastmoney.com/securities/api/data/v1/get）：
+    - RPT_HKF10_FN_MAININDICATOR    港股主要指标（年报 + 中期混排，需自行筛 12-31 行）
+      币种陷阱：行内 CURRENCY="HKD"、IS_CNY_CODE=0，但金额已按当年年末汇率折成人民币 ——
+      2025 年隐含 0.90322（年报 270.59 亿港元 → 接口 244.40 亿元）、2024 年 0.92600
+      （84.32 → 78.08；总资产 17,343.42 → 16,060.7），与年末 CNY/HKD 中间价吻合，
+      因此可与五家 A 股险企的人民币金额同图比较；但同比字段 *_YOY 是按港元原值算的（2025 年
+      +220.93% 对应港元口径），与折算后金额自算的同比不等，不要引用。
+      不提供净/总投资收益率、偿付能力充足率、新业务价值、退保率与投资资产明细科目。
+      RPT_HKF10_FN_INCOME / _BALANCE 为 STD_ITEM_CODE 长表（每个科目一行）需 pivot，科目与 A 股模板
+      不对应，暂未采用；_CASHFLOW 与保险专版（_INCOME_INSU/_BALANCE_INSU）接口不存在（code 9501）。
+      DPS_HKD 是快照字段（2000—2024 年逐行同为 1.58），不可当逐年股息序列。
+      已核验（2026-08-19，对照 2025 年度业绩公告与 2025 中期公告原文）：2025 年保险服务收入
+      1,122.67 亿港元、股东应占溢利 270.59 亿港元、EPS 7.251 港元、平均净资产 ROE 27.30%，
+      2024 年股东应占溢利 84.32 亿港元、总资产 17,343.42 亿港元、普通股股东应占权益 711.09 亿港元，
+      折算后与接口 earned_premium / parent_netprofit / eps / roe_weighted / total_assets / bps 一致。
+
 口径断点（画图/解读时必须标注，详见 data/tables/data_sources.txt）：
     - 2023 年起执行 IFRS17 新保险合同准则 + IFRS9 新金融工具准则：退保金、赔付支出、
       提取保险责任准备金、手续费及佣金支出、分保相关科目在 2022 年止；
@@ -64,6 +80,7 @@ RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "tables"
 
 API = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+API_HK = "https://datacenter.eastmoney.com/securities/api/data/v1/get"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
     "Referer": "https://data.eastmoney.com/",
@@ -77,6 +94,12 @@ INSURERS = {
     "601601": ("SH", "中国太保"),
     "601336": ("SH", "新华保险"),
     "601319": ("SH", "中国人保"),
+}
+
+# 纯 H 股上市险企：无 A 股年报，只能走港股 F10（RPT_HKF10_*）；年报以港元编制，
+# 但接口返回的金额已按各年年末汇率折成人民币（见 HK_MAIN_FIELDS 上方的币种陷阱说明）
+INSURERS_HK = {
+    "00966": ("HK", "中国太平"),
 }
 
 STATEMENTS = {
@@ -203,11 +226,42 @@ MAIN_FIELDS = {
     "total_share": "TOTAL_SHARE",                # 总股本
 }
 
+# 港股 F10 主要指标（RPT_HKF10_FN_MAININDICATOR）-> 与 A 股输出字段名对齐，便于同一张图共用 key。
+# 币种陷阱：行内 CURRENCY 写 "HKD"、IS_CNY_CODE 写 0，但金额其实已按当年年末汇率折成人民币
+# （2025 年隐含 0.90322、2024 年 0.92600，与年末 CNY/HKD 中间价一致，已用年报原文反推核验），
+# 所以可以直接与五家 A 股险企的人民币金额同图比较；而 *_YOY 同比字段是按港元原值算的，不要用。
+# 港股 F10 的利润表/资产负债表（RPT_HKF10_FN_INCOME/BALANCE）是 STD_ITEM_CODE 长表，
+# 需逐项 pivot 且科目名与 A 股模板不对应，暂不取；现金流量表与保险专版报表接口不存在（code 9501）。
+HK_MAIN_FIELDS = {
+    "operate_income": "OPERATE_INCOME",
+    "earned_premium": "PREMIUM_INCOME",      # 2023 起为 IFRS17 保险服务收入，此前为接口保费收入口径
+    "operate_profit": "OPERATE_PROFIT",
+    "total_profit": "PRETAX_PROFIT",
+    "parent_netprofit": "HOLDER_PROFIT",     # 股东应占溢利
+    "total_assets": "TOTAL_ASSETS",
+    "total_liabilities": "TOTAL_LIABILITIES",
+    "roe_weighted": "ROE_AVG",               # 港股 F10 为平均净资产 ROE，非 A 股「加权平均」算法
+    "roa": "ROA",
+    "net_margin": "NET_PROFIT_RATIO",
+    "debt_ratio": "DEBT_ASSET_RATIO",
+    "equity_multiplier": "EQUITY_MULTIPLIER",
+    "eps": "BASIC_EPS",
+    "bps": "BPS",                            # 对得上「普通股股东应占权益 ÷ 已发行股数」
+    "op_cf_per_share": "PER_NETCASH_OPERATE",
+    "netcash_operate": "NETCASH_OPERATE",
+    "netcash_invest": "NETCASH_INVEST",
+    "netcash_finance": "NETCASH_FINANCE",
+    "total_share": "ISSUED_COMMON_SHARES",
+}
+# 未采用：TOTAL_PARENT_EQUITY（2024 年折回港元为 870.7 亿，与年报「普通股股东应占权益」711.09 亿、
+# 「总权益」1,223 亿都对不上，口径不明）；DPS_HKD（快照值，2000—2024 年逐行同为 1.58）。
+
 
 def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
-                 page_size: int = 200, retries: int = 3, timeout: int = 60) -> dict:
+                 page_size: int = 200, retries: int = 3, timeout: int = 60,
+                 api: str = API) -> dict:
     url = "%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1&pageSize=%d" % (
-        API, report_name, urllib.parse.quote(filt), sort_col, page_size)
+        api, report_name, urllib.parse.quote(filt), sort_col, page_size)
     last_err: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
@@ -298,6 +352,11 @@ def build_insurer(code: str, refresh: bool) -> dict:
             rec["roa_avg"] = None
         prev_assets = ta
 
+        # 权益资产比：股东权益合计 ÷ 总资产（= 1 − 资产负债率 = 1/权益乘数），衡量财务杠杆。
+        # total_equity 含少数股东权益（非归母口径）；平安含平安银行，分母被银行资产抬高。
+        te = rec.get("total_equity")
+        rec["equity_asset_ratio"] = round(te / ta * 100, 4) if te and ta else None
+
     # 历年分红：按利润分配方案归属的报告年度（REPORT_DATE 年份）累加每 10 股派现（含税），
     # 同一年度可能有中期 + 末期两条记录，按年度合计。
     bonus_payload = cached("RPT_SHAREBONUS_DET", code, filt, refresh,
@@ -361,20 +420,78 @@ def build_insurer(code: str, refresh: bool) -> dict:
     }
 
 
+def build_insurer_hk(code: str, refresh: bool) -> dict:
+    """纯 H 股险企（中国太平 00966.HK）：走港股 F10 主要指标，金额已折人民币。"""
+    suffix, name = INSURERS_HK[code]
+    secucode = f"{code}.{suffix}"
+    filt = f'(SECUCODE="{secucode}")'
+    print(f"[fetch] {name} {secucode}（港股 F10，金额已按年末汇率折人民币）")
+
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    raw_path = RAW_DIR / f"em_RPT_HKF10_FN_MAININDICATOR_{code}.json"
+    if raw_path.exists() and not refresh:
+        payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    else:
+        print("    [http] RPT_HKF10_FN_MAININDICATOR")
+        payload = request_json("RPT_HKF10_FN_MAININDICATOR", filt, page_size=200, api=API_HK)
+        raw_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    # 接口把中期与年报混在一起返回（DATE_TYPE_CODE 作为查询参数无效），只保留 12-31 行
+    rows = annual_rows(payload)
+    annual = {y: pick(row, HK_MAIN_FIELDS) for y, row in rows.items()}
+
+    # 权益资产比：港股 F10 未采集股东权益，用（总资产 − 总负债）÷ 总资产 反推全口径权益占比，
+    # 与五家 A 股「total_equity ÷ total_assets」同义（total_equity = 总资产 − 总负债）。
+    for rec in annual.values():
+        ta, tl = rec.get("total_assets"), rec.get("total_liabilities")
+        rec["equity_asset_ratio"] = round((ta - tl) / ta * 100, 4) if ta and tl else None
+
+    return {
+        "code": code,
+        "secucode": secucode,
+        "name": name,
+        "currency": "CNY",
+        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数）。"
+                   "中国太平仅在港交所上市（00966.HK），无 A 股年报，因此不适用「A/H 都有时优先取 A 股」"
+                   "的取数规则；年报本身以港元编制，接口返回的金额已按各年年末汇率折成人民币"
+                   "（行内 CURRENCY 写 HKD、IS_CNY_CODE 写 0 是误标，2025 年隐含 0.90322、2024 年 0.92600，"
+                   "已用 2025 年报业绩公告原文反推核验）"),
+        "unit_note": "金额字段单位为人民币元（接口按当年年末汇率由港元折算）；比率字段单位为 %",
+        "caliber_note": ("金额已折成人民币，可与五家 A 股险企同图直接比大小；但每年用各自年末汇率折算，"
+                         "太平自身的同比含汇率漂移，利润按期末价而非平均价折算。"
+                         "2023 年起同步执行 IFRS17 + IFRS9，接口 2022 年行已是重述可比数："
+                         "营业收入 2021 年 2,582.5→2022 年 1,081.0 亿元、保险服务收入 2,146.6→972.8 亿元，"
+                         "落差是换口径不是业务下滑。"
+                         "港股 F10 主要指标不提供净/总投资收益率、综合偿付能力充足率、寿险新业务价值、"
+                         "寿险退保率与投资资产明细科目，这些图上没有太平序列；"
+                         "roe_weighted 取接口 ROE_AVG（平均净资产口径），与 A 股「加权平均 ROE」算法不完全一致。"
+                         "中国太平是控股集团，偿付能力按太平人寿/太平财险等境内子公司分别披露，集团层面无单一指标。"
+                         "接口 *_YOY 同比字段是按港元原值算的（2025 年 +220.93% 为港元口径），与折算后金额"
+                         "自算的同比不等，故未采集；DPS_HKD 字段为快照值（2000—2024 年各行同为 1.58），"
+                         "不能当逐年股息序列用，亦未采集。"),
+        "annual": annual,
+        "holders_end_date": None,
+        "holders": [],
+        "dividend_per10": {},
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("codes", nargs="*", default=[], help="股票代码，默认全部")
     ap.add_argument("--refresh", action="store_true", help="忽略缓存重新拉取")
     args = ap.parse_args()
 
-    codes = args.codes or list(INSURERS)
-    unknown = [c for c in codes if c not in INSURERS]
+    codes = args.codes or list(INSURERS) + list(INSURERS_HK)
+    unknown = [c for c in codes if c not in INSURERS and c not in INSURERS_HK]
     if unknown:
-        raise SystemExit(f"未知代码：{unknown}；已支持 {list(INSURERS)}")
+        raise SystemExit(f"未知代码：{unknown}；已支持 {list(INSURERS) + list(INSURERS_HK)}")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
-        data = build_insurer(code, args.refresh)
+        data = build_insurer_hk(code, args.refresh) if code in INSURERS_HK \
+            else build_insurer(code, args.refresh)
         out = OUT_DIR / f"insurer_{code}_annual.json"
         out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
         yrs = sorted(data["annual"])

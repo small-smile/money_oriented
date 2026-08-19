@@ -2,7 +2,7 @@
  "code": "601318",
  "secucode": "601318.SH",
  "name": "中国平安",
- "fetched_at": "2026-08-18 09:50 UTC",
+ "fetched_at": "2026-08-19 06:36 UTC",
  "source": "东方财富 F10 数据接口（各期 A 股年报合并数）。2025 年度已逐项对照五家 A 股年报原文核验：营业收入/保险服务收入/归母净利润/总资产/股东权益/偿付能力/投资收益率/新业务价值/ROE/EPS/BPS/员工数/总股本/退保率全部一致；2022 年（中国人寿含 2023 年）接口为新旧准则混排行，不可直接同比，详见 data/tables/data_sources.txt",
  "unit_note": "金额字段单位为元；比率字段单位为 %",
  "caliber_note": "2023 年起执行 IFRS17 + IFRS9：退保金/赔付支出/提取保险责任准备金/手续费及佣金支出/保险合同准备金等科目在 2022 年止；偿付能力充足率 2016 年切偿二代、2022 年切偿二代二期，前后不可比。2022 年是混排年：营业收入/保险服务收入/归母净利润/总资产/EPS/加权 ROE 已是后一年年报的新准则重述值，而同一行的退保金/赔付支出/手续费及佣金支出/保险合同准备金以及 main_earned_premium（已赚保费）/BPS 仍是旧准则原披露值。字段名沿用接口命名，earned_premium 在 2022 年起实为「保险服务收入」；total_equity 含少数股东权益（中国人保归母仅占 74%），solvency_ar 主体不一（平安/太保/人保为集团，新华为寿险本级），nbv_rate 口径不一（平安按标准保费、国寿仅个险渠道、人保不披露）",
@@ -113,7 +113,8 @@
    "total_share": 18107641995,
    "roi_spread": 0,
    "invest_asset_total": 151228000000,
-   "roa_avg": null
+   "roa_avg": null,
+   "equity_asset_ratio": 8.3451
   },
   "2004": {
    "operate_income": 67699000000,
@@ -221,7 +222,8 @@
    "total_share": 18107641995,
    "roi_spread": 3.6,
    "invest_asset_total": 198946000000,
-   "roa_avg": 1.2371
+   "roa_avg": 1.2371,
+   "equity_asset_ratio": 12.8173
   },
   "2005": {
    "operate_income": 67383647000,
@@ -329,7 +331,8 @@
    "total_share": 18107641995,
    "roi_spread": 4.2,
    "invest_asset_total": 253819452000,
-   "roa_avg": 1.2668
+   "roa_avg": 1.2668,
+   "equity_asset_ratio": 11.5198
   },
   "2006": {
    "operate_income": 107919000000,
@@ -437,7 +440,8 @@
    "total_share": 18107641995,
    "roi_spread": 0,
    "invest_asset_total": 335944000000,
-   "roa_avg": 1.9542
+   "roa_avg": 1.9542,
+   "equity_asset_ratio": 10.0642
   },
   "2007": {
    "operate_income": 165263000000,
@@ -545,7 +549,8 @@
    "total_share": 18107641995,
    "roi_spread": 9.6,
    "invest_asset_total": 439202000000,
-   "roa_avg": 2.7069
+   "roa_avg": 2.7069,
+   "equity_asset_ratio": 16.7681
   },
   "2008": {
    "operate_income": 108516000000,
@@ -653,7 +658,8 @@
    "total_share": 18107641995,
    "roi_spread": -5.8,
    "invest_asset_total": 466358000000,
-   "roa_avg": 0.2092
+   "roa_avg": 0.2092,
+   "equity_asset_ratio": 9.532
   },
   "2009": {
    "operate_income": 147835000000,
@@ -761,7 +767,8 @@
    "total_share": 18107641995,
    "roi_spread": 2.5,
    "invest_asset_total": 582568000000,
-   "roa_avg": 1.6928
+   "roa_avg": 1.6928,
+   "equity_asset_ratio": 9.8046
   },
   "2010": {
    "operate_income": 189439000000,
@@ -869,7 +876,8 @@
    "total_share": 18107641995,
    "roi_spread": 0.7,
    "invest_asset_total": 795245000000,
-   "roa_avg": 1.6429
+   "roa_avg": 1.6429,
+   "equity_asset_ratio": 9.9761
   },
   "2011": {
    "operate_income": 248915000000,
@@ -977,7 +985,8 @@
    "total_share": 18107641995,
    "roi_spread": -0.5,
    "invest_asset_total": 993348000000,
-   "roa_avg": 1.1267
+   "roa_avg": 1.1267,
+   "equity_asset_ratio": 7.4972
   },
   "2012": {
    "operate_income": 299372000000,
@@ -1085,7 +1094,8 @@
    "total_share": 18107641995,
    "roi_spread": -1.8,
    "invest_asset_total": 1132794000000,
-   "roa_avg": 0.7817
+   "roa_avg": 0.7817,
+   "equity_asset_ratio": 7.3709
   },
   "2013": {
    "operate_income": 362631000000,
@@ -1193,7 +1203,8 @@
    "total_share": 18107641995,
    "roi_spread": 0.0,
    "invest_asset_total": 1241915000000,
-   "roa_avg": 0.9075
+   "roa_avg": 0.9075,
+   "equity_asset_ratio": 7.1334
   },
   "2014": {
    "operate_income": 462882000000,
@@ -1301,7 +1312,8 @@
    "total_share": 18107641995,
    "roi_spread": -0.2,
    "invest_asset_total": 1425513000000,
-   "roa_avg": 1.0665
+   "roa_avg": 1.0665,
+   "equity_asset_ratio": 8.8323
   },
   "2015": {
    "operate_income": 619990000000,
@@ -1409,7 +1421,8 @@
    "total_share": 18107641995,
    "roi_spread": 2.0,
    "invest_asset_total": 1727613000000,
-   "roa_avg": 1.2359
+   "roa_avg": 1.2359,
+   "equity_asset_ratio": 8.6791
   },
   "2016": {
    "operate_income": 712453000000,
@@ -1517,7 +1530,8 @@
    "total_share": 18107641995,
    "roi_spread": null,
    "invest_asset_total": 1982219000000,
-   "roa_avg": 1.2066
+   "roa_avg": 1.2066,
+   "equity_asset_ratio": 8.7228
   },
   "2017": {
    "operate_income": 890882000000,
@@ -1625,7 +1639,8 @@
    "total_share": 18107641995,
    "roi_spread": 0.2,
    "invest_asset_total": 2447554000000,
-   "roa_avg": 1.4762
+   "roa_avg": 1.4762,
+   "equity_asset_ratio": 9.0545
   },
   "2018": {
    "operate_income": 976832000000,
@@ -1733,7 +1748,8 @@
    "total_share": 18107641995,
    "roi_spread": -1.5,
    "invest_asset_total": 3807347000000,
-   "roa_avg": 1.5753
+   "roa_avg": 1.5753,
+   "equity_asset_ratio": 9.5709
   },
   "2019": {
    "operate_income": 1168867000000,
@@ -1841,7 +1857,8 @@
    "total_share": 18107641995,
    "roi_spread": 1.7,
    "invest_asset_total": 4458060000000,
-   "roa_avg": 1.9447
+   "roa_avg": 1.9447,
+   "equity_asset_ratio": 10.3658
   },
   "2020": {
    "operate_income": 1218315000000,
@@ -1949,7 +1966,8 @@
    "total_share": 18107641995,
    "roi_spread": 1.1,
    "invest_asset_total": 5223457000000,
-   "roa_avg": 1.6123
+   "roa_avg": 1.6123,
+   "equity_asset_ratio": 10.3686
   },
   "2021": {
    "operate_income": 1180444000000,
@@ -2057,7 +2075,8 @@
    "total_share": 18107641995,
    "roi_spread": -0.6,
    "invest_asset_total": 5521136000000,
-   "roa_avg": 1.0332
+   "roa_avg": 1.0332,
+   "equity_asset_ratio": 10.6263
   },
   "2022": {
    "operate_income": 880355000000,
@@ -2165,7 +2184,8 @@
    "total_share": 18107641995,
    "roi_spread": -2.2,
    "invest_asset_total": 6220851000000,
-   "roa_avg": 1.0496
+   "roa_avg": 1.0496,
+   "equity_asset_ratio": 10.772
   },
   "2023": {
    "operate_income": 913789000000,
@@ -2273,7 +2293,8 @@
    "total_share": 18107641995,
    "roi_spread": -1.2,
    "invest_asset_total": 6590515000000,
-   "roa_avg": 0.7583
+   "roa_avg": 0.7583,
+   "equity_asset_ratio": 10.6097
   },
   "2024": {
    "operate_income": 1028925000000,
@@ -2381,7 +2402,8 @@
    "total_share": 18107641995,
    "roi_spread": null,
    "invest_asset_total": 7760917000000,
-   "roa_avg": 1.0318
+   "roa_avg": 1.0318,
+   "equity_asset_ratio": 10.0689
   },
   "2025": {
    "operate_income": 1050506000000,
@@ -2489,7 +2511,8 @@
    "total_share": 18107641995,
    "roi_spread": null,
    "invest_asset_total": 8479127000000,
-   "roa_avg": 1.0037
+   "roa_avg": 1.0037,
+   "equity_asset_ratio": 10.1881
   }
  },
  "holders_end_date": "2025-12-31",

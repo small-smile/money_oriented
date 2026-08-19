@@ -2,7 +2,8 @@
  "code": "601077",
  "secucode": "601077.SH",
  "name": "渝农商行",
- "fetched_at": "2026-08-14 15:22 UTC",
+ "tier": "农商行",
+ "fetched_at": "2026-08-19 09:05 UTC",
  "source": "东方财富 F10 数据接口（取值源自各期年度报告，合并口径）",
  "unit_note": "金额字段单位为元；比率字段单位为 %",
  "annual": {
@@ -72,7 +73,8 @@
    "loan_loss_allowance": null,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": null
   },
   "2006": {
    "interest_ni": null,
@@ -140,7 +142,8 @@
    "loan_loss_allowance": null,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": null
   },
   "2007": {
    "interest_ni": null,
@@ -208,7 +211,8 @@
    "loan_loss_allowance": 2832761100.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": null
   },
   "2008": {
    "interest_ni": null,
@@ -276,7 +280,8 @@
    "loan_loss_allowance": 5640702300.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": null
   },
   "2009": {
    "interest_ni": 5474455000,
@@ -344,7 +349,8 @@
    "loan_loss_allowance": 5005501000.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 4.4632
   },
   "2010": {
    "interest_ni": 7501768000,
@@ -412,7 +418,8 @@
    "loan_loss_allowance": null,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 7.8553
   },
   "2011": {
    "interest_ni": 10505018872,
@@ -483,7 +490,8 @@
    "loan_loss_allowance": null,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 8.1233
   },
   "2012": {
    "interest_ni": 13092194000,
@@ -554,7 +562,8 @@
    "loan_loss_allowance": null,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 7.3319
   },
   "2013": {
    "interest_ni": 15703193000,
@@ -625,7 +634,8 @@
    "loan_loss_allowance": 7100594000.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 7.2607
   },
   "2014": {
    "interest_ni": 18348716000,
@@ -696,7 +706,8 @@
    "loan_loss_allowance": 8676237300.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 6.8572
   },
   "2015": {
    "interest_ni": 20166479000,
@@ -767,7 +778,8 @@
    "loan_loss_allowance": 11042588700.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 6.6792
   },
   "2016": {
    "interest_ni": 19404719000,
@@ -838,7 +850,8 @@
    "loan_loss_allowance": 12307070100.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 6.696
   },
   "2017": {
    "interest_ni": 21500730000,
@@ -909,7 +922,8 @@
    "loan_loss_allowance": 14235232400.0,
    "net_charge_off": null,
    "npl_formation": null,
-   "npl_formation_rate": null
+   "npl_formation_rate": null,
+   "equity_asset_ratio": 7.1582
   },
   "2018": {
    "interest_ni": 20013921000,
@@ -980,7 +994,8 @@
    "loan_loss_allowance": 17133178770.0,
    "net_charge_off": 3291567630.0,
    "npl_formation": 4916867630.0,
-   "npl_formation_rate": 1.4532
+   "npl_formation_rate": 1.4532,
+   "equity_asset_ratio": 7.5469
   },
   "2019": {
    "interest_ni": 23373635000,
@@ -1051,7 +1066,8 @@
    "loan_loss_allowance": 20764545690.0,
    "net_charge_off": 2941276080.0,
    "npl_formation": 3474876080.0,
-   "npl_formation_rate": 0.9117
+   "npl_formation_rate": 0.9117,
+   "equity_asset_ratio": 8.6777
   },
   "2020": {
    "interest_ni": 24248870000,
@@ -1122,7 +1138,8 @@
    "loan_loss_allowance": 20928742450.0,
    "net_charge_off": 10044396240.0,
    "npl_formation": 11229596240.0,
-   "npl_formation_rate": 2.5692
+   "npl_formation_rate": 2.5692,
+   "equity_asset_ratio": 8.3308
   },
   "2021": {
    "interest_ni": 26234800000,
@@ -1193,7 +1210,8 @@
    "loan_loss_allowance": 24838930500.0,
    "net_charge_off": 6941947950.0,
    "npl_formation": 7597047950.0,
-   "npl_formation_rate": 1.4958
+   "npl_formation_rate": 1.4958,
+   "equity_asset_ratio": 8.3773
   },
   "2022": {
    "interest_ni": 25404238000,
@@ -1264,7 +1282,8 @@
    "loan_loss_allowance": 27605007100.0,
    "net_charge_off": 5074414400.0,
    "npl_formation": 5490714400.0,
-   "npl_formation_rate": 0.9432
+   "npl_formation_rate": 0.9432,
+   "equity_asset_ratio": 8.508
   },
   "2023": {
    "interest_ni": 23493109000,
@@ -1335,7 +1354,8 @@
    "loan_loss_allowance": 29553086400.0,
    "net_charge_off": 3993196700.0,
    "npl_formation": 4335896700.0,
-   "npl_formation_rate": 0.6853
+   "npl_formation_rate": 0.6853,
+   "equity_asset_ratio": 8.5701
   },
   "2024": {
    "interest_ni": 22494484000,
@@ -1406,7 +1426,8 @@
    "loan_loss_allowance": 30601284560.0,
    "net_charge_off": 4908711840.0,
    "npl_formation": 5269411840.0,
-   "npl_formation_rate": 0.7787
+   "npl_formation_rate": 0.7787,
+   "equity_asset_ratio": 8.8194
   },
   "2025": {
    "interest_ni": 24260650000,
@@ -1477,7 +1498,8 @@
    "loan_loss_allowance": 31545430440.0,
    "net_charge_off": 4499980120.0,
    "npl_formation": 4669480120.0,
-   "npl_formation_rate": 0.6537
+   "npl_formation_rate": 0.6537,
+   "equity_asset_ratio": 8.3624
   }
  },
  "holders_end_date": "2025-12-31",
