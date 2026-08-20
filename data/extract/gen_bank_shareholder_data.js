@@ -1,13 +1,16 @@
-/* 一次性抽取：把 shareholder-switch.js 里内置的 4 家对比银行（农业/招商/民生/天津）
+/* 【已完成的一次性 codemod，不可再运行，仅作迁移留痕】
+ *
+ * 当初的作用：把 shareholder-switch.js 里内置的 4 家对比银行（农业/招商/民生/天津）
  * 股东页数据，从 JS 字面量导出为 data/tables/company_charts_<code>.json，
  * 供 /api/company_charts?code=<code> 动态下发（与渝农商行 601077 走同一端点）。
- *
  * 与 transform_charts.js 一致的思路：对源文件做文本切片 + 沙箱 eval，
- * 不手工重录数值，避免抄写误差。属迁移用的 codemod：
- * 迁移后 company_charts_<code>.json 即为对比行数据的权威来源，
- * shareholder-switch.js 不再内置 BANKS。
+ * 不手工重录数值，避免抄写误差。
  *
- * 用法：node data/extract/gen_bank_shareholder_data.js
+ * 为什么不能再跑：输入文件 dashboard/company/bank/shareholder-switch.js 已随
+ * 「银行切换器上移到导航栏」一并删除（切换改为 bank-header.js 的下拉框 + ?code= 重载），
+ * 其中的 `var BANKS = {};` 数据块更早就已清空。现在执行只会在 readFileSync/切片处报错。
+ * 需要看原始字面量请查 git 历史（该文件在 main 分支的提交里）。
+ * 迁移后的权威来源就是 data/tables/company_charts_<code>.json 本身。
  */
 const fs = require('fs');
 const path = require('path');

@@ -25,6 +25,36 @@
             border-left: 5px solid #1f2937;
             padding-left: 12px;
         }
+        /* h2 右侧的产业链方向提示 */
+        h2 .hint {
+            font-size: 17px;
+            font-weight: 400;
+            color: #9ca3af;
+            margin-left: 12px;
+        }
+        /* 板块下方的传导链条说明：只在有上下游关系的板块出现 */
+        .flow {
+            max-width: 1200px;
+            margin: 0 auto 16px;
+            padding-left: 17px;
+            font-size: 17px;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+        .flow code {
+            background: #eef2f7;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #334155;
+        }
+        /* 卡片在链条中的位置标记（上游 / 下游） */
+        .card .pos {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
         h3 {
             max-width: 1200px;
             margin: 24px auto 14px;
@@ -111,29 +141,46 @@
         .tag-company { background: #d6eaf8; color: #1a5276; }
         .tag-bank { background: #e8daef; color: #6c3483; }
         .tag-insurance { background: #d1f2eb; color: #0e6655; }
+        .tag-realestate { background: #fde2e4; color: #9d174d; }
+        .tag-cement { background: #e2e8f0; color: #334155; }
     </style>
 </head>
 <body>
 <h1>📊 行业数据看板</h1>
 
+<h2>建筑产业链<span class="hint">上游 → 下游</span></h2>
+<div class="flow">
+    <code>水泥（上游）</code> → 发货当期确认收入 → <code>地产（下游）</code> → 竣工结转后确认收入。
+    水泥的营收拐点<b>领先</b>开发商约 2 年，两页对着看能分辨「需求真的在跌」还是「只是结算时滞」。
+</div>
 <div class="grid">
     <div class="card">
-        <span class="tag tag-price">石油</span>
-        <span class="title">石油</span>
-        <span class="desc">量价 · 产量 · 消费 · 储量 · 油企盈利</span>
+        <span class="tag tag-cement">水泥</span>
+        <span class="title">水泥<span class="pos">　上游</span></span>
+        <span class="desc">八家水泥企业名录 · 供给侧政策线 · 净现金分化与吨毛利代理指标</span>
         <div class="links">
             <span class="grp">行业</span>
-            <a href="industry/oil/price_history.html">历史量价 K 线</a>
-            <a href="industry/oil/region_production.html">产量总览 1965-2024</a>
-            <a href="industry/oil/country_consumption.html">消费总览 1965-2024</a>
-            <a href="industry/oil/country_change_2001_2024.html">各洲产量 2001 vs 2024</a>
-            <span class="grp">公司</span>
-            <a href="industry/oil/china_oil_majors.html">中石油 / 中海油 证实储量</a>
-            <a href="industry/oil/cnooc_roa_oil.html">中海油 油价 vs 单期 ROA</a>
-            <a href="company/oil/petro_income_waterfall.html">中石油 2025 利润→营收 瀑布</a>
+            <a href="industry/cement/overview.html">水泥名录 + 供给侧政策线（2009–2025）</a>
+            <a href="industry/cement/peers.html">八家水泥企业对比（营收 / 毛利率 / 净现金 / 赊销 / 分红）</a>
+            <span class="todo">单家水泥企业详情页（待建设）</span>
         </div>
     </div>
 
+    <div class="card">
+        <span class="tag tag-realestate">地产</span>
+        <span class="title">地产<span class="pos">　下游</span></span>
+        <span class="desc">六家头部央企开发商名录 · 政策线 · 历年财务与三道红线横向对比</span>
+        <div class="links">
+            <span class="grp">行业</span>
+            <a href="industry/realestate/overview.html">央企地产名录 + 政策线（2019–2025）</a>
+            <a href="industry/realestate/peers.html">六家央企开发商对比（营收 / 毛利率 / 三道红线 / 蓄水池 / 分红）</a>
+            <span class="todo">单家开发商详情页（待建设）</span>
+        </div>
+    </div>
+</div>
+
+<h2>金融<span class="hint">为上下游提供杠杆</span></h2>
+<div class="grid">
     <div class="card">
         <span class="tag tag-bank">银行</span>
         <span class="title">银行</span>
@@ -165,7 +212,34 @@
             <span class="todo">单家险企详情页（待建设）</span>
         </div>
     </div>
+</div>
 
+<h2>能源<span class="hint">全行业的成本项</span></h2>
+<div class="flow">
+    煤炭与电力占水泥吨成本的五到六成，油价则决定运输与化工成本——
+    <code>能源</code>是读上面所有板块毛利率时的共同外生变量。
+</div>
+<div class="grid">
+    <div class="card">
+        <span class="tag tag-price">石油</span>
+        <span class="title">石油</span>
+        <span class="desc">量价 · 产量 · 消费 · 储量 · 油企盈利</span>
+        <div class="links">
+            <span class="grp">行业</span>
+            <a href="industry/oil/price_history.html">历史量价 K 线</a>
+            <a href="industry/oil/region_production.html">产量总览 1965-2024</a>
+            <a href="industry/oil/country_consumption.html">消费总览 1965-2024</a>
+            <a href="industry/oil/country_change_2001_2024.html">各洲产量 2001 vs 2024</a>
+            <span class="grp">公司</span>
+            <a href="industry/oil/china_oil_majors.html">中石油 / 中海油 证实储量</a>
+            <a href="industry/oil/cnooc_roa_oil.html">中海油 油价 vs 单期 ROA</a>
+            <a href="company/oil/petro_income_waterfall.html">中石油 2025 利润→营收 瀑布</a>
+        </div>
+    </div>
+</div>
+
+<h2>消费</h2>
+<div class="grid">
     <div class="card">
         <span class="tag tag-consumption">食品</span>
         <span class="title">食品</span>

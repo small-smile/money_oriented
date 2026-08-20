@@ -106,42 +106,116 @@ body {
     visibility: hidden;
 }
 
-/* 银行切换器（股东页，shareholder-switch.js 注入）：跟着页面链接一起放在居中的 .nav-center 里，
+/* 银行切换器（bank-header.js 注入，7 个银行页共用）：跟着页面链接一起放在居中的 .nav-center 里，
  * 左侧用竖线与页面链接分隔。
  * 为什么不靠右单独成组：上面那套「链接真正居中」靠的是右侧隐藏镜像抵消左侧 brand，
- * 若右侧换成 ~500px 的银行按钮组，要让链接仍居中就得在左侧再留同宽占位，
- * 1440 视口下总宽需 ~1780px，导航条必然横向溢出。放进同一居中簇里两边仍对称。
+ * 若右侧换成一大组银行控件，要让链接仍居中就得在左侧再留同宽占位，
+ * 1440 视口下必然横向溢出。放进同一居中簇里两边仍对称。
+ * 触发按钮 + 下拉面板：按钮常驻导航条（固定宽度，加行不变宽），点击展开一个按机构类型
+ * （国有大行/股份行/城商行/农商行）分列的面板，参考各国石油产量堆叠图右侧 HTML 悬浮图例
+ * （region_production.html 的 .stack-legend/.cl-col），布局与配色改用导航条深色调。
  */
 .site-nav .nav-banks {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     margin-left: 12px;
     padding-left: 12px;
     border-left: 2px solid #4b5563;
 }
-/* 与页面链接（.site-nav a）同一套尺寸，但选中态用实心黄底区分：
- * 页面链接的 active 是「当前所在页」，银行按钮的 active 是「当前所选银行」，
- * 两者同处一条导航，颜色相同会分不清。 */
-.site-nav .nav-bank {
+.site-nav .nav-banks > label {
+    font-size: 18px;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+/* 触发按钮：黄底与页面链接的 active（当前所在页）区分开，这里的黄色表示「当前所选银行」 */
+.site-nav .nav-bank-trigger {
     font: inherit;
     font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    background: #fbbf24;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.site-nav .nav-bank-trigger:hover { background: #fcd34d; }
+.site-nav .nav-bank-trigger:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.site-nav .nav-bank-trigger .caret { font-size: 13px; opacity: 0.7; }
+
+/* 下拉面板：按机构类型分列，每列内银行名纵向排开，点击任一项即换 ?code= 整页刷新。
+ * position: fixed + 挂在 <body> 下（不放在 .site-nav 里）：导航条自己是
+ * overflow-x: auto 的滚动容器，绝对定位的子元素会被它整块裁掉，面板根本画不出来。
+ * 具体 top/left 由 bank-header.js 的 place() 按触发按钮的位置算，并夹在视口内。
+ * 现在数据文件已有 40+ 家银行，城商行/农商行单列会长过一屏，所以：
+ *   1) 面板整体限高到视口内（超出才滚动，正常情况下不该出现滚动条）；
+ *   2) 每个机构类型内部再按高度折成若干子列（.bg-items 纵向 wrap，
+ *      height/width 由 layoutBankColumns() 按可用高度算出），
+ *      同 region_production.html 图例的 layoutLegendColumns() 思路。
+ */
+.nav-bank-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    padding: 14px 18px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 72px);
+    overflow: auto;
+    background: #1f2937;
+    border: 1px solid #4b5563;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.nav-bank-panel[hidden] { display: none; }
+.nav-bank-col { display: flex; flex-direction: column; gap: 2px; min-width: 116px; }
+/* 子列容器：纵向排列、超过 bank-header.js 设的 height 就折到右边新起一子列。
+ * 这里必须由 JS 给出确定的 height——只给 max-height 时 Chrome 不会触发纵向 wrap，
+ * 银行名会直接溢出到面板外。 */
+.nav-bank-col .bg-items {
+    display: flex;
+    flex-flow: column wrap;
+    align-content: flex-start;
+    gap: 2px 10px;
+}
+.nav-bank-col .bg-items > .bg-item { flex: 0 0 auto; width: 116px; }
+.nav-bank-col .bg-head {
+    font-size: 15px;
+    font-weight: 600;
+    color: #9ca3af;
+    white-space: nowrap;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+}
+.nav-bank-col .bg-item {
+    font: inherit;
+    font-size: 17px;
     color: #d1d5db;
     background: transparent;
     border: none;
-    border-radius: 4px;
-    padding: 7px 12px;
-    white-space: nowrap;
+    border-radius: 6px;
+    text-align: left;
+    padding: 6px 8px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
 }
-.site-nav .nav-bank:hover { background: #374151; color: #fff; }
-.site-nav .nav-bank.active {
-    background: #fbbf24;
-    color: #1f2937;
-    font-weight: 600;
-    cursor: default;
-}
+/* 上市日期：行名下方一行小号灰字，active 时也压暗一档以免盖过行名 */
+.nav-bank-col .bg-item .bg-date { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+.nav-bank-col .bg-item:hover { background: #374151; color: #fff; }
+.nav-bank-col .bg-item.active { background: #fbbf24; color: #1f2937; font-weight: 600; }
+.nav-bank-col .bg-item.active .bg-date { color: #6b5a12; }
+
 
 /* 图表卡片：白底 + 圆角 + 柔和投影，所有页面统一
  * 取自 region_production.html 的 .card，页面里只写各自的宽度/边距/布局，
@@ -169,6 +243,19 @@ body {
     font-weight: 400;
     color: #666;
     margin-top: 2px;
+}
+
+/* 该行没有这项数据时的占位（charts.js 的 __stub()）：图位保留、原地贴一句说明，
+ * 不把整块删掉——否则切行时页面长度忽长忽短，同一标题下会突然什么都没有。
+ * 高度沿用容器 style="height:xxx" 里的内联值；居中由 __stub 写的内层
+ * .chart-nodata 负责（脚本里带内联样式兜底），这里只补虚线框与淡背景。
+ */
+.chart-empty {
+    min-height: 120px;
+    background: #fafafa;
+    border: 1px dashed #d8d8d8;
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
 /* 常见的加载/错误提示样式，去掉每个页面重复的 #loading / #error-msg 定义 */

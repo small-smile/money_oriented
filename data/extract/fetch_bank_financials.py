@@ -8,6 +8,7 @@
     - RPT_F10_FINANCE_MAINFINADATA  主要指标（含银行专项：存贷款总额、不良率、
                                     资本充足率、核心一级、一级、NIM/NIS、拨备覆盖率、拨贷比等）
     - RPT_F10_EH_HOLDERS            前十名股东（含报告期内增减）
+    - RPT_F10_EH_HOLDERNUM          历年股东户数（股东总数，少数期次含 A/H 拆分）
     - RPT_SHAREBONUS_DET            历年分红实施明细（每 10 股派现等）
 
 纯 H 股上市银行（江西银行 01916.HK，无 A 股上市）走港股 F10
@@ -66,23 +67,45 @@ BANKS = {
     "601939": ("SH", "建设银行", "国有大行"),
     "601328": ("SH", "交通银行", "国有大行"),
     "601658": ("SH", "邮储银行", "国有大行"),
-    # 股份行代表
+    # 股份行（全部9家A股上市）
     "600036": ("SH", "招商银行", "股份行"),
     "601166": ("SH", "兴业银行", "股份行"),
     "600000": ("SH", "浦发银行", "股份行"),
     "601998": ("SH", "中信银行", "股份行"),
     "600016": ("SH", "民生银行", "股份行"),
     "000001": ("SZ", "平安银行", "股份行"),
-    # 城商行代表
+    "600015": ("SH", "华夏银行", "股份行"),
+    "601818": ("SH", "光大银行", "股份行"),
+    "601916": ("SH", "浙商银行", "股份行"),
+    # 城商行（全部17家A股上市）
     "601169": ("SH", "北京银行", "城商行"),
     "601229": ("SH", "上海银行", "城商行"),
     "600919": ("SH", "江苏银行", "城商行"),
     "002142": ("SZ", "宁波银行", "城商行"),
-    # 农商行代表
+    "601009": ("SH", "南京银行", "城商行"),
+    "601838": ("SH", "成都银行", "城商行"),
+    "600926": ("SH", "杭州银行", "城商行"),
+    "601187": ("SH", "厦门银行", "城商行"),
+    "002936": ("SZ", "郑州银行", "城商行"),
+    "002948": ("SZ", "青岛银行", "城商行"),
+    "601577": ("SH", "长沙银行", "城商行"),
+    "002966": ("SZ", "苏州银行", "城商行"),
+    "601963": ("SH", "重庆银行", "城商行"),
+    "601665": ("SH", "齐鲁银行", "城商行"),
+    "601997": ("SH", "贵阳银行", "城商行"),
+    "600928": ("SH", "西安银行", "城商行"),
+    "001227": ("SZ", "兰州银行", "城商行"),
+    # 农商行（全部10家A股上市）
     "601077": ("SH", "渝农商行", "农商行"),
     "601825": ("SH", "沪农商行", "农商行"),
     "601128": ("SH", "常熟银行", "农商行"),
     "002958": ("SZ", "青农商行", "农商行"),
+    "600908": ("SH", "无锡银行", "农商行"),
+    "002807": ("SZ", "江阴银行", "农商行"),
+    "601860": ("SH", "紫金银行", "农商行"),
+    "002839": ("SZ", "张家港行", "农商行"),
+    "601528": ("SH", "瑞丰银行", "农商行"),
+    "603323": ("SH", "苏农银行", "农商行"),
 }
 
 # 纯 H 股上市银行：无 A 股年报，A 股 F10 模板（RPT_F10_FINANCE_B*）查不到，只能走港股 F10
@@ -90,10 +113,11 @@ BANKS = {
 # 但输出的 source/caliber_note 必须写明数据来自 H 股年报。
 BANKS_HK = {
     "01916": ("HK", "江西银行", "城商行"),
+    "01578": ("HK", "天津银行", "城商行"),
 }
 
 # 港股 F10 主要指标（RPT_HKF10_FN_MAININDICATOR）-> 与 A 股输出字段名对齐，便于同图共用 key。
-# 江西银行年报以人民币编制，接口金额即人民币原值（CURRENCY 写 HKD 是误标），可与 A 股行直接比。
+# 这两家行年报均以人民币编制，接口金额即人民币原值（CURRENCY 写 HKD 是误标），可与 A 股行直接比。
 # 只取年报正文摘要表里没有、或与年报口径一致的字段；重叠字段以年报覆盖层为准（见 build_bank_hk）。
 HK_MAIN_FIELDS = {
     "interest_ni": "NET_INTEREST_INCOME",
@@ -110,7 +134,7 @@ HK_MAIN_FIELDS = {
     "netcash_finance": "NETCASH_FINANCE",
     "op_cf_per_share": "PER_NETCASH_OPERATE",
     "basic_eps": "BASIC_EPS",
-    "total_share": "ISSUED_COMMON_SHARES",    # 各年回填当前股数，2015—2017 由年报覆盖层纠正
+    "total_share": "ISSUED_COMMON_SHARES",    # 各年回填当前股数，上市前各年由年报覆盖层纠正
 }
 # 未采用：*_YOY / *_QOQ（同比口径与年报自算不一致）、PE_TTM/PB_TTM/TOTAL_MARKET_CAP（时点估值，
 # 非年报数）、DPS_HKD（快照值，2015—2024 各行同为 0.0807219）、LOAN_DEPOSIT（2025 年 96.61%，
@@ -140,6 +164,7 @@ INCOME_FIELDS = {
     "parent_netprofit": "PARENT_NETPROFIT",
     "minority_interest": "MINORITY_INTEREST",
     "basic_eps": "BASIC_EPS",
+    "oci": "OTHER_COMPRE_INCOME",
     "opinion_type": "OPINION_TYPE",
 }
 
@@ -203,11 +228,11 @@ MAIN_FIELDS = {
 }
 
 
-def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
-                 page_size: int = 200, retries: int = 3, timeout: int = 60,
-                 api: str = API) -> dict:
-    url = "%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1&pageSize=%d" % (
-        api, report_name, urllib.parse.quote(filt), sort_col, page_size)
+def request_page(report_name: str, filt: str, sort_col: str, page_size: int,
+                 page_number: int, retries: int, timeout: int, api: str) -> dict:
+    url = ("%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1"
+           "&pageSize=%d&pageNumber=%d") % (
+        api, report_name, urllib.parse.quote(filt), sort_col, page_size, page_number)
     last_err: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
@@ -223,6 +248,26 @@ def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
             print(f"    [retry {attempt}/{retries}] {e}; sleep {wait}s", file=sys.stderr)
             time.sleep(wait)
     raise RuntimeError(f"{report_name} failed after {retries} attempts: {last_err}")
+
+
+def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
+                 page_size: int = 200, retries: int = 3, timeout: int = 60,
+                 api: str = API) -> dict:
+    """取全量结果：count > pageSize 时整包重取，不要翻页。
+
+    只取首页会把最旧的报告期静默丢掉 —— 601077 的 RPT_F10_EH_HOLDERS count=315，
+    首页 200 行只覆盖 2021-06 起 21 期，2008—2021Q1 共 11 期被吞掉，
+    历年持股集中度图因此从 2021 年才开始。
+    而 pageNumber 翻页也不可靠：排序键只有 END_DATE，同一报告期内 10 行次序不稳定，
+    跨页边界会重复几行、漏掉几行（2021-06-30 曾出现 rank 3/4/5 各两遍、8/9/10 缺失）。
+    因此发现 count 超出时改为一次性 pageSize=count 重取。
+    """
+    payload = request_page(report_name, filt, sort_col, page_size, 1, retries, timeout, api)
+    result = payload.get("result") or {}
+    count = result.get("count") or 0
+    if count > len(result.get("data") or []):
+        payload = request_page(report_name, filt, sort_col, count, 1, retries, timeout, api)
+    return payload
 
 
 def cached(report_name: str, code: str, filt: str, refresh: bool, **kw) -> dict:
@@ -249,6 +294,88 @@ def annual_rows(payload: dict) -> dict[str, dict]:
 
 def pick(row: dict, mapping: dict[str, str]) -> dict:
     return {k: row.get(v) for k, v in mapping.items()}
+
+
+def build_holder_num(rows: list[dict]) -> list[list]:
+    """逐披露期的股东户数 -> [披露日, 股东总数, A 股股东数, H 股股东数]（升序）。
+
+    口径：HOLDER_TOTAL_NUM 是该期定期报告披露的股东总数（A 股上市公司口径，A+H 行含 H 股
+    登记股东）；HOLDER_A_NUM / HOLDER_H_NUM 只有少数期次拆分披露，其余为 None，前端留空断线。
+    表里还混着上市首日等非报告期快照（601077 2019-10-29 的 948,725 户），保留——那正是打新
+    账户尚未离场的峰值，是户数曲线最有信息量的一个点。
+    """
+    out: dict[str, list] = {}
+    for r in rows:
+        date = (r.get("END_DATE") or "")[:10]
+        total = r.get("HOLDER_TOTAL_NUM")
+        if not date or total is None:
+            continue
+        out[date] = [date, int(total),
+                     int(r["HOLDER_A_NUM"]) if r.get("HOLDER_A_NUM") else None,
+                     int(r["HOLDER_H_NUM"]) if r.get("HOLDER_H_NUM") else None]
+    return [out[d] for d in sorted(out)]
+
+
+def build_concentration(holder_rows: list[dict]) -> list[dict]:
+    """按报告期汇总第一大 / 前三大 / 前十大股东持股比例（占总股本 %）。
+
+    口径陷阱（都在真实数据里踩到过，改动前先看这几条）：
+      · IS_REPORT="0" 的行是事件型快照（如 601077 2022-12-22 过户日只有 4 行），
+        算不出前十大合计，整期剔除。
+      · HOLDER_RANK 会重复：同一股东被按股份类型拆成两行时共用一个名次
+        （601398 名次 [1,1,3..10]、600036 三行同为 10），所以先按股东名称合并比例，
+        再取最大 / 前三 / 全部之和，不能直接按名次取。
+      · 少数期次接口漏掉了压倒性的第一大股东（已核对：601988 2007-09-30 缺中央汇金
+        67.49%，前十大只剩 29.7%，而相邻期为 96%+；601328 2007-09-30 缺 HKSCC 代理人，
+        前十大 62.01% vs 前后 72%）。判据不能用"离群值"——601328 2010-06-30 的 67.02%
+        是真实的股权结构变化。这里用"前后两期都在、持股 ≥5% 的股东本期整个消失，
+        且本期前十大合计比前后两期都低了该股东权重的一半以上"定位缺行期，整期跳过
+        （连线断开而不是插值）。后半个条件同时放过了改名期：汇金在 F10 里从"汇金公司"
+        改称"中央汇金投资有限责任公司"，按名称比对会误判成"股东消失"，但合计没塌。
+    """
+    by_date: dict[str, dict[str, float]] = {}
+    for r in holder_rows:
+        if (r.get("IS_REPORT") or "") != "1":
+            continue
+        rank = r.get("HOLDER_RANK")
+        if rank is None or rank > 10:
+            continue
+        date = (r.get("END_DATE") or "")[:10]
+        name = (r.get("HOLDER_NAME") or "").strip()
+        if not date or not name:
+            continue
+        agg = by_date.setdefault(date, {})
+        agg[name] = round(agg.get(name, 0.0) + (r.get("HOLD_NUM_RATIO") or 0.0), 6)
+
+    dates = sorted(by_date)
+    # 前十大不齐（不足 10 行 rank≤10）的期次直接不出点，避免合计偏低
+    ok = [d for d in dates if len(by_date[d]) and sum(1 for r in holder_rows
+          if (r.get("END_DATE") or "")[:10] == d and (r.get("IS_REPORT") or "") == "1"
+          and (r.get("HOLDER_RANK") or 99) <= 10) >= 10]
+
+    out: list[dict] = []
+    for i, d in enumerate(ok):
+        agg = by_date[d]
+        prev = by_date.get(ok[i - 1]) if i > 0 else None
+        nxt = by_date.get(ok[i + 1]) if i + 1 < len(ok) else None
+        if prev and nxt:
+            big = {n for n, v in prev.items() if v >= 5} & {n for n, v in nxt.items() if v >= 5}
+            gone = big - set(agg)
+            if gone:
+                weight = max(min(prev[n], nxt[n]) for n in gone)
+                near = min(sum(prev.values()), sum(nxt.values()))
+                if sum(agg.values()) <= near - weight / 2:
+                    continue    # 大股东缺行且合计跟着塌下来 —— 接口丢数据，整期跳过
+        vals = sorted(agg.values(), reverse=True)
+        top1_name = max(agg, key=lambda n: agg[n])
+        out.append({
+            "date": d,
+            "top1": round(vals[0], 2),
+            "top3": round(sum(vals[:3]), 2),
+            "top10": round(sum(vals), 2),
+            "top1_name": top1_name,
+        })
+    return out
 
 
 def build_bank(code: str, refresh: bool) -> dict:
@@ -367,6 +494,11 @@ def build_bank(code: str, refresh: bool) -> dict:
     ]
     holders.sort(key=lambda h: h["rank"] or 99)
 
+    # 历年股东户数（F10 只给股东总数，A/H 拆分多数期次为空）
+    holdernum_payload = cached("RPT_F10_EH_HOLDERNUM", code, filt, refresh,
+                               sort_col="END_DATE", page_size=200)
+    holder_num = build_holder_num((holdernum_payload.get("result") or {}).get("data") or [])
+
     return {
         "code": code,
         "secucode": secucode,
@@ -378,6 +510,10 @@ def build_bank(code: str, refresh: bool) -> dict:
         "annual": annual,
         "holders_end_date": latest_end,
         "holders": holders,
+        # 逐报告期的持股集中度（第一大/前三大/前十大），供股东页集中度图使用
+        "holder_concentration": build_concentration(holder_rows),
+        # 逐披露期的股东户数，供股东页股东户数图使用（无手工年报覆盖层的行走这份）
+        "holder_num": holder_num,
         "dividend_per10": dividend_per10,
     }
 
@@ -400,7 +536,7 @@ def load_ar_manual(code: str) -> dict:
 
 
 def build_bank_hk(code: str, refresh: bool) -> dict:
-    """纯 H 股上市银行（江西银行 01916.HK）：港股 F10 主要指标 + 年报手工提取覆盖层。"""
+    """纯 H 股上市银行（江西银行 01916.HK、天津银行 01578.HK）：港股 F10 主要指标 + 年报手工提取覆盖层。"""
     suffix, name, tier = BANKS_HK[code]
     secucode = f"{code}.{suffix}"
     filt = f'(SECURITY_CODE="{code}")'
@@ -411,15 +547,16 @@ def build_bank_hk(code: str, refresh: bool) -> dict:
     annual = {y: pick(row, HK_MAIN_FIELDS) for y, row in annual_rows(payload).items()}
 
     # 年报值优先覆盖接口值：重叠字段（总资产/负债/归母权益/利息净收入…）以年报原文为准，
-    # 且能纠正 total_share 在 2015—2017 上市前被回填成当前股数的问题。
+    # 且能纠正 total_share 在上市前各年被回填成当前股数的问题。
     manual = load_ar_manual(code)
     for y, rec in manual["annual"].items():
         annual.setdefault(y, {}).update(rec)
 
     for y in sorted(annual):
         rec = annual[y]
-        # 江西银行利润表科目 2015—2025 全期为「资产减值损失」，从未改写成「信用减值损失」
+        # 减值科目跨年换名（资产减值损失 / 信用减值损失）由覆盖层给出，缺的一侧补 None 占位
         rec.setdefault("credit_impairment", None)
+        rec.setdefault("asset_impairment", None)
         tp, np_, pnp = rec.get("total_profit"), rec.get("netprofit"), rec.get("parent_netprofit")
         rec["income_tax"] = round(tp - np_, 2) if tp is not None and np_ is not None else None
         rec["minority_interest"] = round(np_ - pnp, 2) if np_ is not None and pnp is not None else None
@@ -463,27 +600,13 @@ def build_bank_hk(code: str, refresh: bool) -> dict:
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "source": ("① 东方财富港股 F10 主要指标 RPT_HKF10_FN_MAININDICATOR（各期年报数）提供"
-                   "现金流量、营业利润、每股经营现金流；② 其余字段（含全部银行监管指标）取自 "
-                   "江西银行历年 H 股年度报告原文，见 data/tables/bank_01916_ar_manual.json。"
-                   "江西银行 2018-06-26 仅在港交所上市（01916.HK），无 A 股年报，因此不适用"
+                   "现金流量、营业利润、每股经营现金流；② 其余字段（含全部银行监管指标）取自"
+                   f"{name}历年 H 股年度报告原文，见 data/tables/bank_{code}_ar_manual.json。"
+                   f"{name}仅在港交所上市（{secucode}），无 A 股年报，因此不适用"
                    "「A/H 都有时优先取 A 股年报」的取数规则——本行序列全部为 H 股年报来源。"),
         "unit_note": "金额字段单位为元；比率字段单位为 %（ltd_ratio 为小数，与 A 股各行一致）",
-        "caliber_note": (
-            "年报以人民币编制（港股 F10 行内 CURRENCY 写 HKD、IS_CNY_CODE 写 0 是误标，接口金额"
-            "即人民币原值，已用 2024 年总资产 573,634.75 百万元反推核验），可与 19 家 A 股行同图直接比大小。"
-            "2015/2016 两年无独立年报，比率与规模取自 2018 年报第三章五年对比列，该表不披露贷款总额、"
-            "不良余额、逾期与减值准备明细，这些字段留空，不做反推。"
-            "gross_loans 全期为「不含应计利息」口径（应计利息单列），比 A 股几家行 2019 含、2025 不含的"
-            "跨年跳档更干净；total_deposits 取吸收存款（年报不单列存款总额，存贷比即按此分母披露）。"
-            "loan_loss_allowance 为含 FVOCI 部分的合计（撥備覆蓋率/貸款撥備率 的披露分子），"
-            "loan_allowance_amortized 另列摊余成本部分。"
-            "不良生成率（npl_formation_rate）用年报实测核销：期末不良 − 期初不良 + 核销 + 转出，"
-            "除以期初贷款总额，与 A 股各行「反推核销」的近似口径不同，跨行比较时需注意；"
-            "2023—2025 年报不再单列「转出」（只给一条「其他」），这三年的分子少了转出部分、略偏低。"
-            "IFRS 9 自 2018 年起执行且未重述可比期，2017 及以前为 IAS 39 口径，跨 2017/2018 的"
-            "减值准备与减值损失不完全可比。"
-            "staff_num 在 2018—2024 为「本行正式在岗员工」，2025 年报改为「本集团」口径，跨年有台阶。"
-            "港股 F10 不提供 nsfr 以外的监管指标补充，净稳定资金比例仅 2018/2020/2022 年报披露。"),
+        # 各行口径说明写在自己的 bank_<code>_ar_manual.json 里，跟数据同源同版本
+        "caliber_note": doc.get("caliber_note"),
         "annual": annual,
         "holders_end_date": doc.get("holders_end_date"),
         "holders": doc.get("holders", []),

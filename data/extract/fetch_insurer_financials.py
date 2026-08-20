@@ -30,7 +30,8 @@
     - 2023 年起执行 IFRS17 新保险合同准则 + IFRS9 新金融工具准则：退保金、赔付支出、
       提取保险责任准备金、手续费及佣金支出、分保相关科目在 2022 年止；
       「保险合同负债」未进入本模板的资产负债表字段，2023 年起负债只能看 TOTAL_LIABILITIES。
-    - 2022 年（中国人寿含 2023 年）是接口的新旧准则混排年：合计项与每股指标已被后一年年报的
+    - 2022 年是接口的新旧准则混排年（中国人寿晚一年，自 2024-01-01 起执行新准则，其混排年为 2023 年）：
+      合计项与每股指标已被后一年年报的
       重述可比数覆盖（operate_income / earned_premium / parent_netprofit / total_assets /
       eps / roe_weighted），而同一行的明细科目仍是当年旧准则原披露值
       （surrender_value 退保金、compensate_expense 赔付支出、fee_commission_expense
@@ -45,14 +46,37 @@
       赔付支出 282,122、手续费及佣金支出 70,354 与 2022 年报原文一致。
       同期 extract_insurance_reserve=78,000,000 也不是年报的「提取保险责任准备金」262,301 百万元，
       而是紧邻一行的「提取保费准备金」(78) 百万元，不可当准备金提取额使用。
+      国寿的 2023 混排行同理：bps 16.28、total_roi 2.68、extract_insurance_reserve 407,211 百万元
+      是旧准则原披露值（2021 447,296 → 2022 461,204 → 2023 407,211 连续，属真实披露而非错行，故保留），
+      而金额与 eps/roe_weighted 已是 2024 年报重述数。
     - 2018 年起金融资产三分类：可供出售/持有至到期被债权投资、其他债权投资、其他权益投资替代。
     - 偿付能力充足率 2016 年切换偿二代、2022 年切换偿二代二期，前后不可直接比较。
-    - 中国平安合并平安银行，资产负债表出现吸收存款/发放贷款，总资产与 ROA 不宜与纯保险公司直接对比。
+    - 中国平安合并平安银行，资产负债表出现吸收存款/发放贷款，总资产与 ROA 不宜与纯保险公司直接对比；
+      invest_asset_total 同理为集团合并数（含银行/信托/证券/理财资产），与四家纯保险集团不可比。
+
+接口取值缺陷与修补（均对照年报原文，代码见 ZERO_AS_MISSING / BAD_VALUES / ANNUAL_OVERRIDES / patch_annual）：
+    - 当年未披露的比率字段接口填 0（平安 solvency_ar 2003—2007、国寿 net_roi 2003—2010、
+      太保 net_roi 2004—2008、人保 2007 全套比率等），直接入图会画出真实的 0 线，统一改判缺失。
+      派生的 roi_spread 因此也不再出现 −15.2 这类假值。
+    - MAINFINADATA.TOTAL_SHARE 是当前总股本快照逐年重复填充，不是各年年末股数；
+      按年算每股指标要用资产负债表的 share_capital。
+    - 国寿 2005 行 netprofit ≠ 利润总额 − 所得税（差 58 百万元）：2005 年 CAS 利润表版式为
+      「利润总额 − 所得税 − 少数股东收益 = 净利润」，接口把归母数填进 NETPROFIT 又漏抓少数股东收益，
+      已按 2006 年 A 股年报的 2005 比较列补正 netprofit / minority_interest / main_liability。
+    - 中国太平（港股 F10）金额取自后一年年报重列列、比率取自当年原披露值，2008 等 9 个年度两者矛盾，
+      debt_ratio / equity_multiplier 一律按金额重算，原披露值记入输出的 vintage_note。
+    - 中国人保 2025 年报 PDF（data/raw/annual_601319_2025.pdf）的数字被 suwell 转换器矢量化成
+      Form XObject 轮廓，文本层无任何数字，任何抽取器都拿不到；核验请用重建的
+      data/raw/annual_601319_2025.ocr.txt，不要再重下 PDF（东财与 picc.com 副本字节相同，H 股版同样坏）。
 
 已核验（2026-08-18，对照 data/raw/annual_<code>_2025.txt，按章节语义通读而非 grep）：
     五家 2025 年度的营业收入/保险服务收入/归母净利润/总资产/股东权益合计/综合偿付能力充足率/
     净与总投资收益率/新业务价值/新业务价值率/加权 ROE/EPS/BPS/员工数/总股本/退保率共 84 项，
     与 A 股年报原文逐项一致，无数值偏差；中国人保 nbv_rate 为空经确认系年报确未披露价值率。
+    新华 2008—2010 偿付能力充足率 27.74 / 36.19 / 34.99（新华人寿本级、偿一代）已用 2011 年
+    招股说明书（data/raw/prospectus_601336_2011.pdf 第 1-1-325 页）核验，2010 年另由 2011 年年报
+    附注 73(2)(d) 双源确认；三年均低于 100% 监管线，2011-03-30 保监会批复的 140 亿元增资后
+    当年末回升至 155.95%。2005—2007 年公司未披露偿付能力，留空。
 
 输出：
     data/raw/em_<reportName>_<code>.json       原始响应（缓存；--refresh 重新拉取）
@@ -257,6 +281,59 @@ HK_MAIN_FIELDS = {
 # 「总权益」1,223 亿都对不上，口径不明）；DPS_HKD（快照值，2000—2024 年逐行同为 1.58）。
 
 
+# ── 接口缺陷修补（全部经年报原文核验，见 data/tables/data_sources.txt） ──
+
+# 接口对「当年未披露」的比率字段填 0 而不是 null，直接入图会画出一条真实的 0 线
+# （平安 solvency_ar 2003—2007、国寿 net_roi 2003—2010、太保 net_roi 2004—2008、
+#  人保 2007 全套比率等，均系公司当年尚未上市/未披露该指标）。统一按缺失处理。
+ZERO_AS_MISSING = {
+    "total_roi", "net_roi", "solvency_ar", "surrender_rate_life",
+    "nbv_life", "nbv_rate", "roe_weighted", "basic_eps", "eps", "op_cf_per_share",
+}
+
+# 接口取值错行/残留，年报原文无对应数，置空而非沿用（否则每次重抓又会写回）：
+#   平安 2022 年 extract_insurance_reserve=78,000,000 取的是紧邻一行的「提取保费准备金」(78) 百万元，
+#          年报「提取保险责任准备金」实为 262,301 百万元；2023 年 230,000,000 是同一模板的残留值，
+#          该年已执行 IFRS17，年报不再有此科目。
+#   注：国寿 2023 年 extract_insurance_reserve=407,211 百万元是旧准则真实披露值
+#      （2021 447,296 → 2022 461,204 → 2023 407,211 连续），属混排年而非错行，保留。
+#   人保 2007 年 net_roi=15.2：净投资收益率（不含公允价值变动）不可能到 15%，
+#          当年 invest_income 66.8 亿元 ÷ 总资产 1,471.4 亿元 ≈ 4.5%；人保集团 2012-12 才在港交所上市，
+#          2007 年不存在可核验的年报，且该行前后 2009—2014 年 net_roi 全为空，是无源孤点。
+#          按招行 2017 年孤点的处理办法置空（宁缺勿错），序列从 2015 年起连续可比。
+BAD_VALUES: dict[tuple[str, str], tuple[str, ...]] = {
+    ("601318", "2022"): ("extract_insurance_reserve",),
+    ("601318", "2023"): ("extract_insurance_reserve",),
+    ("601319", "2007"): ("net_roi",),
+}
+
+# 单年份字段级修正，(代码, 年份) -> {字段: (值, 依据)}
+ANNUAL_OVERRIDES: dict[tuple[str, str], dict[str, tuple[float, str]]] = {
+    # 2005 年 CAS 利润表版式为「利润总额 − 所得税 − 少数股东收益 = 净利润」，那一版的「净利润」
+    # 已是归母数，接口把它填进 NETPROFIT 又漏抓 MINORITY_INTEREST，导致
+    # netprofit ≠ total_profit − income_tax（差 58 百万元 = 1.06%）。
+    # 依据：2006 年 A 股年报「2006 年度利润表」2005 年比较列（利润总额 5,760 / 所得税 246 /
+    # 少数股东收益 58 / 净利润 5,456），H 股 2005 年报 HKFRS 表少数股东损益 59 亦同量级。
+    ("601628", "2005"): {
+        "netprofit": (5_514_000_000, "2006 年 A 股年报 2005 比较列：5,760 − 246"),
+        "minority_interest": (58_000_000, "2006 年 A 股年报 2005 比较列「减：少数股东收益」"),
+        "main_liability": (458_432_000_000, "2006 年 A 股年报 2005 比较列「负债合计」"),
+    },
+}
+
+
+def patch_annual(code: str, annual: dict[str, dict]) -> None:
+    """把接口的 0 填充、错行值、缺失值就地修补成可入图的口径。"""
+    for year, rec in annual.items():
+        for field in ZERO_AS_MISSING:
+            if rec.get(field) == 0:
+                rec[field] = None
+        for field in BAD_VALUES.get((code, year), ()):
+            rec[field] = None
+        for field, (value, _src) in ANNUAL_OVERRIDES.get((code, year), {}).items():
+            rec[field] = value
+
+
 def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
                  page_size: int = 200, retries: int = 3, timeout: int = 60,
                  api: str = API) -> dict:
@@ -323,6 +400,8 @@ def build_insurer(code: str, refresh: bool) -> dict:
             if row:
                 rec.update(pick(row, fields))
         annual[y] = rec
+
+    patch_annual(code, annual)
 
     # ── 派生指标 ──
     prev_assets: float | None = None
@@ -400,8 +479,13 @@ def build_insurer(code: str, refresh: bool) -> dict:
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "source": ("东方财富 F10 数据接口（各期 A 股年报合并数）。2025 年度已逐项对照五家 A 股年报"
                    "原文核验：营业收入/保险服务收入/归母净利润/总资产/股东权益/偿付能力/投资收益率/"
-                   "新业务价值/ROE/EPS/BPS/员工数/总股本/退保率全部一致；2022 年（中国人寿含 2023 年）"
-                   "接口为新旧准则混排行，不可直接同比，详见 data/tables/data_sources.txt"),
+                   "新业务价值/ROE/EPS/BPS/员工数/总股本/退保率全部一致；2022 年（中国人寿为 2023 年）"
+                   "接口为新旧准则混排行，不可直接同比，详见 data/tables/data_sources.txt。"
+                   "接口取值缺陷已就地修补（见本脚本 ZERO_AS_MISSING / BAD_VALUES / ANNUAL_OVERRIDES）："
+                   "未披露比率的 0 填充改判缺失、平安 2022/2023 提取保险责任准备金错行值置空、"
+                   "国寿 2005 净利润/少数股东收益/负债合计按 2006 年 A 股年报比较列补正；"
+                   "新华 2008—2010 偿付能力已用 2011 年招股说明书（data/raw/prospectus_601336_2011.pdf）"
+                   "与 2011 年年报核验，2005—2007 年公司未披露、留空"),
         "unit_note": "金额字段单位为元；比率字段单位为 %",
         "caliber_note": ("2023 年起执行 IFRS17 + IFRS9：退保金/赔付支出/提取保险责任准备金/"
                          "手续费及佣金支出/保险合同准备金等科目在 2022 年止；"
@@ -409,10 +493,20 @@ def build_insurer(code: str, refresh: bool) -> dict:
                          "2022 年是混排年：营业收入/保险服务收入/归母净利润/总资产/EPS/加权 ROE "
                          "已是后一年年报的新准则重述值，而同一行的退保金/赔付支出/"
                          "手续费及佣金支出/保险合同准备金以及 main_earned_premium（已赚保费）/BPS "
-                         "仍是旧准则原披露值。字段名沿用接口命名，earned_premium 在 2022 年起"
+                         "仍是旧准则原披露值。中国人寿自 2024-01-01 起才执行新准则，其混排年是 2023 年"
+                         "（2023 行的金额与 EPS/ROE 为 2024 年报重述数，而 bps 16.28、total_roi 2.68、"
+                         "extract_insurance_reserve 407,211 百万元仍是旧准则原披露值），画准则断点须单独标 2024。"
+                         "字段名沿用接口命名，earned_premium 在 2022 年起"
                          "实为「保险服务收入」；total_equity 含少数股东权益（中国人保归母仅占 74%），"
                          "solvency_ar 主体不一（平安/太保/人保为集团，新华为寿险本级），"
-                         "nbv_rate 口径不一（平安按标准保费、国寿仅个险渠道、人保不披露）"),
+                         "nbv_rate 口径不一（平安按标准保费、国寿仅个险渠道、人保不披露）。"
+                         "total_share 取自 MAINFINADATA.TOTAL_SHARE，是当前总股本快照被逐年重复填充，"
+                         "不是各年年末股数；要按年算每股指标请用资产负债表的 share_capital，"
+                         "或直接用接口已给的 eps/bps/op_cf_per_share。"
+                         "invest_asset_total 是本脚本按资产科目自加的「可投资资产」，"
+                         "与年报管理口径的「投资资产」不等；中国平安为集团合并数（含平安银行/信托/"
+                         "证券/理财的资产），与四家纯保险集团不可比，图上须单独标注。"
+                         "未披露年份的比率字段接口填 0，本脚本已统一改判为缺失（null），不画 0 线。"),
         "annual": annual,
         "holders_end_date": latest_end,
         "holders": holders,
@@ -446,6 +540,36 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
         ta, tl = rec.get("total_assets"), rec.get("total_liabilities")
         rec["equity_asset_ratio"] = round((ta - tl) / ta * 100, 4) if ta and tl else None
 
+    # 版本混排修补：接口的金额字段取自后一年年报的重列比较列，而比率字段取自当年年报的原披露值，
+    # 遇到重大追溯重列的年份两者就互相矛盾（2008 年 debt_ratio 91.04% 是原披露
+    # 73,576,142/80,815,389，而同一行的 total_assets/total_liabilities 已是 2009 年报重列的
+    # 88,017,055/75,866,531 → 86.20%，且与本函数自算的 equity_asset_ratio 13.80% 无法自洽）。
+    # 重列原因：财政部 2009 年《保险合同相关会计处理的规定》分拆混合合同 + 同一控制下收购民安控股
+    # 追溯合并，已对照 2008/2009 两份 H 股年报（data/raw/annual_00966_2008.pdf、_2009.pdf）核验。
+    # 处理：负债率与权益乘数一律按存量金额（= equity_asset_ratio 的同一口径）重算，不做阈值判断——
+    # 否则阈值以下的年份（如 2013 年差 0.42pp）会留下 debt_ratio + equity_asset_ratio ≠ 100 的自相矛盾，
+    # 整条序列变成两种口径混排。原披露值与差额记入 vintage_note 备查（仅列差 > 0.05pp 的年份）。
+    # 注意：equity_asset_ratio 是本函数用同一对金额自算的，因此它与重算后的 debt_ratio 相加恒为 100，
+    # 这只是自洽，不构成对重列金额的独立验证；独立验证只有 2008 年做过（两份年报原文）。
+    # roe_weighted/roa/net_margin/op_cf_per_share 仍是原披露口径（缺重列净利润与权益，无法重算）。
+    vintage_mixed: dict[str, str] = {}
+    for y, rec in annual.items():
+        ta, tl = rec.get("total_assets"), rec.get("total_liabilities")
+        if not ta or not tl:
+            continue
+        recalc = round(tl / ta * 100, 4)
+        old, old_em = rec.get("debt_ratio"), rec.get("equity_multiplier")
+        rec["debt_ratio"] = recalc
+        rec["equity_multiplier"] = round(ta / (ta - tl), 6)
+        if old is None or abs(old - recalc) <= 0.05:
+            continue
+        vintage_mixed[y] = (
+            f"金额与 eps 为后一年年报重列数，接口比率为当年年报原披露数；"
+            f"debt_ratio 已按重列金额重算 {recalc}%（原披露 {old}%，差 {round(old - recalc, 4)}pp）、"
+            f"equity_multiplier 重算 {rec['equity_multiplier']}（原披露 {old_em}）；"
+            f"roe_weighted/roa/net_margin/op_cf_per_share 仍为原披露口径，不可与本行金额互推"
+        )
+
     return {
         "code": code,
         "secucode": secucode,
@@ -469,8 +593,13 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
                          "中国太平是控股集团，偿付能力按太平人寿/太平财险等境内子公司分别披露，集团层面无单一指标。"
                          "接口 *_YOY 同比字段是按港元原值算的（2025 年 +220.93% 为港元口径），与折算后金额"
                          "自算的同比不等，故未采集；DPS_HKD 字段为快照值（2000—2024 年各行同为 1.58），"
-                         "不能当逐年股息序列用，亦未采集。"),
+                         "不能当逐年股息序列用，亦未采集。"
+                         "total_share 是当前已发行股数快照（各年同为 3,594,018,538 股），bps 亦按该股数"
+                         "反算（= 母公司权益 ÷ 当前股数），与年报披露的当年每股净资产不等，只可看趋势；"
+                         "eps 是按当年加权股数算的，可与年报对上。"
+                         "vintage_note 列出的年份存在「金额=重列 / 比率=原披露」混排，见该字段说明。"),
         "annual": annual,
+        "vintage_note": vintage_mixed,
         "holders_end_date": None,
         "holders": [],
         "dividend_per10": {},

@@ -4,10 +4,11 @@
  * 本文件不绑定具体银行：银行代码取自地址栏 ?code=（缺省 601077 渝农商行），
  * 图表数据向 /api/company_charts?code=<code> 拉，页面标题/H1 由返回的 _bank 元信息拼出。 */
 
-/* 当前页的银行代码。只认 5~6 位数字（A 股 6 位 / H 股 5 位），非法值退回默认值，
- * 免得把地址栏里的任意字符串直接拼进请求 URL。bank-header.js 里有一份同样的解析，
- * 用于给导航链接带上 ?code=——两处都只有三行，比为此多加一个公共文件更省事。 */
+/* 当前页的银行代码。由后端动态渲染时（/dashboard/company/bank/*.html）已在 <head> 里注入，
+ * 直接沿用；静态打开（file://）时退回解析地址栏 ?code=。只认 5~6 位数字（A 股 6 位 / H 股 5 位），
+ * 非法值退回默认值，免得把地址栏里的任意字符串直接拼进请求 URL。 */
 window.COMPANY_CODE = (function () {
+    if (/^[0-9]{5,6}$/.test(window.COMPANY_CODE || '')) return window.COMPANY_CODE;
     var raw = new URLSearchParams(location.search).get('code') || '';
     return /^[0-9]{5,6}$/.test(raw) ? raw : '601077';
 })();
@@ -22,7 +23,9 @@ window.__applyBankIdentity = function (D) {
     var h1 = document.querySelector('.page-head h1[data-page]');
     var tail = b.reportYear + ' 年报 · ' + (h1 ? h1.getAttribute('data-page') : '');
     if (h1) h1.textContent = b.fullName + '（' + b.shortName + '）' + tail;
-    document.title = b.shortName + '（' + b.aCode + (b.hCode ? ' / ' + b.hCode : '') + '）' + tail;
+    // 纯 H 股行（如天津银行 01578）没有 A 股代码，只列 H 股代码，别留下「（ / 01578）」
+    var codes = [b.aCode, b.hCode].filter(function (c) { return c; }).join(' / ');
+    document.title = b.shortName + (codes ? '（' + codes + '）' : '') + tail;
 };
 
 function initChart(id) {
@@ -32,8 +35,296 @@ function initChart(id) {
     return echarts.getInstanceByDom(el) || echarts.init(el);
 }
 
+/* ────── 跨行通用：本文件原本是渝农商行专用，换行后要容忍数据缺口 ────── */
+
+// 全空的系列不进 legend 也不画：同业对比图里只有部分行有数据时，图例不该列出空线
+function live(series) {
+    return series.filter(s => Array.isArray(s.data) && s.data.some(v => v != null));
+}
+
+// 同业对比虚线：农业/招商/邮储四行颜色相近，交叉处只靠图例辨不清是哪条，
+// 用 endLabel 在每条线右端直接贴行名，扫一眼即可对上。self 线自带逐点数值标签，不用它。
+function peerLine(name, data, color) {
+    return { name: name, type: 'line', data: data, smooth: true, connectNulls: true, symbolSize: 6,
+             lineStyle: { width: 3, color: color, type: 'dashed' }, itemStyle: { color: color },
+             endLabel: { show: true, formatter: '{a}', fontSize: 15, color: color, distance: 4 } };
+}
+
+// 固定 y 轴上限是照渝农商行量级定的，别的行超出时按最大值放宽一成，避免线被截掉
+function axMax(fixed) {
+    let m = 0;
+    for (let i = 1; i < arguments.length; i++) {
+        (arguments[i] || []).forEach(v => { if (v != null && v > m) m = v; });
+    }
+    return m > fixed ? Math.ceil(m * 1.1 * 10) / 10 : fixed;
+}
+
+// 该行没有这项数据时：图位保留，贴占位说明。先销毁可能已存在的 echarts 实例，
+// 再摘掉 id —— 让 initChart 和各 render 函数的 DOM 守卫自动跳过这张图，避免占位被空图覆盖。
+// 占位文案用内联样式兜底，base.css 里即使没有 .chart-nodata 也能居中显示。
+function __stub(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    try { var inst = echarts.getInstanceByDom(el); if (inst) inst.dispose(); } catch (e) {}
+    el.removeAttribute('id');
+    el.className = 'chart-empty';
+    el.innerHTML = '<div class="chart-nodata" style="display:flex;align-items:center;' +
+        'justify-content:center;height:100%;min-height:120px;color:#999;font-size:18px;">' +
+        '该行暂无此项数据</div>';
+}
+
+// 整页兜底：后端 404 / 拉取失败时，把当前页所有图容器都换成占位说明，页面结构不崩。
+function stubAll() {
+    document.querySelectorAll('[id^="chart-"]').forEach(function (el) { __stub(el.id); });
+}
+
+// 缺失的 key 用它顶上：renderAll 里 D['x'].years 这类解构不会抛异常打断后面所有图
+const EMPTY_D = new Proxy({}, { get: function () { return []; } });
+
+/* 按数据取「整」的坐标轴区间：各行量级差几个数量级（H 股股东数渝农商 ~1.4 千户、招行 ~7 万户；
+ * 总股本渝农商 113 亿股、工行 3564 亿股），写死 min/max 只能合一家。
+ * 区间/5 向上取到 1/2/5×10ⁿ 作步长，再把上下界对齐到步长（渝农商 H 股股东仍得 1000–1500 步长 100）。
+ * pad 为额外留白的步长数：折线贴着上下边框时给一格喘息（默认 0，轴上下正好贴住数据）。 */
+function niceAxis(vals, pad) {
+    const v = (vals || []).filter(x => x != null);
+    if (!v.length) return {};
+    const lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
+    const span = (hi - lo) || hi || 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(span / 5)));
+    const step = [1, 2, 5, 10].find(m => m * mag >= span / 5) * mag;
+    const p = (pad || 0) * step;
+    // 步长为 0.02/0.2 这类小数时，min/max 直接算会带出浮点尾巴（15.860000000000001、
+    // 60.00000000000001），ECharts 会把它原样印成刻度标签、还会多出一根重复刻度，按步长精度收一下
+    const dec = Math.min(10, Math.max(0, -Math.floor(Math.log10(step))) + 2);
+    const rnd = x => Number(x.toFixed(dec));
+    return { min: rnd(Math.floor(lo / step) * step - p), max: rnd(Math.ceil(hi / step) * step + p),
+             interval: rnd(step) };
+}
+
+/* payload key → 用到它的图容器 id。缺 key 时把这些图位换成占位说明。
+ * 一个 key 供多张图（如 scale-dep 同时喂规模与资产质量五张图），故为数组。 */
+const KEY_DOM = {
+    'perf': ['chart-perf'],
+    'roe': ['chart-roe'],
+    'scale-dep': ['chart-scale-dep', 'chart-scale-loan', 'chart-npl', 'chart-overdue',
+                  'chart-writeoff-rate', 'chart-npl-formation', 'chart-quality'],
+    'nim-trend': ['chart-nim-trend', 'chart-costincome', 'chart-creditcost',
+                  'chart-provision'],
+    'writeoff': ['chart-writeoff'],
+    'creditamount': ['chart-creditamount'],
+    'oci': ['chart-oci'],
+    'pershare': ['chart-pershare'],
+    'dividend-per10': ['chart-dividend-per10'],
+    'holder-count': ['chart-holder-count'],
+    'share-capital': ['chart-share-capital'],
+    'complaint': ['chart-complaint'],
+    'invest': ['chart-invest'],
+    'fvtpl-mix': ['chart-fvtpl-mix'],
+    'fvlevel': ['chart-fvlevel'],
+    'staff': ['chart-staff'],
+    'loanmix-bal': ['chart-loanmix-bal', 'chart-loanmix-yld'],
+    'depterm': ['chart-depterm'],
+    'depcost': ['chart-depcost', 'chart-demandratio'],
+    'repricing': ['chart-repricing'],
+    'loantrend': ['chart-loantrend'],
+    'perloan-bal': ['chart-perloan-bal', 'chart-perloan-npl'],
+    'holders': ['chart-holders', 'chart-holders-bar'],
+    'holders-h': ['chart-holders-h'],
+    'holders-h-only': ['chart-holders-h-only'],
+    // 三张柱图共用 holder-concentration（A 股定期报告口径）；港交所 H 股年报口径走
+    // holder-concentration-hist，在同一张图里作为单独的 series 披露，不另占图位，
+    // 所以不进 KEY_DOM——上面的空载荷占位循环对这个 key 有特例（纯 H 股行只有 hist）
+    'holder-concentration': ['chart-conc-top1', 'chart-conc-top3', 'chart-conc-top10'],
+    'seg-rev': ['chart-seg-rev'],
+    'geo': ['chart-geo'],
+    'loan-industry': ['chart-loan-industry'],
+    '5tier': ['chart-5tier'],
+    'migrate': ['chart-migrate', 'chart-migrate-normal'],
+    'nim': ['chart-nim'],
+    'bs-trend': ['chart-bs-trend'],
+    'bs': ['chart-bs'],
+    'cf': ['chart-cf'],
+    'staff-role': ['chart-staff-role'],
+    'staff-edu': ['chart-staff-edu'],
+    'staff-age': ['chart-staff-age'],
+    'chairman-pay': ['chart-chairman-pay'],
+    'maturity': ['chart-maturity'],
+    'equity-asset': ['chart-equity-asset']
+};
+
+/* ────── 1.1b 加权平均 ROE（2009 年起，2018 年新准则切换断口） ──────
+ * 定义在 renderAll 外面：业绩页 ROE 图上方有一排「快速切换银行」按钮，点击时拿别家银行的
+ * payload 只重画这一张图（不整页重载），所以渲染逻辑必须能被独立调用。入参只用到 D['roe']。 */
+window.__renderRoe = function (D) {
+    const R = (D && D['roe']) || {};
+    const years = R.years || [];
+    // 2009–2013 简单 ROE = 归母净利润 / 平均归母权益（年报未披露加权平均值）
+    // 2009 年净利润 18.88 亿、期末权益 94.77 亿：取自 2010 年 H 股招股章程 Appendix IB 会计师报告（hkexnews.hk），2008 年期末权益 78.92 亿同源
+    // 2010 年 12 月 H 股上市募资致权益年内跳升，简单平均偏低；2011–2013 无重大增发，近似加权
+    const roeCalc = R.roeCalc || [];
+    // 旧准则「加权平均股东权益回报率」(年报披露)，2014–2018
+    const roeOld = R.roeOld || [];
+    // 新准则「加权平均净资产收益率」(年报披露)，自 2018 年首次执行新金融工具准则起
+    const roeNew = R.roeNew || [];
+    // 只有渝农商行手工补了 2009–2013 的简单 ROE，其余行该段全空——用 live() 把空系列连图例一起摘掉，
+    // 免得快速切换到别家行时图例里挂着一条画不出来的线
+    const roeSeries = live([
+        { name: '简单ROE（净利/平均权益）', type: 'line', data: roeCalc, symbolSize: 6,
+          lineStyle: { width: 2.5, color: '#af7ac5', type: 'dotted' }, itemStyle: { color: '#af7ac5' },
+          label: { show: true, position: 'top', fontSize: 16, color: '#af7ac5', formatter: '{c}%' } },
+        { name: 'ROE（旧准则·年报）', type: 'line', data: roeOld, symbolSize: 6,
+          lineStyle: { width: 3, color: '#6c3483', type: 'dashed' }, itemStyle: { color: '#6c3483' },
+          label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } },
+        { name: 'ROE（新准则·年报）', type: 'line', data: roeNew, symbolSize: 6,
+          lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
+          areaStyle: { color: 'rgba(108,52,131,0.08)' },
+          label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } }
+    ]);
+    initChart('chart-roe')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
+            formatter: p => {
+                let s = `<b>${p[0].axisValue} 年</b>`;
+                p.forEach(x => { if (x.value != null) s += `<br>${x.marker}${x.seriesName}：${x.value}%`; });
+                return s;
+            } },
+        legend: { data: roeSeries.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 56, right: 24, top: 36, bottom: 68 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: roeSeries
+    }, true);   // notMerge —— 切行时年份跨度/系列长度不同，避免残留上一行的点
+};
+
+/* ────── 1.1c ROE 一键对比：所有可切换银行画在同一张图上 ──────
+ * 入参 items = [{ code, name, roe }]，roe 即各行 payload 里的 D['roe']。
+ * 每行只画一条线：同一年若新旧准则都披露（2018 年）取新准则，早年缺披露值时退到简单 ROE，
+ * 因为十家行叠在一起时再分三段口径会有三十条线，图上根本读不出来；口径拼接在图下说明里写清。 */
+/* 银行数量已到 13 家且还会加，凑不出这么多一眼可分的颜色：用 7 色 × 实线/虚线两轮 = 14 条可辨曲线，
+ * 图例本身带线型，所以第二轮的虚线在图例里也认得出是哪家 */
+window.__ROE_CMP_COLORS = ['#6c3483', '#c0392b', '#1f77b4', '#e67e22', '#16a085', '#2c3e50', '#d81b60'];
+window.__renderRoeCompare = function (items) {
+    // 各行年份跨度不同（渝农商行自 2009，多数行自 2014/2018），取并集做横轴，缺的年份留 null 断开
+    const years = Array.from(new Set(items.reduce(
+        (acc, it) => acc.concat((it.roe && it.roe.years) || []), []))).sort();
+    const series = items.map(function (it, i) {
+        const R = it.roe || {};
+        const yy = R.years || [];
+        const at = function (arr, y) {
+            const k = yy.indexOf(y);
+            return (k < 0 || !arr) ? null : (arr[k] == null ? null : arr[k]);
+        };
+        const data = years.map(function (y) {
+            const v = at(R.roeNew, y);
+            if (v != null) return v;
+            const o = at(R.roeOld, y);
+            return o != null ? o : at(R.roeCalc, y);
+        });
+        const self = it.code === window.COMPANY_CODE;
+        const P = window.__ROE_CMP_COLORS;
+        const color = P[i % P.length];
+        const dashed = i >= P.length;   // 第二轮改虚线，避免与第一轮同色的行混淆
+        return {
+            name: it.name, type: 'line', data: data, connectNulls: false,
+            symbolSize: self ? 7 : 5, z: self ? 9 : 2,
+            lineStyle: { width: self ? 4.5 : 2, color: color, type: dashed ? 'dashed' : 'solid' },
+            itemStyle: { color: color },
+            // 十条线叠在一起时点上数字会糊成一片，数值看 tooltip；只给本页银行留末端标注
+            endLabel: self ? { show: true, fontSize: 16, color: color, formatter: '{c}%' } : { show: false },
+            emphasis: { focus: 'series', lineStyle: { width: self ? 5.5 : 3.5 } }
+        };
+    });
+    initChart('chart-roe')?.setOption({
+        backgroundColor: '#fff',
+        textStyle: { fontSize: 18 },
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 17 },
+            // 同一年十家行的值按高低排，一眼看出座次
+            formatter: p => {
+                const rows = p.filter(x => x.value != null)
+                    .sort((a, b) => b.value - a.value)
+                    .map(x => `${x.marker}${x.seriesName}：${x.value}%`);
+                return `<b>${p[0].axisValue} 年</b><br>` + (rows.join('<br>') || '无披露');
+            } },
+        legend: { data: series.map(s => s.name), bottom: 2, textStyle: { fontSize: 17 }, itemGap: 14 },
+        grid: { left: 56, right: 72, top: 36, bottom: 108 },
+        xAxis: { type: 'category', data: years, boundaryGap: false,
+                 axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
+        // 各行 ROE 落在 5%–32%（2011 年邮储 31.8% 是上沿），从 0 起画不至于把差异压扁，
+        // 也和单行模式的纵轴口径一致，切换前后读数不会产生错觉
+        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 },
+                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: series
+    }, true);   // notMerge —— 与单行模式的系列结构完全不同
+};
+
 /* ────── 1. 业绩走势（2009 年起，2008 年 6 月信用社改制为股份公司致口径断口） ────── */
 function renderAll(D) {
+// 同业对比图里代表"本行"的那条线：换行后跟着换名字，其余同业名保持不变
+const SELF = (D._bank && D._bank.shortName) || '渝农商行';
+
+// 生成脚本按 DOM id 给出的分行说明文字（页面里的静态文案是渝农商行版本，换行后要覆盖）
+const notes = D._notes || {};
+
+/* .yns-only 里写死的是渝农商行的具体数字（标题、说明段、分红卡片）。换行后：
+ *   · _notes 里有同 id 文案的 → 整段被覆盖成本行版本，留着显示；
+ *   · 没有对应文案的 → 仍然是渝农商行的数字，隐藏掉。
+ * .yns-h-only 是"H 股年报口径"专属块：渝农商 H 股年报只到 2018、A 股年报从 2019 起，两边没有
+ * 重叠年份，所以能并排画 A/H 两套环形图；其余 A+H 行同一年两份年报都有，按 A 股优先只画 A 股，
+ * 这块对它们恒定无意义，一律隐藏。 */
+if (window.COMPANY_CODE !== '601077') {
+    document.querySelectorAll('.yns-only').forEach(el => {
+        if (!(el.id && notes[el.id])) el.style.display = 'none';
+    });
+    document.querySelectorAll('.yns-h-only').forEach(el => { el.style.display = 'none'; });
+}
+
+// 缺失的 key：先把对应图位改成占位说明，再塞 EMPTY_D 让后面的解构不抛异常
+// 「缺」不只是 key 不存在——gen 对没数据的行常给出空数组/全空对象（如 migrate.yrsMigrate=[]），
+// 这类「有 key 但没内容」也要当缺处理，否则会画出一张只有坐标轴、没有线的空图（⑥ 整改 H3）。
+function __emptyPayload(v) {
+    if (v == null) return true;
+    if (Array.isArray(v)) return v.length === 0;
+    if (typeof v === 'object') {
+        var ks = Object.keys(v);
+        if (!ks.length) return true;
+        // 全部子值都是空数组/空/null 才算空；只要有一个非空数组或标量就当有数据
+        return ks.every(function (k) {
+            var x = v[k];
+            return x == null || (Array.isArray(x) && x.length === 0);
+        });
+    }
+    return false;   // 标量（数字/字符串）视为有数据
+}
+Object.keys(KEY_DOM).forEach(function (k) {
+    if (!__emptyPayload(D[k])) return;
+    // 集中度三张图还能靠港交所口径（holder-concentration-hist）单独画出来（纯 H 股行只有这一份），
+    // A 股口径为空不等于整块没数据，别提前占位
+    if (k === 'holder-concentration' && !__emptyPayload(D['holder-concentration-hist'])) {
+        D[k] = EMPTY_D;
+        return;
+    }
+    KEY_DOM[k].forEach(__stub);
+    D[k] = EMPTY_D;
+});
+
+// 「历年股东持股集中度」是独立板块、三张图共用同一份数据：数据整份缺失时（如只有 H 股年报、
+// F10 没有前十大历史的天津银行/江西银行）别留三块 400px 的"暂无数据"占位撑掉一屏，整块收起。
+(function () {
+    const sec = document.getElementById('sec-concentration');
+    if (!sec) return;
+    if (__emptyPayload(D['holder-concentration']) && __emptyPayload(D['holder-concentration-hist'])) {
+        sec.style.display = 'none';
+    }
+})();
+
+// 覆盖页面上的渝农商行静态文案（上面的 .yns-only 门控已经按 notes 决定了哪些块留着）
+Object.keys(notes).forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) { el.innerHTML = notes[id]; el.style.display = ''; }
+});
+
 (function () {
     const years   = D['perf'].years;
     // 2009 年营业收入 56.77 亿、净利润 18.88 亿：取自本行 2010 年 12 月 H 股招股章程 Appendix IB 会计师报告（重组后口径）
@@ -62,45 +353,8 @@ function renderAll(D) {
     });
 })();
 
-/* ────── 1.1b 加权平均 ROE（2009 年起，2018 年新准则切换断口） ────── */
-(function () {
-    const years = D['roe'].years;
-    // 2009–2013 简单 ROE = 归母净利润 / 平均归母权益（年报未披露加权平均值）
-    // 2009 年净利润 18.88 亿、期末权益 94.77 亿：取自 2010 年 H 股招股章程 Appendix IB 会计师报告（hkexnews.hk），2008 年期末权益 78.92 亿同源
-    // 2010 年 12 月 H 股上市募资致权益年内跳升，简单平均偏低；2011–2013 无重大增发，近似加权
-    const roeCalc = D['roe'].roeCalc;
-    // 旧准则「加权平均股东权益回报率」(年报披露)，2014–2018
-    const roeOld = D['roe'].roeOld;
-    // 新准则「加权平均净资产收益率」(年报披露)，自 2018 年首次执行新金融工具准则起
-    const roeNew = D['roe'].roeNew;
-    initChart('chart-roe')?.setOption({
-        backgroundColor: '#fff',
-        textStyle: { fontSize: 18 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
-            formatter: p => {
-                let s = `<b>${p[0].axisValue} 年</b>`;
-                p.forEach(x => { if (x.value != null) s += `<br>${x.marker}${x.seriesName}：${x.value}%`; });
-                return s;
-            } },
-        legend: { data: ['简单ROE（净利/平均权益）', 'ROE（旧准则·年报）', 'ROE（新准则·年报）'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 56, right: 24, top: 36, bottom: 68 },
-        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
-        yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 },
-                 axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '简单ROE（净利/平均权益）', type: 'line', data: roeCalc, symbolSize: 6,
-              lineStyle: { width: 2.5, color: '#af7ac5', type: 'dotted' }, itemStyle: { color: '#af7ac5' },
-              label: { show: true, position: 'top', fontSize: 16, color: '#af7ac5', formatter: '{c}%' } },
-            { name: 'ROE（旧准则·年报）', type: 'line', data: roeOld, symbolSize: 6,
-              lineStyle: { width: 3, color: '#6c3483', type: 'dashed' }, itemStyle: { color: '#6c3483' },
-              label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } },
-            { name: 'ROE（新准则·年报）', type: 'line', data: roeNew, symbolSize: 6,
-              lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-              areaStyle: { color: 'rgba(108,52,131,0.08)' },
-              label: { show: true, position: 'top', fontSize: 16, color: '#6c3483', formatter: '{c}%' } }
-        ]
-    });
-})();
+/* 1.1b ROE：渲染逻辑已提到文件顶部 window.__renderRoe（供快速切换银行按钮复用） */
+window.__renderRoe(D);
 (function () {
     const years = D['scale-dep'].years;
     const deposit = D['scale-dep'].deposit;
@@ -202,99 +456,97 @@ function renderAll(D) {
     makeScaleChart('chart-scale-dep',  '客户存款',      deposit, 'dep',  '#6c3483', 'rgba(108,52,131,0.08)');
     makeScaleChart('chart-scale-loan', '客户贷款及垫款', loan,    'loan', '#e67e22', 'rgba(230,126,34,0.08)');
 
+    // 同业四行里本行那条实线名字随 ?code= 变；同业线若本行自己就是该行会重复，live() 只滤空线，重名无害
+    const serNpl = live([
+        { name: SELF, type: 'line', data: npl, smooth: true, connectNulls: true, symbolSize: 6,
+          lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+          areaStyle: { color: 'rgba(192,57,43,0.07)' },
+          label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
+        peerLine('农业银行', nplAbc, '#2874a6'),
+        peerLine('招商银行', nplCmb, '#229954'),
+        peerLine('邮储银行', nplPsb, '#d68910')
+    ]);
     initChart('chart-npl')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行', '招商银行', '邮储银行'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 48, right: 24, top: 56, bottom: 60 },
+        legend: { data: serNpl.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 48, right: 88, top: 56, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '不良率%', min: 0, max: 3, nameTextStyle: { fontSize: 18 },
+        yAxis: { type: 'value', name: '不良率%', min: 0, max: axMax(3, npl, nplAbc, nplCmb, nplPsb),
+                 nameTextStyle: { fontSize: 18 },
                  axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '渝农商行', type: 'line', data: npl, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              areaStyle: { color: 'rgba(192,57,43,0.07)' },
-              label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
-            { name: '农业银行', type: 'line', data: nplAbc, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' } },
-            { name: '招商银行', type: 'line', data: nplCmb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' } },
-            { name: '邮储银行', type: 'line', data: nplPsb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#d68910', type: 'dashed' }, itemStyle: { color: '#d68910' } }
-        ]
+        series: serNpl
     });
 
     // 逾期率 = 逾期贷款 / 贷款总额（各行年报「贷款质量—逾期贷款」披露，渝农商 2014 起有此项）
+    const serOd = live([
+        { name: SELF, type: 'line', data: overdue, smooth: true, connectNulls: true, symbolSize: 6,
+          lineStyle: { width: 3, color: '#e67e22' }, itemStyle: { color: '#e67e22' },
+          areaStyle: { color: 'rgba(230,126,34,0.07)' },
+          label: { show: true, position: 'top', fontSize: 18, color: '#e67e22', formatter: '{c}%' } },
+        peerLine('农业银行', overdueAbc, '#2874a6'),
+        peerLine('招商银行', overdueCmb, '#229954'),
+        peerLine('邮储银行', overduePsb, '#d68910')
+    ]);
     initChart('chart-overdue')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '未披露' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行', '招商银行', '邮储银行'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 48, right: 24, top: 56, bottom: 60 },
+        legend: { data: serOd.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 48, right: 88, top: 56, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '逾期率%', min: 0, max: 3.5, nameTextStyle: { fontSize: 18 },
+        yAxis: { type: 'value', name: '逾期率%', min: 0, max: axMax(3.5, overdue, overdueAbc, overdueCmb, overduePsb),
+                 nameTextStyle: { fontSize: 18 },
                  axisLabel: { color: '#e67e22', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '渝农商行', type: 'line', data: overdue, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#e67e22' }, itemStyle: { color: '#e67e22' },
-              areaStyle: { color: 'rgba(230,126,34,0.07)' },
-              label: { show: true, position: 'top', fontSize: 18, color: '#e67e22', formatter: '{c}%' } },
-            { name: '农业银行', type: 'line', data: overdueAbc, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' } },
-            { name: '招商银行', type: 'line', data: overdueCmb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' } },
-            { name: '邮储银行', type: 'line', data: overduePsb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#d68910', type: 'dashed' }, itemStyle: { color: '#d68910' } }
-        ]
+        series: serOd
     });
 
     // 核销率 = 本期核销（含其他转出） ÷ 发放贷款和垫款总额（各行年报「贷款减值准备变动」披露本期核销额）
+    const serWo = live([
+        { name: SELF, type: 'line', data: woRate, smooth: true, connectNulls: true, symbolSize: 6,
+          lineStyle: { width: 3, color: '#8e44ad' }, itemStyle: { color: '#8e44ad' },
+          areaStyle: { color: 'rgba(142,68,173,0.07)' },
+          label: { show: true, position: 'top', fontSize: 18, color: '#8e44ad', formatter: '{c}%' } },
+        peerLine('农业银行', woRateAbc, '#2874a6'),
+        peerLine('招商银行', woRateCmb, '#229954'),
+        peerLine('邮储银行', woRatePsb, '#d68910')
+    ]);
     initChart('chart-writeoff-rate')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '未披露' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行', '招商银行', '邮储银行'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 48, right: 24, top: 56, bottom: 60 },
+        legend: { data: serWo.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 48, right: 88, top: 56, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '核销率%', min: 0, max: 2.2, nameTextStyle: { fontSize: 18 },
+        yAxis: { type: 'value', name: '核销率%', min: 0, max: axMax(2.2, woRate, woRateAbc, woRateCmb, woRatePsb),
+                 nameTextStyle: { fontSize: 18 },
                  axisLabel: { color: '#8e44ad', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '渝农商行', type: 'line', data: woRate, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#8e44ad' }, itemStyle: { color: '#8e44ad' },
-              areaStyle: { color: 'rgba(142,68,173,0.07)' },
-              label: { show: true, position: 'top', fontSize: 18, color: '#8e44ad', formatter: '{c}%' } },
-            { name: '农业银行', type: 'line', data: woRateAbc, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' } },
-            { name: '招商银行', type: 'line', data: woRateCmb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' } },
-            { name: '邮储银行', type: 'line', data: woRatePsb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#d68910', type: 'dashed' }, itemStyle: { color: '#d68910' } }
-        ]
+        series: serWo
     });
 
     // 不良生成率 = 不良生成额 ÷ 期初贷款总额（不良生成额 = 期末不良 − 期初不良 + 核销净额），衡量新增不良的速度
+    const serFm = live([
+        { name: SELF, type: 'line', data: formation, smooth: true, connectNulls: true, symbolSize: 6,
+          lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+          areaStyle: { color: 'rgba(192,57,43,0.07)' },
+          label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
+        peerLine('农业银行', formationAbc, '#2874a6'),
+        peerLine('招商银行', formationCmb, '#229954'),
+        peerLine('邮储银行', formationPsb, '#d68910')
+    ]);
     initChart('chart-npl-formation')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '未披露' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行', '招商银行', '邮储银行'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 48, right: 24, top: 56, bottom: 60 },
+        legend: { data: serFm.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 48, right: 88, top: 56, bottom: 60 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '不良生成率%', min: 0, max: 3, nameTextStyle: { fontSize: 18 },
+        yAxis: { type: 'value', name: '不良生成率%', min: 0,
+                 max: axMax(3, formation, formationAbc, formationCmb, formationPsb),
+                 nameTextStyle: { fontSize: 18 },
                  axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '渝农商行', type: 'line', data: formation, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              areaStyle: { color: 'rgba(192,57,43,0.07)' },
-              label: { show: true, position: 'top', fontSize: 18, color: '#c0392b', formatter: '{c}%' } },
-            { name: '农业银行', type: 'line', data: formationAbc, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' } },
-            { name: '招商银行', type: 'line', data: formationCmb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' } },
-            { name: '邮储银行', type: 'line', data: formationPsb, smooth: true, connectNulls: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#d68910', type: 'dashed' }, itemStyle: { color: '#d68910' } }
-        ]
+        series: serFm
     });
 
     initChart('chart-quality')?.setOption({
@@ -304,7 +556,7 @@ function renderAll(D) {
         legend: { data: ['资本充足率', '核心一级资本充足率'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 48, right: 20, top: 36, bottom: 52 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '%', min: 0, max: 18, nameTextStyle: { fontSize: 18 },
+        yAxis: { type: 'value', name: '%', min: 0, max: axMax(18, car, cet1), nameTextStyle: { fontSize: 18 },
                  axisLabel: { color: '#1e8449', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '资本充足率', type: 'line', data: car, smooth: true, connectNulls: true, symbolSize: 6,
@@ -368,12 +620,6 @@ function renderAll(D) {
     const impOld   = D['nim-trend'].impOld;
     // 新准则「信用减值损失 / 营业收入」(2018–2025)——A股年报, 2018 年起执行 IFRS9/新金融工具准则
     const impNew   = D['nim-trend'].impNew;
-    // 天津银行（01578.HK）「减值损失 / 营业收入」(2018–2025)——港交所年度业绩公告「会计数据及财务指标概要」
-    // 2018 年起执行 IFRS9，减值损失科目口径与渝农商行新准则可比；2010–2017 未追溯查证故留空
-    const impTcb   = D['nim-trend'].impTcb;
-    // 农业银行（601288.SH）「资产/信用减值损失 / 营业收入」——历年年报（abchina.com 官网 PDF，合并口径），口径切换与渝农商行一致（2018 年起 IFRS9）
-    const impAbcOld = D['nim-trend'].impAbcOld;
-    const impAbcNew = D['nim-trend'].impAbcNew;
 
     function baseSeries() {
         return [
@@ -398,72 +644,8 @@ function renderAll(D) {
             series
         };
     }
-    // 三张图平铺在同一条横向滚动带里（不做 tab 切换）：直接左右滑动/拖拽即可浏览
+    // 只展示渝农商行单行数据（新旧准则两段），不再与天津银行/农业银行横向对比
     initChart('chart-creditcost')?.setOption(creditcostOption(baseSeries()));
-    initChart('chart-creditcost-tcb')?.setOption(creditcostOption([
-        ...baseSeries(),
-        { name: '天津银行·减值/营收', type: 'line', data: impTcb, smooth: true, connectNulls: false, symbolSize: 6,
-          lineStyle: { width: 3, color: '#2874a6', type: 'dashed' }, itemStyle: { color: '#2874a6' },
-          label: { show: true, fontSize: 18, color: '#2874a6', formatter: '{c}%' } }
-    ]));
-    initChart('chart-creditcost-abc')?.setOption(creditcostOption([
-        ...baseSeries(),
-        { name: '农业银行·旧准则', type: 'line', data: impAbcOld, smooth: true, connectNulls: false, symbolSize: 6,
-          lineStyle: { width: 2.5, color: '#229954', type: 'dashed' }, itemStyle: { color: '#229954' },
-          label: { show: true, fontSize: 18, color: '#229954', formatter: '{c}%' } },
-        { name: '农业银行·新准则', type: 'line', data: impAbcNew, smooth: true, connectNulls: false, symbolSize: 6,
-          lineStyle: { width: 3, color: '#196f3d', type: 'dashed' }, itemStyle: { color: '#196f3d' },
-          label: { show: true, fontSize: 18, color: '#196f3d', formatter: '{c}%' } }
-    ]));
-
-    // 平铺 + 左右滑动（参考 Apple TV 那种横向内容带）：三张图并排，鼠标可直接按住拖动横向滚动，
-    // 触控板/触屏原生横滑，配合 CSS scroll-snap 让每张图停到位。不再有 tab 切换按钮。
-    (function () {
-        const slider = document.querySelector('#chart-creditcost')?.closest('.compare-slider');
-        if (!slider) return;
-        // 满屏横滑带用 100vw 会把竖向滚动条那 ~15px 也算进去，导致整页多出一条横向滚动条。
-        // documentElement.clientWidth 是「不含竖向滚动条」的真实可视宽，写进 --app-vw 供 CSS 用，
-        // 这样既铺满可视宽、又不会溢出（避开在 html 上加 overflow-x:hidden——那会破坏吸顶导航的 sticky）。
-        const setVW = () => document.documentElement.style.setProperty(
-            '--app-vw', document.documentElement.clientWidth + 'px');
-        setVW();
-        window.addEventListener('resize', () => {
-            setVW();
-            ['chart-creditcost', 'chart-creditcost-tcb', 'chart-creditcost-abc'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) echarts.getInstanceByDom(el)?.resize();
-            });
-        });
-        // 三张图都在滚动带内已按各自宽度布局，补一次 resize 保证宽度正确
-        ['chart-creditcost', 'chart-creditcost-tcb', 'chart-creditcost-abc'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) echarts.getInstanceByDom(el)?.resize();
-        });
-
-        // 鼠标按住拖动横向滚动（桌面端；触屏/触控板走原生横滑，无需接管）
-        let down = false, startX = 0, startLeft = 0, moved = false;
-        slider.addEventListener('pointerdown', e => {
-            if (e.pointerType && e.pointerType !== 'mouse') return;
-            down = true; moved = false;
-            startX = e.clientX; startLeft = slider.scrollLeft;
-            slider.classList.add('dragging');
-        });
-        slider.addEventListener('pointermove', e => {
-            if (!down) return;
-            const dx = e.clientX - startX;
-            if (Math.abs(dx) > 3) moved = true;
-            slider.scrollLeft = startLeft - dx;
-        });
-        function endDrag() {
-            if (!down) return;
-            down = false;
-            slider.classList.remove('dragging');
-        }
-        slider.addEventListener('pointerup', endDrag);
-        slider.addEventListener('pointerleave', endDrag);
-        // 拖动过程中吞掉点击，避免误触发图例等交互
-        slider.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
-    })();
 
     const years13   = D['nim-trend'].years13;
     const provCov13 = D['nim-trend'].provCov13;
@@ -554,35 +736,6 @@ function renderAll(D) {
               areaStyle: { color: 'rgba(192,57,43,0.08)' } },
             { name: '信用减值/总资产', type: 'line', yAxisIndex: 1, data: impOverAsset, smooth: true, symbolSize: 6,
               lineStyle: { width: 2, color: '#2980b9', type: 'dashed' }, itemStyle: { color: '#2980b9' } }
-        ]
-    });
-})();
-
-/* ────── 1i. 其他综合收益（OCI）与净利润 ────── */
-(function () {
-    // 取自本行 2018-2025 年年度报告「贷款减值准备变动」附注（HKEXnews 03618.HK / cqrcb.com 官网 PDF），2026-08-14 核对
-    // 2022 年起「本期核销」「收回已核销」分项披露；2018-2021 仅披露合并净额（本期核销及其他转出），以净核销虚线呈现
-    const yearsWO   = ['2018','2019','2020','2021','2022','2023','2024','2025'];
-    const writeOff  = [867.8, 1943.4, 10051.6, 7933.3, 7064.8, 4209.8, 5805.2, 6619.1];
-    const recovery  = [null,  null,   null,    null,   2112.0, 1931.6, 1328.5, 2477.9];
-    const netWO     = [867.8, 1943.4, 10051.6, 7933.3, null,   null,   null,   null];
-    initChart('chart-writeoff')?.setOption({
-        backgroundColor: '#fff',
-        textStyle: { fontSize: 18 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + ' 百万' },
-        legend: { data: ['本期核销', '收回已核销', '净核销（2018–2021）'], top: 4, textStyle: { fontSize: 18 } },
-        grid: { left: 64, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: yearsWO, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '人民币百万元', min: 0, nameTextStyle: { color: '#555', fontSize: 18 },
-                 axisLabel: { color: '#555', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '本期核销', type: 'line', data: writeOff, connectNulls: true, smooth: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              areaStyle: { color: 'rgba(192,57,43,0.08)' } },
-            { name: '收回已核销', type: 'line', data: recovery, connectNulls: false, smooth: true, symbolSize: 6,
-              lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
-            { name: '净核销（2018–2021）', type: 'line', data: netWO, connectNulls: false, symbolSize: 6,
-              lineStyle: { width: 2, color: '#8e8e8e', type: 'dashed' }, itemStyle: { color: '#8e8e8e' } }
         ]
     });
 })();
@@ -688,25 +841,34 @@ window.__renderYnsDividend = function (D) {
 window.__renderYnsDividend(D);
 
 /* ────── 1j2b. 历年总股本变动（IPO / 定增 / 增发等资本运作导致的股份数量变化） ──────
- * 数据为静态历史（成立至今仅 5 次资本运作改变总股本），直接内置于本函数。
- * 口径：2010–2017 取自 03618 H 股年报「股本变动及股东情况」；2019 A 股 IPO 及以后
- *       取自本行 A 股年报（A+H 两地上市优先 A 股口径）。历史上未发生过回购注销、
- *       送/转增股、公开增发或可转债转股，故图中仅有 IPO 与定向/超额配售增发节点。 */
-window.__renderYnsShareCapital = function () {
+ * 渝农商默认渲染；股东页银行切换器复用同一函数（window.__renderYnsShareCapital）重绘。
+ * 载荷 D['share-capital'] = { years, shares(亿股), gaps?, base?, events? }：
+ *   · years/shares 为逐年年末总股本，来自资产负债表「股本」科目（面值 1 元，元金额即股数）；
+ *   · gaps 为该行披露缺失、整年剔除的年份（如农行 2002–2006），只写进脚注不插值；
+ *   · base 为首年之前的期初股本（渝农商 2008 改制时 60 亿股），有它首年才画得出增量；
+ *   · events 为 {年: {type, items[]}} 的手工明细（只有渝农商精编了 5 次资本运作的成因）。
+ * 生成脚本给不出成因分类（F10 只有股本余额），故 events 缺失时全部点用中性色，
+ * 增量标签也只在变动幅度 ≥ 上年 0.1% 时才显示——否则四舍五入的尾差会糊满全图。 */
+window.__renderYnsShareCapital = function (D) {
     if (!document.getElementById('chart-share-capital')) return;   // 仅股东页
-    // [x 轴标签, 变动后总股本(亿股), 本次增量(亿股), 事件明细, 事件类型色]
+    const SC = (D && D['share-capital']) || {};
+    const years = SC.years || [];
+    if (!years.length) { __stub('chart-share-capital'); return; }
+    const shares = SC.shares || [];
     const C = { base:'#95a5a6', ipo:'#c0392b', pp:'#e67e22', seo:'#16a085' };
-    const rows = [
-        ['2010-01\n期初基准',   60.00, null,  '改制设立时内资股 60 亿股（法人股 + 自然人股）', C.base],
-        ['2010-03\n定向增发',   70.00, 10.00, '向渝富 / 城投 / 交旅定向增发内资股 10 亿股（募资 19.1 亿）', C.pp],
-        ['2010-12\nH 股 IPO',   90.00, 20.00, 'H 股首次公开发行 20 亿股 @5.25 港元（港交所上市）', C.ipo],
-        ['2011-01\n超额配售',   93.00,  3.00, '绿鞋（超额配股权）行使，增发 H 股 3 亿股', C.seo],
-        ['2017-09\n定向增发',  100.00,  7.00, '非公开定向增发内资股 7 亿股 @5.75 元（补充核心一级资本）', C.pp],
-        ['2019-10\nA 股 IPO', 113.57, 13.57, 'A 股首次公开发行 13.57 亿股 @7.36 元（上交所上市）', C.ipo],
-        ['2025-12\n至今无变动',113.57,  0.00, '2019 年后未发生回购 / 增发 / 送转 / 可转债转股', C.base]
-    ];
-    const labels = rows.map(r => r[0]);
-    const cum    = rows.map(r => ({ value: r[1], itemStyle: { color: r[4] }, label: { color: r[4] } }));
+    const EV = SC.events || {};
+    let prev = SC.base != null ? SC.base : null;
+    const rows = years.map((y, i) => {           // [年, 年末总股本, 当年增量(null=无从计算), 明细[], 色]
+        const cur = shares[i];
+        const ev = EV[y] || EV[String(y)];
+        const d = prev == null ? null : +(cur - prev).toFixed(2);
+        prev = cur;
+        return [y, cur, d, ev ? (ev.items || []) : [], ev ? (C[ev.type] || C.base) : C.base];
+    });
+    // 「显著变动」阈值：上年股本的 0.1%（工行 3564 亿股约 3.5 亿股），滤掉四舍五入尾差
+    const moved = rows.map((r, i) => r[2] != null && Math.abs(r[2]) >= (i ? shares[i - 1] : r[1]) * 0.001);
+    const ax = niceAxis(shares, 1);
+    const cum = rows.map(r => ({ value: r[1], itemStyle: { color: r[4] }, label: { color: r[4] } }));
     initChart('chart-share-capital')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
@@ -714,20 +876,25 @@ window.__renderYnsShareCapital = function () {
             trigger: 'axis', textStyle: { fontSize: 18 },
             formatter: p => {
                 const i = p[0].dataIndex, r = rows[i];
-                const delta = r[2] == null ? '' : (r[2] > 0 ? `<br>本次增量：+${r[2].toFixed(2)} 亿股` : '<br>本次增量：无');
-                return `<b>${labels[i].replace('\n', ' · ')}</b>` +
-                       `<br>变动后总股本：${r[1].toFixed(2)} 亿股` + delta +
-                       `<br><span style="color:#888">${r[3]}</span>`;
+                const detail = r[3].length
+                    ? '<br><span style="color:#888">' + r[3].join('<br>') + '</span>'
+                    : (moved[i] ? '' : '<br><span style="color:#888">当年无股本变动</span>');
+                const dLine = r[2] == null ? ''
+                    : '<br>当年增量：' + (moved[i] ? (r[2] > 0 ? '+' : '') + r[2].toFixed(2) + ' 亿股' : '无');
+                return `<b>${r[0]} 年末</b><br>总股本：${r[1].toFixed(2)} 亿股` + dLine + detail;
             }
         },
-        grid: { left: 72, right: 40, top: 40, bottom: 70 },
+        grid: { left: 88, right: 60, top: 40, bottom: 46 },
         xAxis: {
-            type: 'category', data: labels, boundaryGap: false,
-            axisLabel: { fontSize: 15, color: '#555', lineHeight: 18 },
-            axisLine: { lineStyle: { color: '#bbb' } }
+            type: 'category', data: years, boundaryGap: false,
+            axisLabel: { fontSize: 15, color: '#555',
+                         interval: Math.max(0, Math.ceil(years.length / 24) - 1) },
+            axisLine: { lineStyle: { color: '#bbb' } },
+            axisTick: { alignWithLabel: true }
         },
         yAxis: {
-            type: 'value', name: '总股本（亿股）', min: 50, max: 125,
+            type: 'value', name: '总股本（亿股）',
+            min: ax.min, max: ax.max, interval: ax.interval,
             nameTextStyle: { color: '#555', fontSize: 18 },
             axisLabel: { color: '#555', fontSize: 18 },
             splitLine: { lineStyle: { color: '#eee' } }
@@ -740,15 +907,15 @@ window.__renderYnsShareCapital = function () {
                 show: true, position: 'top', fontSize: 15, fontWeight: 600,
                 formatter: p => {
                     const d = rows[p.dataIndex][2];
-                    return (d != null && d > 0) ? `+${d.toFixed(2)}` : '';
+                    return moved[p.dataIndex] ? (d > 0 ? '+' : '') + d.toFixed(2) : '';
                 }
             },
             endLabel: { show: true, fontSize: 16, color: '#6c3483',
                         formatter: p => `${p.value} 亿股` }
         }]
-    });
+    }, true);   // notMerge —— 切行时年份跨度不同，避免残留上一行的点
 };
-window.__renderYnsShareCapital();
+window.__renderYnsShareCapital(D);
 
 /* ────── 1j3. 历年股东户数（2017-12 至今：H 股年报 + 历年定期报告披露值） ──────
  * 渝农商默认渲染；股东页银行切换器复用同一函数（window.__renderYnsHolderCount）重绘。 */
@@ -767,11 +934,51 @@ window.__renderYnsHolderCount = function (D) {
     const fmt    = v => v == null ? '—' : v.toLocaleString('en-US');
     const wan    = v => v == null ? '—' : (v / 10000).toFixed(2) + ' 万';
 
+    // 左轴单位随各行量级：大行 A 股几十万户按万户标，户数少的行直接按户标
+    const inWan  = (D['holder-count'].unit || 'wan') === 'wan';
+    const aName  = 'A 股股东数（左轴 · ' + (inWan ? '万户' : '户') + '）';
+
+    /* H 股登记股东数各行差两三个数量级（渝农商 ~1.4 千户、招行 ~7 万户），
+     * 原来写死的 1000/1500/100 只合渝农商；改用顶层 niceAxis 按数据取「整」区间。 */
+    const hAx = niceAxis(hNum);
+
+    /* 主线按各行实际披露的列挑：
+     *   · 多数期次只有股东总数、没有 A/H 拆分（工行/中行/交行的早年季报）→ 主线用股东总数；
+     *   · 纯 H 股上市行（天津银行 01578）年报只有 H 股登记股东数，总数与 A 股列整列为空
+     *     → 把 H 股序列提为左轴主线并收起右轴，否则左轴一条线都画不出来。 */
+    const uHu = inWan ? '万户' : '户';
+    const aAll = aNum.every(v => v == null);
+    const hOnly = aAll && total.every(v => v == null);
+    const main = hOnly ? hNum : (aAll ? total : aNum);
+    const mainName = hOnly ? ('H 股登记股东数（左轴 · ' + uHu + '）')
+                   : aAll ? ('股东总数（A+H · 左轴 · ' + uHu + '）') : aName;
+
+    const serHC = live([{
+        name: mainName,
+        type: 'line', data: main, smooth: true, symbolSize: 6,
+        connectNulls: false,      // A 股仅定期报告披露, 未拆分的季报点留空断线
+        lineStyle: { width: 3, color: '#2c6fb3' },
+        itemStyle: { color: '#2c6fb3' },
+        areaStyle: { color: 'rgba(44,111,179,0.10)' },
+        endLabel: { show: true, fontSize: 18, color: '#2c6fb3',
+                    formatter: p => p.value == null ? '' :
+                        (inWan ? (p.value / 10000).toFixed(2) + ' 万' : p.value.toLocaleString('en-US') + ' 户') }
+    }, {
+        name: 'H 股登记股东数（右轴 · 户）',
+        type: 'line', yAxisIndex: 1, data: hOnly ? [] : hNum,   // 已提为左轴主线时不再重复画
+        smooth: true, symbolSize: 8,
+        connectNulls: true,       // H 股只在年末/半年末披露, 跨越缺口连线
+        lineStyle: { width: 2.5, color: '#16a085', type: 'solid' },
+        itemStyle: { color: '#16a085' },
+        endLabel: { show: true, fontSize: 16, color: '#16a085',
+                    formatter: p => p.value == null ? '' : `${p.value.toLocaleString('en-US')} 户` }
+    }]);
+
     initChart('chart-holder-count')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         legend: {
-            data: ['A 股股东数（左轴 · 万户）', 'H 股登记股东数（右轴 · 户）'],
+            data: serHC.map(s => s.name),
             top: 4, left: 'center', textStyle: { fontSize: 16 },
             icon: 'roundRect'
         },
@@ -798,44 +1005,31 @@ window.__renderYnsHolderCount = function (D) {
         grid: { left: 88, right: 160, top: 56, bottom: 70 },
         xAxis: {
             type: 'category', data: dates, boundaryGap: false,
-            axisLabel: { fontSize: 16, color: '#555', rotate: 40, interval: 2 },
+            // 披露期数各行差得远（渝农商 43 期、工行 93 期），固定 interval:2 在大行上会糊成一片
+            axisLabel: { fontSize: 16, color: '#555', rotate: 40,
+                         interval: Math.max(2, Math.ceil(dates.length / 18) - 1) },
             axisLine: { lineStyle: { color: '#bbb' } }
         },
         yAxis: [
             {
-                type: 'value', name: 'A 股股东数（万户）', min: 0,
-                position: 'left',
+                type: 'value',
+                name: (hOnly ? 'H 股登记股东（' : aAll ? '股东总数（' : 'A 股股东数（') + uHu + '）',
+                min: 0, position: 'left',
                 nameTextStyle: { color: '#2c6fb3', fontSize: 18 },
-                axisLabel: { color: '#2c6fb3', fontSize: 18, formatter: v => (v / 10000).toFixed(0) },
+                axisLabel: { color: '#2c6fb3', fontSize: 18,
+                             formatter: v => inWan ? (v / 10000).toFixed(0) : v.toLocaleString('en-US') },
                 splitLine: { lineStyle: { color: '#eee' } }
             },
             {
-                type: 'value', name: 'H 股股东（户）', min: 1000, max: 1500, interval: 100,
+                type: 'value', name: 'H 股股东（户）', show: !hOnly && hAx.min != null,
+                min: hAx.min, max: hAx.max, interval: hAx.interval,
                 position: 'right',
                 nameTextStyle: { color: '#16a085', fontSize: 18 },
                 axisLabel: { color: '#16a085', fontSize: 18, formatter: v => v.toLocaleString('en-US') },
                 splitLine: { show: false }
             }
         ],
-        series: [{
-            name: 'A 股股东数（左轴 · 万户）',
-            type: 'line', data: aNum, smooth: true, symbolSize: 6,
-            connectNulls: false,      // A 股仅定期报告披露, 未拆分的季报点留空断线
-            lineStyle: { width: 3, color: '#2c6fb3' },
-            itemStyle: { color: '#2c6fb3' },
-            areaStyle: { color: 'rgba(44,111,179,0.10)' },
-            endLabel: { show: true, fontSize: 18, color: '#2c6fb3',
-                        formatter: p => p.value == null ? '' : `${(p.value / 10000).toFixed(2)} 万` }
-        }, {
-            name: 'H 股登记股东数（右轴 · 户）',
-            type: 'line', yAxisIndex: 1, data: hNum,
-            smooth: true, symbolSize: 8,
-            connectNulls: true,       // H 股只在年末/半年末披露, 跨越缺口连线
-            lineStyle: { width: 2.5, color: '#16a085', type: 'solid' },
-            itemStyle: { color: '#16a085' },
-            endLabel: { show: true, fontSize: 16, color: '#16a085',
-                        formatter: p => p.value == null ? '' : `${p.value.toLocaleString('en-US')} 户` }
-        }]
+        series: serHC
     });
 };
 window.__renderYnsHolderCount(D);
@@ -1052,11 +1246,15 @@ window.__renderYnsHolderCount(D);
     });
 
     // 存款期限结构：活期 vs 定期 占比（2025 年末）
-    initChart('chart-depterm')?.setOption({
+    (function () {
+        const dv = D['depterm'].vals, dt = dv.reduce((s, x) => s + (x || 0), 0) || 1;
+        const pct = i => (dv[i] || 0) / dt * 100;
+        initChart('chart-depterm')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         title: [
-            { text: '定期 74.27%\n活期 25.30%', left: 'center', top: 'center', textAlign: 'center',
+            { text: '定期 ' + pct(0).toFixed(2) + '%\n活期 ' + pct(1).toFixed(2) + '%',
+              left: 'center', top: 'center', textAlign: 'center',
               textStyle: { fontSize: 18, color: '#6c3483', fontWeight: 700, lineHeight: 22 } }
         ],
         tooltip: { trigger: 'item', formatter: '{b}: {c} 亿元 ({d}%)', textStyle: { fontSize: 18 } },
@@ -1071,6 +1269,7 @@ window.__renderYnsHolderCount(D);
             ]
         }]
     });
+    })();
 })();
 
 /* ────── 1c-2. 客户存款平均付息率 与 活期存款占比（历年 2019–2025） ────── */
@@ -1080,6 +1279,10 @@ window.__renderYnsHolderCount(D);
     const cost  = D['depcost'].cost;
     // 活期存款占客户存款总额比重（%）= 公司活期 + 个人活期（期末）
     const demand = D['depcost'].demand;
+    // 付息率轴范围随各行数据自适应（原写死 min1.3/max2.1 会裁掉招行1.17、民生2.36 等点）
+    const cVals = cost.filter(v => v != null);
+    const cMin = Math.floor((Math.min(...cVals) - 0.1) * 10) / 10;
+    const cMax = Math.ceil((Math.max(...cVals) + 0.1) * 10) / 10;
 
     initChart('chart-depcost')?.setOption({
         backgroundColor: '#fff',
@@ -1089,7 +1292,7 @@ window.__renderYnsHolderCount(D);
         grid: { left: 60, right: 66, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: years, boundaryGap: false,
                  axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: { type: 'value', name: '付息率%', min: 1.3, max: 2.1,
+        yAxis: { type: 'value', name: '付息率%', min: cMin, max: cMax,
                  nameTextStyle: { fontSize: 18, color: '#c0392b' },
                  axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
                  splitLine: { lineStyle: { color: '#eee' } } },
@@ -1348,101 +1551,6 @@ window.__renderYnsHolders = function (D) {
         }).join('');
     }
 
-    // 「己」字形折叠条：3 行横条首尾相连成一条蛇形；三横之间的「连接段」（圆角转折）不计入占比，用灰色特殊标注。
-    (function buildFold() {
-        const W = 520, t = 44, m = t / 2, r = 30;      // 宽、条厚、留边、转折圆角半径
-        const vg = 30;                                 // 行间距（连接段竖向跨度）
-        const xL = m, xR = W - m;
-        const y0 = m, y1 = y0 + t + vg, y2 = y1 + t + vg, H = y2 + m;
-        const CONN = '#b7b1c4';                        // 连接段特殊色（不计入占比）
-
-        // 三行数据段的宽度（转折圆角占掉的部分归入连接段，不计比例）
-        const w1 = (xR - r) - xL;                      // 第1行：左端起，右端进圆角
-        const w2 = (xR - r) - (xL + r);                // 第2行：两端都进圆角
-        const w3 = xR - (xL + r);                      // 第3行：左端出圆角，右端到底
-        const dataLen = w1 + w2 + w3;                  // 100% 只摊在三横上
-
-        // 数据轨（横条），按弧长区间映射；第2行从右向左画以保持蛇形连续
-        const rails = [
-            { s: 0,        e: w1,           rect: (a, b) => ({ x: xL + a, y: y0 - t / 2, w: b - a }) },
-            { s: w1,       e: w1 + w2,      rect: (a, b) => { const la = a - w1, lb = b - w1, xr = xR - r; return { x: xr - lb, y: y1 - t / 2, w: lb - la }; } },
-            { s: w1 + w2,  e: dataLen,      rect: (a, b) => { const la = a - w1 - w2; return { x: (xL + r) + la, y: y2 - t / 2, w: b - a }; } }
-        ];
-
-        const gap = 2;                                 // 相邻股东留白
-        const FS = 16;                                 // 标签字号（≥16px 下限）
-        let d = 0;
-        const parts = [], inside = [], callouts = [];
-        holderData.forEach(hd => {
-            const d0 = d, d1 = d + hd.value / 100 * dataLen;
-            let best = null;
-            rails.forEach(rl => {
-                const a = Math.max(d0, rl.s), b = Math.min(d1, rl.e);
-                if (b > a + 0.01) {
-                    const rc = rl.rect(a + gap / 2, b - gap / 2);
-                    if (rc.w > 0.5) {
-                        parts.push({ ...rc, color: hd.itemStyle.color, name: hd.name, value: hd.value });
-                        if (!best || rc.w > best.w) best = rc;   // 该股东最宽的一段
-                    }
-                }
-            });
-            if (best) {
-                if (best.w > 60) {   // 段够宽，16px 文字放得下 → 段内标注
-                    inside.push({ x: best.x + best.w / 2, y: best.y + t / 2, text: best.w > 240 ? `${hd.name} ${hd.value}%` : `${hd.value}%` });
-                } else {             // 太窄 → 拉箭头到外面标注
-                    callouts.push({ name: hd.name, value: hd.value, color: hd.itemStyle.color, ax: best.x + best.w / 2, ay: best.y + t });
-                }
-            }
-            d = d1;
-        });
-
-        // 连接段（圆角转折，特殊色，不占比例）
-        const connA = `M ${xR - r} ${y0} Q ${xR} ${y0} ${xR} ${y0 + r} L ${xR} ${y1 - r} Q ${xR} ${y1} ${xR - r} ${y1}`; // 右侧：1行→2行
-        const connB = `M ${xL + r} ${y1} Q ${xL} ${y1} ${xL} ${y1 + r} L ${xL} ${y2 - r} Q ${xL} ${y2} ${xL + r} ${y2}`; // 左侧：2行→3行
-
-        // 引出标注布局：窄段标签排到底部，按锚点从左到右打包，放不下自动换行
-        const dotR = 5, rowH = 30, padX = 4;
-        const estW = c => {
-            let w = dotR * 2 + 10;                      // 圆点 + 间距
-            for (const ch of `${c.name} ${c.value}%`) w += ch.charCodeAt(0) > 255 ? FS : FS * 0.56;
-            return w + 8;
-        };
-        callouts.sort((a, b) => a.ax - b.ax);
-        let cx = padX, row = 0;
-        callouts.forEach(c => {
-            const w = estW(c);
-            if (cx + w > W - padX && cx > padX) { cx = padX; row++; }
-            c.lx = cx; c.row = row; c.w = w;
-            cx += w + 6;
-        });
-        const rows = callouts.length ? row + 1 : 0;
-        const baseY = H + 20;                           // 第一行标签基线
-        const svgH = H + (rows ? rows * rowH + 10 : 6);
-
-        let svg = `<svg viewBox="-3 -3 ${W + 6} ${svgH + 6}" width="100%" style="max-width:760px;display:block;margin:0 auto;height:auto">`;
-        [connA, connB].forEach(dstr => {
-            svg += `<path d="${dstr}" fill="none" stroke="${CONN}" stroke-width="${t}" stroke-linecap="butt" stroke-linejoin="round"><title>连接段（不计入占比）</title></path>`;
-        });
-        parts.forEach(p => {
-            svg += `<rect x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" width="${p.w.toFixed(1)}" height="${t}" fill="${p.color}" stroke="#fff" stroke-width="2"><title>${p.name}：${p.value}%（占总股本）</title></rect>`;
-        });
-        inside.forEach(l => {
-            svg += `<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="${FS}" fill="#fff" font-weight="600">${l.text}</text>`;
-        });
-        // 引出线 + 箭头 + 外部标签（每个股东都标注）
-        callouts.forEach(c => {
-            const ly = baseY + c.row * rowH;             // 该标签基线
-            const dotX = c.lx + dotR, dotY = ly - FS / 2 + 1;
-            const ax = c.ax.toFixed(1);
-            svg += `<line x1="${dotX.toFixed(1)}" y1="${(dotY - dotR).toFixed(1)}" x2="${ax}" y2="${(c.ay + 9).toFixed(1)}" stroke="${c.color}" stroke-width="1.4"/>`;
-            svg += `<polygon points="${ax},${c.ay.toFixed(1)} ${(c.ax - 5).toFixed(1)},${(c.ay + 9).toFixed(1)} ${(c.ax + 5).toFixed(1)},${(c.ay + 9).toFixed(1)}" fill="${c.color}"/>`;
-            svg += `<circle cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="${dotR}" fill="${c.color}"/>`;
-            svg += `<text x="${(c.lx + dotR * 2 + 6).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="start" font-size="${FS}" fill="#333" font-weight="600">${c.name} ${c.value}%</text>`;
-        });
-        svg += '</svg>';
-        document.getElementById('chart-holders-fold').innerHTML = svg;
-    })();
-
     // 横向条形图：按比例排序，同派系同色；≥4% 条内显示股东名（白字），<4% 名称显示在条右侧；底部滑块可左右拉伸放大
     (function buildBar() {
         const names = holderData.map(h => h.name);
@@ -1453,19 +1561,21 @@ window.__renderYnsHolders = function (D) {
                 ? { show: true, position: 'insideLeft', distance: 8, color: '#fff', fontSize: 18, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
                 : { show: true, position: 'right', distance: 6, color: '#333', fontSize: 18, fontWeight: 600, formatter: `${h.name}  ${h.value}%` }
         }));
+        // 44% 是照渝农商第一大股东量级定的；别的行第一大更高时按其值放宽，免得条被截断
+        const barMax = Math.max(44, Math.ceil(Math.max.apply(null, holderData.map(h => h.value)) / 2) * 2);
         initChart('chart-holders-bar')?.setOption({
             backgroundColor: '#fff',
             grid: { left: 14, right: 170, top: 16, bottom: 16, containLabel: true },
             tooltip: { trigger: 'item', textStyle: { fontSize: 18 }, formatter: p => `${names[p.dataIndex]}：${p.value}%（占总股本）` },
             xAxis: {
-                type: 'value', min: 0, max: 44, name: '占总股本 %', nameTextStyle: { fontSize: 18 },
+                type: 'value', min: 0, max: barMax, name: '占总股本 %', nameTextStyle: { fontSize: 18 },
                 axisLabel: { fontSize: 18, formatter: '{value}%' }, splitLine: { lineStyle: { color: '#eee' } }
             },
             yAxis: {
                 type: 'category', data: names, inverse: true,
                 axisLabel: { show: false }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#ccc' } }
             },
-            // 不加 dataZoom：股东数量有限，x 轴已固定 0-44%，一次看全
+            // 不加 dataZoom：股东数量有限，x 轴已按最大持股比例定死，一次看全
             series: [{
                 type: 'bar', data: barData, barCategoryGap: '35%',
                 itemStyle: { borderColor: '#fff', borderWidth: 1 }
@@ -1475,69 +1585,143 @@ window.__renderYnsHolders = function (D) {
 };
 window.__renderYnsHolders(D);
 
-/* ────── 3b. 历年股东持股集中度（第一大 / 前三大 / 前十大 / 其他流通股东占比） ──────
+/* ────── 3b. 历年股东持股集中度（独立板块 · 第一大 / 前三大 / 前十大 三张柱状图） ──────
  * 渝农商默认渲染；股东页银行切换器复用同一函数（window.__renderYnsHolderConcentration）重绘。
- * 数据来源：东方财富 F10「前十名股东」接口按报告期（含季报）汇总，2022-12-22 系股权变动临时公告，
- * 未披露完整前十大名单，占比留空（图中断线）。 */
+ * 数据来源：东方财富 F10「前十名股东」接口按报告期（含季报）汇总，只取 IS_REPORT=1 的定期报告期。
+ * 接口里还混着 IS_REPORT=0 的事件型快照（如 2022-12-22——隆鑫控股 4.33 亿股过户给重庆发展投资那天），
+ * 这类快照只列受影响的前几名（2022-12-22 仅 4 行），算不出前十大合计，已在生成阶段整期剔除。
+ * 三个口径各占一张全宽柱状图，而不是叠在一张图里：量级差得远（渝农商第一大 22% 上下、前三大 37.8%、
+ * 前十大 55%~67%），共用一条 15~70 的轴时第一大 / 前三大那点年际差（<0.2pp）会被完全压平。
+ * 横轴改成「每年一根柱」：原先按报告期画，一年四个点里三个是季报的重复值，柱子只会更密而不更有信息；
+ * 每年取该年最后一个已披露报告期（最新年份即最近一期，柱标签里注明月日）。
+ * 2010–2018 的港交所（03618 H 股年报）口径单独作为一个 series 披露（holder-concentration-hist，
+ * 图例「港交所披露」、同色系浅色柱），与 2019 年起的 A 股定期报告口径分开；
+ * 其中 2010–2017 是重构合并 A+H 口径，柱身再加红色虚线框，与 2018 年报披露原值区分。 */
 window.__renderYnsHolderConcentration = function (D) {
-    if (!document.getElementById('chart-holder-concentration')) return;   // 仅股东页
-    const raw = D['holder-concentration'].raw;
-    const dates = raw.map(r => r[0]);
-    const top1  = raw.map(r => r[1]);
-    const top3  = raw.map(r => r[2]);
-    const top10 = raw.map(r => r[3]);
-    const other = raw.map(r => r[4]);
+    if (!document.getElementById('chart-conc-top10')) return;   // 仅股东页
+    const IDS = ['chart-conc-top1', 'chart-conc-top3', 'chart-conc-top10'];
+    const cur  = (D['holder-concentration'] || {}).raw || [];
+    const hist = (D['holder-concentration-hist'] || {}).raw || [];
+    if (!cur.length && !hist.length) { IDS.forEach(__stub); return; }
+    // 第一大股东逐期可能换人/改名（工行的汇金 vs 财政部、招行的招商局系），并行数组按期给名字
+    const t1Names = (D['holder-concentration'] || {}).top1Names || [];
 
-    const endTag = (short, color) => ({
-        show: true, fontSize: 15, fontWeight: 600, color: color,
-        formatter: p => p.value == null ? '' : short + ' ' + p.value + '%'
+    // hist(年度) + cur(报告期) 合成一条序列，再按年取该年最后一期；
+    // 同一年两边都有时后 push 的 cur（A 股披露原值）覆盖 hist 重构值（用 >= 保证）
+    // src 记住这一年的数据出自哪个交易所的披露：'H' = 港交所年报，'A' = 沪/深交易所定期报告。
+    // 两者分成两个 series 单独画（见下），不再混进同一根序列里。
+    const rows = hist.map(r => ({ date: r[0], t1: r[1], t3: r[2], t10: r[3],
+                                  recon: r[4] === 'recon', t1name: '', src: 'H' }))
+        .concat(cur.map((r, i) => ({ date: r[0], t1: r[1], t3: r[2], t10: r[3],
+                                     recon: false, t1name: t1Names[i] || '', src: 'A' })));
+    const byYear = new Map();
+    rows.forEach(r => {
+        const y = String(r.date).slice(0, 4);
+        const prev = byYear.get(y);
+        if (!prev || r.date >= prev.date) byYear.set(y, r);
     });
+    const items = Array.from(byYear.keys()).sort().map(y => byYear.get(y));
+    // 年末口径的柱只写年份；非年末（最新一期）补上月日，免得当成整年数
+    const labels = items.map(it => it.date.slice(5) === '12-31'
+        ? it.date.slice(0, 4) : it.date.slice(0, 4) + '\n(' + it.date.slice(5) + ')');
 
-    initChart('chart-holder-concentration')?.setOption({
-        backgroundColor: '#fff',
-        textStyle: { fontSize: 18 },
-        legend: {
-            data: ['第一大股东', '前三大股东合计', '前十大股东合计', '其他流通股东'],
-            top: 4, left: 'center', textStyle: { fontSize: 16 }, icon: 'roundRect'
-        },
-        tooltip: {
-            trigger: 'axis', textStyle: { fontSize: 18 },
-            valueFormatter: v => v == null ? '缺口' : v + '%'
-        },
-        grid: { left: 56, right: 150, top: 56, bottom: 70 },
-        xAxis: {
-            type: 'category', data: dates, boundaryGap: false,
-            axisLabel: { fontSize: 16, color: '#555', rotate: 40, interval: 1 },
-            axisLine: { lineStyle: { color: '#bbb' } }
-        },
-        yAxis: {
-            type: 'value', name: '占总股本 %', min: 15, max: 65,
-            nameTextStyle: { fontSize: 18 },
-            axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
-            splitLine: { lineStyle: { color: '#eee' } }
-        },
-        series: [
-            { name: '第一大股东', type: 'line', data: top1, smooth: true, connectNulls: false, symbolSize: 7,
-              emphasis: { focus: 'series' },
-              lineStyle: { width: 3, color: '#16a085' }, itemStyle: { color: '#16a085' },
-              endLabel: endTag('第一大', '#16a085') },
-            { name: '前三大股东合计', type: 'line', data: top3, smooth: true, connectNulls: false, symbolSize: 7,
-              emphasis: { focus: 'series' },
-              lineStyle: { width: 3, color: '#2c6fb3' }, itemStyle: { color: '#2c6fb3' },
-              endLabel: endTag('前三大', '#2c6fb3') },
-            { name: '前十大股东合计', type: 'line', data: top10, smooth: true, connectNulls: false, symbolSize: 7,
-              emphasis: { focus: 'series' },
-              lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-              areaStyle: { color: 'rgba(108,52,131,0.08)' },
-              endLabel: endTag('前十大', '#6c3483') },
-            { name: '其他流通股东', type: 'line', data: other, smooth: true, connectNulls: false, symbolSize: 7,
-              emphasis: { focus: 'series' },
-              lineStyle: { width: 2.5, color: '#95a5a6', type: 'dashed' }, itemStyle: { color: '#95a5a6' },
-              endLabel: endTag('其他', '#95a5a6') }
-        ]
-    });
+    // 港交所上市（H 股年报）口径的数据单独作为一个 series 披露，不与 A 股定期报告口径合成一根柱：
+    // 两者披露主体、股东表范围都不同（H 股年报里 HKSCC 名义持有人代持全部 H 股，A 股定期报告的
+    // 前十大是登记在册股东），混成一条序列会让人误以为是同一张表的连续读数。
+    // 图例里各占一项、颜色深浅区分，legend 只列本行实际存在的来源。
+    const SRC = {
+        H: { name: '港交所披露（H 股年报口径）', tip: '港交所 H 股年报披露' },
+        A: { name: 'A 股定期报告披露（沪 / 深交易所）', tip: 'A 股定期报告披露' }
+    };
+    const srcOrder = ['H', 'A'].filter(s => items.some(it => it.src === s));
+
+    // 三张图共用这一个 formatter：四个口径（第一大 / 前三大 / 前十大 / 其他流通股东）一次列全，
+    // 当前图画的那个加粗，其余灰显作参照——否则切到另一张图就查不到同年的别的口径。
+    // 表头写明这一年的数据取自哪个交易所的披露（港交所年报 / A 股定期报告），口径不同不要看串。
+    const pct = v => v == null ? '缺口' : v + '%';
+    const concFormatter = own => p => {
+        const it = items[p[0].dataIndex];
+        const head = it.date
+            + ' <span style="color:#888">· ' + SRC[it.src].tip + '</span>'
+            + (it.recon ? ' <span style="color:#c0392b">（重构合并 A+H 口径）</span>' : '');
+        const rs = [
+            ['第一大股东' + (it.t1name ? '（' + it.t1name + '）' : ''), pct(it.t1), '第一大'],
+            ['前三大股东合计', pct(it.t3), '前三大'],
+            ['前十大股东合计', pct(it.t10), '前十大'],
+            ['其他流通股东', it.t10 == null ? '缺口' : (100 - it.t10).toFixed(2) + '%', '其他']
+        ];
+        return head + '<br/>' + rs.map(([k, v, tag]) => tag === own
+            ? k + ' <b>' + v + '</b>'
+            : '<span style="color:#999">' + k + ' ' + v + '</span>').join('<br/>');
+    };
+
+    /* 一张柱图：key 取 items 里的字段，own 决定 tooltip 里哪行加粗。
+     * 轴按数据取整、不从 0 起（各行水平差得远：渝农商前十大 54~67%、招行 60%+、天津银行 80%+；
+     * 从 0 起画时 5pp 的 U 形只占图高一成），绝对水平看柱顶数值。
+     * 按披露来源拆成两个 series（港交所 H 股年报 / A 股定期报告）：同一年只会落在其中一个 series，
+     * 故用 barGap:'-100%' 让两个 series 占同一个槽位，柱子仍居中、仍是满宽。 */
+    const mkBar = (id, key, own, colors) => {
+        if (!document.getElementById(id)) return;
+        const vals = items.map(it => it[key]);
+        if (!vals.some(v => v != null)) { __stub(id); return; }
+        const ax = niceAxis(vals, 1);
+        // 柱多了柱顶横排数值会连成一串（招行 2001 起 26 根柱时 "17.95%17.95%…" 直接叠住），
+        // 超过 20 根就把数值竖排：柱宽 46px 容得下一列字，仍能逐柱读数；同时给顶部多留白。
+        // （20 根以内横排还留得下——渝农商 17 根柱时 "58.91%" 各占 70px 互不相碰。）
+        const dense = items.length > 20;
+        const hasLegend = srcOrder.length > 1;   // 只有一个来源时不必占一行图例
+        initChart(id)?.setOption({
+            backgroundColor: '#fff',
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
+                       axisPointer: { type: 'shadow' }, formatter: concFormatter(own) },
+            legend: hasLegend
+                ? { top: 0, itemGap: 24, textStyle: { fontSize: 16, color: '#555' },
+                    data: srcOrder.map(s => SRC[s].name) }
+                : { show: false },
+            grid: { left: 72, right: 32,
+                    top: (dense ? 70 : 34) + (hasLegend ? 30 : 0), bottom: 78 },
+            xAxis: {
+                type: 'category', data: labels,
+                axisLabel: { fontSize: 16, color: '#555', interval: 0, lineHeight: 18 },
+                axisTick: { alignWithLabel: true },
+                axisLine: { lineStyle: { color: '#bbb' } }
+            },
+            yAxis: {
+                type: 'value', name: '占总股本 %',
+                min: ax.min, max: ax.max, interval: ax.interval,
+                nameTextStyle: { fontSize: 18 },
+                axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
+                splitLine: { lineStyle: { color: '#eee' } }
+            },
+            series: srcOrder.map(s => ({
+                name: SRC[s].name, type: 'bar', barMaxWidth: 46,
+                barGap: '-100%',   // 两个来源共用同一个槽位（同一年只有一个来源有值）
+                // 港交所口径里 2010–2017 是重构值，柱身再加红色虚线框，与年报披露原值区分
+                data: items.map(it => it.src !== s ? null : ({
+                    value: it[key],
+                    itemStyle: it.recon
+                        ? { color: colors[s], borderColor: '#c0392b',
+                            borderType: 'dashed', borderWidth: 2 }
+                        : { color: colors[s] }
+                })),
+                label: { show: true, position: 'top', fontSize: dense ? 14 : 15, fontWeight: 600,
+                         color: colors[s], rotate: dense ? 90 : 0,
+                         align: dense ? 'left' : 'center', verticalAlign: 'middle',
+                         distance: dense ? 8 : 5,
+                         formatter: p => p.value == null ? '' : p.value + '%' }
+            }))
+        }, true);   // notMerge —— 切行时年份跨度不同，避免残留上一行的柱
+    };
+
+    // 每张图一个色系：A 股定期报告口径用深色（本行主色），港交所年报口径用同色系浅色
+    mkBar('chart-conc-top1',  't1',  '第一大', { A: '#16a085', H: '#8ccfc4' });
+    mkBar('chart-conc-top3',  't3',  '前三大', { A: '#2c6fb3', H: '#9dc0e3' });
+    mkBar('chart-conc-top10', 't10', '前十大', { A: '#6c3483', H: '#b99ac8' });
 };
 window.__renderYnsHolderConcentration(D);
+
+
 
 // 可排序表格：点击表头按该列排序，"合计"等 data-nosort 行固定在最后不参与排序。
 // 数值列按 data-sort="num" 解析（去掉千分位逗号），文本列按 localeCompare。
@@ -1657,6 +1841,10 @@ window.__renderYnsHolderConcentration(D);
     // 渝农商行: 2019-2025 逐年迁徙率(%), 取自历年A股年报「贷款迁徙率」表 (dfcfw.com PDF, pdftotext -layout 抽取)
     // 2019/2020 已按银保监发[2022]2号文追溯调整口径; 相邻年报重叠年份数值已交叉核对一致, 2026-08-14 提取核对
     const yrsMigrate = D['migrate'].yrsMigrate;
+    // 关注/次级/可疑三档年末迁徙率随行取值（渝农商 2019-2025 已入 migrate 键；其余行 migrate 为空时整图已被 __stub 占位）
+    const mgGuanzhu = D['migrate'].guanzhu || [];
+    const mgCiji    = D['migrate'].ciji || [];
+    const mgKeyi    = D['migrate'].keyi || [];
     initChart('chart-migrate')?.setOption({
         backgroundColor: '#fff', textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
@@ -1665,9 +1853,9 @@ window.__renderYnsHolderConcentration(D);
         xAxis: { type: 'category', data: yrsMigrate, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
-            { name: '关注类', type: 'line', data: [9.64, 49.53, 60.98, 38.49, 26.60, 31.39, 19.73], symbolSize: 7, lineStyle: { width: 3, color: '#f39c12' }, itemStyle: { color: '#f39c12' } },
-            { name: '次级类', type: 'line', data: [21.36, 10.89, 65.23, 29.81, 51.25, 41.55, 73.54], symbolSize: 7, lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' } },
-            { name: '可疑类', type: 'line', data: [2.67, 2.04, 1.78, 2.77, 16.98, 19.75, 36.21], symbolSize: 7, lineStyle: { width: 2.5, color: '#7b241c', type: 'dashed' }, itemStyle: { color: '#7b241c' } }
+            { name: '关注类', type: 'line', data: mgGuanzhu, symbolSize: 7, lineStyle: { width: 3, color: '#f39c12' }, itemStyle: { color: '#f39c12' } },
+            { name: '次级类', type: 'line', data: mgCiji, symbolSize: 7, lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' } },
+            { name: '可疑类', type: 'line', data: mgKeyi, symbolSize: 7, lineStyle: { width: 2.5, color: '#7b241c', type: 'dashed' }, itemStyle: { color: '#7b241c' } }
         ]
     });
 
@@ -1677,17 +1865,19 @@ window.__renderYnsHolderConcentration(D);
     const yrsNormal = D['migrate'].yrsNormal;
     const ynshbNormal = D['migrate'].ynshbNormal;
     const abcNormal   = D['migrate'].abcNormal;
+    const serMg = live([
+        { name: SELF, type: 'line', data: ynshbNormal, connectNulls: false, symbolSize: 7, lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
+        { name: '农业银行', type: 'line', data: abcNormal, connectNulls: false, symbolSize: 6, lineStyle: { width: 2.5, color: '#2980b9', type: 'dashed' }, itemStyle: { color: '#2980b9' },
+          endLabel: { show: true, formatter: '{a}', fontSize: 15, color: '#2980b9', distance: 4 } }
+    ]);
     initChart('chart-migrate-normal')?.setOption({
         backgroundColor: '#fff', textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + '%' },
-        legend: { data: ['渝农商行', '农业银行'], bottom: 2, textStyle: { fontSize: 18 } },
-        grid: { left: 56, right: 24, top: 36, bottom: 52 },
+        legend: { data: serMg.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 56, right: 88, top: 36, bottom: 52 },
         xAxis: { type: 'category', data: yrsNormal, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555', rotate: 40 } },
         yAxis: { type: 'value', name: '%', min: 0, nameTextStyle: { fontSize: 18 }, axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '渝农商行', type: 'line', data: ynshbNormal, connectNulls: false, symbolSize: 7, lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } },
-            { name: '农业银行', type: 'line', data: abcNormal, connectNulls: false, symbolSize: 6, lineStyle: { width: 2.5, color: '#2980b9', type: 'dashed' }, itemStyle: { color: '#2980b9' } }
-        ]
+        series: serMg
     });
 })();
 
@@ -1733,21 +1923,18 @@ window.__renderYnsHolderConcentration(D);
         legend: { data: ['资产总额', '负债总额', '股东权益合计'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 88, right: 24, top: 36, bottom: 56 },
         xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
-        yAxis: [
-            { type: 'value', name: '百万元（资产/负债）', min: 0, nameTextStyle: { fontSize: 16, color: '#555' },
-              axisLabel: { fontSize: 18, color: '#555', formatter: v => (v/10000).toFixed(0) + '万' },
-              splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: '百万元（权益）', min: 0, nameTextStyle: { fontSize: 16, color: '#555' },
-              axisLabel: { fontSize: 18, color: '#555', formatter: v => (v/10000).toFixed(0) + '万' },
-              splitLine: { show: false } }
-        ],
+        // 单一 Y 轴：权益与资产/负债共用同一刻度，如实呈现「银行权益仅占资产 6~10%」的结构
+        // （原来把权益放右轴独立缩放，会让权益线看着与资产/负债一样高，误导量级——见 ⑥ 整改 H1）
+        yAxis: { type: 'value', name: '百万元', min: 0, nameTextStyle: { fontSize: 16, color: '#555' },
+                 axisLabel: { fontSize: 18, color: '#555', formatter: v => (v/10000).toFixed(0) + '万' },
+                 splitLine: { lineStyle: { color: '#eee' } } },
         series: [
             { name: '资产总额', type: 'line', data: assets, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
               areaStyle: { color: 'rgba(108,52,131,0.08)' } },
             { name: '负债总额', type: 'line', data: liab, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#c0392b' }, itemStyle: { color: '#c0392b' } },
-            { name: '股东权益合计', type: 'line', yAxisIndex: 1, data: equity, smooth: true, symbolSize: 6,
+            { name: '股东权益合计', type: 'line', data: equity, smooth: true, symbolSize: 6,
               lineStyle: { width: 3, color: '#1e8449' }, itemStyle: { color: '#1e8449' } }
         ]
     });
@@ -1875,8 +2062,11 @@ window.addEventListener('resize', () => {
     // 2013 谢文辉当年刚获聘行长、任职资格未获监管核准，年报本身未披露其任何报酬数（非代行职务留空，是确无数据）
     const presidentNames = D['chairman-pay'].presidentNames;
     const presidentPay   = D['chairman-pay'].presidentPay;
-    // 一人兼两职/代行区间：2022(谢文辉兼)、2024-2025(隋军代行)。用虚线线型标注这些年两条线数值相同
-    const dashedIdx = new Set([12, 14, 15]);
+    // 一人兼两职/代行区间：用虚线线型标注两条线数值相同的年份。索引由数据 dashedIdx 提供
+    // （编辑口径，需语义读年报判定同一人兼任，不能靠数值相等推断，故随数据下发）；缺省则无虚线。
+    const dashedIdx = new Set(D['chairman-pay'].dashedIdx || []);
+    // 换任/代行标注线：由数据 marks 提供 [{xAxis, name}]，缺省则不画标注线（各行专属）
+    const payMarks = D['chairman-pay'].marks || [];
 
     initChart('chart-chairman-pay')?.setOption({
         backgroundColor: '#fff',
@@ -1905,10 +2095,7 @@ window.addEventListener('resize', () => {
                     symbol: 'none', silent: true,
                     lineStyle: { color: '#999', type: 'dashed', width: 1 },
                     label: { fontSize: 16, color: '#888', formatter: p => p.name },
-                    data: [
-                        { xAxis: '2022', name: '谢文辉接任' },
-                        { xAxis: '2024', name: '隋军代行' }
-                    ]
+                    data: payMarks
                 },
                 label: { show: true, position: 'top', fontSize: 15, color: '#8a6d1f', formatter: '{c}' }
             },
@@ -2012,131 +2199,197 @@ window.addEventListener('resize', () => {
 })();
 
 
-/* ────── 0. 宏观背景：社会融资规模 TSF（2015–2026.7，人民银行调查统计司月度） ────── */
+/* ────── risk.html · 权益资产比（股东权益合计 ÷ 资产总额，2010–2025，四行对比） ──────
+ * = 1 − 资产负债率 = 1/权益乘数，最直观的财务杠杆指标；全口径权益（含少数股东权益）÷ 账面总资产。
+ * 数据来源：东方财富 F10 各行历年年报合并资产负债表（data/tables/bank_<code>_annual.json 的 equity_asset_ratio）。
+ */
 (function () {
-    if (!document.getElementById('chart-tsf-stock')) return;  // 非本页跳过
+    if (!document.getElementById('chart-equity-asset')) return;
+    const years = D['equity-asset'].years;
+    const yrcb  = D['equity-asset'].yrcb;   // 本行（键名沿用 yrcb，换行时只换系列名）
+    const abc   = D['equity-asset'].abc;    // 农业银行
+    const cmb   = D['equity-asset'].cmb;    // 招商银行
+    const psb   = D['equity-asset'].psb;    // 邮储银行
 
-    /* ---------- 数据（139 月，2015-01 → 2026-07） ---------- */
-    const months     = D['tsf-stock'].months;
-    const stock      = D['tsf-stock'].stock;
-    const yoy        = D['tsf-stock'].yoy;
-    const flow_total = D['tsf-stock'].flow_total;
-    const rmb_loans  = D['tsf-stock'].rmb_loans;
-    const gov_bonds  = D['tsf-stock'].gov_bonds;
-    const corp_bonds = D['tsf-stock'].corp_bonds;
-    const und_ba     = D['tsf-stock'].und_ba;
-    const trust_ln   = D['tsf-stock'].trust_ln;
-    const entrust    = D['tsf-stock'].entrust;
-    const equity     = D['tsf-stock'].equity;
-
-    /* 只在每年 1 月显示年份 */
-    const xLabel = { fontSize: 18, color: '#555',
-        formatter: (v, i) => (v.slice(-2) === '01' ? v.slice(0, 4) : ''),
-        interval: 0 };
-
-    /* ---------- 图 1：存量 + 同比 ---------- */
-    initChart('chart-tsf-stock')?.setOption({
+    const serEA = live([
+        { name: SELF, type: 'line', data: yrcb, smooth: true, connectNulls: true, symbolSize: 6,
+          lineStyle: { width: 3, color: '#16a085' }, itemStyle: { color: '#16a085' },
+          areaStyle: { color: 'rgba(22,160,133,0.07)' },
+          label: { show: true, position: 'top', fontSize: 18, color: '#16a085', formatter: '{c}%' } },
+        peerLine('农业银行', abc, '#2874a6'),
+        peerLine('招商银行', cmb, '#229954'),
+        peerLine('邮储银行', psb, '#d68910')
+    ]);
+    initChart('chart-equity-asset')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
-        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
-            formatter: p => {
-                const d = p[0].axisValue;
-                let s = `<b>${d}</b>`;
-                p.forEach(x => {
-                    if (x.value == null) return;
-                    const unit = x.seriesName === '同比 YoY' ? '%' : ' 万亿';
-                    s += `<br>${x.marker}${x.seriesName}：${x.value}${unit}`;
-                });
-                return s;
-            } },
-        legend: { data: ['社融存量', '同比 YoY'], top: 4, textStyle: { fontSize: 18 } },
-        grid: { left: 72, right: 64, top: 42, bottom: 40 },
-        xAxis: { type: 'category', data: months, boundaryGap: false,
-            axisLabel: xLabel, axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: [
-            { type: 'value', name: '万亿元', min: 0, nameTextStyle: { fontSize: 18, color: '#555' },
-              axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-            { type: 'value', name: 'YoY %', min: 0, max: 16, nameTextStyle: { fontSize: 18, color: '#c0392b' },
-              axisLabel: { fontSize: 18, color: '#c0392b', formatter: '{value}%' }, splitLine: { show: false } }
-        ],
-        series: [
-            { name: '社融存量', type: 'line', data: stock, connectNulls: true,
-              yAxisIndex: 0, showSymbol: false, smooth: true,
-              lineStyle: { width: 2.5, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-              areaStyle: { color: 'rgba(108,52,131,0.10)' } },
-            { name: '同比 YoY', type: 'line', data: yoy, connectNulls: true,
-              yAxisIndex: 1, showSymbol: false, smooth: true,
-              lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              markLine: { silent: true, symbol: 'none', label: { show: false },
-                data: [
-                    { xAxis: '2018-07', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2018.07\nABS+核销', position: 'insideEndTop', fontSize: 14, color: '#666' } },
-                    { xAxis: '2018-09', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2018.09\n政府专项债', position: 'insideEndBottom', fontSize: 14, color: '#666' } },
-                    { xAxis: '2020-03', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2020Q1\n疫情信用扩张', position: 'insideEndTop', fontSize: 14, color: '#666' } },
-                    { xAxis: '2023-01', lineStyle: { color: '#999', type: 'dashed' },
-                      label: { show: true, formatter: '2023\n三类非存款金融纳入', position: 'insideEndBottom', fontSize: 14, color: '#666' } }
-                ] } }
-        ]
-    });
-
-    /* ---------- 图 2：当月新增分项（堆叠柱 + 总量线） ---------- */
-    /* 分项配色：贷款主体走紫，政府债走橙，企业债走蓝，影子银行三剑客走灰，其他走浅色 */
-    initChart('chart-tsf-flow')?.setOption({
-        backgroundColor: '#fff',
-        textStyle: { fontSize: 18 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
-            formatter: p => {
-                const d = p[0].axisValue;
-                let s = `<b>${d}</b>`;
-                // 从大到小排
-                p.filter(x => x.value != null && x.value !== 0)
-                 .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-                 .forEach(x => { s += `<br>${x.marker}${x.seriesName}：${Number(x.value).toLocaleString()} 亿`; });
-                return s;
-            } },
-        legend: { top: 4, textStyle: { fontSize: 18 },
-            data: ['人民币贷款','政府债券','企业债券','未贴现票据','委托贷款','信托贷款','非金融企业股票','社融合计'] },
-        grid: { left: 80, right: 24, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: months, axisLabel: xLabel,
-            axisLine: { lineStyle: { color: '#bbb' } } },
-        yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 18, color: '#555' },
-            axisLabel: { fontSize: 18, color: '#555',
-                formatter: v => (Math.abs(v) >= 10000 ? (v / 10000).toFixed(1) + '万' : v) },
-            splitLine: { lineStyle: { color: '#eee' } } },
-        series: [
-            { name: '人民币贷款',   type: 'bar', stack: 'flow', data: rmb_loans,
-              itemStyle: { color: '#6c3483' } },
-            { name: '政府债券',     type: 'bar', stack: 'flow', data: gov_bonds,
-              itemStyle: { color: '#e67e22' } },
-            { name: '企业债券',     type: 'bar', stack: 'flow', data: corp_bonds,
-              itemStyle: { color: '#2980b9' } },
-            { name: '未贴现票据',   type: 'bar', stack: 'flow', data: und_ba,
-              itemStyle: { color: '#7f8c8d' } },
-            { name: '委托贷款',     type: 'bar', stack: 'flow', data: entrust,
-              itemStyle: { color: '#95a5a6' } },
-            { name: '信托贷款',     type: 'bar', stack: 'flow', data: trust_ln,
-              itemStyle: { color: '#bdc3c7' } },
-            { name: '非金融企业股票', type: 'bar', stack: 'flow', data: equity,
-              itemStyle: { color: '#af7ac5' } },
-            { name: '社融合计',     type: 'line', data: flow_total, showSymbol: false, smooth: false,
-              lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-              z: 5 }
-        ]
+        tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '未披露' : v + '%' },
+        legend: { data: serEA.map(s => s.name), bottom: 2, textStyle: { fontSize: 18 } },
+        grid: { left: 48, right: 88, top: 56, bottom: 60 },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        yAxis: { type: 'value', name: '权益资产比%', min: 0, max: axMax(11, yrcb, abc, cmb, psb),
+                 nameTextStyle: { fontSize: 18 },
+                 axisLabel: { color: '#16a085', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
+        series: serEA
     });
 })();
+
 
 }
 
 (function () {
-    var API = 'http://127.0.0.1:5000/api/company_charts?code=' + window.COMPANY_CODE;
+    // 后端渲染时页面与接口同源，用相对路径（换端口/换机器都不用改代码）；
+    // file:// 直接打开时没有同源可言，仍指向本机 5000 端口的开发服务。
+    var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+    var API = BASE + '/api/company_charts?code=' + window.COMPANY_CODE;
     if (typeof axios !== 'undefined') {
         axios.get(API).then(function (res) {
-            if (!res.data || res.data.code !== 200) throw new Error(res.data && res.data.msg || 'company_charts load failed');
+            // 后端 404 / 无数据：整页图位换占位说明，不调 renderAll（拿 undefined 解构会整页崩）
+            if (!res.data || res.data.code !== 200 || !res.data.data) { stubAll(); return; }
             window.__companyD = res.data.data;   // 缓存原始数据供股东页银行切换器复用
             window.__applyBankIdentity(res.data.data);
             renderAll(res.data.data);
-        }).catch(function (e) { console.error('company_charts fetch error', e); });
+        }).catch(function (e) { console.error('company_charts fetch error', e); stubAll(); });
+    }
+})();
+
+/* ────── ROE 图·快速切换银行 ──────
+ * 只有业绩页（index.html）里有 #roe-banks 这排按钮，其余页面本块直接跳过。
+ * 与导航条上的银行下拉框分工：下拉框换 ?code= 整页重载（整页都变成那家行），
+ * 这排按钮不动页面主体，只把 ROE 一张图换成别家行的曲线 —— 用来快速对照 ROE 高低。
+ * 数据按需向 /api/company_charts?code=<code> 拉（与主数据同一端点）并缓存，二次点击不再发请求。 */
+(function () {
+    var box = document.getElementById('roe-banks');
+    if (!box) return;
+
+    var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+    var CACHE = {};          // code → payload；本页自身那家行进来时用 window.__companyD 填
+    var cur = document.getElementById('roe-current');
+    var note = document.getElementById('note-roe');
+    var OWN_NOTE = note ? note.innerHTML : '';   // 本页银行的三段口径说明，切回来时还原
+    var btns = [];
+
+    // 可切换清单与导航下拉框同源：后端注入 window.__BANKS，静态打开时由 bank-header.js 兜底赋值。
+    // bank-header.js 是 defer、本文件是普通脚本，所以按钮要等 DOMContentLoaded 再建。
+    function banks() {
+        return (Array.isArray(window.__BANKS) && window.__BANKS.length) ? window.__BANKS : [];
+    }
+
+    function setActive(code) {
+        btns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-code') === code); });
+    }
+
+    // 对比模式要塞十条线加两行图例，400px 高度不够；切回单行时还原，避免图被拉得空旷
+    function setHeight(px) {
+        var el = document.getElementById('chart-roe');
+        if (!el || el.style.height === px) return;
+        el.style.height = px;
+        var ins = window.echarts && echarts.getInstanceByDom(el);
+        if (ins) ins.resize();   // 容器高度是 JS 改的，ECharts 不会自己知道
+    }
+
+    function draw(code, name, D) {
+        if (!document.getElementById('chart-roe')) return;   // 本页该图已被 __stub 摘掉 id
+        setHeight('400px');
+        window.__renderRoe(D);
+        if (cur) cur.textContent = name;
+        if (note) {
+            note.innerHTML = code === window.COMPANY_CODE ? OWN_NOTE :
+                ('当前显示 <b>' + name + '</b> 的 ROE，三段口径同上（简单 ROE / 旧准则 / 新准则加权平均净资产收益率）。' +
+                 '数据来源：该行历年年度报告「主要财务指标」，经 <code>data/tables/company_charts_' + code + '.json</code>。' +
+                 '按钮切回本页银行可看完整口径说明。');
+        }
+    }
+
+    function drawCompare(items) {
+        if (!document.getElementById('chart-roe')) return;
+        setHeight('600px');
+        window.__renderRoeCompare(items);
+        if (cur) cur.textContent = '全部对比（' + items.length + ' 家）';
+        if (note) {
+            note.innerHTML = '一键对比：' + items.length + ' 家银行的 ROE 画在同一张图，每行一条线。' +
+                '口径拼接规则——同一年优先取年报披露的<b>新准则加权平均净资产收益率</b>，' +
+                '该年未披露时退到<b>旧准则加权平均股东权益回报率</b>，仍无则用<b>简单 ROE</b>（净利/平均权益，' +
+                '仅渝农商行 2009–2013 手工补算）。因此 2018 年前后同一条线存在准则切换断口，跨段比较请留意。' +
+                '各行起始年份不同（多数行数据自 2014 或 2018 年起），缺披露的年份线段断开。' +
+                '本页银行画粗线并在末端标数值；银行家数超过配色轮数时，第二轮改用虚线区分。' +
+                '数据来源：各行历年年度报告「主要财务指标」，经 <code>data/tables/company_charts_&lt;code&gt;.json</code>。';
+        }
+    }
+
+    function pick(code, name) {
+        setActive(code);
+        // 本页自身那家行：主数据已在 window.__companyD 里，不再发请求
+        var D = code === window.COMPANY_CODE ? window.__companyD : CACHE[code];
+        if (D) { draw(code, name, D); return; }
+        if (typeof axios === 'undefined') return;
+        if (cur) cur.textContent = name + '（加载中…）';
+        axios.get(BASE + '/api/company_charts?code=' + code).then(function (res) {
+            if (!res.data || res.data.code !== 200 || !res.data.data) throw new Error(res.data && res.data.msg);
+            CACHE[code] = res.data.data;
+            draw(code, name, res.data.data);
+        }).catch(function (e) {
+            console.error('ROE 快速切换：' + code + ' 数据拉取失败', e);
+            if (cur) cur.textContent = name + '（数据拉取失败）';
+        });
+    }
+
+    // 一键对比：把清单里所有行的数据凑齐（缓存里没有的并发拉），谁失败就跳过谁，不因一家挂掉整图空白
+    function pickAll() {
+        setActive('__all');
+        if (typeof axios === 'undefined') return;
+        var list = banks();
+        if (cur) cur.textContent = '全部对比（加载中…）';
+        var jobs = list.map(function (b) {
+            var D = b.code === window.COMPANY_CODE ? window.__companyD : CACHE[b.code];
+            if (D) return Promise.resolve({ code: b.code, name: b.name, roe: D['roe'] });
+            return axios.get(BASE + '/api/company_charts?code=' + b.code).then(function (res) {
+                if (!res.data || res.data.code !== 200 || !res.data.data) throw new Error(res.data && res.data.msg);
+                CACHE[b.code] = res.data.data;
+                return { code: b.code, name: b.name, roe: res.data.data['roe'] };
+            }).catch(function (e) {
+                console.error('ROE 一键对比：' + b.code + ' 数据拉取失败', e);
+                return null;
+            });
+        });
+        Promise.all(jobs).then(function (rows) {
+            // 没有 roe 这一项的行（该行数据里缺这块）也一并剔掉，免得图例挂空名字
+            var items = rows.filter(function (r) { return r && r.roe && (r.roe.years || []).length; });
+            if (!items.length) { if (cur) cur.textContent = '全部对比（无可用数据）'; return; }
+            drawCompare(items);
+        });
+    }
+
+    function build() {
+        var list = banks();
+        if (!list.length || box.querySelector('button')) return;
+        list.forEach(function (b) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.setAttribute('data-code', b.code);
+            btn.textContent = b.name;
+            btn.addEventListener('click', function () { pick(b.code, b.name); });
+            box.appendChild(btn);
+            btns.push(btn);
+        });
+        // 对比按钮排在最后，用 .cmp 与单行按钮区分（样式里给了实心边框）
+        var all = document.createElement('button');
+        all.type = 'button';
+        all.className = 'cmp';
+        all.setAttribute('data-code', '__all');
+        all.textContent = '一键对比全部';
+        all.addEventListener('click', pickAll);
+        box.appendChild(all);
+        btns.push(all);
+        setActive(window.COMPANY_CODE);
+        // 本页银行的名字由数据里的 _bank 元信息给（HTML 里的静态文案是渝农商行版本）
+        var own = list.filter(function (b) { return b.code === window.COMPANY_CODE; })[0];
+        if (own && cur) cur.textContent = own.name;
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', build);
+    } else {
+        build();
     }
 })();

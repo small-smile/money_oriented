@@ -16,6 +16,20 @@ section > h2 {
 }
 section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
 .chart { width: 100%; height: 428px; }   /* 380 × 1.125 */
+/* 图上方的一排切换按钮（如 ROE 图的快速切换银行）：与石油页 .btn-row 同一视觉，
+ * 选中态用深底白字，和 KPI 卡片的浅蓝底区分开 */
+.chart-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px 14px; }
+.chart-btns .label { font-size: 18px; color: #6b7280; margin-right: 2px; }
+.chart-btns button {
+    font: inherit; font-size: 18px; color: #10243e; background: #f3f6fa;
+    border: 1px solid #dde8f3; border-radius: 14px; padding: 4px 14px; cursor: pointer;
+}
+.chart-btns button:hover { background: #e6eef7; }
+.chart-btns button.active { background: #10243e; border-color: #10243e; color: #fff; font-weight: 600; }
+/* 一键对比：和「换成某一家行」不是同类动作，用白底描边+左侧留空跟单行按钮拉开距离 */
+.chart-btns button.cmp { margin-left: 6px; background: #fff; border-color: #10243e; font-weight: 600; }
+.chart-btns button.cmp:hover { background: #eef3f9; }
+.chart-btns button.cmp.active { background: #10243e; color: #fff; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
 .kpi .label { font-size: 18px; color: #7f8c8d; }

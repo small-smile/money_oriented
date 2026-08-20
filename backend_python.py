@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, abort, send_from_directory
 from flask_cors import CORS
 import os
 import json
@@ -793,7 +793,189 @@ def read_company_charts(code):
 @app.route("/api/company_charts")
 def api_company_charts():
     """参数: code（银行 A 股 6 位代码或 H 股 5 位代码），默认渝农商行 601077"""
-    return jsonify(read_company_charts(request.args.get("code", "601077")))
+    return jsonify(read_company_charts(request.args.get("code", DEFAULT_BANK_CODE)))
+
+
+def read_tsf():
+    """社会融资规模（TSF）宏观数据，独立于任一银行 —— 直接沿用 601077 精编文件里
+    已规整好的 tsf-stock 块（months/stock/yoy/flow_total/分项），供行业页 tsf.html 使用。"""
+    path = f"data/tables/company_charts_{DEFAULT_BANK_CODE}.json"
+    if not os.path.exists(path):
+        return {"code": 404, "msg": "社融数据文件不存在", "data": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        d = json.load(f)
+    tsf = d.get("tsf-stock")
+    if not tsf:
+        return {"code": 404, "msg": "社融数据缺失 tsf-stock 键", "data": {}}
+    return {"code": 200, "data": tsf}
+
+
+@app.route("/api/tsf")
+def api_tsf():
+    return jsonify(read_tsf())
+
+
+# ── 银行详情页：同一份 HTML 按 bank code 动态下发 ─────────────────────────
+# 原来 7 个页面是纯静态文件（file:// 直接打开），银行代码只有浏览器里的 JS 知道；
+# 改由本路由渲染后：服务端校验 code、把 window.COMPANY_CODE 和可切换银行清单注入 <head>，
+# 首屏就确定是哪家行，导航栏的银行下拉框也不用再在 bank-header.js 里手写名单
+# （清单 = data/tables/company_charts_<code>.json 实际存在的那些，加行只需放数据文件）。
+# 静态资源仍按原目录结构下发，所以页面里 ../../common/base.css 这类相对路径不用改。
+DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "dashboard")
+TABLES_DIR = os.path.join(os.path.dirname(__file__), "data", "tables")
+BANK_PAGES = ("index.html", "asset.html", "debt.html", "risk.html",
+              "intro.html", "balance-sheet.html", "shareholder.html")
+DEFAULT_BANK_CODE = "601077"
+# 601077 排最前：它是手工精编（42 个数据键），其余由 gen_company_charts.py 批量生成
+# （15~16 个键），缺的图由 charts.js 的 __stub() 贴占位说明。名单外的代码只影响排序。
+# 顺序按机构类型分组：国有大行→股份行→城商行→农商行→纯 H 股。list_banks() 只用这个顺序排序，
+# bank-header.js 的分组面板（GROUPS）另按 tier 分组展示，两处顺序不必一致但代码集合要对齐。
+BANK_ORDER = (
+    DEFAULT_BANK_CODE,
+    # 国有大行
+    "601398", "601288", "601988", "601939", "601328", "601658",
+    # 股份行
+    "600036", "601166", "600000", "601998", "600016", "000001",
+    "600015", "601818", "601916",
+    # 城商行
+    "601169", "601229", "600919", "002142", "601009", "601838",
+    "600926", "601187", "002936", "002948", "601577", "002966",
+    "601963", "601665", "601997", "600928", "001227",
+    # 农商行（601077 已在最前）
+    "601825", "601128", "002958", "600908", "002807", "601860",
+    "002839", "601528", "603323",
+    # 纯 H 股
+    "01578", "01916",
+)
+
+
+# 上市日期：A+H 两地上市的分别给 A 股（上交所/深交所首日）与 H 股（港交所首日）；
+# 仅 A 股的只有 "a"，纯 H 股（01578/01916）只有 "h"。
+# 与 bank-header.js 的 BANKS 兜底名单里的 aListDate/hListDate 保持一致（两处都要改）。
+LISTING_DATES = {
+    # 国有大行（均 A+H）
+    "601398": {"a": "2006-10-27", "h": "2006-10-27"},
+    "601288": {"a": "2010-07-15", "h": "2010-07-16"},
+    "601988": {"a": "2006-07-05", "h": "2006-06-01"},
+    "601939": {"a": "2007-09-25", "h": "2005-10-27"},
+    "601328": {"a": "2007-05-15", "h": "2005-06-23"},
+    "601658": {"a": "2019-12-10", "h": "2016-09-28"},
+    # 股份行
+    "600036": {"a": "2002-04-09", "h": "2006-09-22"},
+    "601166": {"a": "2007-02-05"},
+    "600000": {"a": "1999-11-10"},
+    "601998": {"a": "2007-04-27", "h": "2007-04-27"},
+    "600016": {"a": "2000-12-19", "h": "2009-11-26"},
+    "000001": {"a": "1991-04-03"},
+    "600015": {"a": "2003-09-12"},
+    "601818": {"a": "2010-08-18", "h": "2013-12-20"},
+    "601916": {"a": "2019-11-26", "h": "2016-03-30"},
+    # 城商行
+    "601169": {"a": "2007-09-19"},
+    "601229": {"a": "2016-11-16"},
+    "600919": {"a": "2016-08-02"},
+    "002142": {"a": "2007-07-19"},
+    "601009": {"a": "2007-07-19"},
+    "601838": {"a": "2018-01-31"},
+    "600926": {"a": "2016-10-27"},
+    "601187": {"a": "2020-10-27"},
+    "002936": {"a": "2018-09-19", "h": "2015-12-23"},
+    "002948": {"a": "2019-01-16", "h": "2015-12-03"},
+    "601577": {"a": "2018-09-26"},
+    "002966": {"a": "2019-08-02"},
+    "601963": {"a": "2021-02-05", "h": "2013-11-06"},
+    "601665": {"a": "2021-06-18"},
+    "601997": {"a": "2016-08-16"},
+    "600928": {"a": "2019-03-01"},
+    "001227": {"a": "2022-01-17"},
+    # 农商行
+    "601077": {"a": "2019-10-29", "h": "2010-12-16"},
+    "601825": {"a": "2021-08-19"},
+    "601128": {"a": "2016-09-30"},
+    "002958": {"a": "2019-03-26"},
+    "600908": {"a": "2016-09-23"},
+    "002807": {"a": "2016-09-02"},
+    "601860": {"a": "2019-01-03"},
+    "002839": {"a": "2017-01-24"},
+    "601528": {"a": "2021-06-25"},
+    "603323": {"a": "2016-11-29"},
+    # 纯 H 股（仅港交所）
+    "01578": {"h": "2016-03-30"},
+    "01916": {"h": "2018-06-26"},
+}
+
+
+def list_banks():
+    """可切换银行清单：扫 company_charts_<code>.json，行名取文件里的 _bank 元信息。"""
+    found = {}
+    for name in sorted(os.listdir(TABLES_DIR)):
+        m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
+        if not m:
+            continue
+        try:
+            with open(os.path.join(TABLES_DIR, name), "r", encoding="utf-8") as f:
+                b = (json.load(f) or {}).get("_bank") or {}
+        except (OSError, ValueError):
+            continue          # 半截/损坏的数据文件不该让整页 500
+        code = m.group(1)
+        ld = LISTING_DATES.get(code, {})
+        found[code] = {
+            "code": code,
+            "name": b.get("shortName") or code,
+            "fullName": b.get("fullName") or "",
+            "reportYear": b.get("reportYear") or "",
+            "tier": b.get("tier") or "",
+            "aListDate": ld.get("a", ""),
+            "hListDate": ld.get("h", ""),
+        }
+    ordered = [found.pop(c) for c in BANK_ORDER if c in found]
+    return ordered + [found[c] for c in sorted(found)]
+
+
+def render_bank_page(page, code):
+    """读取静态 HTML，在 </head> 前插入本页的银行代码与可切换清单。"""
+    with open(os.path.join(DASHBOARD_DIR, "company", "bank", page), "r", encoding="utf-8") as f:
+        html = f.read()
+    inject = ("<script>/* 由 backend_python.py 动态注入 */\n"
+              "window.COMPANY_CODE=%s;window.__BANKS=%s;</script>\n</head>"
+              % (json.dumps(code), json.dumps(list_banks(), ensure_ascii=False)))
+    return html.replace("</head>", inject, 1)
+
+
+@app.route("/")
+def home_page():
+    return redirect("/dashboard/index.html")
+
+
+@app.route("/dashboard/")
+@app.route("/dashboard/<path:sub>")
+def dashboard_page(sub="index.html"):
+    """dashboard/ 下的看板：银行详情页动态渲染，其余（css/js/其它行业页面）原样下发。"""
+    if sub.endswith("/"):
+        sub += "index.html"
+    parts = sub.split("/")
+    if len(parts) == 3 and parts[0] == "company" and parts[1] == "bank" and parts[2] in BANK_PAGES:
+        code = request.args.get("code") or DEFAULT_BANK_CODE
+        if not re.fullmatch(r"[0-9]{5,6}", code):
+            code = DEFAULT_BANK_CODE      # 非法代码退回默认行，不把任意字符串带进页面
+        return render_bank_page(parts[2], code)
+    return send_from_directory(DASHBOARD_DIR, sub)
+
+
+@app.route("/bank/<code>/")
+@app.route("/bank/<code>/<page>")
+def bank_page(code, page="index.html"):
+    """短地址 /bank/601288/risk.html：重定向到 /dashboard/... ?code=，
+    保持页面 URL 深度不变，页内相对路径的 css/js 才不会 404。"""
+    if page not in BANK_PAGES or not re.fullmatch(r"[0-9]{5,6}", code):
+        abort(404)
+    return redirect("/dashboard/company/bank/%s?code=%s" % (page, code))
+
+
+@app.route("/api/banks")
+def api_banks():
+    """导航栏银行下拉框的数据源；有 company_charts 数据文件的行才列出"""
+    return jsonify({"code": 200, "data": list_banks()})
 
 
 # 六家上市险企，数据由 data/extract/fetch_insurer_financials.py 生成：前五家为 A+H 上市、取 A 股年报口径，
@@ -847,6 +1029,221 @@ def api_insurer_annual():
 def api_insurer_peers():
     """五家上市险企同业对比数据，一次返回"""
     return jsonify(read_insurer_peers())
+
+
+# 六家头部央企开发商，数据由 data/extract/fetch_developer_financials.py 生成：
+# 前三家 A 股上市（取 A 股年报口径），后三家仅在港交所上市，走港股 F10；
+# 港股 F10 金额是年报本位币原值不折算，中海（00688）为港元口径，页面需单独标注
+DEVELOPER_PEERS = ["600048", "001979", "000069", "00688", "01109", "00817"]
+
+
+def _developer_path(code):
+    return os.path.join(os.path.dirname(__file__), "data", "tables", f"developer_{code}_annual.json")
+
+
+def read_developer_annual(code):
+    """单家开发商历年财务数据，取 data/tables/developer_<code>_annual.json。"""
+    if not re.fullmatch(r"[0-9]{5,6}", code):
+        return {"code": 400, "msg": f"非法开发商代码 {code}", "data": {}}
+    path = _developer_path(code)
+    if not os.path.exists(path):
+        return {"code": 404, "msg": f"开发商 {code} 尚无年度数据文件", "data": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        return {"code": 200, "data": json.load(f)}
+
+
+def read_developer_peers():
+    """同业对比用：code → {name, group, currency, source, caliber_note, annual, dividend_per10}。"""
+    peers = {}
+    for code in DEVELOPER_PEERS:
+        path = _developer_path(code)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            d = json.load(f)
+        peers[code] = {
+            "name": d.get("name"),
+            "secucode": d.get("secucode"),
+            "group": d.get("group"),
+            "currency": d.get("currency"),
+            "source": d.get("source"),
+            "unit_note": d.get("unit_note"),
+            "caliber_note": d.get("caliber_note"),
+            "annual": d.get("annual", {}),
+            "dividend_per10": d.get("dividend_per10", {}),
+        }
+    if not peers:
+        return {"code": 404, "msg": "尚无开发商年度数据文件，请先运行 data/extract/fetch_developer_financials.py", "data": {}}
+    return {"code": 200, "data": peers}
+
+
+@app.route("/api/developer_annual")
+def api_developer_annual():
+    """参数: code（开发商 A 股 6 位或 H 股 5 位代码），默认保利发展 600048"""
+    return jsonify(read_developer_annual(request.args.get("code", "600048")))
+
+
+@app.route("/api/developer_peers")
+def api_developer_peers():
+    """六家头部央企开发商同业对比数据，一次返回"""
+    return jsonify(read_developer_peers())
+
+
+# 八家水泥企业（地产的上游建材），数据由 data/extract/fetch_cement_financials.py 生成：
+# 前五家 A 股上市（海螺 600585、华新 600801 为 A+H，按项目规则取 A 股年报口径），
+# 后三家仅在港交所上市走港股 F10（无资产负债表明细，净现金/重资产度等无序列）。
+# 注意 000877 天山股份是 03323 中国建材的并表子公司，两条线不是独立样本，不能相加。
+CEMENT_PEERS = ["600585", "000877", "600801", "000401", "002233", "03323", "01313", "00743"]
+
+
+def _cement_path(code):
+    return os.path.join(os.path.dirname(__file__), "data", "tables", f"cement_{code}_annual.json")
+
+
+def _cement_ops_manual():
+    """经营口径手工层 data/tables/cement_ops_manual.json：逐份年报 PDF 语义读出的
+    水泥熟料销量、分产品收入成本、年报直接披露的吨成本/吨售价。财务接口没有这些字段。"""
+    path = os.path.join(os.path.dirname(__file__), "data", "tables", "cement_ops_manual.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _cement_unit(amount_mn, sales_wt):
+    """百万元 ÷ 万吨 → 元/吨。分子分母任一缺失就返回 None，不做估算。"""
+    if amount_mn is None or not sales_wt:
+        return None
+    return round(amount_mn * 100.0 / sales_wt, 2)
+
+
+def _cement_ops_year(code, year, r):
+    """把某年年报提取值按该公司口径规则归一成 ops_* 字段。分子分母必须同口径，
+    各家的选择规则写在 cement_ops_manual.json 的 unit_rule 里，这里是它的实现：
+    海螺 2018 年起用自产品行（剔贸易）、华新 2019 年起收入不含熟料故分母换成水泥销量、
+    天山 2016 及以前收入含熟料而销量不含（不可直除，吨指标置 None）、
+    冀东与塔牌收入是水泥单品故分母用水泥销量、三家港股用水泥熟料合计销量。"""
+    y = int(year)
+    rev, cost = r.get("rev_cement_mn"), r.get("cost_cement_mn")
+    if code == "600585":
+        if r.get("rev_self_mn") is not None:
+            rev, cost, den = r["rev_self_mn"], r.get("cost_self_mn"), r.get("sales_self_wt")
+        else:
+            rev, cost, den = r.get("rev_total_mn"), r.get("cost_total_mn"), r.get("sales_total_wt")
+    elif code == "600801":
+        den = r.get("sales_total_wt") if y <= 2018 else r.get("sales_cement_wt")
+    elif code == "000877":
+        den = r.get("sales_total_wt") if y >= 2017 else None
+    elif code in ("000401", "002233"):
+        den = r.get("sales_cement_wt")
+    else:
+        den = r.get("sales_total_wt")
+
+    unit_rev = _cement_unit(rev, den)
+    unit_cost = _cement_unit(cost, den)
+    if unit_cost is None:
+        # 华润建材科技的分部只有营业额没有成本，退回年报「每吨成本结构图」披露的合计值
+        unit_cost = r.get("unit_cost_disclosed") if code == "01313" else None
+    unit_gross = None if (unit_rev is None or unit_cost is None) else round(unit_rev - unit_cost, 2)
+
+    # 华润建材科技 2022 年及以前年报以港元呈列，2023 年起改人民币：两段分开成两组字段，
+    # 不折算也不拼成一条序列（折算需汇率假设，且年报重列口径与年均汇率不同）
+    sfx = "_hkd" if r.get("currency") == "HKD" else ""
+    out = {
+        "ops_sales_total_wt": r.get("sales_total_wt"),
+        "ops_sales_cement_wt": r.get("sales_cement_wt"),
+        "ops_sales_clinker_wt": r.get("sales_clinker_wt"),
+        "ops_agg_sales_wt": r.get("agg_sales_wt"),
+        "ops_concrete_sales_wm3": r.get("concrete_sales_wm3"),
+        "ops_sales_base_wt": den,
+        "ops_gm_pct": r.get("gm_self_pct") if code == "600585" and r.get("gm_self_pct") is not None else r.get("gm_cement_pct"),
+        "ops_unit_cost_disclosed": r.get("unit_cost_disclosed"),
+        "ops_unit_price_disclosed": r.get("unit_price_disclosed"),
+        "ops_currency": r.get("currency", "CNY"),
+        "ops_page": r.get("page"),
+        "ops_note": r.get("note"),
+    }
+    out["ops_unit_rev" + sfx] = unit_rev
+    out["ops_unit_cost" + sfx] = unit_cost
+    out["ops_unit_gross" + sfx] = unit_gross
+    return out
+
+
+def _merge_cement_ops(code, payload):
+    """把经营手工层并进 annual 的每一年（ops_* 前缀），并把该公司的口径说明挂到顶层。
+    annual 里原有的接口字段不动，缺该年份记录就补一条只有 ops_* 的年份。"""
+    ops = _cement_ops_manual()
+    if not ops:
+        return payload
+    comp = ops.get("companies", {}).get(code)
+    if not comp:
+        return payload
+    annual = payload.setdefault("annual", {})
+    for year, r in comp.get("annual", {}).items():
+        annual.setdefault(year, {}).update(_cement_ops_year(code, year, r))
+    payload["ops_meta"] = {
+        "source": ops.get("source"),
+        "unit_note": ops.get("unit_note"),
+        "caliber_note": ops.get("caliber_note"),
+        "currency": comp.get("currency"),
+        "years": comp.get("years"),
+        "sales_key": comp.get("sales_key"),
+        "rev_caliber": comp.get("rev_caliber"),
+        "unit_rule": comp.get("unit_rule"),
+        "breaks": comp.get("breaks"),
+    }
+    return payload
+
+
+def read_cement_annual(code):
+    """单家水泥企业历年财务数据，取 data/tables/cement_<code>_annual.json，
+    并合并 cement_ops_manual.json 的经营口径手工层（销量/吨收入/吨成本/吨毛利）。"""
+    if not re.fullmatch(r"[0-9]{5,6}", code):
+        return {"code": 400, "msg": f"非法水泥企业代码 {code}", "data": {}}
+    path = _cement_path(code)
+    if not os.path.exists(path):
+        return {"code": 404, "msg": f"水泥企业 {code} 尚无年度数据文件", "data": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        return {"code": 200, "data": _merge_cement_ops(code, json.load(f))}
+
+
+def read_cement_peers():
+    """同业对比用：code → {name, group, currency, source, caliber_note, annual, dividend_per10}，
+    annual 已并入 cement_ops_manual.json 的经营口径手工层（ops_* 字段）。"""
+    peers = {}
+    for code in CEMENT_PEERS:
+        path = _cement_path(code)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            d = _merge_cement_ops(code, json.load(f))
+        peers[code] = {
+            "name": d.get("name"),
+            "secucode": d.get("secucode"),
+            "group": d.get("group"),
+            "currency": d.get("currency"),
+            "source": d.get("source"),
+            "unit_note": d.get("unit_note"),
+            "caliber_note": d.get("caliber_note"),
+            "ops_meta": d.get("ops_meta"),
+            "annual": d.get("annual", {}),
+            "dividend_per10": d.get("dividend_per10", {}),
+        }
+    if not peers:
+        return {"code": 404, "msg": "尚无水泥企业年度数据文件，请先运行 data/extract/fetch_cement_financials.py", "data": {}}
+    return {"code": 200, "data": peers}
+
+
+@app.route("/api/cement_annual")
+def api_cement_annual():
+    """参数: code（A 股 6 位或 H 股 5 位代码），默认海螺水泥 600585"""
+    return jsonify(read_cement_annual(request.args.get("code", "600585")))
+
+
+@app.route("/api/cement_peers")
+def api_cement_peers():
+    """八家水泥企业同业对比数据，一次返回"""
+    return jsonify(read_cement_peers())
 
 
 if __name__ == "__main__":
