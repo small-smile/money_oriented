@@ -1915,294 +1915,420 @@
    "top1": 19.99,
    "top3": 45.39,
    "top10": 75.05,
-   "top1_name": "澳洲联邦银行(CommonwealthBankofAustralia)"
+   "top1_name": "澳洲联邦银行(CommonwealthBankofAustralia)",
+   "top1_ex": 19.99,
+   "top3_ex": 45.39,
+   "top1_ex_name": "澳洲联邦银行(CommonwealthBankofAustralia)"
   },
   {
    "date": "2009-12-31",
    "top1": 20.0,
    "top3": 40.08,
    "top10": 68.58,
-   "top1_name": "澳洲联邦银行"
+   "top1_name": "澳洲联邦银行",
+   "top1_ex": 20.0,
+   "top3_ex": 40.08,
+   "top1_ex_name": "澳洲联邦银行"
   },
   {
    "date": "2010-12-31",
    "top1": 20.0,
    "top3": 40.08,
    "top10": 70.94,
-   "top1_name": "澳洲联邦银行"
+   "top1_name": "澳洲联邦银行",
+   "top1_ex": 20.0,
+   "top3_ex": 40.08,
+   "top1_ex_name": "澳洲联邦银行"
   },
   {
    "date": "2011-12-31",
    "top1": 20.0,
    "top3": 40.08,
    "top10": 67.94,
-   "top1_name": "澳洲联邦银行"
+   "top1_name": "澳洲联邦银行",
+   "top1_ex": 20.0,
+   "top3_ex": 40.08,
+   "top1_ex_name": "澳洲联邦银行"
   },
   {
    "date": "2016-12-31",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.93,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2017-03-31",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.93,
-   "top1_name": "CommonwealthBankofAustralia"
+   "top1_name": "CommonwealthBankofAustralia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "CommonwealthBankofAustralia"
   },
   {
    "date": "2017-06-30",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.93,
-   "top1_name": "CommonwealthBankofAustralia"
+   "top1_name": "CommonwealthBankofAustralia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "CommonwealthBankofAustralia"
   },
   {
    "date": "2017-09-30",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.93,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2017-12-31",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.59,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2018-03-31",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.14,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2018-06-30",
    "top1": 18.0,
    "top3": 36.59,
    "top10": 64.15,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.59,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2018-09-30",
    "top1": 18.0,
    "top3": 36.62,
    "top10": 64.18,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.62,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2018-12-31",
    "top1": 18.0,
    "top3": 36.84,
    "top10": 64.4,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 36.84,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2019-03-31",
    "top1": 18.0,
    "top3": 37.4,
    "top10": 64.99,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 37.4,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2019-06-30",
    "top1": 18.0,
    "top3": 37.4,
    "top10": 65.19,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 37.4,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2019-09-30",
    "top1": 18.0,
    "top3": 37.4,
    "top10": 65.34,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 37.4,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2019-12-31",
    "top1": 18.0,
    "top3": 37.4,
    "top10": 65.71,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 37.4,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2020-03-31",
    "top1": 18.0,
    "top3": 37.4,
    "top10": 65.31,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 18.0,
+   "top3_ex": 37.4,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2020-06-30",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 67.04,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2020-09-30",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 67.13,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2020-12-31",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 67.04,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2021-03-31",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 67.04,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2021-06-30",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 66.31,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2021-09-30",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 65.8,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2021-12-31",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 64.72,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2022-03-31",
    "top1": 15.57,
    "top3": 39.24,
    "top10": 64.35,
-   "top1_name": "Commonwealth Bank of Australia"
+   "top1_name": "Commonwealth Bank of Australia",
+   "top1_ex": 15.57,
+   "top3_ex": 39.24,
+   "top1_ex_name": "Commonwealth Bank of Australia"
   },
   {
    "date": "2022-06-30",
    "top1": 11.86,
    "top3": 30.55,
    "top10": 60.13,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.55,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2022-09-30",
    "top1": 11.86,
    "top3": 30.55,
    "top10": 60.13,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.55,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2022-12-31",
    "top1": 11.86,
    "top3": 30.55,
    "top10": 60.13,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.55,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2023-03-31",
    "top1": 11.86,
    "top3": 30.67,
    "top10": 60.26,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.67,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2023-06-30",
    "top1": 11.86,
    "top3": 30.67,
    "top10": 60.46,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.67,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2023-09-30",
    "top1": 11.86,
    "top3": 30.97,
    "top10": 60.56,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.97,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2023-12-31",
    "top1": 11.86,
    "top3": 30.97,
    "top10": 60.56,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.97,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2024-03-31",
    "top1": 11.86,
    "top3": 30.97,
    "top10": 60.94,
-   "top1_name": "杭州市财政局"
+   "top1_name": "杭州市财政局",
+   "top1_ex": 11.86,
+   "top3_ex": 30.97,
+   "top1_ex_name": "杭州市财政局"
   },
   {
    "date": "2024-06-30",
    "top1": 18.74,
    "top3": 37.85,
    "top10": 63.36,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 18.74,
+   "top3_ex": 37.85,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2024-09-30",
    "top1": 18.74,
    "top3": 37.85,
    "top10": 64.34,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 18.74,
+   "top3_ex": 37.85,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2024-12-31",
    "top1": 18.37,
    "top3": 37.1,
    "top10": 62.82,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 18.37,
+   "top3_ex": 37.1,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2025-03-31",
    "top1": 18.17,
    "top3": 36.11,
    "top10": 61.59,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 18.17,
+   "top3_ex": 36.11,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2025-06-30",
    "top1": 16.6,
    "top3": 32.25,
    "top10": 55.13,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 16.6,
+   "top3_ex": 32.25,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2025-09-30",
    "top1": 16.59,
    "top3": 32.22,
    "top10": 54.11,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 16.59,
+   "top3_ex": 32.22,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2025-12-31",
    "top1": 16.59,
    "top3": 32.22,
    "top10": 53.56,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 16.59,
+   "top3_ex": 32.22,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   },
   {
    "date": "2026-03-31",
    "top1": 16.59,
    "top3": 32.22,
    "top10": 54.7,
-   "top1_name": "杭州市财开投资集团有限公司"
+   "top1_name": "杭州市财开投资集团有限公司",
+   "top1_ex": 16.59,
+   "top3_ex": 32.22,
+   "top1_ex_name": "杭州市财开投资集团有限公司"
   }
  ],
  "holder_num": [

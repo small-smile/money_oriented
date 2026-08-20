@@ -978,6 +978,68 @@ def api_banks():
     return jsonify({"code": 200, "data": list_banks()})
 
 
+def read_bank_npl_formation():
+    """全部已有数据行的风控横向对比序列，一次返回，供行业页 npl-formation.html 使用。
+    每家 company_charts_<code>.json 取三条可跨行横比的序列：
+      · 不良生成率 formation —— scale-dep.formation（配 scale-dep.years，2018 起可比）
+      · 净息差 nim / 净利差 nis —— nim-trend.nim / nim-trend.nis（配 nim-trend.years10）
+    连同 _bank 元信息按 BANK_ORDER 排序（国有→股份→城商→农商→纯 H）返回。
+    各行 years 取自同一提取管线本应一致，仍逐行随数据带出，前端按并集对齐、容忍缺口。
+    只要三条序列里任一条有值即纳入（个别行可能只披露息差或只倒推出不良生成）。"""
+    banks = []
+    seen = set()
+
+    def _has(v):
+        return isinstance(v, list) and any(x is not None for x in v)
+
+    def _push(code):
+        if code in seen:
+            return
+        path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
+        if not os.path.exists(path):
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                d = json.load(f) or {}
+        except (OSError, ValueError):
+            return
+        sd = d.get("scale-dep") or {}
+        nt = d.get("nim-trend") or {}
+        fm = sd.get("formation")
+        nim = nt.get("nim")
+        nis = nt.get("nis")
+        if not (_has(fm) or _has(nim) or _has(nis)):
+            return                    # 三条全无值的行不进对比图
+        b = d.get("_bank") or {}
+        seen.add(code)
+        banks.append({
+            "code": code,
+            "name": b.get("shortName") or code,
+            "tier": b.get("tier") or "",
+            "years": sd.get("years") or [],
+            "formation": fm if isinstance(fm, list) else [],
+            "years10": nt.get("years10") or [],
+            "nim": nim if isinstance(nim, list) else [],
+            "nis": nis if isinstance(nis, list) else [],
+        })
+
+    for code in BANK_ORDER:
+        _push(code)
+    for name in sorted(os.listdir(TABLES_DIR)):     # BANK_ORDER 之外的行兜底
+        m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
+        if m:
+            _push(m.group(1))
+    if not banks:
+        return {"code": 404, "msg": "尚无 company_charts 数据文件", "data": []}
+    return {"code": 200, "data": banks}
+
+
+@app.route("/api/bank_npl_formation")
+def api_bank_npl_formation():
+    """全部上市银行历年不良生成率 + 净息差/净利差，一次返回，供跨行对比页使用"""
+    return jsonify(read_bank_npl_formation())
+
+
 # 六家上市险企，数据由 data/extract/fetch_insurer_financials.py 生成：前五家为 A+H 上市、取 A 股年报口径，
 # 中国太平（00966）仅在港交所上市，走港股 F10（金额已按年末汇率折人民币）
 INSURER_PEERS = ["601318", "601628", "601601", "601336", "601319", "00966"]

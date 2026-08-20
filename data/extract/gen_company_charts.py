@@ -346,6 +346,8 @@ def build_concentration(src: dict) -> dict | None:
 
     raw 每行 5 列 [报告期, 第一大, 前三大, 前十大, 其他流通股东]，与 601077 精编文件同构；
     第一大股东名称逐期不同（改名 / 换人），单独走并行数组 top1Names，不塞进 raw 当第 6 列。
+    剔除「香港中央结算」名义持有人后的第一大 / 前三大另走并行数组 top1Ex / top3Ex / top1ExNames，
+    只有含 HKSCC 的报告期才与原值不同，charts.js 据此决定是否画「剔除香港中央结算」线。
     """
     conc = src.get("holder_concentration") or []
     if len(conc) < 4:                       # 少于 4 期画不出趋势，宁可显示占位
@@ -354,6 +356,10 @@ def build_concentration(src: dict) -> dict | None:
         "raw": [[c["date"], c["top1"], c["top3"], c["top10"], round(100 - c["top10"], 2)]
                 for c in conc],
         "top1Names": [short_holder(c["top1_name"]) for c in conc],
+        "top1Ex": [c.get("top1_ex") for c in conc],
+        "top3Ex": [c.get("top3_ex") for c in conc],
+        "top1ExNames": [short_holder(c["top1_ex_name"]) if c.get("top1_ex_name") else ""
+                        for c in conc],
     }
 
 

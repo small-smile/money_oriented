@@ -36,6 +36,7 @@
             pages: [
                 {href: 'industry/bank/overview.html',                    title: 'A/H 股概览'},
                 {href: 'industry/bank/tsf.html',                         title: '社会融资规模'},
+                {href: 'industry/bank/npl-formation.html',               title: '息差与不良生成对比'},
                 {href: 'industry/bank/reform_timeline.html',             title: '重要变革时间线'}
             ]
         },

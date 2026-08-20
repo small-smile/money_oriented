@@ -368,13 +368,24 @@ def build_concentration(holder_rows: list[dict]) -> list[dict]:
                     continue    # 大股东缺行且合计跟着塌下来 —— 接口丢数据，整期跳过
         vals = sorted(agg.values(), reverse=True)
         top1_name = max(agg, key=lambda n: agg[n])
-        out.append({
+        # 剔除「香港中央结算」名义持有人后的第一大 / 前三大（占总股本 %）：
+        # 香港中央结算（代理人）代持全部 H 股、香港中央结算有限公司代持沪/深股通，
+        # 都是名义持有人而非实益股东，剔除后才看得出真正的第一 / 前三大实益股东。
+        # 两个账户名称均含「香港中央结算」，用子串判定一并剔除。
+        ex = {n: v for n, v in agg.items() if "香港中央结算" not in n}
+        rec = {
             "date": d,
             "top1": round(vals[0], 2),
             "top3": round(sum(vals[:3]), 2),
             "top10": round(sum(vals), 2),
             "top1_name": top1_name,
-        })
+        }
+        if ex:
+            ex_vals = sorted(ex.values(), reverse=True)
+            rec["top1_ex"] = round(ex_vals[0], 2)
+            rec["top3_ex"] = round(sum(ex_vals[:3]), 2)
+            rec["top1_ex_name"] = max(ex, key=lambda n: ex[n])
+        out.append(rec)
     return out
 
 

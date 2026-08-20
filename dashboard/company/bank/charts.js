@@ -125,6 +125,7 @@ const KEY_DOM = {
     'loanmix-bal': ['chart-loanmix-bal', 'chart-loanmix-yld'],
     'depterm': ['chart-depterm'],
     'depcost': ['chart-depcost', 'chart-demandratio'],
+    'bondpay': ['chart-bond-bal', 'chart-bond-cost', 'chart-bond-list'],
     'repricing': ['chart-repricing'],
     'loantrend': ['chart-loantrend'],
     'perloan-bal': ['chart-perloan-bal', 'chart-perloan-npl'],
@@ -240,8 +241,10 @@ window.__renderRoeCompare = function (items) {
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 17 },
-            // 同一年十家行的值按高低排，一眼看出座次
+            // 十几家行叠一起时这块内容又高又宽，不 confine 会被鼠标带出屏幕外
+            confine: true,
             formatter: p => {
+                // 同一年十家行的值按高低排，一眼看出座次
                 const rows = p.filter(x => x.value != null)
                     .sort((a, b) => b.value - a.value)
                     .map(x => `${x.marker}${x.seriesName}：${x.value}%`);
@@ -1324,6 +1327,139 @@ window.__renderYnsHolderCount(D);
     });
 })();
 
+/* ────── 1c-3. 已发行债务证券：期末余额、平均成本率、逐笔票面利率（2018–2025） ──────
+ * 数据来自年报「应付债券」附注（按类别期末余额、逐笔发行条款）与「利息支出——已发行债务证券」
+ * 表（平均余额 / 平均成本率）。同业存单发行流量比债券大两个数量级，故不画发行额，只画余额与成本率。 */
+(function () {
+    const B = D['bondpay'] || EMPTY_D;
+    const years = B.years || [];
+
+    /* 期末余额（亿元）：同业存单 + 应付债券堆叠，叠加平均余额合计（同量级，可同轴）。
+     * 不少中小行只把「应付债券」当一个整体披露（内含同业存单），此时只有 balTotal，画一根合计柱。 */
+    (function () {
+        if (!document.getElementById('chart-bond-bal')) return;
+        const balNcd = B.balNcd || [], balBond = B.balBond || [], avgTotal = B.avgTotal || [];
+        const split = balNcd.some(v => v != null) || balBond.some(v => v != null);
+        const balTotal = split ? [] : (B.balTotal || []);
+        if (!split && !balTotal.some(v => v != null)) { __stub('chart-bond-bal'); return; }
+        const tot = years.map((_, i) => split ? (balNcd[i] || 0) + (balBond[i] || 0) : (balTotal[i] || 0));
+        // 存单压降到很小时柱内白字会压出柱外（无锡银行 2024/2025），矮于合计 9% 就不标，数值看 tooltip
+        const thin = Math.max.apply(null, tot.concat([0])) * 0.09;
+        const bigOnly = p => (p.value != null && p.value >= thin) ? p.value : '';
+        const ser = live([
+            { name: '已发行同业存单', type: 'bar', stack: 'bal', data: balNcd,
+              itemStyle: { color: '#6c3483' },
+              label: { show: true, fontSize: 16, color: '#fff', formatter: bigOnly } },
+            { name: '应付债券（金融债/二级资本债）', type: 'bar', stack: 'bal', data: balBond,
+              itemStyle: { color: '#e67e22' } },
+            { name: '已发行债务证券合计', type: 'bar', stack: 'bal', data: balTotal,
+              itemStyle: { color: '#6c3483' } },
+            { name: '平均余额合计', type: 'line', data: avgTotal, smooth: true, symbolSize: 7, z: 3,
+              lineStyle: { width: 2.5, color: '#95a5a6', type: 'dashed' }, itemStyle: { color: '#95a5a6' } }
+        ]);
+        const legendNames = ser.map(s => s.name);
+        // 合计数值挂在一根零高透明柱上，z 抬到虚线之上，平均余额线才不会从数字中间穿过（招行 2024/2025）
+        ser.push({ name: '期末合计', type: 'bar', stack: 'bal', data: years.map(() => 0),
+                   itemStyle: { color: 'transparent' }, z: 10, silent: true,
+                   label: { show: true, fontSize: 16, color: '#555', position: 'top', distance: 5,
+                            formatter: p => tot[p.dataIndex] ? tot[p.dataIndex].toFixed(2) : '' } });
+        initChart('chart-bond-bal')?.setOption({
+            backgroundColor: '#fff',
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
+                       formatter: ps => ps[0].axisValue + ' 年<br>' + ps
+                           .filter(p => p.seriesName !== '期末合计').map(p =>
+                           `${p.marker}${p.seriesName}：${p.value == null ? '—' : p.value + ' 亿元'}`).join('<br>') +
+                           (split ? '<br>期末合计：' + tot[ps[0].dataIndex].toFixed(2) + ' 亿元' : '') },
+            legend: { bottom: 2, data: legendNames, textStyle: { fontSize: 18 } },
+            grid: { left: 76, right: 30, top: 36, bottom: 52 },
+            xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
+            yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
+                     axisLabel: { fontSize: 18, color: '#555' },
+                     splitLine: { lineStyle: { color: '#eee' } } },
+            series: ser
+        });
+    })();
+
+    /* 平均成本率（%）：同业存单 / 应付债券 / 合计 */
+    (function () {
+        if (!document.getElementById('chart-bond-cost')) return;
+        const rNcd = B.rateNcd || [], rBond = B.rateBond || [], rTot = B.rateTotal || [];
+        if (![rNcd, rBond, rTot].some(a => a.some(v => v != null))) { __stub('chart-bond-cost'); return; }
+        const ax = niceAxis([].concat(rNcd, rBond, rTot), 1);
+        // 首末两点的数值标签会压到纵轴刻度／右边界上，改成贴着点向内排
+        const totData = rTot.map((v, i) => (i === 0 || i === rTot.length - 1)
+            ? { value: v, label: { align: i === 0 ? 'left' : 'right',
+                                   position: i === 0 ? 'top' : 'bottom' } } : v);
+        initChart('chart-bond-cost')?.setOption({
+            backgroundColor: '#fff',
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '—' : v + '%' },
+            legend: { bottom: 2, textStyle: { fontSize: 18 } },
+            grid: { left: 70, right: 66, top: 32, bottom: 52 },
+            xAxis: { type: 'category', data: years, boundaryGap: false,
+                     axisLabel: { fontSize: 18, color: '#555' } },
+            yAxis: { type: 'value', name: '成本率%', min: ax.min, max: ax.max, interval: ax.interval,
+                     nameTextStyle: { fontSize: 18, color: '#c0392b' },
+                     axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
+                     splitLine: { lineStyle: { color: '#eee' } } },
+            series: live([
+                { name: '合计', type: 'line', data: totData, smooth: true, symbolSize: 8, z: 4,
+                  lineStyle: { width: 3.5, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+                  // 统一两位小数，3.4% 与 3.99% 混排容易看成不同口径
+                  label: { show: true, fontSize: 18, color: '#c0392b', position: 'top',
+                           formatter: p => p.value == null ? '' : p.value.toFixed(2) + '%' } },
+                { name: '已发行同业存单', type: 'line', data: rNcd, smooth: true, symbolSize: 6,
+                  lineStyle: { width: 2.5, color: '#6c3483' }, itemStyle: { color: '#6c3483' } },
+                { name: '应付债券', type: 'line', data: rBond, smooth: true, symbolSize: 6,
+                  lineStyle: { width: 2.5, color: '#e67e22' }, itemStyle: { color: '#e67e22' } }
+            ])
+        });
+    })();
+
+    /* 逐笔债券票面利率（横向条形，按发行日自上而下）。存续/已到期/已赎回用颜色区分 */
+    (function () {
+        const el = document.getElementById('chart-bond-list');
+        if (!el) return;
+        const bonds = (B.bonds || []).slice().sort((a, b) => (a.issueDate || '') < (b.issueDate || '') ? 1 : -1);
+        if (!bonds.length) { __stub('chart-bond-list'); return; }
+        // 各行发行笔数从 0 到 20 不等，图高按条数给（HTML 里的固定高度只是渝农商行的默认值）
+        el.style.height = Math.max(320, bonds.length * 40 + 70) + 'px';
+        const COLOR = { '存续': '#6c3483', '已到期': '#95a5a6', '已赎回': '#b0a0bd' };
+        // 债券简称长短不一（可转债带一串累进票面），超长的截断，全称在 tooltip 里
+        const cut = s => (s || '').length > 15 ? (s || '').slice(0, 15) + '…' : (s || '');
+        const labels = bonds.map(b => (b.issueDate || '') + '\n' + cut(b.name));
+        initChart('chart-bond-list')?.setOption({
+            backgroundColor: '#fff',
+            textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'item', textStyle: { fontSize: 18 },
+                       formatter: p => {
+                           const b = bonds[p.dataIndex];
+                           return `<b>${b.name}</b><br>发行日：${b.issueDate}<br>期限：${b.tenor || '—'}` +
+                                  `<br>票面利率：${b.coupon == null ? '未披露' : b.coupon + '%'}` +
+                                  `<br>发行额：${b.amount} 亿元` +
+                                  `<br>到期：${b.maturity || '—'}（${b.status || '—'}）`;
+                       } },
+            grid: { left: 250, right: 130, top: 20, bottom: 40 },
+            xAxis: { type: 'value', name: '票面利率%', min: 0, nameTextStyle: { fontSize: 18 },
+                     axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
+                     splitLine: { lineStyle: { color: '#eee' } } },
+            yAxis: { type: 'category', data: labels,
+                     axisLabel: { fontSize: 15, color: '#555', lineHeight: 18, interval: 0 } },
+            series: [{
+                name: '票面利率', type: 'bar', barWidth: '62%',
+                // 票面未披露的（如无锡银行 14 二级资本债）画成零长条，用标签写明，不然那一行是空白
+                data: bonds.map(b => ({ value: b.coupon == null ? 0 : b.coupon,
+                                        itemStyle: { color: COLOR[b.status] || '#95a5a6' } })),
+                label: { show: true, position: 'right', fontSize: 16, color: '#555',
+                         // 票面统一两位小数，不然 4% 和 4.65% 混排看起来像两种口径
+                         formatter: p => (bonds[p.dataIndex].coupon == null ? '票面未披露' : p.value.toFixed(2) + '%') +
+                                         '　' + bonds[p.dataIndex].amount + ' 亿' }
+            }]
+        });
+    })();
+})();
+
 /* ────── 10b. 利率重定价缺口（按重定价期限，2025 vs 2024） ────── */
 (function () {
     const el = document.getElementById('chart-repricing');
@@ -1426,6 +1562,13 @@ window.__renderYnsHolderCount(D);
     const nplBusiness = D['perloan-bal'].nplBusiness;
     const nplOthers   = D['perloan-bal'].nplOthers;
 
+    // 分产品余额有披露、但分产品不良率整份缺失（多数农商行不单列各产品不良率）：三条线全空时
+    // 别留一张只有坐标轴、没有线的空图（同 ⑥ H3 口径），改贴「该行暂无此项数据」占位。
+    const __nplHasData = [nplMortgage, nplBusiness, nplOthers].some(
+        a => Array.isArray(a) && a.some(v => v != null));
+    if (!__nplHasData) {
+        __stub('chart-perloan-npl');
+    } else {
     initChart('chart-perloan-npl')?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
@@ -1445,6 +1588,7 @@ window.__renderYnsHolderCount(D);
               lineStyle: { width: 2.5, color: '#7f8c8d', type: 'dashed' }, itemStyle: { color: '#7f8c8d' } }
         ]
     });
+    }
 })();
 
 /* ────── 3. 前十大股东 ──────
@@ -1605,15 +1749,23 @@ window.__renderYnsHolderConcentration = function (D) {
     if (!cur.length && !hist.length) { IDS.forEach(__stub); return; }
     // 第一大股东逐期可能换人/改名（工行的汇金 vs 财政部、招行的招商局系），并行数组按期给名字
     const t1Names = (D['holder-concentration'] || {}).top1Names || [];
+    // 剔除「香港中央结算」名义持有人后的第一大 / 前三大（占总股本 %）与其第一大实益股东名：
+    // A+H 银行的名义第一大恒为香港中央结算（代理人 / 沪深股通），剔除后才看得出真正的实益股东。
+    // 只有 A 股定期报告口径（cur）算得出（有逐户明细），港交所 H 股年报口径（hist）无此数据。
+    const t1Ex   = (D['holder-concentration'] || {}).top1Ex || [];
+    const t3Ex   = (D['holder-concentration'] || {}).top3Ex || [];
+    const t1ExNm = (D['holder-concentration'] || {}).top1ExNames || [];
 
     // hist(年度) + cur(报告期) 合成一条序列，再按年取该年最后一期；
     // 同一年两边都有时后 push 的 cur（A 股披露原值）覆盖 hist 重构值（用 >= 保证）
     // src 记住这一年的数据出自哪个交易所的披露：'H' = 港交所年报，'A' = 沪/深交易所定期报告。
     // 两者分成两个 series 单独画（见下），不再混进同一根序列里。
     const rows = hist.map(r => ({ date: r[0], t1: r[1], t3: r[2], t10: r[3],
-                                  recon: r[4] === 'recon', t1name: '', src: 'H' }))
+                                  recon: r[4] === 'recon', t1name: '', src: 'H',
+                                  t1ex: null, t3ex: null, t1exname: '' }))
         .concat(cur.map((r, i) => ({ date: r[0], t1: r[1], t3: r[2], t10: r[3],
-                                     recon: false, t1name: t1Names[i] || '', src: 'A' })));
+                                     recon: false, t1name: t1Names[i] || '', src: 'A',
+                                     t1ex: t1Ex[i], t3ex: t3Ex[i], t1exname: t1ExNm[i] || '' })));
     const byYear = new Map();
     rows.forEach(r => {
         const y = String(r.date).slice(0, 4);
@@ -1645,12 +1797,18 @@ window.__renderYnsHolderConcentration = function (D) {
             + ' <span style="color:#888">· ' + SRC[it.src].tip + '</span>'
             + (it.recon ? ' <span style="color:#c0392b">（重构合并 A+H 口径）</span>' : '');
         const rs = [
-            ['第一大股东' + (it.t1name ? '（' + it.t1name + '）' : ''), pct(it.t1), '第一大'],
-            ['前三大股东合计', pct(it.t3), '前三大'],
-            ['前十大股东合计', pct(it.t10), '前十大'],
-            ['其他流通股东', it.t10 == null ? '缺口' : (100 - it.t10).toFixed(2) + '%', '其他']
+            ['第一大股东' + (it.t1name ? '（' + it.t1name + '）' : ''), pct(it.t1), '第一大']
         ];
-        return head + '<br/>' + rs.map(([k, v, tag]) => tag === own
+        // 剔除香港中央结算名义持有人后的第一大实益股东，仅 A 股口径且与含 HKSCC 值不同时才列
+        if (it.t1ex != null && it.t1ex !== it.t1)
+            rs.push(['　└ 剔除香港中央结算' + (it.t1exname ? '（' + it.t1exname + '）' : ''),
+                     pct(it.t1ex), '第一大剔除']);
+        rs.push(['前三大股东合计', pct(it.t3), '前三大']);
+        if (it.t3ex != null && it.t3ex !== it.t3)
+            rs.push(['　└ 剔除香港中央结算', pct(it.t3ex), '前三大剔除']);
+        rs.push(['前十大股东合计', pct(it.t10), '前十大']);
+        rs.push(['其他流通股东', it.t10 == null ? '缺口' : (100 - it.t10).toFixed(2) + '%', '其他']);
+        return head + '<br/>' + rs.map(([k, v, tag]) => (tag === own || tag === own + '剔除')
             ? k + ' <b>' + v + '</b>'
             : '<span style="color:#999">' + k + ' ' + v + '</span>').join('<br/>');
     };
@@ -1660,16 +1818,49 @@ window.__renderYnsHolderConcentration = function (D) {
      * 从 0 起画时 5pp 的 U 形只占图高一成），绝对水平看柱顶数值。
      * 按披露来源拆成两个 series（港交所 H 股年报 / A 股定期报告）：同一年只会落在其中一个 series，
      * 故用 barGap:'-100%' 让两个 series 占同一个槽位，柱子仍居中、仍是满宽。 */
-    const mkBar = (id, key, own, colors) => {
+    const mkBar = (id, key, own, colors, exKey) => {
         if (!document.getElementById(id)) return;
         const vals = items.map(it => it[key]);
         if (!vals.some(v => v != null)) { __stub(id); return; }
-        const ax = niceAxis(vals, 1);
+        // 剔除香港中央结算后的实益股东占比：仅 A 股口径有、且与含 HKSCC 值不同的年份才画红线。
+        // 纯 A 股行（HKSCC 不在前列）ex 恒等于含值，此时不画线、退化成普通单序列柱图。
+        const exVals = exKey ? items.map(it => it[exKey]) : [];
+        const showEx = exKey && items.some((it, i) => exVals[i] != null && exVals[i] !== vals[i]);
+        // 红线 ex 值恒小于柱高（剔除了名义第一大），轴范围要把 ex 一并纳入，否则线落到轴下看不见；
+        // 两者同轴（都是「占总股本 %」）直接可比，柱顶是名义值、红线是剔除 HKSCC 的真实实益值。
+        const ax = niceAxis(showEx ? vals.concat(exVals).filter(v => v != null) : vals, 1);
         // 柱多了柱顶横排数值会连成一串（招行 2001 起 26 根柱时 "17.95%17.95%…" 直接叠住），
         // 超过 20 根就把数值竖排：柱宽 46px 容得下一列字，仍能逐柱读数；同时给顶部多留白。
         // （20 根以内横排还留得下——渝农商 17 根柱时 "58.91%" 各占 70px 互不相碰。）
         const dense = items.length > 20;
-        const hasLegend = srcOrder.length > 1;   // 只有一个来源时不必占一行图例
+        const EX_NAME = '剔除香港中央结算';
+        const hasLegend = srcOrder.length > 1 || showEx;   // 单一来源且无红线时不占图例行
+        const legendData = srcOrder.map(s => SRC[s].name).concat(showEx ? [EX_NAME] : []);
+        const series = srcOrder.map(s => ({
+            name: SRC[s].name, type: 'bar', barMaxWidth: 46,
+            barGap: '-100%',   // 两个来源共用同一个槽位（同一年只有一个来源有值）
+            // 港交所口径里 2010–2017 是重构值，柱身再加红色虚线框，与年报披露原值区分
+            data: items.map(it => it.src !== s ? null : ({
+                value: it[key],
+                itemStyle: it.recon
+                    ? { color: colors[s], borderColor: '#c0392b',
+                        borderType: 'dashed', borderWidth: 2 }
+                    : { color: colors[s] }
+            })),
+            label: { show: true, position: 'top', fontSize: dense ? 14 : 15, fontWeight: 600,
+                     color: colors[s], rotate: dense ? 90 : 0,
+                     align: dense ? 'left' : 'center', verticalAlign: 'middle',
+                     distance: dense ? 8 : 5,
+                     formatter: p => p.value == null ? '' : p.value + '%' }
+        }));
+        // 红线：剔除香港中央结算名义持有人后的真实第一大 / 前三大实益占比（H 口径年份断线）
+        if (showEx) series.push({
+            name: EX_NAME, type: 'line', symbol: 'circle', symbolSize: 7, z: 5,
+            lineStyle: { color: '#c0392b', width: 2 }, itemStyle: { color: '#c0392b' },
+            data: exVals.map(v => v == null ? null : v),
+            label: { show: !dense, position: 'bottom', fontSize: 14, fontWeight: 600,
+                     color: '#c0392b', formatter: p => p.value == null ? '' : p.value + '%' }
+        });
         initChart(id)?.setOption({
             backgroundColor: '#fff',
             textStyle: { fontSize: 18 },
@@ -1677,7 +1868,7 @@ window.__renderYnsHolderConcentration = function (D) {
                        axisPointer: { type: 'shadow' }, formatter: concFormatter(own) },
             legend: hasLegend
                 ? { top: 0, itemGap: 24, textStyle: { fontSize: 16, color: '#555' },
-                    data: srcOrder.map(s => SRC[s].name) }
+                    data: legendData }
                 : { show: false },
             grid: { left: 72, right: 32,
                     top: (dense ? 70 : 34) + (hasLegend ? 30 : 0), bottom: 78 },
@@ -1694,29 +1885,14 @@ window.__renderYnsHolderConcentration = function (D) {
                 axisLabel: { fontSize: 18, color: '#555', formatter: '{value}%' },
                 splitLine: { lineStyle: { color: '#eee' } }
             },
-            series: srcOrder.map(s => ({
-                name: SRC[s].name, type: 'bar', barMaxWidth: 46,
-                barGap: '-100%',   // 两个来源共用同一个槽位（同一年只有一个来源有值）
-                // 港交所口径里 2010–2017 是重构值，柱身再加红色虚线框，与年报披露原值区分
-                data: items.map(it => it.src !== s ? null : ({
-                    value: it[key],
-                    itemStyle: it.recon
-                        ? { color: colors[s], borderColor: '#c0392b',
-                            borderType: 'dashed', borderWidth: 2 }
-                        : { color: colors[s] }
-                })),
-                label: { show: true, position: 'top', fontSize: dense ? 14 : 15, fontWeight: 600,
-                         color: colors[s], rotate: dense ? 90 : 0,
-                         align: dense ? 'left' : 'center', verticalAlign: 'middle',
-                         distance: dense ? 8 : 5,
-                         formatter: p => p.value == null ? '' : p.value + '%' }
-            }))
+            series
         }, true);   // notMerge —— 切行时年份跨度不同，避免残留上一行的柱
     };
 
-    // 每张图一个色系：A 股定期报告口径用深色（本行主色），港交所年报口径用同色系浅色
-    mkBar('chart-conc-top1',  't1',  '第一大', { A: '#16a085', H: '#8ccfc4' });
-    mkBar('chart-conc-top3',  't3',  '前三大', { A: '#2c6fb3', H: '#9dc0e3' });
+    // 每张图一个色系：A 股定期报告口径用深色（本行主色），港交所年报口径用同色系浅色。
+    // 第一大 / 前三大再叠一条红线：剔除香港中央结算名义持有人后的真实实益占比（前十大不叠）。
+    mkBar('chart-conc-top1',  't1',  '第一大', { A: '#16a085', H: '#8ccfc4' }, 't1ex');
+    mkBar('chart-conc-top3',  't3',  '前三大', { A: '#2c6fb3', H: '#9dc0e3' }, 't3ex');
     mkBar('chart-conc-top10', 't10', '前十大', { A: '#6c3483', H: '#b99ac8' });
 };
 window.__renderYnsHolderConcentration(D);
