@@ -9,10 +9,22 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+/* charts.js 已按主题拆成 dashboard/company/bank/charts/*.js（分区脚本注册进
+ * window.__BANK_SECTIONS，charts.js 只剩 renderAll 与取数）。沙箱里没有 <script>，
+ * 所以照页面里的顺序把分区文件拼在入口前面；老的单文件路径（如 /tmp 里的备份）照原样读。 */
+const PART_ORDER = ['core', 'compare', 'perf', 'asset', 'debt', 'risk',
+                    'shareholder', 'holders', 'intro', 'statement', 'switcher'];
+function readCharts(entry) {
+    const dir = path.join(path.dirname(entry), 'charts');
+    if (!fs.existsSync(dir)) return fs.readFileSync(entry, 'utf8');
+    return PART_ORDER.map(n => fs.readFileSync(path.join(dir, n + '.js'), 'utf8'))
+        .concat(fs.readFileSync(entry, 'utf8')).join('\n;\n');
+}
+
 const ROOT = path.resolve(__dirname, '../..');
 const chartsPath = process.argv[2] || path.join(ROOT, 'dashboard/company/bank/charts.js');
 const code = process.argv[3] || '601077';
-const src = fs.readFileSync(chartsPath, 'utf8');
+const src = readCharts(chartsPath);
 const D = JSON.parse(fs.readFileSync(path.join(ROOT, `data/tables/company_charts_${code}.json`), 'utf8'));
 const original = JSON.parse(fs.readFileSync(path.join(__dirname, 'original_options.json'), 'utf8'));
 

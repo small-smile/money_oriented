@@ -29,8 +29,34 @@
 
     <!-- ════════════════════════════ 信用风险 ════════════════════════════ -->
     <h2 class="grp-head" id="grp-credit">信用风险
-        <span class="grp-sub">资产质量 · 五级分类 · 迁徙率 · 拨备与减值 · 信用减值损失（本集团合并数）</span>
+        <span class="grp-sub">不良总额 · 逾期总额 · 资产质量 · 五级分类 · 迁徙率 · 拨备与减值 · 信用减值损失（本集团合并数）</span>
     </h2>
+
+    <!-- ══════════ 不良贷款总额（风控第一张，可筛选银行对比） ══════════ -->
+    <section id="sec-npl-amt">
+        <h2 id="ct-npl-amt">不良贷款总额（亿元）</h2>
+        <p class="sub">口径：本集团合并数 · 五级分类不良合计（次级+可疑+损失）· 单位：亿元 · 当前：<b id="npl-amt-current">渝农商行</b></p>
+        <div class="chart-btns" id="npl-amt-tiers"><span class="label">按类型</span></div>
+        <div class="chart-btns" id="npl-amt-banks"><span class="label">银行</span></div>
+        <div id="chart-npl-amt" class="chart" style="height:420px"></div>
+        <div class="note yns-only" id="note-npl-amt">
+            口径：本集团合并数 · 单位：亿元。不良贷款 = 五级分类「次级 + 可疑 + 损失」合计。
+            本行不良余额 2010 年 <b>29.11 亿</b>，2013 年低点 <b>16.49 亿</b>，此后随贷款扩张持续升至 2025 年 <b>85.89 亿</b>；不良率同期由 2.38% 降至 1.08%，余额上升而比率下行，是规模摊薄。上方「按类型」可一次勾选国有大行 / 股份行 / 城商行 / 农商行（可多选叠在同一张图）；点单家银行则只看该行。「一键对比全部」仍可用。大行余额量级高出一个数量级，小行曲线会贴底，属规模差异而非画错。
+            数据来源：本行历年年度报告「贷款五级分类」。
+        </div>
+    </section>
+
+    <!-- ══════════ 逾期贷款总额 ══════════ -->
+    <section id="sec-overdue-amt">
+        <h2 id="ct-overdue-amt">逾期贷款总额（亿元）</h2>
+        <p class="sub">口径：本集团合并数 · 逾期贷款余额与不良贷款余额 · 单位：亿元</p>
+        <div id="chart-overdue-amt" class="chart" style="height:420px"></div>
+        <div class="note yns-only">
+            口径：本集团合并数 · 单位：亿元。逾期贷款取自历年年报 MD&amp;A「逾期客户贷款及垫款」余额合计；不良贷款取自「五级分类」次级+可疑+损失合计。<b>本行自 2010 年 H 股上市年起即披露逾期贷款</b>（2010–2018 取自 03618 港股年报，2019 起取自 A 股 601077 年报）。<br>
+            逾期贷款 2010 年 <b>45.74 亿</b>（占比 3.74%）连续降至 2013 年 25.23 亿，2014 年 30.20 亿起再扩张，2023 年见顶 <b>96.04 亿</b>，2024/2025 年回落并走平至 94.52 / <b>94.69 亿</b>。同期不良贷款余额由 2010 年 29.11 亿、2013 年低点 16.49 亿持续升至 2025 年 <b>85.89 亿</b>。<b>逾期与不良的缺口</b>：2010–2018 年逾期高于不良（部分逾期尚未下调分类）；2019–2021 年不良反超逾期（重组/展期等非逾期不良）；2022 年起逾期再次高于不良，2025 年差额约 8.8 亿。<br>
+            数据来源：2010–2018 港交所 HKEXnews 03618 年报 MD&amp;A「逾期客户贷款及垫款」；2019–2025 本行 A 股年度报告同表。
+        </div>
+    </section>
 
     <!-- ══════════ 1.8 信用减值收入比 ══════════ -->
     <section id="sec-creditcost">
@@ -77,8 +103,16 @@
         <h3 class="chart-title yns-only" id="ct-overdue">逾期贷款率（%） · 渝农商行 vs 农业银行 vs 招商银行 vs 邮储银行</h3>
         <div id="chart-overdue" class="chart" style="height:420px"></div>
         <div class="note yns-only">
-            数据来源：各行历年年度报告「贷款质量分析—逾期贷款」披露的逾期贷款余额 ÷ 发放贷款和垫款总额计算；渝农商行 2014 年起、邮储银行 2016 年起单独披露逾期贷款，早年留空。
+            数据来源：各行历年年度报告「贷款质量分析—逾期贷款」披露的逾期贷款余额 ÷ 发放贷款和垫款总额计算；渝农商行自 2010 年 H 股上市年起即在年报 MD&amp;A 披露逾期贷款，邮储银行 2016 年起单独披露，早年留空。
             <b>逾期率是比不良率更早的风险前瞻指标</b>（贷款逾期未必已划入不良），渝农商、农行、招行逾期率均在 2015–2016 信用周期底部见顶（招行 2.85%、农行 3.14%），此后随经济修复回落；邮储银行逾期率长期最低（多数年份低于 1.1%），与其低不良率相互印证。
+        </div>
+        <div id="blk-overdue-band">
+            <h3 class="chart-title" id="ct-overdue-band">逾期贷款按逾期天数分档（亿元）</h3>
+            <div id="chart-overdue-band" class="chart" style="height:460px"></div>
+            <div class="note" id="note-overdue-band">
+                口径：本集团合并数 · 单位：亿元。分档取自历年年报 MD&amp;A「逾期客户贷款及垫款」，各档之和等于逾期贷款合计（四舍五入到亿元两位时偶有 ±0.01 的尾差）。
+                图例按该行年报原档：<b>3个月以内 / 3个月至1年 / 1至3年 / 3年以上</b>（2010–2025 十六年间档位未变；3个月对应约 90 天）。2010–2018 取自 03618 港股年报，2019–2025 取自 A 股 601077 年报。
+            </div>
         </div>
         <h3 class="chart-title yns-only" id="ct-npl-formation">不良生成率（%） · 渝农商行 vs 农业银行 vs 招商银行 vs 邮储银行</h3>
         <div id="chart-npl-formation" class="chart" style="height:420px"></div>
@@ -99,7 +133,7 @@
     <section id="sec-5tier">
         <h2>贷款五级分类（2025 年末）</h2>
         <p class="sub">口径：本集团合并数 · 不良贷款 = 次级 + 可疑 + 损失</p>
-        <div id="chart-5tier" class="chart" style="height:320px"></div>
+        <div id="chart-5tier" class="chart" style="height:720px"></div>
         <div class="yns-only" style="overflow-x:auto;margin-top:14px">
         <table>
             <thead><tr><th>类别</th><th>2025 金额</th><th>占比</th><th>2024 金额</th><th>占比</th></tr></thead>
@@ -379,6 +413,18 @@
     </div>
 </div>
 
+<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->
+<script src="charts/core.js"></script>
+<script src="charts/compare.js"></script>
+<script src="charts/perf.js"></script>
+<script src="charts/asset.js"></script>
+<script src="charts/debt.js"></script>
+<script src="charts/risk.js"></script>
+<script src="charts/shareholder.js"></script>
+<script src="charts/holders.js"></script>
+<script src="charts/intro.js"></script>
+<script src="charts/statement.js"></script>
+<script src="charts/switcher.js"></script>
 <script src="charts.js"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
-/* 行业页导航条注入 —— 供 dashboard/industry/<行业>/*.html 使用
+/* 页面导航条注入 —— 供 dashboard/subject/<专题>/*.html 与 dashboard/industry/<行业>/*.html 使用
  * 每个页面 <head> 里 <script src="<相对路径>/common/site-header.js" defer></script>
  * 依赖 common/base.css 中的 .site-nav 样式
  *
- * 导航条只列出**当前页所属行业**的页面：按页面所在目录（industry/oil、industry/bank …）
+ * 导航条只列出**当前页所属行业**的页面：按页面所在目录（subject/oil、industry/bank …）
  * 匹配下面的分组，其它行业的链接不出现，避免一条导航塞满全站页面。
  * 回总览的入口挂在左上角 brand 上（与 bank-header.js 一致）。
  * dashboard/index.html 本身不挂导航条。
@@ -21,14 +21,14 @@
 
     const GROUPS = [
         {
-            dir: 'industry/oil/',
+            dir: 'subject/oil/',
             pages: [
-                {href: 'industry/oil/price_history.html',                title: '油价 K 线'},
-                {href: 'industry/oil/region_production.html',            title: '产量总览'},
-                {href: 'industry/oil/country_consumption.html',          title: '消费总览'},
-                {href: 'industry/oil/country_change_2001_2024.html',     title: '2001 vs 2024'},
-                {href: 'industry/oil/china_oil_majors.html',             title: '油企'},
-                {href: 'industry/oil/cnooc_roa_oil.html',                title: '中海油 油价·ROA'}
+                {href: 'subject/oil/price_history.html',                title: '油价 K 线'},
+                {href: 'subject/oil/region_production.html',            title: '产量总览'},
+                {href: 'subject/oil/country_consumption.html',          title: '消费总览'},
+                {href: 'subject/oil/country_change_2001_2024.html',     title: '2001 vs 2024'},
+                {href: 'subject/oil/china_oil_majors.html',             title: '油企'},
+                {href: 'subject/oil/cnooc_roa_oil.html',                title: '中海油 油价·ROA'}
             ]
         },
         {
@@ -59,6 +59,18 @@
             pages: [
                 {href: 'industry/cement/overview.html',                  title: '名录与供给侧政策线'},
                 {href: 'industry/cement/peers.html',                     title: '八家水泥企业对比'}
+            ]
+        },
+        {
+            // 百度（09888 / BIDU）公司详情页：只有一家公司、数据全在 company/baidu/data.js，
+            // 不像银行页要按 ?code= 切换上百家，所以复用本文件而不再单开一个 header 脚本
+            dir: 'company/baidu/',
+            pages: [
+                {href: 'company/baidu/index.html',                       title: '业绩'},
+                {href: 'company/baidu/segment.html',                     title: '分部与运营'},
+                {href: 'company/baidu/balance-sheet.html',               title: '资产与现金'},
+                {href: 'company/baidu/shareholder.html',                 title: '股权结构'},
+                {href: 'company/baidu/intro.html',                       title: '简介'}
             ]
         }
     ];

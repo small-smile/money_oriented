@@ -1,0 +1,26 @@
+---
+description: 能在本机执行的工作（脚本、批量处理、PDF 抽取、校验）优先本地跑，只把汇总结果读进上下文以节省 token
+alwaysApply: true
+---
+
+# 能本地跑就本地跑
+
+凡是在用户机器上能执行的活，**写成脚本/命令在本地跑**，中间产物落到文件；
+上下文里只读最终汇总（计数、diff、抽样几行、报错栈），
+**不要把大体积原文（PDF 全文、几十个 JSON、整页 HTML）整篇拉进对话**。
+
+**Why:** 搬运原文是最大的 token 开销，而本机的 python / pdftotext / jq / 一次性脚本
+都能做同样的事，输出只有几十行。省下的预算留给取数覆盖面——
+**省的是搬运原文的 token，不是省该取的数据**（见 `decide-then-list-pending`
+的"数据获取不怕费 token"）。
+
+**How to apply:**
+- 批量改动（多份年报抽取、多个 `data/tables/*.json` 校验或改写、几十个 dashboard HTML
+  同步改）→ 写一次性脚本跑完再读它打印的汇总，不要逐文件 Read + Edit。
+- 长文档：先 `pdftotext -layout` 落地 txt，再按章节定向读需要的页段
+  （配合 `financial-report-semantic-reading` 语义通读，不整本读进上下文）。
+- 校验优先本地执行：`venv/bin/python` 起本地服务 + headless Chrome CDP 探图、
+  跑断言脚本，读退出码和摘要即可。
+- 要通读大量代码/文件时委托 Explore / General 子代理，让它们在自己上下文里读，只回汇总。
+- 临时脚本用完删掉；需要长期复用的放 `data/extract/`。
+- 例外：不可逆或对外的动作（`git push`、强制重置、删数据、发布上线）仍先确认。

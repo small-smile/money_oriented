@@ -63,6 +63,13 @@
             font-weight: 600;
             padding-left: 17px;
         }
+        /* h3 里的板块补充说明（产业链方向等），与 h2 .hint 同一套灰度 */
+        h3 .sub {
+            font-size: 16px;
+            font-weight: 400;
+            color: #9ca3af;
+            margin-left: 10px;
+        }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -73,6 +80,7 @@
         .card {
             background: #fff;
             border-radius: 10px;
+            border: 2px solid #e5e7eb;
             padding: 24px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             transition: transform 0.2s, box-shadow 0.2s;
@@ -85,6 +93,9 @@
         .card:hover {
             box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
+        /* 建设状态用边框颜色标识，配色见页首图例 */
+        .card.card-done { border-color: #1e8449; }
+        .card.card-wip  { border-color: #d97706; }
         .card .title {
             font-size: 19px;
             font-weight: 600;
@@ -102,38 +113,6 @@
             font-weight: 500;
             width: fit-content;
         }
-        /* 行业卡片内的图表导航：同一行业的多张图表全部收在这里 */
-        .card .links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 2px;
-        }
-        .card .links a {
-            padding: 5px 12px;
-            border-radius: 8px;
-            background: #f1f5f9;
-            color: #1f2937;
-            font-size: 17px;
-            text-decoration: none;
-            transition: background 0.15s, color 0.15s;
-        }
-        .card .links a:hover { background: #1f2937; color: #fff; }
-        .card .links .grp {
-            flex: 0 0 100%;
-            font-size: 16px;
-            color: #9ca3af;
-            margin-top: 4px;
-        }
-        /* 尚无页面的入口：不可点击，避免死链 */
-        .card .links .todo {
-            padding: 5px 12px;
-            border-radius: 8px;
-            border: 1px dashed #cbd5e1;
-            background: #f9fafb;
-            color: #9ca3af;
-            font-size: 17px;
-        }
         .tag-price { background: #fdebd0; color: #d35400; }
         .tag-production { background: #d5f5e3; color: #1e8449; }
         .tag-consumption { background: #fce4ec; color: #ad1457; }
@@ -143,75 +122,107 @@
         .tag-insurance { background: #d1f2eb; color: #0e6655; }
         .tag-realestate { background: #fde2e4; color: #9d174d; }
         .tag-cement { background: #e2e8f0; color: #334155; }
+        .tag-decor { background: #ffe8d6; color: #9a3412; }
+        .tag-ad { background: #ddd6fe; color: #5b21b6; }
+        .tag-tech { background: #dbeafe; color: #1e40af; }
+        .tag-ecommerce { background: #ccfbf1; color: #115e59; }
+        .tag-hotel { background: #fef3c7; color: #92400e; }
+        .tag-telecom { background: #dbeafe; color: #1e40af; }
+        /* 只占位的板块：尚无任何页面，整卡不可点击 */
+        .card.card-empty {
+            border: 2px dashed #cbd5e1;
+            box-shadow: none;
+            background: #fafbfc;
+            pointer-events: none;
+        }
+        /* 边框配色图例 */
+        .legend {
+            max-width: 1200px;
+            margin: 0 auto 8px;
+            display: flex;
+            gap: 20px;
+            padding-left: 17px;
+            font-size: 17px;
+            color: #6b7280;
+            flex-wrap: wrap;
+        }
+        .legend i {
+            display: inline-block;
+            width: 26px;
+            height: 0;
+            border-top: 3px solid #e5e7eb;
+            vertical-align: middle;
+            margin-right: 7px;
+        }
+        .legend .l-done i { border-top-color: #1e8449; }
+        .legend .l-wip i  { border-top-color: #d97706; }
+        .legend .l-empty i { border-top-style: dashed; border-top-color: #cbd5e1; }
     </style>
 </head>
 <body>
 <h1>📊 行业数据看板</h1>
+<div class="legend">
+    <span class="l-done"><i></i>已完成</span>
+    <span class="l-wip"><i></i>开发中</span>
+    <span class="l-empty"><i></i>待开发（仅占位）</span>
+</div>
 
-<h2>建筑产业链<span class="hint">上游 → 下游</span></h2>
+<h2>食品</h2>
+<div class="grid">
+    <a class="card card-wip" href="company/food/overview.html">
+        <span class="tag tag-consumption">食品</span>
+        <span class="title">食品</span>
+        <span class="desc">巴比食品 605338 年报 · 同业对比</span>
+    </a>
+</div>
+
+<h2>地产链<span class="hint">上游 → 下游</span></h2>
 <div class="flow">
     <code>水泥（上游）</code> → 发货当期确认收入 → <code>地产（下游）</code> → 竣工结转后确认收入。
     水泥的营收拐点<b>领先</b>开发商约 2 年，两页对着看能分辨「需求真的在跌」还是「只是结算时滞」。
+    注意水泥需求里还有很大一块来自基建（公路、桥梁、水利），不随地产销售同步，读水泥时别只对着地产看。
 </div>
 <div class="grid">
-    <div class="card">
+    <a class="card card-wip" href="industry/cement/overview.html">
         <span class="tag tag-cement">水泥</span>
         <span class="title">水泥<span class="pos">　上游</span></span>
         <span class="desc">八家水泥企业名录 · 供给侧政策线 · 净现金分化与吨毛利代理指标</span>
-        <div class="links">
-            <span class="grp">行业</span>
-            <a href="industry/cement/overview.html">水泥名录 + 供给侧政策线（2009–2025）</a>
-            <a href="industry/cement/peers.html">八家水泥企业对比（营收 / 毛利率 / 净现金 / 赊销 / 分红）</a>
-            <span class="todo">单家水泥企业详情页（待建设）</span>
-        </div>
-    </div>
+    </a>
 
-    <div class="card">
+    <a class="card card-wip" href="industry/realestate/overview.html">
         <span class="tag tag-realestate">地产</span>
         <span class="title">地产<span class="pos">　下游</span></span>
         <span class="desc">六家头部央企开发商名录 · 政策线 · 历年财务与三道红线横向对比</span>
-        <div class="links">
-            <span class="grp">行业</span>
-            <a href="industry/realestate/overview.html">央企地产名录 + 政策线（2019–2025）</a>
-            <a href="industry/realestate/peers.html">六家央企开发商对比（营收 / 毛利率 / 三道红线 / 蓄水池 / 分红）</a>
-            <span class="todo">单家开发商详情页（待建设）</span>
-        </div>
+    </a>
+
+    <div class="card card-empty">
+        <span class="tag tag-decor">装修</span>
+        <span class="title">装修</span>
     </div>
 </div>
 
 <h2>金融<span class="hint">为上下游提供杠杆</span></h2>
 <div class="grid">
-    <div class="card">
+    <a class="card card-wip" href="industry/bank/overview.html">
         <span class="tag tag-bank">银行</span>
         <span class="title">银行</span>
         <span class="desc">A/H 股上市银行名录 · 渝农商行 601077 年报全景</span>
-        <div class="links">
-            <span class="grp">行业</span>
-            <a href="industry/bank/overview.html">A/H 股上市银行概览</a>
-            <a href="industry/bank/reform_timeline.html">银行业重要变革时间线</a>
-            <span class="todo">同业横向对比（待建设）</span>
-            <span class="grp">渝农商行 2025 年报</span>
-            <a href="company/bank/index.html?code=601077">业绩</a>
-            <a href="company/bank/asset.html?code=601077">资产端</a>
-            <a href="company/bank/debt.html?code=601077">负债端</a>
-            <a href="company/bank/risk.html?code=601077">风控</a>
-            <a href="company/bank/shareholder.html?code=601077">股东</a>
-            <a href="company/bank/intro.html?code=601077">简介</a>
-            <a href="company/bank/balance-sheet.html?code=601077">资产负债表</a>
-        </div>
-    </div>
+    </a>
 
-    <div class="card">
+    <a class="card card-wip" href="industry/insurance/overview.html">
         <span class="tag tag-insurance">保险</span>
         <span class="title">保险</span>
         <span class="desc">A/H 股上市险企名录 · 五大险企历年数据横向对比</span>
-        <div class="links">
-            <span class="grp">行业</span>
-            <a href="industry/insurance/overview.html">A/H 股上市保险公司概览 + 变革时间线</a>
-            <a href="industry/insurance/peers.html">五大险企同业对比（保费 / 利润 / 投资 / 偿付能力 / NBV）</a>
-            <span class="todo">单家险企详情页（待建设）</span>
-        </div>
-    </div>
+    </a>
+</div>
+
+<h2>科技<span class="hint">广告收入是上面各板块景气的同步指标</span></h2>
+<div class="grid">
+    <a class="card card-wip" href="company/baidu/index.html">
+        <span class="tag tag-tech">互联网</span>
+        <span class="title">百度集团<span class="pos">　09888 / BIDU</span></span>
+        <span class="desc">FY2025 20-F · 业绩 / 分部与运营 / 资产与现金 / 股权结构 / 简介</span>
+    </a>
 </div>
 
 <h2>能源<span class="hint">全行业的成本项</span></h2>
@@ -220,35 +231,43 @@
     <code>能源</code>是读上面所有板块毛利率时的共同外生变量。
 </div>
 <div class="grid">
-    <div class="card">
+    <a class="card card-done" href="subject/oil/price_history.html">
         <span class="tag tag-price">石油</span>
         <span class="title">石油</span>
         <span class="desc">量价 · 产量 · 消费 · 储量 · 油企盈利</span>
-        <div class="links">
-            <span class="grp">行业</span>
-            <a href="industry/oil/price_history.html">历史量价 K 线</a>
-            <a href="industry/oil/region_production.html">产量总览 1965-2024</a>
-            <a href="industry/oil/country_consumption.html">消费总览 1965-2024</a>
-            <a href="industry/oil/country_change_2001_2024.html">各洲产量 2001 vs 2024</a>
-            <span class="grp">公司</span>
-            <a href="industry/oil/china_oil_majors.html">中石油 / 中海油 证实储量</a>
-            <a href="industry/oil/cnooc_roa_oil.html">中海油 油价 vs 单期 ROA</a>
-            <a href="company/oil/petro_income_waterfall.html">中石油 2025 利润→营收 瀑布</a>
-        </div>
+    </a>
+</div>
+
+<h2>酒店<span class="hint">消费服务，不并入地产</span></h2>
+<div class="grid">
+    <div class="card card-empty">
+        <span class="tag tag-hotel">酒店</span>
+        <span class="title">酒店</span>
     </div>
 </div>
 
-<h2>消费</h2>
+<h2>通信<span class="hint">上游 → 下游</span></h2>
+<div class="flow">
+    <code>三大运营商（上游）</code> 提供接入与流量 → <code>互联网（下游）</code> 把流量变现为广告与电商成交。
+    运营商的资本开支与 ARPU 是读互联网板块用户增长天花板时的参照。
+</div>
 <div class="grid">
-    <div class="card">
-        <span class="tag tag-consumption">食品</span>
-        <span class="title">食品</span>
-        <span class="desc">巴比食品 605338 年报 · 同业对比</span>
-        <div class="links">
-            <span class="grp">公司</span>
-            <a href="company/food/overview.html">巴比食品 2025 年报 · 公司概览</a>
-            <a href="company/food/peer-comparison.html">同业对比 · 中式面点/速冻/短保/加盟批发</a>
-        </div>
+    <div class="card card-empty">
+        <span class="tag tag-telecom">运营商</span>
+        <span class="title">三大运营商<span class="pos">　上游</span></span>
+    </div>
+</div>
+
+<h2>互联网</h2>
+<div class="grid">
+    <div class="card card-empty">
+        <span class="tag tag-ad">在线广告</span>
+        <span class="title">在线广告<span class="pos">　下游</span></span>
+    </div>
+
+    <div class="card card-empty">
+        <span class="tag tag-ecommerce">电商</span>
+        <span class="title">电商<span class="pos">　下游</span></span>
     </div>
 </div>
 </body>

@@ -334,6 +334,177 @@ def patch_annual(code: str, annual: dict[str, dict]) -> None:
             rec[field] = value
 
 
+# ── 中国太平（00966.HK）年报手工表 ──
+#
+# 港股 F10 主要指标不含投资收益率、偿付能力、新业务价值、投资资产、员工数与逐年股息，
+# 这些只在年报原文里披露，因此按 fetch_developer_financials.HK_PRESALE_THOUSANDS 的办法
+# 硬编码一张年报手工表。来源：港交所 HKEXnews 中文年报（data/raw/annual_00966_<年>.pdf），
+# 2007—2025 连续 19 份逐份语义通读披露章节后录入。2000—2006 年报在 HKEXnews
+# searchType=1 检索库里取不到（该库覆盖自 2007-04 起），那 7 年这些字段仍为空。
+#
+# 单位：ta/inv/nbv/equity_parent/equity_total 为年报原披露港币百万元（as reported，非重列数），
+#   dps 为港元/股（当年宣派全年股息 = 中期 + 末期），比率字段为 %。
+#   金额一律乘 HKD_CNY_YEAR_END[年] 折成人民币，与五家 A 股险企同图可比。
+#   ta 不入库，只用来反推隐含汇率（F10 人民币总资产 ÷ 年报港币总资产）做交叉校验。
+# 偿付能力：太平是控股集团，境内子公司分别披露，集团层面没有单一指标——
+#   sol_l/sol_p/sol_o = 太平人寿/太平财险/太平养老「综合偿付能力充足率」，
+#   sol_*_core 为对应「核心偿付能力充足率」（2022 年偿二代二期起才逐年披露）。
+#   2015 年及以前为偿一代，2016—2021 偿二代一期，2022 年起二期，三段不可比。
+#   注意别把 CIRe（太平再保险）按香港监管口径披露的偿付能力充足率（2007 年 147.1%、
+#   2008 年 630.6% 等）当成境内子公司的原保监会口径数。
+# 新业务价值：nbv 为太平人寿（集团持股 75.1%）单体一年新业务价值，非集团合计。
+#   2007—2008 扣「资本成本及费用超支」，2009 年起仅扣资本成本，故 2009 年是口径断点；
+#   2016 年报同时给出偿二代 9,115 与偿一代 7,126，取偿二代（2016 年亦为断点）；
+#   2023 年起取「经济假设调整后」数（2023 年调整前 9,396、2024 年调整前 14,272）。
+# 退保率：太平只披露退保金额、±10% 敏感性与 13/25 个月继续率，从不披露退保率，
+#   surrender_rate_life 19 年全空，这个缺口无法从年报补上。
+HK_REPORT_FIELDS = ("ta", "inv", "net_roi", "total_roi", "compre_roi",
+                    "sol_l", "sol_p", "sol_o", "sol_l_core", "sol_p_core", "sol_o_core",
+                    "nbv", "nbv_rate", "equity_parent", "equity_total", "staff", "dps")
+
+HK_REPORT_00966: dict[str, tuple] = {
+    # 时名「中保国际控股」，太平财险为联营企业未纳入合并；集团层面未披露投资收益率
+    "2007": (55_617.55, 50_844.71, None, None, None,
+             215, None, None, None, None, None,
+             603, None, 5_685.63, 8_095.68, 9_925, 0.10),
+    # 只有寿险分部收益率 5.3%，无集团口径
+    "2008": (80_815.39, 72_561.28, None, None, None,
+             218, 173, None, None, None, None,
+             865, None, 4_596.62, 7_239.25, 24_048, 0.0),
+    # 本年更名「中国太平保险控股」；NBV 改为仅扣资本成本口径
+    "2009": (111_531.03, 95_757.89, None, None, None,
+             222, 192, None, None, None, None,
+             1_353, None, 10_296.71, 15_337.83, 33_002, 0.0),
+    "2010": (154_483.67, 133_664.17, None, None, None,
+             270, 154, None, None, None, None,
+             1_827, None, 12_712.39, 18_481.87, 33_663, 0.0),
+    "2011": (191_372.35, 171_263.51, None, None, None,
+             178, 152, None, None, None, None,
+             2_244, None, 11_434.70, 16_874.05, 31_661, 0.0),
+    "2012": (242_938.51, 219_786.78, 4.9, 3.4, None,
+             164, 163, None, None, None, None,
+             2_304, None, 13_836.77, 20_992.42, 37_187, 0.0),
+    # 年报里的「偿付能力充足率 191.9%」属太平澳门财险，不是太平养老，未采
+    "2013": (315_016.18, 280_860.00, None, 5.1, None,
+             166, 166, None, None, None, None,
+             3_148, None, 19_847.24, 23_850.84, 40_827, 0.0),
+    "2014": (443_548.99, 357_261.30, None, 5.8, None,
+             275, 174, 297, None, None, None,
+             4_326, None, 35_992.98, 51_338.52, 43_933, 0.0),
+    "2015": (488_031.35, 372_667.46, None, 7.97, None,
+             226, 178, 254, None, None, None,
+             6_017, 28.0, 55_020.66, 71_798.63, 53_682, 0.0),
+    # 偿一代→偿二代切换年；NBV 取偿二代 9,115（偿一代口径 7,126）
+    "2016": (505_405.76, 425_179.64, None, 5.01, None,
+             251, 206, 324, None, None, None,
+             9_115, 33.5, 51_462.12, 67_002.66, 60_270, 0.10),
+    "2017": (666_473.69, 539_929.69, None, 4.48, None,
+             246, 216, 336, None, None, None,
+             13_638, 35.5, 61_733.27, 81_720.70, 77_472, 0.10),
+    # 2019 年报把长期股权投资重分类，把本年投资资产由 595,925.20 重列为 608,295.45，此处留原披露数
+    "2018": (752_101.33, 595_925.20, None, 3.85, None,
+             224, 225, 299, None, None, None,
+             13_237, 36.0, 61_022.69, 80_395.78, 75_341, 0.10),
+    "2019": (919_420.18, 760_253.92, 4.72, 4.77, None,
+             227, 271, 221, None, None, None,
+             10_511, 28.4, 76_307.60, 94_056.96, 65_957, 0.30),
+    "2020": (1_169_007.97, 979_709.65, 4.21, 5.44, None,
+             213, 239, 234, None, None, None,
+             8_784, 24.6, 90_647.45, 116_613.06, 65_900, 0.40),
+    "2021": (1_378_641.97, 1_180_654.69, 4.07, 5.39, None,
+             208, 216, 256, None, None, None,
+             9_104, 24.1, 88_066.83, 113_455.96, 68_446, 0.46),
+    # 偿二代二期首年，太平人寿实际资本由 214,315 降至 166,142（人民币百万元），年报无文字说明
+    "2022": (1_409_365.57, 1_218_217.92, 4.02, 3.31, None,
+             194, 186, 224, None, None, None,
+             7_458, 18.7, 75_505.99, 98_686.18, 68_386, 0.26),
+    # IFRS17+IFRS9 首年；本年报无集中偿付能力章节，核心充足率取 2024 年报比较列
+    "2023": (1_509_497.49, 1_349_531.70, 3.56, 2.66, 5.01,
+             284, 216, 229, 148, 138, 152,
+             7_512, 15.9, 78_988.11, 132_595.65, 65_378, 0.30),
+    "2024": (1_734_342.01, 1_562_099.00, 3.46, 4.57, 10.32,
+             298, 239, 245, 186, 172, 186,
+             9_103, 20.7, 71_080.41, 122_407.45, 62_266, 0.35),
+    # 综合投资收益率 1.73% 全由 FVOCI 债券公允价值变动 −431.56 亿港元压低（剔除后 4.29%）
+    "2025": (1_986_586.64, 1_743_052.49, 3.21, 4.04, 1.73,
+             230, 236, 215, 143, 170, 160,
+             9_589, 21.3, 95_154.88, 164_792.95, 57_951, 1.23),
+}
+
+HK_REPORT_TABLES: dict[str, dict[str, tuple]] = {"00966": HK_REPORT_00966}
+
+# 港元→人民币折算率：中国外汇交易中心受权公布的「当年最后一个交易日」人民币对港元中间价。
+# 用官方中间价（而非 F10 隐含汇率）作折算基准的理由：F10 的人民币金额取自后一年年报的
+# 重列比较列，年报手工表存的是原披露数，两者不同版本，相除得到的隐含汇率会被重列幅度污染。
+# 用官方中间价折出来的 nbv_life 能逐年复现年报正文自己披露的人民币新业务价值
+# （2018 115.99 / 2019 94.16 / 2020 73.93 / 2021 74.44 / 2022 66.62 / 2023 68.07 /
+#  2024 84.29 / 2025 86.61 亿元），隐含汇率则复现不了（2022 会低 6.2%）。
+# 逢年末休市的年份取实际最后交易日：2007-12-28、2011-12-30、2016-12-30、
+# 2017-12-29、2018-12-28、2022-12-30、2023-12-29。
+HKD_CNY_YEAR_END = {
+    "2007": 0.93638, "2008": 0.88189, "2009": 0.88048, "2010": 0.85093,
+    "2011": 0.81070, "2012": 0.81085, "2013": 0.78623, "2014": 0.78887,
+    "2015": 0.83778, "2016": 0.89451, "2017": 0.83591, "2018": 0.87620,
+    "2019": 0.89578, "2020": 0.84164, "2021": 0.81760, "2022": 0.89327,
+    "2023": 0.90622, "2024": 0.92604, "2025": 0.90322,
+}
+# 隐含汇率与官方中间价的偏离阈值（绝对值），超过就写进 fx_check 提示该年 F10 金额被重列过
+FX_IMPLIED_TOL = 0.005
+
+# 手工表里的比率字段直接落库的字段名（左：输出字段，右：HK_REPORT_FIELDS 里的名）
+HK_REPORT_RATIOS = {
+    "net_roi": "net_roi", "total_roi": "total_roi", "compre_roi": "compre_roi",
+    "nbv_rate": "nbv_rate",
+    "solvency_ar_life": "sol_l", "solvency_ar_pc": "sol_p", "solvency_ar_pension": "sol_o",
+    "solvency_core_life": "sol_l_core", "solvency_core_pc": "sol_p_core",
+    "solvency_core_pension": "sol_o_core",
+}
+# 手工表里的港币金额字段（左：输出字段，右：源字段），逐年乘隐含汇率折人民币
+HK_REPORT_AMOUNTS = {
+    "invest_asset_total": "inv", "nbv_life": "nbv",
+    "parent_equity": "equity_parent", "total_equity": "equity_total",
+}
+
+
+def patch_annual_hk_report(code: str, annual: dict[str, dict]) -> tuple[dict, dict, dict]:
+    """把年报手工表并入港股 F10 年度记录，港币金额按当年官方年末中间价折人民币。
+
+    返回 (逐年隐含汇率, 每 10 股股息（人民币元）, 隐含汇率偏离说明)。
+    """
+    table = HK_REPORT_TABLES.get(code) or {}
+    fx_implied: dict[str, float] = {}
+    dividend_per10: dict[str, float] = {}
+    fx_check: dict[str, str] = {}
+    for year, values in table.items():
+        rec = annual.get(year)
+        if rec is None:
+            continue
+        r = dict(zip(HK_REPORT_FIELDS, values))
+        fx = HKD_CNY_YEAR_END.get(year)
+        ta_cny = rec.get("total_assets")
+        if ta_cny and r.get("ta"):
+            implied = round(ta_cny / 1e6 / r["ta"], 5)
+            fx_implied[year] = implied
+            if fx and abs(implied - fx) > FX_IMPLIED_TOL:
+                fx_check[year] = (f"隐含汇率 {implied} 与官方年末中间价 {fx} 差 "
+                                  f"{round((implied - fx) * 100, 2)} 分——该年 F10 人民币金额取自"
+                                  f"后一年年报的重列比较列，与手工表的原披露港币总资产不是同一版本；"
+                                  f"折算一律以官方中间价为准")
+        for out_key, src in HK_REPORT_RATIOS.items():
+            rec[out_key] = r[src]
+        for out_key, src in HK_REPORT_AMOUNTS.items():
+            v = r[src]
+            rec[out_key] = round(v * 1e6 * fx) if (v is not None and fx) else None
+        rec["staff_num"] = r["staff"]
+        # 控股集团层面没有单一偿付能力充足率，留空，不与 A 股同名序列混画
+        rec["solvency_ar"] = None
+        # 年报只披露退保金额、敏感性与继续率，从不披露退保率
+        rec["surrender_rate_life"] = None
+        if fx and r["dps"] is not None:
+            dividend_per10[year] = round(r["dps"] * 10 * fx, 4)
+    return fx_implied, dividend_per10, fx_check
+
+
 def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
                  page_size: int = 200, retries: int = 3, timeout: int = 60,
                  api: str = API) -> dict:
@@ -570,13 +741,33 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
             f"roe_weighted/roa/net_margin/op_cf_per_share 仍为原披露口径，不可与本行金额互推"
         )
 
+    # 年报手工表：补 F10 缺失的投资收益率/偿付能力/新业务价值/投资资产/员工数/股息（2007—2025）
+    fx_implied, dividend_per10, fx_check = patch_annual_hk_report(code, annual)
+
+    # 交叉验证：年报原披露「总权益」× 官方年末中间价 应等于 F10 的（总资产 − 总负债）。
+    # 对不上的年份恰好是接口按后一年年报重列的年份（手工表存的是原披露数），
+    # 与 fx_check 标出的年份互相印证。
+    equity_check: dict[str, str] = {}
+    for y, rec in annual.items():
+        te, ta, ear = rec.get("total_equity"), rec.get("total_assets"), rec.get("equity_asset_ratio")
+        if not (te and ta and ear):
+            continue
+        share = round(te / ta * 100, 4)
+        diff = round(share - ear, 4)
+        if abs(diff) > 0.05:
+            equity_check[y] = (f"年报原披露总权益折人民币后占 F10 总资产 {share}%，与 F10（总资产−总负债）"
+                               f"自算的 {ear}% 差 {diff}pp——该年 F10 金额为后一年年报的重列比较列")
+
     return {
         "code": code,
         "secucode": secucode,
         "name": name,
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数）。"
+        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数），"
+                   "投资收益率、偿付能力充足率、寿险新业务价值、投资资产、员工数与逐年股息"
+                   "取自港交所 HKEXnews 中文年报原文（data/raw/annual_00966_2007~2025.pdf，"
+                   "见 HK_REPORT_00966 手工表）。"
                    "中国太平仅在港交所上市（00966.HK），无 A 股年报，因此不适用「A/H 都有时优先取 A 股」"
                    "的取数规则；年报本身以港元编制，接口返回的金额已按各年年末汇率折成人民币"
                    "（行内 CURRENCY 写 HKD、IS_CNY_CODE 写 0 是误标，2025 年隐含 0.90322、2024 年 0.92600，"
@@ -587,22 +778,39 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
                          "2023 年起同步执行 IFRS17 + IFRS9，接口 2022 年行已是重述可比数："
                          "营业收入 2021 年 2,582.5→2022 年 1,081.0 亿元、保险服务收入 2,146.6→972.8 亿元，"
                          "落差是换口径不是业务下滑。"
-                         "港股 F10 主要指标不提供净/总投资收益率、综合偿付能力充足率、寿险新业务价值、"
-                         "寿险退保率与投资资产明细科目，这些图上没有太平序列；"
+                         "港股 F10 主要指标本身不提供保险专项指标，net_roi/total_roi/compre_roi、"
+                         "solvency_ar_life/_pc/_pension（及 _core）、nbv_life/nbv_rate、invest_asset_total、"
+                         "parent_equity/total_equity、staff_num、dividend_per10 均来自年报手工表 HK_REPORT_00966，"
+                         "口径断点见该表注释；2000—2006 年这些字段为空（HKEXnews 检索库覆盖自 2007-04 起）。"
+                         "太平是控股集团，偿付能力按太平人寿/太平财险/太平养老分别披露，集团层面无单一指标，"
+                         "故 solvency_ar 留空，不与 A 股同名序列混画；"
+                         "nbv_life 是太平人寿（持股 75.1%）单体数，不是集团合计，与 A 股五家的集团/寿险口径不完全同层。"
+                         "surrender_rate_life 19 份年报全无披露（只有退保金额、±10% 敏感性与 13/25 个月继续率），"
+                         "是披露缺口而非取数遗漏。"
                          "roe_weighted 取接口 ROE_AVG（平均净资产口径），与 A 股「加权平均 ROE」算法不完全一致。"
-                         "中国太平是控股集团，偿付能力按太平人寿/太平财险等境内子公司分别披露，集团层面无单一指标。"
                          "接口 *_YOY 同比字段是按港元原值算的（2025 年 +220.93% 为港元口径），与折算后金额"
                          "自算的同比不等，故未采集；DPS_HKD 字段为快照值（2000—2024 年各行同为 1.58），"
-                         "不能当逐年股息序列用，亦未采集。"
+                         "不能当逐年股息序列用，dividend_per10 改由年报宣派股息 × 10 × 当年隐含汇率算得。"
                          "total_share 是当前已发行股数快照（各年同为 3,594,018,538 股），bps 亦按该股数"
                          "反算（= 母公司权益 ÷ 当前股数），与年报披露的当年每股净资产不等，只可看趋势；"
                          "eps 是按当年加权股数算的，可与年报对上。"
                          "vintage_note 列出的年份存在「金额=重列 / 比率=原披露」混排，见该字段说明。"),
         "annual": annual,
         "vintage_note": vintage_mixed,
+        "fx_rate_used": HKD_CNY_YEAR_END,
+        "fx_implied": fx_implied,
+        "fx_note": ("年报手工表的港币金额按 fx_rate_used（中国外汇交易中心受权公布的当年最后一个交易日"
+                    "人民币对港元中间价）折成人民币。校验：折出来的 nbv_life 逐年复现年报正文自己披露的"
+                    "人民币新业务价值（2018 115.99 / 2019 94.16 / 2020 73.93 / 2021 74.44 / 2022 66.62 / "
+                    "2023 68.07 / 2024 84.29 / 2025 86.61 亿元）。"
+                    "fx_implied = F10 人民币总资产 ÷ 年报港币总资产，仅作交叉校验：19 年里 13 年与官方"
+                    "中间价一致，不一致的年份（F10 金额取自后一年年报的重列比较列）见 fx_check，"
+                    "折算不采用隐含汇率。"),
+        "fx_check": fx_check,
+        "equity_check": equity_check,
         "holders_end_date": None,
         "holders": [],
-        "dividend_per10": {},
+        "dividend_per10": dividend_per10,
     }
 
 

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <link rel="stylesheet" href="../page.css">
+    <script src="../../common/bank-header.js" defer></script>
+    <style>
+        /* 银行切换控件在顶部导航条的居中链接簇里（common/base.css 的 .nav-banks +
+         * bank-header.js 注入的下拉框，7 个银行页共用），本页正文不再放分段控件 */
+        .note-generic {
+            margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
+            border-left: 4px solid #b7b1c4; border-radius: 6px;
+            font-size: 18px; color: #555; line-height: 1.75;
+        }
+        .src-links { margin-top: 12px; font-size: 18px; line-height: 1.85; color: #444; }
+        .src-links a { color: #4a2a5a; word-break: break-all; }
+        .src-links b { color: #333; }
+        /* 几张股东饼图叠在一起太高：口径（A+H 合并 / A 股披露 / H 股内部）和
+         * 视图（明细 / 派系）用已有的 .chart-btns 做成 tab，同时只露一张。
+         * 切到隐藏过的图时脚本里会对 echarts 调 resize，否则 display:none
+         * 期间 init 出来的实例宽高是 0。 */
+        .pie-tabs { margin-top: 22px; }
+        .pie-tabs .chart-btns { margin: 0 0 10px 0; justify-content: center; }
+        .pie-tab-pane { display: none; }
+        .pie-tab-pane.active { display: block; }
+    </style>
+    <title>渝农商行（601077 / 03618）2025 年报 · 股东（去 yns-only 预览）</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1 id="page-h1" data-page="股东">重庆农村商业银行（渝农商行）2025 年报 · 股东</h1>
+        <div class="meta" id="page-meta">
+            A 股 601077（上交所） · H 股 03618（港交所） · 董事长 刘小军 · 行长 隋军<br>
+            全国首家"万亿"农商行 · 西部首家"A+H"股上市银行 · 单位：人民币百万元（另标注除外）
+        </div>
+        <div class="src-links">
+            <b>2025 年报原文（报告期末 2025-12-31）</b><br>
+            A 股 601077：
+            <a href="https://static.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-03-26/601077_20260326_0CYO.pdf" target="_blank" rel="noopener">上交所 PDF</a>
+            ·
+            <a href="http://static.cninfo.com.cn/finalpage/2026-03-26/1225032224.PDF" target="_blank" rel="noopener">巨潮镜像</a>
+            （「股东情况」约 p.144）<br>
+            H 股 03618：
+            <a href="https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0414/2026041401005_c.pdf" target="_blank" rel="noopener">港交所中文 PDF</a>
+            ·
+            <a href="https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0414/2026041401004.pdf" target="_blank" rel="noopener">English Annual Report</a>
+            （「第七章 股份变动及股东情况」p.109–116）
+        </div>
+        <div class="tags"><span>股东</span><span>分红</span><span>股权结构</span></div>
+    </div>
+
+    <!-- 银行切换器在顶部导航条的居中链接簇里（bank-header.js 注入下拉框），换行即带 ?code= 重新加载本页 -->
+
+    <!-- ══════════ 3 股东及股东变动 ══════════ -->
+    <section id="sec-holders">
+
+        <!-- 五张饼图收进 tab：口径（A+H 合并 / A 股披露 / H 股内部）× 视图（明细 / 派系）。
+             默认停在 A+H 合并·明细——合并后的真实持股图景优先，年报原始口径放到后两个 tab。
+             A+H 合并 / H 股内部的数字是页尾脚本写死的渝农商行 2025 口径，按钮和面板都挂
+             .yns-h-only（charts.js 对 code !== 601077 一律隐藏），换成别的银行只剩 A 股披露
+             的明细 / 派系两个 tab，不会拿渝农商的比例充数。 -->
+        <div class="pie-tabs" id="holder-pie-tabs">
+            <div class="chart-btns" id="pie-tab-bar">
+                <span class="label pie-scope-label">口径</span>
+                <button type="button" class="yns-h-only active" data-scope="through">A+H 合并</button>
+                <button type="button" data-scope="ashare">A股披露</button>
+                <button type="button" class="yns-h-only" data-scope="hshare">H股内部</button>
+                <span class="label pie-view-label" style="margin-left:18px">视图</span>
+                <button type="button" class="active" data-view="detail">明细</button>
+                <button type="button" data-view="faction">派系</button>
+            </div>
+
+            <div class="pie-tab-pane yns-h-only active" data-scope="through" data-view="detail">
+                <h3 class="chart-title" style="margin:0 0 6px">A+H 合并明细图（H 股披露股东折算为占总股本比例 · 其余归入其他）</h3>
+                <div id="chart-holders-through" class="chart" style="height:760px"></div>
+            </div>
+            <div class="pie-tab-pane yns-h-only" data-scope="through" data-view="faction">
+                <h3 class="chart-title" style="margin:0 0 6px">A+H 合并派系图（同派系合并为一个扇区 · 仍为占总股本比例）</h3>
+                <div id="chart-holders-through-faction" class="chart" style="height:760px"></div>
+            </div>
+            <div class="pie-tab-pane" data-scope="ashare" data-view="detail">
+                <h3 class="chart-title" style="margin:0 0 6px">A 股披露 TOP10</h3>
+                <div id="chart-holders" class="chart" style="height:760px"></div>
+                <div id="holders-legend" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
+            </div>
+            <div class="pie-tab-pane" data-scope="ashare" data-view="faction">
+                <h3 class="chart-title" style="margin:0 0 6px">A 股披露 TOP10 · 按派系合并（同派系股东合并为一个扇区 · 按派系合计持股比例排序）</h3>
+                <div id="chart-holders-faction" class="chart" style="height:760px"></div>
+            </div>
+            <!-- H 股内部只有一张（SFO ≥5% 好仓占 H 股总股本），没有派系拆分，切到此口径时藏掉「视图」 -->
+            <div class="pie-tab-pane yns-h-only" data-scope="hshare">
+                <div style="font-size:18px;color:#16a085;font-weight:600;text-align:center;margin-bottom:6px">H 股年报（2025）· 主要 H 股股东占 H 股总股本</div>
+                <div id="chart-holders-h-only" class="chart" style="height:760px"></div>
+                <div id="holders-legend-h-only" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
+            </div>
+        </div>
+        <details class="note yns-h-only">
+            <summary>2025 年 A / H 两份年报怎么对（点击展开）</summary>
+            渝农商行 2010-12 港上市、2019-10-29 登 A 股后，<b>每年仍同时披露 A 股年报和 H 股年报</b>。2025 年两边「前十名股东持股情况」是同一张表（总股本 113.57 亿股，H 股年报第七章直接收录 A 股披露格式），所以本页只画一张，不再重复放一张港交所版。<br>
+            上图口径为「持股占总股本比例」。第一大「香港中央结算（代理人）22.08%」为 H 股名义持有人账户（HKSCC Nominees），代众多境外投资者集中登记持有全部 H 股（2025 年末 H 股 25.13 亿股、占总股本 22.13%），并非单一实益股东。<br>
+            <b>下图口径不同：只看 H 股内部</b>——按 2025 年报「重大权益和淡仓」、依香港《证券及期货条例》(SFO) 披露的持 H 股 ≥5% 主要股东，占比为「占本行已发行 H 股总股本（2,513,336,041 股）之百分比」（好仓口径）。复星系（郭广昌）13.56%（已含上海豫园直接持有的 5.99%，未重复计）、JPMorgan Chase 6.99%（年报附注合计好仓 175,601,104 股），合计 20.55%；其余约 79.45% 为未达 5% 披露线的其他 H 股股东。数据来源：601077 沪股 2025 年报「股东情况」；03618 港股 2025 年报「第七章 股份变动及股东情况」（p.109–116）。
+        </details>
+        <div style="overflow-x:auto;margin-top:22px">
+            <table>
+                <thead><tr><th>股东名称</th><th>比例</th><th>报告期内增减</th><th>类别</th></tr></thead>
+                <tbody id="holder-tbody"></tbody>
+            </table>
+        </div>
+        <div id="note-holders-g" class="note-generic" style="display:none"></div>
+    </section>
+
+    <!-- ══════════ 4 历年股东持股集中度（独立板块 · 三张柱状图） ══════════
+         第一大 / 前三大 / 前十大各占一张全宽柱状图：三个口径量级差得远（渝农商第一大 22% 上下、
+         前十大 55%~67%），挤在同一张图里波动会被压平；每年一根柱（年末口径，最新年份取最近报告期），
+         柱顶直接写数值，tooltip 里三口径 + 其他流通股东一次列全。 -->
+    <section id="sec-concentration">
+        <h2>历年股东持股集中度</h2>
+
+        <div id="chart-conc-top1" class="chart" style="height:400px"></div>
+
+        <div id="chart-conc-top3" class="chart" style="height:400px;margin-top:18px"></div>
+
+        <div id="chart-conc-top10" class="chart" style="height:400px;margin-top:18px"></div>
+
+        <div id="note-holder-concentration-g" class="note-generic" style="display:none"></div>
+    </section>
+
+</div>
+
+<script>
+/* 本页专用：在 charts.js 拉到 company_charts 之后、renderAll 之前，把 H 股口径那一列从
+ * JSON 里仍保存的 2018 对比口径改成 2025 年报。正式股东页不走这段，2018 对比不受影响。
+ * 下面注入的数字全是渝农商行（601077 / 03618）2025 年报的手抄值，对其他银行一律不成立，
+ * 所以先按地址栏 ?code= 判一次，非 601077 直接不注入（配合三个容器上的 .yns-h-only 隐藏）。 */
+(function () {
+    if (typeof axios === 'undefined') return;
+    /* 与 charts.js 的取码规则一致：?code= 只认 5~6 位数字，缺省 601077 */
+    var raw = (new URLSearchParams(location.search).get('code') || '').trim();
+    var code = /^[0-9]{5,6}$/.test(raw) ? raw : '601077';
+    if (code !== '601077') return;
+    var orig = axios.get;
+    axios.get = function (url) {
+        var p = orig.apply(this, arguments);
+        if (typeof url !== 'string' || url.indexOf('/api/company_charts') < 0) return p;
+        return p.then(function (res) {
+            var D = res && res.data && res.data.data;
+            if (!D || !D.holders) return res;
+            /* 2025 H 股年报 p.114–116「重大权益和淡仓」H 股好仓：
+             * 郭广昌/复星系 340,719,000 = 13.56%（含豫园直接持有 150,549,000 = 5.99%，不重复计）
+             * JPMorgan Chase 合计好仓 175,601,104 / 2,513,336,041 = 6.99% */
+            D['holders-h-only'] = {
+                centerText: '披露≥5%\nH股股东\n合计 20.55%',
+                holderData: [
+                    { name: '其他H股股东', value: 79.45, itemStyle: { color: '#95a5a6' } },
+                    { name: '复星系（郭广昌）', value: 13.56, itemStyle: { color: '#c0392b' } },
+                    { name: 'JPMorgan Chase', value: 6.99, itemStyle: { color: '#2980b9' } }
+                ],
+                factions: [
+                    { title: '复星系（郭广昌）', color: '#c0392b', names: ['复星系（郭广昌）'] },
+                    { title: 'JPMorgan Chase', color: '#2980b9', names: ['JPMorgan Chase'] },
+                    { title: '其他H股股东（未达5%披露线）', color: '#95a5a6', names: ['其他H股股东'] }
+                ]
+            };
+            /* A+H 合并口径（拆开 H 股名义持有人账户）：H 股披露股东按「H 股股数 / 总股本 11,357,000,000 股」折算成
+             * 占总股本比例，与 A 股前十名股东（占总股本）并列；未披露 H 股 + 沪股通
+             * （香港中央结算有限公司 2.79%）+ 其他 A 股流通股东全部并入「其他」。
+             * H 股折算值直接取 2025 H 股年报「重大权益和淡仓」表的「占总股本比例」列：
+             *   郭广昌/复星系 340,719,000 股 = 占 H 股 13.56% = 占总股本 3.00%
+             *     （已含上海豫园直接持有 150,549,000 股 = 1.33%，不重复计）
+             *   JPMorgan Chase 好仓 15,261,868(实益 0.13%) + 99,407,000(投资经理 0.88%)
+             *     + 1,273,726(保证权益 0.01%) + 59,658,510(核准借出代理人 0.53%) = 1.55%
+             *     （淡仓 7,747,516 股 = 0.07% 不计入）
+             *   重庆渝富（香港）13,246,000 股 = 占 H 股 0.53% = 占总股本 0.12%（附注(1)）
+             *   重庆发展投资的 H 股 23,814,000 股 = 0.21%，并回其 A 股 4.60% → 4.81% */
+            D['holders-through'] = {
+                /* 图上的扇区标注、tooltip、明细表现在统一用 name 全称（外径收到 68% 后排得下）；
+                 * short 只是备用简称，charts.js 暂时不再读它。 */
+                holderData: [
+                    { name: '重庆渝富资本运营集团', short: '渝富资本', value: 8.70, tag: 'A' },
+                    { name: '重庆市城市建设投资（集团）', short: '重庆城投', value: 7.02, tag: 'A' },
+                    { name: '重庆发展置业管理', short: '发展置业', value: 5.19, tag: 'A' },
+                    { name: '重庆市水利投资（集团）', short: '水利投资', value: 4.99, tag: 'A' },
+                    { name: '重庆发展投资', short: '发展投资', value: 4.81, tag: 'A+H' },
+                    { name: '复星系（郭广昌）', short: '复星系', value: 3.00, tag: 'H' },
+                    { name: 'JPMorgan Chase', short: '摩根大通', value: 1.55, tag: 'H' },
+                    { name: '重庆水务集团', short: '重庆水务', value: 1.10, tag: 'A' },
+                    { name: '重庆财信企业集团', short: '财信集团', value: 0.99, tag: 'A' },
+                    { name: '全国社保基金一一六组合', short: '社保116', value: 0.83, tag: 'A' },
+                    { name: '重庆渝富（香港）', short: '渝富香港', value: 0.12, tag: 'H' },
+                    { name: '其他股东', short: '其他股东', value: 61.70, tag: '含沪股通 2.79% 及未达披露线的 H 股股东' }
+                ],
+                /* 派系版用的分组：与 A 股口径的派系表不是一份——合并后多了复星系、JPMorgan
+                 * 这些 H 股股东。渝富系除年报列明的一致行动人（渝富资本 / 水利投资 / 水务集团）
+                 * 外，再并入重庆渝富（香港）（渝富控股的境外子公司，H 股年报附注(1)）。 */
+                factions: [
+                    { title: '渝富系（一致行动 + 渝富香港）', short: '渝富系', color: '#6c3483',
+                      names: ['重庆渝富资本运营集团', '重庆市水利投资（集团）', '重庆水务集团', '重庆渝富（香港）'] },
+                    { title: '发展系（一致行动）', short: '发展系', color: '#2980b9',
+                      names: ['重庆发展置业管理', '重庆发展投资'] },
+                    { title: '城投集团', short: '城投集团', color: '#e67e22', names: ['重庆市城市建设投资（集团）'] },
+                    { title: '复星系（郭广昌）', short: '复星系', color: '#c2185b', names: ['复星系（郭广昌）'] },
+                    { title: 'JPMorgan Chase', short: '摩根大通', color: '#2c3e50', names: ['JPMorgan Chase'] },
+                    { title: '财信集团', short: '财信集团', color: '#c0392b', names: ['重庆财信企业集团'] },
+                    { title: '社保116', short: '社保116', color: '#f1c40f', names: ['全国社保基金一一六组合'] },
+                    { title: '其他股东', short: '其他股东', color: '#95a5a6', names: ['其他股东'] }
+                ]
+            };
+            return res;
+        });
+    };
+})();
+</script>
+<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->
+<script src="charts/core.js"></script>
+<script src="charts/compare.js"></script>
+<script src="charts/perf.js"></script>
+<script src="charts/asset.js"></script>
+<script src="charts/debt.js"></script>
+<script src="charts/risk.js"></script>
+<script src="charts/shareholder.js"></script>
+<script src="charts/holders.js"></script>
+<script src="charts/intro.js"></script>
+<script src="charts/statement.js"></script>
+<script src="charts/switcher.js"></script>
+<script src="charts.js"></script>
+<script>
+/* 股东饼图 tab：口径 × 视图。隐藏过的 echarts 实例宽高是 0，切出来时要 resize。
+ * charts.js 对非 601077 会把 .yns-h-only display:none，本段先按 COMPANY_CODE 收掉
+ * A+H 合并 / H 股按钮，避免 axios 回来前闪一下渝农商专属 tab。 */
+(function () {
+    var root = document.getElementById('holder-pie-tabs');
+    if (!root) return;
+    var bar = document.getElementById('pie-tab-bar');
+    var code = window.COMPANY_CODE || '601077';
+    var isYns = code === '601077';
+    var scope = isYns ? 'through' : 'ashare';
+    var view = 'detail';
+
+    function resizePane(pane) {
+        if (!pane || !window.echarts) return;
+        requestAnimationFrame(function () {
+            pane.querySelectorAll('.chart').forEach(function (el) {
+                var inst = echarts.getInstanceByDom(el);
+                if (inst) inst.resize();
+            });
+        });
+    }
+
+    function apply() {
+        var showView = scope !== 'hshare';
+        bar.querySelectorAll('.pie-view-label, [data-view]').forEach(function (el) {
+            el.style.display = showView ? '' : 'none';
+        });
+        bar.querySelectorAll('.pie-scope-label, [data-scope]').forEach(function (el) {
+            el.style.display = isYns ? '' : 'none';
+        });
+        bar.querySelectorAll('[data-scope]').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-scope') === scope);
+        });
+        bar.querySelectorAll('[data-view]').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-view') === view);
+        });
+        root.querySelectorAll('.pie-tab-pane').forEach(function (p) {
+            var ps = p.getAttribute('data-scope');
+            var pv = p.getAttribute('data-view');
+            var on = ps === scope && (scope === 'hshare' || pv === view);
+            p.classList.toggle('active', on);
+            if (on) resizePane(p);
+        });
+    }
+
+    bar.addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b || !bar.contains(b)) return;
+        if (b.hasAttribute('data-scope')) scope = b.getAttribute('data-scope');
+        if (b.hasAttribute('data-view')) view = b.getAttribute('data-view');
+        apply();
+    });
+
+    if (!isYns) {
+        root.querySelectorAll('.yns-h-only').forEach(function (el) { el.style.display = 'none'; });
+    }
+    apply();
+
+    /* axios 响应拦截在 charts.js 的 then(renderAll) 之前触发；setTimeout(0)
+     * 排到 renderAll 之后，把刚 init 的当前 tab 再 resize 一次。 */
+    if (window.axios && axios.interceptors && axios.interceptors.response) {
+        axios.interceptors.response.use(function (res) {
+            var url = (res.config && res.config.url) || '';
+            if (url.indexOf('/api/company_charts') >= 0) setTimeout(apply, 0);
+            return res;
+        });
+    }
+})();
+</script>
+</body>
+</html>

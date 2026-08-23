@@ -11,8 +11,8 @@
     - RPT_F10_EH_HOLDERNUM          历年股东户数（股东总数，少数期次含 A/H 拆分）
     - RPT_SHAREBONUS_DET            历年分红实施明细（每 10 股派现等）
 
-纯 H 股上市银行（江西银行 01916.HK，无 A 股上市）走港股 F10
-（datacenter.eastmoney.com/securities/api/data/v1/get）+ 年报手工提取覆盖层：
+纯 H 股上市银行（江西银行 01916.HK、天津银行 01578.HK、哈尔滨银行 06138.HK，均无 A 股上市）
+走港股 F10（datacenter.eastmoney.com/securities/api/data/v1/get）+ 年报手工提取覆盖层：
     - RPT_HKF10_FN_MAININDICATOR    港股主要指标（年报 + 中期混排，需自行筛 12-31 行）
       币种陷阱：行内 CURRENCY="HKD"、IS_CNY_CODE=0 是误标 —— 江西银行年报本身以人民币编制，
       接口金额即人民币原值，无需折算（2024 年总资产 573,634,744,000 元 = 年报 573,634.75 百万元）。
@@ -23,6 +23,9 @@
       港股 F10 主要指标完全不含银行监管指标（不良率/拨备覆盖率/拨贷比/资本充足率/NIM/NIS/
       贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层：
     - data/tables/bank_01916_ar_manual.json   逐年年报手工提取值（列式，一行 = 年报表格一行）
+    - data/tables/bank_01578_ar_manual.json   同上（天津银行 2012—2025）
+    - data/tables/bank_06138_ar_manual.json   同上（哈尔滨银行 2009—2025，源自 13 份 H 股年报；
+      2018 年起 IFRS 9 且未重述比较期，永续债计入其他权益工具、100 亿转股协议存款在客户存款附注内）
 
 输出：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
@@ -114,10 +117,11 @@ BANKS = {
 BANKS_HK = {
     "01916": ("HK", "江西银行", "城商行"),
     "01578": ("HK", "天津银行", "城商行"),
+    "06138": ("HK", "哈尔滨银行", "城商行"),
 }
 
 # 港股 F10 主要指标（RPT_HKF10_FN_MAININDICATOR）-> 与 A 股输出字段名对齐，便于同图共用 key。
-# 这两家行年报均以人民币编制，接口金额即人民币原值（CURRENCY 写 HKD 是误标），可与 A 股行直接比。
+# 这几家行年报均以人民币编制，接口金额即人民币原值（CURRENCY 写 HKD 是误标），可与 A 股行直接比。
 # 只取年报正文摘要表里没有、或与年报口径一致的字段；重叠字段以年报覆盖层为准（见 build_bank_hk）。
 HK_MAIN_FIELDS = {
     "interest_ni": "NET_INTEREST_INCOME",
@@ -547,7 +551,7 @@ def load_ar_manual(code: str) -> dict:
 
 
 def build_bank_hk(code: str, refresh: bool) -> dict:
-    """纯 H 股上市银行（江西银行 01916.HK、天津银行 01578.HK）：港股 F10 主要指标 + 年报手工提取覆盖层。"""
+    """纯 H 股上市银行（江西银行 01916.HK、天津银行 01578.HK、哈尔滨银行 06138.HK）：港股 F10 主要指标 + 年报手工提取覆盖层。"""
     suffix, name, tier = BANKS_HK[code]
     secucode = f"{code}.{suffix}"
     filt = f'(SECURITY_CODE="{code}")'

@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "company_en": "Baidu, Inc.",
+    "company_zh": "百度集团股份有限公司",
+    "topic": "公司简介 / 公司治理 / 结构性风险（company profile, governance & structural risk）",
+    "purpose": "静态看板页面文案底稿；中文表述，专有名词保留英文原名",
+    "codes": {
+      "nasdaq": "BIDU（以 ADS 形式，1 ADS = 8 股 A 类普通股）",
+      "hkex": "9888（A 类普通股）",
+      "sec_cik": "0001329099",
+      "auditor_pcaob_id": "1408"
+    },
+    "as_of": {
+      "business_and_financial": "2025-12-31（FY2025 财年末）",
+      "share_ownership_and_wvr": "2026-01-31",
+      "apollo_go_metrics": "2026-02（原文 as of February 2026）",
+      "filing_date": "2026-03-17（FY2025 20-F 报送日 / 审计报告日）"
+    },
+    "unit": "金额单位随字段标注（RMB 百万元 / 美元）；百分比为原文精度",
+    "method_note": "按章节语义通读而非关键词检索：Item 4.A History and Development、Item 4.B Business Overview、Item 4.C Organizational Structure、Item 5.A、Item 6.A—6.E、Item 7、Item 10.A—10.B、Item 12.D、Item 16A—16K，以及 Item 3.D 风险因素的分组标题层级与合并财务报表附注（VIE 余额表、分部附注、股本附注）",
+    "sources": [
+      {
+        "file": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/20f_09888_2025.txt",
+        "filing": "Form 20-F for the fiscal year ended December 31, 2025（主用来源）",
+        "sections_used": [
+          "封面页与 Introduction（股本口径、ADS 比例、VIE 收入占比、HFCAA 提示）",
+          "Item 3.D Risk Factors（分组标题 + 各风险正文）",
+          "Item 4.A History and Development of the Company / 4.B Business Overview / 4.C Organizational Structure（含 VIE 合约安排）",
+          "Item 5.A Operating Results（分部收入变动叙述）",
+          "Item 6.A Directors and Senior Management / 6.C Board Practices / 6.D Employees / 6.E Share Ownership 与 Weighted Voting Rights Structure",
+          "Item 10.B Memorandum and Articles of Association — Ordinary Shares",
+          "Item 12.D American Depositary Shares（存托银行、港股登记与托管、买卖单位）",
+          "Item 16A/16C/16E/16G/16I/16K",
+          "Notes to Consolidated Financial Statements — Shares、VIE 余额与经营成果表、Segment Reporting"
+        ]
+      },
+      {
+        "file": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/annual_09888_2025.txt",
+        "filing": "港交所年度报告 FY2025（中文）",
+        "sections_used": ["A节 — 4.A 公司历史及发展", "A节 — 不同投票权架构", "A节 — 股本与股份拆细"],
+        "note": "该文件为 20-F 摘录部分的中译本（按《香港上市规则》第13.46(2)条提供），并非港式年报体例，故没有独立的「公司资料 / 董事会报告 / 企业管治报告」章节"
+      },
+      {
+        "file": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/20f_09888_2013.txt",
+        "filing": "Form 20-F FY2013（仅用于 91 Wireless 收购里程碑）",
+        "sections_used": ["Item 4.A", "Notes — Business combinations"]
+      },
+      {
+        "file": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/20f_09888_2008.txt",
+        "filing": "Form 20-F FY2008（仅用于公司更名日期与 BVI 中间控股公司）",
+        "sections_used": ["Notes — Organization and principal activities"]
+      },
+      {
+        "file": "/home/zhu/Desktop/real_home/code/python/money_oriented/data/raw/20f_09888_2005.txt",
+        "filing": "首份 Form 20-F（FY2005，仅用于早期历史与初代 VIE 合约）",
+        "sections_used": ["Item 4.A History and Development", "Item 4.C", "Item 6.A", "Notes — FIN 46R 合并"]
+      }
+    ],
+    "note": "全部字段仅取自上列本地文件，未联网。无法在文件中确证的一律留空（null）并在该条 note 说明，宁缺勿编；自算数值一律标注 computed。"
+  },
+  "__TAIL__": null
+}

@@ -56,12 +56,14 @@ import pdf_to_text  # noqa: E402  复用体检 + 落盘逻辑
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/120.0 Safari/537.36")
 
-# 纯 H 股银行：HKEXnews 内部 stockId（prefix.do 解析器当前失效，硬编码）。
+# 纯 H 股发行人：HKEXnews 内部 stockId（prefix.do 解析器当前失效，硬编码）。
 # 用 H 代码命名文件。dual-listed 银行不在此表——它们走 A 股源。
 HKEX_STOCK_ID = {
     "03618": "56657",   # 重庆农村商业银行（渝农商行，另有 A 股 601077，此处仅示例/回归）
     "01916": "188671",  # 江西银行  —— HKEXnews stockId
     "01578": None,      # 天津银行  —— stockId 待补
+    "06138": "104210",  # 哈尔滨银行 —— prefix.do 查得，2026-08-21 实测可列出 2013 年起全部年报
+    "00966": "2282",    # 中国太平（保险，纯 H 股）—— 2026-08-21 实测可列出 2007 年起全部年报
 }
 
 # dual-listed / 纯 A 股银行的交易所后缀（用于选 SSE 还是仅 cninfo）
@@ -192,17 +194,21 @@ def list_sse(code: str) -> dict[int, str]:
 
 def list_hkexnews(code: str) -> dict[int, str]:
     """港交所 HKEXnews：需内部 stockId（prefix.do 解析器当前失效，用 HKEX_STOCK_ID 表）。
-    仅用于纯 H 股银行。返回 {报告年份: 完整 PDF URL}。"""
+    仅用于纯 H 股发行人（银行与中国太平 00966）。返回 {报告年份: 完整 PDF URL}。
+    注意 searchType=1 的检索库只覆盖 2007-04 以后的披露，更早年份此处取不到。"""
     sid = HKEX_STOCK_ID.get(code)
     if not sid:
         return {}
     ref = "https://www1.hkexnews.hk/search/titlesearch.xhtml?lang=en"
     out: dict[int, str] = {}
-    for lang, tag in (("en", "ANNUAL REPORT"), ("zh", "年報")):
+    # 中文版优先：纯 H 股各行的年报手工提取覆盖层都按中文原文（繁体）通读，取英文版会换一套
+    # 科目名。标题写法不统一，「年報」与「年度報告」都要试（哈尔滨银行 06138 只有
+    # 「2013年年度報告」这种写法，用「年報」检索只命中一条补充公告）。
+    for lang, tag in (("zh", "年度報告"), ("zh", "年報"), ("en", "ANNUAL REPORT")):
         url = ("https://www1.hkexnews.hk/search/titleSearchServlet.do"
                "?sortDir=0&sortByOptions=DateTime&category=0&market=SEHK"
                f"&stockId={sid}&documentType=-1&fromDate=20000101&toDate=20301231"
-               "&title=&searchType=1&t1code=-2&t2Gcode=-2&t2code=-2"
+               f"&title={urllib.parse.quote(tag)}&searchType=1&t1code=-2&t2Gcode=-2&t2code=-2"
                f"&rowRange=800&lang={lang}")
         try:
             raw = json.loads(http(url, referer=ref))
@@ -210,14 +216,18 @@ def list_hkexnews(code: str) -> dict[int, str]:
         except Exception as e:                          # noqa: BLE001
             print(f"      [hkexnews {lang}] {e}", file=sys.stderr)
             continue
-        pat = re.compile(rf"^(\d{{4}})\s+{tag}$", re.I)
+        # 年份可前可后，中文版年份与「年報」之间无空格：
+        # 「2024 ANNUAL REPORT」/「Annual Report 2024」/「2024年年報」
+        pats = (re.compile(rf"^(\d{{4}})\s*年?\s*{tag}$", re.I),
+                re.compile(rf"^{tag}\s*(\d{{4}})$", re.I))
         for r in rows:
-            m = pat.match((r.get("TITLE") or "").strip())
+            title = (r.get("TITLE") or "").strip()
+            m = next((p.match(title) for p in pats if p.match(title)), None)
             if not m:
                 continue
             yr = int(m.group(1))
             out.setdefault(yr, "https://www1.hkexnews.hk" + r["FILE_LINK"])
-        if out:                                         # 英文版拿到就够，中文版仅兜底
+        if out:                                         # 命中一种写法即可，其余仅兜底
             break
     return out
 

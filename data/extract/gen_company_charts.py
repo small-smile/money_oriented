@@ -45,7 +45,7 @@ CODES = [
     "601825", "601128", "002958", "600908", "002807", "601860",
     "002839", "601528", "603323",
     # 纯 H 股
-    "01578", "01916",
+    "01578", "01916", "06138",
 ]
 
 # 银行名录：shortName 取自 annual 里的 name，这里只补全称与 H 股代码
@@ -341,26 +341,34 @@ def short_holder(name: str) -> str:
     return n if len(n) <= 14 else n[:13] + "…"
 
 
-def build_concentration(src: dict) -> dict | None:
+def build_concentration(src: dict, is_ah: bool) -> dict | None:
     """holder_concentration（fetch 脚本按报告期算好的）-> 集中度图载荷。
 
     raw 每行 5 列 [报告期, 第一大, 前三大, 前十大, 其他流通股东]，与 601077 精编文件同构；
     第一大股东名称逐期不同（改名 / 换人），单独走并行数组 top1Names，不塞进 raw 当第 6 列。
     剔除「香港中央结算」名义持有人后的第一大 / 前三大另走并行数组 top1Ex / top3Ex / top1ExNames，
     只有含 HKSCC 的报告期才与原值不同，charts.js 据此决定是否画「剔除香港中央结算」线。
+
+    仅 A+H 两地上市行（is_ah，本行有 H 股代码）才输出剔除口径：H 股由「香港中央结算（代理人）」
+    名义代持、是这些行名义第一大的成因，剔除后才看得出真实实益股东。纯 A 股行即便前十大里有
+    「香港中央结算有限公司」（沪深股通北向名义持有人，如兴业 601166 / 瑞丰 601528），也按 A 股
+    定期报告如实披露、不做剔除——沪深股通持股占比小、并非名义第一大，剔除反而失真（milestone
+    「A 或 H 单独上市披露前十大原值，A+H 才从 A 披露剔除香港中央结算/香港代理人」）。
     """
     conc = src.get("holder_concentration") or []
     if len(conc) < 4:                       # 少于 4 期画不出趋势，宁可显示占位
         return None
-    return {
+    out = {
         "raw": [[c["date"], c["top1"], c["top3"], c["top10"], round(100 - c["top10"], 2)]
                 for c in conc],
         "top1Names": [short_holder(c["top1_name"]) for c in conc],
-        "top1Ex": [c.get("top1_ex") for c in conc],
-        "top3Ex": [c.get("top3_ex") for c in conc],
-        "top1ExNames": [short_holder(c["top1_ex_name"]) if c.get("top1_ex_name") else ""
-                        for c in conc],
     }
+    if is_ah:
+        out["top1Ex"] = [c.get("top1_ex") for c in conc]
+        out["top3Ex"] = [c.get("top3_ex") for c in conc]
+        out["top1ExNames"] = [short_holder(c["top1_ex_name"]) if c.get("top1_ex_name") else ""
+                              for c in conc]
+    return out
 
 
 def build_share_capital(annual: dict, years: list[str]) -> dict | None:
@@ -631,6 +639,8 @@ def build(code: str) -> dict:
         "car": ser(annual, years, "car"),
         "cet1": ser(annual, years, "cet1"),
         "overdue": ser_ratio(annual, years, "overdue_loans", "gross_loans"),
+        "overdueAmt": ser(annual, years, "overdue_loans", YI),
+        "nplAmt": ser(annual, years, "npl_amount", YI),
         "writeoffRate": ser_ratio(annual, years, "net_charge_off", "gross_loans"),
         "formation": ser_formation(annual, years),
     }
@@ -744,7 +754,7 @@ def build(code: str) -> dict:
         }
 
     # 历年持股集中度 / 总股本变动：全部由 F10 年度数据推导，各行都有
-    conc = build_concentration(src)
+    conc = build_concentration(src, bool(meta.get("hCode")))
     if conc:
         out["holder-concentration"] = conc
     # 港交所（H 股年报）口径的集中度单独一份载荷、页面上单独一个 series 披露：
@@ -835,6 +845,8 @@ def build(code: str) -> dict:
         vs4 = f"{name} vs {peers4}"
         notes["ct-npl"] = f"不良贷款率（%） · {vs4}"
         notes["ct-overdue"] = f"逾期贷款率（%） · {vs4}"
+        notes["ct-npl-amt"] = f"不良贷款总额（亿元）"
+        notes["ct-overdue-amt"] = f"逾期贷款总额（亿元）"
         notes["ct-npl-formation"] = f"不良生成率（%） · {vs4}"
         notes["ct-writeoff-rate"] = f"核销率（%） · {vs4}"
         notes["ct-equity-asset"] = f"权益资产比（%） · {vs4}"

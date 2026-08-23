@@ -27,6 +27,8 @@ section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
 .chart-btns button:hover { background: #e6eef7; }
 .chart-btns button.active { background: #10243e; border-color: #10243e; color: #fff; font-weight: 600; }
 /* 一键对比：和「换成某一家行」不是同类动作，用白底描边+左侧留空跟单行按钮拉开距离 */
+.chart-btns button.tier { background: #fff; border-color: #10243e; font-weight: 600; }
+.chart-btns button.tier.active { background: #10243e; color: #fff; }
 .chart-btns button.cmp { margin-left: 6px; background: #fff; border-color: #10243e; font-weight: 600; }
 .chart-btns button.cmp:hover { background: #eef3f9; }
 .chart-btns button.cmp.active { background: #10243e; color: #fff; }

@@ -343,7 +343,15 @@
       206.53,
       206.07
     ],
-    "nplCorp": null
+    "nplCorp": null,
+    "nplRetail": [
+      0.86,
+      0.47,
+      1.45,
+      3.07,
+      1.99,
+      3.00
+    ]
   },
   "perloan-bal": {
     "years": [

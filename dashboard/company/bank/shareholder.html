@@ -90,8 +90,10 @@
         <div id="note-holder-count-g" class="note-generic" style="display:none"></div>
 
         <h3 class="chart-title" style="margin-top:22px">股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）</h3>
-        <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
-            <div style="flex:1;min-width:360px">
+        <!-- 竖排而不是并排：这几张图用的是 core.js 里 alignTo:'edge' 的边缘对齐标注，
+             一条标注要 336px，分三栏后每栏只剩 400px 出头，股东全称会被推出画布只剩比例 -->
+        <div style="display:flex;flex-direction:column;gap:24px">
+            <div>
                 <div class="yns-only" id="holders-title-a" style="font-size:18px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:6px">A 股年报（2025）· 前十大股东占总股本</div>
                 <div id="chart-holders" class="chart" style="height:560px"></div>
                 <div id="holders-legend" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
@@ -99,28 +101,24 @@
             <!-- 以下两列是「H 股年报口径」专属：渝农商 H 股年报只到 2018、A 股年报从 2019 起，
                  两边没有重叠年份，才值得把 A/H 两套结构并排看。其余 A+H 行同一年两份年报都有，
                  按 A 股优先只画 A 股，这两列对它们恒定无意义 → .yns-h-only 一律隐藏 -->
-            <div class="yns-h-only" style="flex:1;min-width:360px">
+            <div class="yns-h-only">
                 <div style="font-size:18px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:6px">H 股年报（2018）· 前十大股东占总股本</div>
                 <div id="chart-holders-h" class="chart" style="height:560px"></div>
                 <div id="holders-legend-h" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
             </div>
-            <div class="yns-h-only" style="flex:1;min-width:360px">
+            <div class="yns-h-only">
                 <div style="font-size:18px;color:#16a085;font-weight:600;text-align:center;margin-bottom:6px">H 股年报（2018）· 主要 H 股股东占 H 股总股本</div>
                 <div id="chart-holders-h-only" class="chart" style="height:560px"></div>
                 <div id="holders-legend-h-only" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
             </div>
         </div>
         <details class="note yns-h-only">
-            <summary>为什么右图取 2018 年 H 股年报（点击展开）</summary>
-            渝农商行 2010-12 在港上市、2019-10-29 才登陆 A 股，因此 <b>H 股年报仅 2010-2018 年存在</b>、<b>A 股年报自 2019 年起才有</b>，两边<b>没有重叠年份</b>。左图取现有最新 A 股年报（2025）前十大股东占总股本；中图取现有最新 H 股年报（2018）前十大股东占总股本，用以对比 A 股上市前后的股权结构变化。<br>
-            左、中两图口径均为「持股占总股本比例」（2018 年总股本 100 亿股，2025 年总股本 113.57 亿股）。中图第一大「香港中央结算（代理人）25.13%」为 H 股名义持有人账户（HKSCC Nominees），代众多境外投资者集中登记持有全部 H 股（2018 年 H 股占总股本 25.13%），并非单一实益股东。<br>
-            <b>右图口径不同：只看 H 股内部</b>——按 2018 年报「重大权益和淡仓」章节、依香港《证券及期货条例》(SFO) 披露的持 H 股 ≥5% 主要股东，占比为「占本行已发行 H 股总股本（25.13 亿股）之百分比」（好仓口径）。BlackRock 13.84%（已合并其受控法团 BlackRock Global Funds 6.98%）、复星系 7.00%（郭广昌经 Fosun 控股链持有的同一批股份，未重复计）、Citigroup 6.43%、LSV 5.98%，合计 33.25%；其余约 66.75% 为未达 5% 披露线的其他 H 股股东。数据来源：03618 港股 2018 年报「股本变动及股东情况——本行前 10 大股东持股情况 / 重大权益和淡仓」（p.89-92）；601077 沪股 2025 年报「股东情况」。
+            <summary>为什么第三张图取 2018 年 H 股年报（点击展开）</summary>
+            渝农商行 2010-12 在港上市、2019-10-29 才登陆 A 股，因此 <b>H 股年报仅 2010-2018 年存在</b>、<b>A 股年报自 2019 年起才有</b>，两边<b>没有重叠年份</b>。第一张图取现有最新 A 股年报（2025）前十大股东占总股本；第二张图取现有最新 H 股年报（2018）前十大股东占总股本，用以对比 A 股上市前后的股权结构变化。<br>
+            前两张图口径均为「持股占总股本比例」（2018 年总股本 100 亿股，2025 年总股本 113.57 亿股）。第二张图第一大「香港中央结算（代理人）25.13%」为 H 股名义持有人账户（HKSCC Nominees），代众多境外投资者集中登记持有全部 H 股（2018 年 H 股占总股本 25.13%），并非单一实益股东。<br>
+            <b>第三张图口径不同：只看 H 股内部</b>——按 2018 年报「重大权益和淡仓」章节、依香港《证券及期货条例》(SFO) 披露的持 H 股 ≥5% 主要股东，占比为「占本行已发行 H 股总股本（25.13 亿股）之百分比」（好仓口径）。BlackRock 13.84%（已合并其受控法团 BlackRock Global Funds 6.98%）、复星系 7.00%（郭广昌经 Fosun 控股链持有的同一批股份，未重复计）、Citigroup 6.43%、LSV 5.98%，合计 33.25%；其余约 66.75% 为未达 5% 披露线的其他 H 股股东。数据来源：03618 港股 2018 年报「股本变动及股东情况——本行前 10 大股东持股情况 / 重大权益和淡仓」（p.89-92）；601077 沪股 2025 年报「股东情况」。
         </details>
-        <div style="margin-top:22px">
-            <div style="font-size:18px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:10px">股东持股比例条形图（横向 · 按比例排序 · 同派系同色 · ≥4% 股东条内显示股东名）</div>
-            <div id="chart-holders-bar" class="chart" style="height:520px"></div>
-        </div>
-        <div style="overflow-x:auto;margin-top:16px">
+        <div style="overflow-x:auto;margin-top:22px">
             <table>
                 <thead><tr><th>股东名称</th><th>比例</th><th>报告期内增减</th><th>类别</th></tr></thead>
                 <tbody id="holder-tbody"></tbody>
@@ -177,6 +175,18 @@
 
 </div>
 
+<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->
+<script src="charts/core.js"></script>
+<script src="charts/compare.js"></script>
+<script src="charts/perf.js"></script>
+<script src="charts/asset.js"></script>
+<script src="charts/debt.js"></script>
+<script src="charts/risk.js"></script>
+<script src="charts/shareholder.js"></script>
+<script src="charts/holders.js"></script>
+<script src="charts/intro.js"></script>
+<script src="charts/statement.js"></script>
+<script src="charts/switcher.js"></script>
 <script src="charts.js"></script>
 </body>
 </html>

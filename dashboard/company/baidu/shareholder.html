@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <link rel="stylesheet" href="../page.css">
+    <script src="../../common/site-header.js" defer></script>
+    <style>
+        /* 双层环形图的右侧标注全靠 graphic 手画，图高固定给足，别让它挤在窄条里 */
+        #chart-holders { width: 100%; height: 700px; }
+        .note-generic {
+            margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
+            border-left: 4px solid #b7b1c4; border-radius: 6px;
+            font-size: 18px; color: #555; line-height: 1.75;
+        }
+        .gap-list { margin: 6px 0 0 18px; font-size: 18px; color: #555; line-height: 1.8; }
+        .gap-list b { color: #10243e; }
+    </style>
+    <title>百度集团（09888 / 89888 / BIDU）FY2025 · 股权结构</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="data.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>百度集团（09888 / 89888 / BIDU）· 股权结构</h1>
+        <div class="meta">
+            港交所 9888（港元柜台）/ 89888（人民币柜台） · 纳斯达克 BIDU（1 ADS = 8 股 A 类） · 开曼注册、不同投票权架构（WVR）<br>
+            口径日期 2026-01-31（FY2025 20-F Item 6.E.） · 股数单位：股（普通股，非 ADS）
+        </div>
+        <div class="tags"><span>双重股权</span><span>实益持股</span><span>投票权</span><span>回购与库存股</span></div>
+    </div>
+
+    <!-- ══════════ 持股全景 ══════════ -->
+    <section id="sec-holders">
+        <h2>持股全景（经济权益口径）</h2>
+        <p class="sub" id="holders-sub"></p>
+        <div class="kpis" id="holders-kpis"></div>
+
+        <div class="chart-btns">
+            <span class="label">标注排布</span>
+            <button type="button" data-layout="cols" class="active">两列（派系 · 明细）</button>
+            <button type="button" data-layout="tree">树状（派系分叉）</button>
+        </div>
+        <h3 class="chart-title">内圈明细股东 · 外圈按控制关系归并（占总股本 %）</h3>
+        <div id="chart-holders"></div>
+        <div id="holders-legend" style="font-size:18px;color:#444;line-height:1.9;margin:10px 4px 0"></div>
+        <details class="note">
+            <summary>数据说明（点击展开）</summary>
+            全部股数取自 FY2025 20-F Item 6.E. 实益持股表及其脚注（口径日 2026-01-31，总股本 2,722,021,272 股 =
+            A 类 2,198,000,952 + B 类 524,020,320），比例由股数现算，页面未手抄任何百分比。三点口径提示：
+            ① 「李彦宏家族」是本页按控制关系做的归并（Handsome Reward + 本人 + 配偶马东敏），
+            <b>SEC 实益持股口径并不合并夫妻持股</b>——20-F 中李彦宏明确否认对马东敏股份的实益拥有权，
+            表内 18.6% 不含马东敏；若按港交所 SFO 好仓口径，配偶与受控法团权益须合并，结果会显著高于 18.6%。
+            ② Handsome Reward 一行的 449,219,376 股含 60 日内可行使购股权 1,404,960 股与可归属限制性股份 362,008 股，
+            这部分尚未发行、不在分母内，故该扇区略微高估（约 0.06 个百分点）。
+            ③ 员工投票代理的 51,550,880 股 A 类在 SEC 表里计入李彦宏名下（他有投票权），
+            但<b>经济权益属员工</b>，本页因此单列一个派系，不塞进李彦宏家族。
+            ④ 贝莱德一行股数为 2023-12-31 口径（2024-02-01 提交的 13G/A），三份 20-F 连续沿用未更新，仅换分母。
+            ⑤ 「其他股东」为残余项，含 ADS 存托持有的绝大部分流通股、港股流通股与未达披露线／公司不知情的机构持仓，
+            20-F 不披露其构成，故用灰斜线纹理表示「不可穿透」。
+        </details>
+    </section>
+
+    <!-- ══════════ 经济权益 vs 投票权 ══════════ -->
+    <section id="sec-voting">
+        <h2>同股不同权：经济权益与投票权的背离</h2>
+        <p class="sub">A 类每股 1 票、B 类每股 10 票，两类合并作为单一类别投票 · 全部 B 类由李彦宏、马东敏、Integrity Partners V 三方持有</p>
+        <div class="cards" id="voting-cards"></div>
+        <h3 class="chart-title" style="margin-top:18px">经济权益 % vs 投票权 %（2026-01-31）</h3>
+        <div id="chart-voting" class="chart" style="height:360px"></div>
+        <details class="note">
+            <summary>数据说明（点击展开）</summary>
+            投票权% 取自 20-F 原文（分母为 A、B 两类合并计算的总投票权，并按 SEC 规则把该人 60 日内可取得的股份计入其本人分母，
+            故各行分母略有不同、各行不可相加）。马东敏的经济权益% 原文未披露（港交所 WVR 受益人表只列投票权%），
+            图中 <span id="ma-pct-inline"></span> 为按 88,185,992 股 ÷ 2,722,021,272 股自算。
+            「WVR 受益人合计」71.4% 为 20-F 原表合计行，对应 A 类 71,580,216 股 + B 类 524,020,320 股，
+            后者恰等于全部已发行 B 类——即 B 类 100% 集中在这三方手里。
+        </details>
+    </section>
+
+    <!-- ══════════ 三年变化 ══════════ -->
+    <section id="sec-trend">
+        <h2>三年变化：比例上升主要来自分母缩小</h2>
+        <p class="sub">同一张 Item 6.E. 表的 FY2023 / FY2024 / FY2025 三年口径（口径日分别为 2024-01-31 / 2025-01-31 / 2026-01-31）</p>
+        <h3 class="chart-title">总股本（亿股，柱）与李彦宏经济权益 / 投票权（%，线）</h3>
+        <div id="chart-3y" class="chart" style="height:380px"></div>
+        <h3 class="chart-title" style="margin-top:18px">员工不可撤销投票代理的 A 类股（百万股，柱）及其占李彦宏 A 类持股比重（%，线）</h3>
+        <div id="chart-proxy" class="chart" style="height:360px"></div>
+        <div class="note-generic" id="trend-note"></div>
+        <details class="note">
+            <summary>数据说明（点击展开）</summary>
+            三年间总股本从 2,805,219,752 股降至 2,722,021,272 股，累计减少约 8,320 万股，直接原因是回购—库存股—注销链条；
+            B 类几乎不受回购影响（仅因持有人转换从 524,780,320 股降至 524,020,320 股）。
+            因此李彦宏经济权益 18.2%→18.6%、投票权 59.3%→59.9% 的变化里，<b>分母缩小是重要成分，而非增持</b>。
+            员工投票代理股数三年间 5,341.8 万→6,702.0 万→5,155.1 万股，波动不小，但 20-F 未披露参与员工人数、
+            代理协议期限与终止条件，无法判断波动来自新增授予还是员工卖出。
+            另：FY2025 表内董事高管从 12 人缩到 6 人（口径变化，非离职披露），「全体董事及高管合计」一行三年间不可比。
+        </details>
+    </section>
+
+    <!-- ══════════ 双重股权架构 ══════════ -->
+    <section id="sec-dual">
+        <h2>双重股权架构与 sunset 条款</h2>
+        <p class="sub">来源：FY2025 20-F Item 10.B.（章程细则——普通股）+ Item 6.E.（加权投票权架构）+ 财报附注「股份」</p>
+        <div class="two-col">
+            <div>
+                <h3 class="chart-title">A 类 / B 类条款对照</h3>
+                <table>
+                    <thead><tr><th>条款</th><th>A 类普通股</th><th>B 类普通股</th></tr></thead>
+                    <tbody id="dual-tbody"></tbody>
+                </table>
+            </div>
+            <div>
+                <h3 class="chart-title">B 类自动转换触发情形</h3>
+                <ul class="gap-list" id="dual-triggers"></ul>
+                <h3 class="chart-title" style="margin-top:14px">B 类转为 A 类的实际发生量（股）</h3>
+                <table>
+                    <thead><tr><th>年度</th><th>转换股数</th></tr></thead>
+                    <tbody id="dual-conv"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="note-generic" id="dual-note"></div>
+    </section>
+
+    <!-- ══════════ 回购与库存股 ══════════ -->
+    <section id="sec-buyback">
+        <h2>回购、库存股与注销</h2>
+        <p class="sub">来源：FY2025 20-F Item 16E. + 财报附注（股份 / 库存股）· 回购标的均为 A 类普通股或 ADS，全部于公开市场进行</p>
+        <div class="kpis" id="buyback-kpis"></div>
+        <h3 class="chart-title">年度回购股数（百万股，柱）与回购金额（人民币十亿元，线）</h3>
+        <div id="chart-buyback" class="chart" style="height:360px"></div>
+        <div class="cards" id="buyback-cards" style="margin-top:16px"></div>
+    </section>
+
+    <!-- ══════════ 披露缺口 ══════════ -->
+    <section id="sec-gaps">
+        <h2>披露缺口：这页图不能回答的问题</h2>
+        <p class="sub">百度依《上市规则》第 19C 章在港上市并获多项豁免，港交所年报仅为 20-F 摘录中译，因此缺少港式股东披露</p>
+        <ul class="gap-list" id="gaps-list"></ul>
+        <details class="note">
+            <summary>三套口径为何不能混用（点击展开）</summary>
+            <div id="caliber-note"></div>
+        </details>
+    </section>
+
+</div>
+<script src="charts/common.js"></script>
+<script src="charts/shareholder.js"></script>
+</body>
+</html>

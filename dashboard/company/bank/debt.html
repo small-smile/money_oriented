@@ -23,13 +23,13 @@
     <section id="sec-scale-dep">
         <h2>客户存款规模</h2>
         <p class="sub">口径：本集团合并数 · 单位：亿元</p>
-        <h3 class="chart-title">客户存款（亿元）· 实际 vs 指数 / 线性回归</h3>
+        <h3 class="chart-title">客户存款（亿元）</h3>
         <div id="fit-note-dep" class="fit-note"></div>
         <div id="chart-scale-dep" class="chart" style="height:340px"></div>
         <div class="note yns-only">
             数据来源：本行 2010–2022、2025 年年度报告「财务摘要」；2016、2017 年吸收存款取自 <b>H 股招股说明书 / A 股招股意向书摘要</b>（存贷款规模比较表，单位换算为亿元）。<b>存款 2010–2025 全覆盖。</b>
-            两条趋势线均为 2010–2025 共 16 年最小二乘：<b>指数回归</b>（同色虚线）ln(y)=a+b·t —— +10.67%/年（R²=0.960）；<b>线性回归</b>（灰色点线）y=a+b·t —— +537 亿/年（R²=0.998）。
-            两者 R² 不同标度（分别解释 ln y 与 y 的方差），不可直接比大小，看残差形态更可靠：<b>存款更像线性扩张</b>——线性拟合各年偏离均在 ±3% 内，而对数拟合在 2014–2018 年高出趋势 9–13%、近三年又低 4–11%；端点增速 11.33% 高于对数回归增速 10.67%。悬停可看各年趋势值、偏离趋势幅度与同比。
+            虚线为 2010–2025 共 16 年的<b>指数趋势线</b>（对 ln y 做最小二乘），线右端标注的就是这条趋势线的<b>年均增长率 +10.67%</b>（R²=0.960）——即这 16 年存款平均每年增长约一成。
+            实际值围绕趋势线摆动：2014–2018 年高出趋势 9–13%，2023–2025 年低于趋势 4–11%；首尾两端算出的年化增速 11.33% 略高于趋势线的 10.67%。悬停可看各年趋势值、偏离趋势幅度与同比。
         </div>
     </section>
 
@@ -37,27 +37,23 @@
     <section id="sec-deposit">
         <h2>存款结构与付息成本</h2>
         <p class="sub">口径：本集团合并数 · 存款为期末余额 · 付息率为年度平均 · 单位：亿元 / %</p>
-        <div class="two-col">
-            <div>
-                <h3 class="chart-title">存款期限结构（2025 年末）</h3>
-                <div id="chart-depterm" class="chart" style="height:360px"></div>
-            </div>
-            <div>
-                <h3 class="chart-title">存款结构明细（期末余额）</h3>
-                <table class="yns-only">
-                    <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th></tr></thead>
-                    <tbody>
-                        <tr><td>公司存款（亿元）</td><td>1,438.93</td><td>1,296.02</td></tr>
-                        <tr><td>个人存款（亿元）</td><td>8,803.67</td><td>8,085.37</td></tr>
-                        <tr><td>活期存款（亿元 / 占比）</td><td>2,601.74（25.30%）</td><td>2,461.73（26.13%）</td></tr>
-                        <tr><td>定期存款（亿元 / 占比）</td><td>7,640.86（74.27%）</td><td>6,919.65（73.46%）</td></tr>
-                        <tr class="row-sub"><td>保证金及其他存款（亿元 / 占比）</td><td>44.68（0.43%）</td><td>38.08（0.40%）</td></tr>
-                        <tr class="row-total"><td>客户存款合计（亿元）</td><td>10,287.28</td><td>9,419.46</td></tr>
-                        <tr class="row-total"><td>平均付息率</td><td>1.45%</td><td>≈1.73%*</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <!-- 饼图独占整行、表格接在下面：标注用的是 core.js 里 alignTo:'edge' 的两段式边缘对齐，
+             一条要 336px，塞进 two-col 的半栏（~600px）里名称会被推出画布 -->
+        <h3 class="chart-title">存款期限结构（2025 年末）</h3>
+        <div id="chart-depterm" class="chart" style="height:400px"></div>
+        <h3 class="chart-title" style="margin-top:18px">存款结构明细（期末余额）</h3>
+        <table class="yns-only">
+            <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th></tr></thead>
+            <tbody>
+                <tr><td>公司存款（亿元）</td><td>1,438.93</td><td>1,296.02</td></tr>
+                <tr><td>个人存款（亿元）</td><td>8,803.67</td><td>8,085.37</td></tr>
+                <tr><td>活期存款（亿元 / 占比）</td><td>2,601.74（25.30%）</td><td>2,461.73（26.13%）</td></tr>
+                <tr><td>定期存款（亿元 / 占比）</td><td>7,640.86（74.27%）</td><td>6,919.65（73.46%）</td></tr>
+                <tr class="row-sub"><td>保证金及其他存款（亿元 / 占比）</td><td>44.68（0.43%）</td><td>38.08（0.40%）</td></tr>
+                <tr class="row-total"><td>客户存款合计（亿元）</td><td>10,287.28</td><td>9,419.46</td></tr>
+                <tr class="row-total"><td>平均付息率</td><td>1.45%</td><td>≈1.73%*</td></tr>
+            </tbody>
+        </table>
         <h3 class="chart-title" style="margin-top:18px">客户存款平均付息率（%，2019–2025）</h3>
         <div id="chart-depcost" class="chart" style="height:360px"></div>
         <h3 class="chart-title" style="margin-top:18px">活期存款占比（%，2019–2025）</h3>
@@ -101,6 +97,18 @@
     </div>
 </div>
 
+<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->
+<script src="charts/core.js"></script>
+<script src="charts/compare.js"></script>
+<script src="charts/perf.js"></script>
+<script src="charts/asset.js"></script>
+<script src="charts/debt.js"></script>
+<script src="charts/risk.js"></script>
+<script src="charts/shareholder.js"></script>
+<script src="charts/holders.js"></script>
+<script src="charts/intro.js"></script>
+<script src="charts/statement.js"></script>
+<script src="charts/switcher.js"></script>
 <script src="charts.js"></script>
 </body>
 </html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>效果预览 · 内圈明细 + 外圈派系 + 树状标注</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+    body { margin: 0; padding: 24px; background: #f4f5f7; font: 18px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; }
+    .wrap { max-width: 1280px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 22px 26px 30px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    h1 { font-size: 24px; margin: 0 0 6px; color: #4a2a5a; }
+    .meta { font-size: 17px; color: #666; margin-bottom: 6px; }
+    .chart-title { font-size: 19px; font-weight: 600; color: #333; margin: 14px 0 6px; }
+    .chart-btns { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 16px 0 4px; flex-wrap: wrap; }
+    .chart-btns .label { font-size: 17px; color: #777; }
+    .chart-btns button { font: inherit; font-size: 17px; padding: 5px 14px; border: 1px solid #cfc6d8;
+        background: #fff; color: #4a2a5a; border-radius: 16px; cursor: pointer; }
+    .chart-btns button.active { background: #6c3483; border-color: #6c3483; color: #fff; }
+    .note { margin-top: 18px; padding: 12px 16px; background: #f6f7f9; border-left: 4px solid #b7b1c4;
+        border-radius: 6px; font-size: 17px; color: #555; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h1>效果预览：双层环形图 + 右侧标注（树状 / 两列对比）</h1>
+    <div class="meta" id="meta"></div>
+
+    <div class="chart-btns" id="btns">
+        <span class="label">公司</span>
+        <button type="button" data-ds="601398" class="active">工商银行</button>
+        <button type="button" data-ds="601077">渝农商行</button>
+    </div>
+    <div class="chart-btns" id="btns2">
+        <span class="label">标注排布</span>
+        <button type="button" data-layout="cols" class="active">两列（派系一列 · 明细一列）</button>
+        <button type="button" data-layout="tree">树状（派系分叉公司）</button>
+        <span class="label" style="margin-left:18px">圈序</span>
+        <button type="button" data-order="detail-in" class="active">明细在内 · 派系在外</button>
+        <button type="button" data-order="fac-in">派系在内 · 明细在外</button>
+        <span class="label" style="margin-left:18px">明细配色</span>
+        <button type="button" data-mode="shade" class="active">派系同色系（深浅）</button>
+        <button type="button" data-mode="each">每家一色</button>
+    </div>
+
+    <div id="chart-merged" style="height:700px"></div>
+    <div id="legend" style="font-size:18px;color:#444;line-height:1.9;margin:10px 4px 0"></div>
+
+    <div class="note">
+        两种标注排布对比：<b>树状</b>是派系节点下挂公司（缩进一层）；<b>两列</b>是左边一列派系、右边一列明细公司，
+        中间用括号连起来，同时把原来图下方的清单搬到右侧、底部清单隐藏。残余项「其他股东」两版都单独挂左侧、用灰斜线纹理垫最后。
+    </div>
+</div>
+<script>
+/* ==== 演示数据 ====
+ * 601077 渝农商行：A+H 合并口径，手抄值（原 shareholder-noyns.html 注入的 holders-through）
+ * 601398 工商银行：真实值，取自 data/tables/company_charts_601398.json 的 holders 块 */
+var DATASETS = {
+'601077': {
+  meta: '渝农商行（601077 / 03618）2025 年报 · A+H 合并口径 · 占总股本比例 · 数据为演示用手抄值',
+  holders: [
+    { name: '重庆渝富资本运营集团',        short: '渝富资本', value: 8.70, tag: 'A',   fac: 'yufu' },
+    { name: '重庆市城市建设投资（集团）',  short: '重庆城投', value: 7.02, tag: 'A',   fac: 'chengtou' },
+    { name: '重庆发展置业管理',            short: '发展置业', value: 5.19, tag: 'A',   fac: 'fazhan' },
+    { name: '重庆市水利投资（集团）',      short: '水利投资', value: 4.99, tag: 'A',   fac: 'yufu' },
+    { name: '重庆发展投资',                short: '发展投资', value: 4.81, tag: 'A+H', fac: 'fazhan' },
+    { name: '复星系（郭广昌）',            short: '复星系',   value: 3.00, tag: 'H',   fac: 'fosun' },
+    { name: 'JPMorgan Chase',              short: '摩根大通', value: 1.55, tag: 'H',   fac: 'jpm' },
+    { name: '重庆水务集团',                short: '重庆水务', value: 1.10, tag: 'A',   fac: 'yufu' },
+    { name: '重庆财信企业集团',            short: '财信集团', value: 0.99, tag: 'A',   fac: 'caixin' },
+    { name: '全国社保基金一一六组合',      short: '社保116',  value: 0.83, tag: 'A',   fac: 'shebao' },
+    { name: '重庆渝富（香港）',            short: '渝富香港', value: 0.12, tag: 'H',   fac: 'yufu' },
+    { name: '其他股东',                    short: '其他股东', value: 61.70,
+      tag: '含沪股通 2.79% 及未达披露线的 H 股股东', fac: 'other' }
+  ],
+  factions: [
+    { key: 'yufu',     title: '渝富系（一致行动 + 渝富香港）', short: '渝富系',   color: '#6c3483' },
+    { key: 'fazhan',   title: '发展系（一致行动）',            short: '发展系',   color: '#2980b9' },
+    { key: 'chengtou', title: '城投集团',                      short: '城投集团', color: '#e67e22' },
+    { key: 'fosun',    title: '复星系（郭广昌）',              short: '复星系',   color: '#c2185b' },
+    { key: 'jpm',      title: 'JPMorgan Chase',                short: '摩根大通', color: '#2c3e50' },
+    { key: 'caixin',   title: '财信集团',                      short: '财信集团', color: '#c0392b' },
+    { key: 'shebao',   title: '社保116',                       short: '社保116',  color: '#f1c40f' },
+    { key: 'other',    title: '其他股东',                      short: '其他股东', color: '#95a5a6' }
+  ]
+},
+'601398': {
+  meta: '工商银行（601398 / 01398）2025 年报 · 前十大股东 + 其他流通股东 · 占总股本比例',
+  holders: [
+    { name: '中央汇金投资有限责任公司',     short: '汇金公司',   value: 34.79, tag: '流通A股', fac: 'guoyou' },
+    { name: '中华人民共和国财政部',         short: '财政部',     value: 31.14, tag: '流通A股', fac: 'guoyou' },
+    { name: '香港中央结算（代理人）有限公司', short: '香港结算代理人', value: 24.18, tag: '流通H股', fac: 'waizi' },
+    { name: '全国社会保障基金理事会',       short: '社保理事会', value: 3.46, tag: '流通A股', fac: 'shebao' },
+    { name: '中国证券金融股份有限公司',     short: '中国证金',   value: 0.68, tag: '流通A股', fac: 'guoyou' },
+    { name: '香港中央结算有限公司（陆股通）', short: '陆股通',   value: 0.49, tag: '流通A股', fac: 'waizi' },
+    { name: '中国人寿保险-传统-普通保险产品-005L-CT001沪', short: '国寿传统险', value: 0.33, tag: '流通A股', fac: 'baoxian' },
+    { name: '中央汇金资产管理有限责任公司', short: '汇金资管',   value: 0.28, tag: '流通A股', fac: 'guoyou' },
+    { name: '上证50交易型开放式指数基金',   short: '上证50ETF',  value: 0.17, tag: '流通A股', fac: 'neizi' },
+    { name: '华泰柏瑞沪深300交易型开放式指数基金', short: '华泰柏瑞300ETF', value: 0.15, tag: '流通A股', fac: 'neizi' },
+    { name: '其他流通股东',                 short: '其他流通股东', value: 4.33, tag: '前十大以外的流通股东', fac: 'other' }
+  ],
+  factions: [
+    { key: 'guoyou',  title: '国有股东（汇金 + 财政部 + 证金）', short: '国有股东', color: '#c0392b' },
+    { key: 'waizi',   title: '境外 / H 股',                     short: '境外H股',  color: '#16a085' },
+    { key: 'shebao',  title: '社保基金',                        short: '社保基金', color: '#f1c40f' },
+    { key: 'baoxian', title: '保险资金',                        short: '保险资金', color: '#2980b9' },
+    { key: 'neizi',   title: '内资法人（指数基金）',            short: '内资法人', color: '#e67e22' },
+    { key: 'other',   title: '其他流通股东',                    short: '其他流通股东', color: '#95a5a6' }
+  ]
+}
+};
+var ds = '601398';
+/* ==== 样式常量：与 charts.js 保持一致 ==== */
+/* 残余项灰斜线纹理，照搬 charts.js 的 RESIDUAL_PATTERN（石油瀑布图原版） */
+var RESIDUAL_PATTERN = (function () {
+    var c = document.createElement('canvas');
+    c.width = 10; c.height = 10;
+    var x = c.getContext('2d');
+    x.fillStyle = '#f0f0f0'; x.fillRect(0, 0, 10, 10);
+    x.strokeStyle = '#999'; x.lineWidth = 1.5;
+    x.beginPath(); x.moveTo(0, 10); x.lineTo(10, 0); x.stroke();
+    x.beginPath(); x.moveTo(-2, 2); x.lineTo(2, -2); x.stroke();
+    x.beginPath(); x.moveTo(8, 12); x.lineTo(12, 8); x.stroke();
+    return { image: c, repeat: 'repeat' };
+})();
+var RESIDUAL_SWATCH_CSS = 'repeating-linear-gradient(45deg,#999 0 1.5px,#f0f0f0 1.5px 7.1px)';
+var PIE_COLORS = ['#6c3483', '#e67e22', '#2980b9', '#16a085', '#c0392b', '#f1c40f',
+                  '#8e44ad', '#27ae60', '#d35400', '#2c3e50', '#c2185b', '#00838f'];
+function isResidual(key) { return key === 'other'; }
+/* 同派系同色系：与白色按 t 混合，派系内第 1 家最深（= 派系色），往后逐级变浅 */
+function shade(hex, t) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    r = Math.round(r + (255 - r) * t);
+    g = Math.round(g + (255 - g) * t);
+    b = Math.round(b + (255 - b) * t);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+/* ==== 派系按合计降序（残余垫最后）、派系内明细降序；两圈共用这一套顺序 ==== */
+var FAC_ROWS = [];
+function buildFacRows() {
+    var d = DATASETS[ds];
+    FAC_ROWS = d.factions.map(function (f) {
+        var members = d.holders.filter(function (h) { return h.fac === f.key; })
+                               .sort(function (a, b) { return b.value - a.value; });
+        return {
+            key: f.key, title: f.title, short: f.short, color: f.color, members: members,
+            residual: isResidual(f.key),
+            value: +members.reduce(function (a, h) { return a + h.value; }, 0).toFixed(2)
+        };
+    }).sort(function (a, b) {
+        var ra = a.residual ? 1 : 0, rb = b.residual ? 1 : 0;
+        return ra !== rb ? ra - rb : b.value - a.value;
+    });
+    document.getElementById('meta').textContent = d.meta;
+}
+var mode = 'shade';          /* 明细配色：shade = 派系同色系深浅，each = 每家一色 */
+var order = 'detail-in';     /* detail-in = 明细在内 / 派系在外；fac-in = 反过来 */
+var layout = 'cols';         /* cols = 派系一列 + 明细一列（默认）；tree = 树状标注 */
+/* 明细扇区颜色：残余纹理；shade 模式下派系色由深到浅，each 模式下每家一色 */
+function detailColors() {
+    var i = 0, map = {};
+    FAC_ROWS.forEach(function (g) {
+        g.members.forEach(function (h, k) {
+            if (g.residual) map[h.name] = RESIDUAL_PATTERN;
+            else if (mode === 'each') map[h.name] = PIE_COLORS[i % PIE_COLORS.length];
+            else map[h.name] = shade(g.color, k * 0.22);
+            i++;
+        });
+    });
+    return map;
+}
+
+/* 两圈数据：顺序一致，所以明细扇区在角度上正好落在所属派系扇区里 */
+function buildSeriesData() {
+    var cmap = detailColors();
+    var detail = [], fac = [];
+    FAC_ROWS.forEach(function (g) {
+        fac.push({
+            name: g.title, value: g.value,
+            itemStyle: { color: g.residual ? RESIDUAL_PATTERN : g.color },
+            _short: g.short, _members: g.members, _residual: g.residual
+        });
+        g.members.forEach(function (h) {
+            detail.push({
+                name: h.name, value: h.value,
+                itemStyle: { color: cmap[h.name] },
+                _short: h.short, _fac: g.title, _tag: h.tag,
+                _swatch: g.residual ? RESIDUAL_SWATCH_CSS : cmap[h.name]
+            });
+        });
+    });
+    return { detail: detail, fac: fac, cmap: cmap };
+}
+var chart = echarts.init(document.getElementById('chart-merged'));
+var LEFT_PAD = 160, ROW_H = 36;
+/* 两列排布右侧要多留一列的宽度 */
+function rightPad() { return layout === 'cols' ? 640 : 520; }
+var LINE = '#bbb';
+function pt(cx, cy, r, deg) {
+    var a = deg * Math.PI / 180;
+    return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+}
+/* 引线点：扇区落在右半边时拐一次直接接标注；落在左半边时（工行的国有股东、境外 H 股
+ * 这种大扇区常见）先贴着外环画一段圆弧绕到右侧，否则直线会横穿整个环。
+ * 弧的出口角取与标注行等高的那个角度，出来正好是一段水平线。 */
+function leaderPoints(geo, deg, rowY, elbowX, endX) {
+    var cx = geo.cx, cy = geo.cy, r0 = geo.rEdge + 6, r1 = geo.rEdge + 14;
+    var start = pt(cx, cy, r0, deg);
+    if (Math.cos(deg * Math.PI / 180) > 0.08) return [start, [elbowX, rowY], [endX, rowY]];
+    var s = Math.max(-1, Math.min(1, (cy - rowY) / r1));
+    var exit = Math.asin(s) * 180 / Math.PI;          /* -90..90，必在右半边 */
+    var a0 = deg, norm = ((deg % 360) + 360) % 360, dlt = exit - norm;
+    while (dlt > 180) dlt -= 360;
+    while (dlt < -180) dlt += 360;
+    var pts = [start];
+    for (var i = 0; i <= 18; i++) pts.push(pt(cx, cy, r1, a0 + dlt * i / 18));
+    pts.push([endX, rowY]);
+    return pts;
+}
+/* 树状标注：引线 → 派系节点 → 分叉出成员公司。全部用 graphic 手画，
+ * 因为饼图 label 只能一层、排不出「派系 → 公司」的层级。 */
+function buildTree(geo, cmap) {
+    var g = [], cx = geo.cx, cy = geo.cy, rEdge = geo.rEdge;
+    var elbowX = cx + geo.R + 26, facX = cx + geo.R + 62, valRight = geo.w - 12;
+    var named = FAC_ROWS.filter(function (f) { return !f.residual; });
+    var rows = 0;
+    named.forEach(function (f) { rows += 1 + (f.members.length > 1 ? f.members.length : 0); });
+    var y = cy - (rows - 1) * ROW_H / 2;
+
+    function text(x, yy, str, opt) {
+        g.push({ type: 'text', x: x, y: yy, silent: true, style: Object.assign({
+            text: str, fill: '#333', fontSize: 22, align: 'left', verticalAlign: 'middle'
+        }, opt || {}) });
+    }
+    function poly(points) {
+        g.push({ type: 'polyline', silent: true, shape: { points: points },
+                 style: { stroke: LINE, fill: 'none', lineWidth: 1 } });
+    }
+
+    named.forEach(function (f) {
+        var facY = y;
+        poly(leaderPoints(geo, f.mid, facY, elbowX, facX - 8));
+        g.push({ type: 'rect', silent: true, shape: { x: facX, y: facY - 10, width: 6, height: 20, r: 2 },
+                 style: { fill: f.color } });
+        text(facX + 14, facY, f.short, { fontWeight: 'bold', fill: '#4a2a5a' });
+        text(valRight, facY, f.value.toFixed(2) + '%',
+             { fontWeight: 'bold', fill: '#6c3483', align: 'right' });
+        y += ROW_H;
+        if (f.members.length > 1) {
+            var trunkX = facX + 18, last = y + (f.members.length - 1) * ROW_H;
+            g.push({ type: 'line', silent: true,
+                     shape: { x1: trunkX, y1: facY + 12, x2: trunkX, y2: last },
+                     style: { stroke: LINE, lineWidth: 1 } });
+            f.members.forEach(function (m) {
+                g.push({ type: 'line', silent: true,
+                         shape: { x1: trunkX, y1: y, x2: trunkX + 16, y2: y },
+                         style: { stroke: LINE, lineWidth: 1 } });
+                g.push({ type: 'rect', silent: true,
+                         shape: { x: trunkX + 22, y: y - 8, width: 16, height: 16, r: 3 },
+                         style: { fill: cmap[m.name] } });
+                text(trunkX + 46, y, m.short, { fontSize: 20, fill: '#444' });
+                text(valRight, y, m.value.toFixed(2) + '%', { fontSize: 20, fill: '#444', align: 'right' });
+                y += ROW_H;
+            });
+        }
+    });
+
+    /* 残余项不进树：单独挂左侧，色块也用灰斜线纹理 */
+    var res = FAC_ROWS.filter(function (f) { return f.residual; })[0];
+    if (res) {
+        var rp = pt(cx, cy, rEdge + 6, res.mid), ry = rp[1] + 16;
+        poly([rp, [rp[0] - 20, ry], [LEFT_PAD - 14, ry]]);
+        g.push({ type: 'rect', silent: true, shape: { x: 6, y: ry - 22, width: 18, height: 18, r: 3 },
+                 style: { fill: RESIDUAL_PATTERN } });
+        /* 左侧空间窄，名称与比例分两行排，避免文字压到环上 */
+        text(32, ry - 13, res.short, { fill: '#555' });
+        text(32, ry + 15, res.value.toFixed(2) + '%', { fill: '#555' });
+    }
+    return g;
+}
+/* 两列标注：左边一列派系（引线接到派系扇区），右边一列明细公司，
+ * 每个派系的成员行与派系行用括号连起来；等于把原来图下方的清单搬到右侧。 */
+function buildCols(geo, cmap) {
+    var g = [], cx = geo.cx, cy = geo.cy, rEdge = geo.rEdge;
+    var elbowX = cx + geo.R + 24, facX = cx + geo.R + 56;
+    var facValRight = facX + 200, brX = facValRight + 26, detX = brX + 24, valRight = geo.w - 12;
+    var named = FAC_ROWS.filter(function (f) { return !f.residual; });
+    var rows = 0;
+    named.forEach(function (f) { rows += f.members.length; });
+    var top = cy - (rows - 1) * ROW_H / 2, y = top;
+
+    function text(x, yy, str, opt) {
+        g.push({ type: 'text', x: x, y: yy, silent: true, style: Object.assign({
+            text: str, fill: '#333', fontSize: 22, align: 'left', verticalAlign: 'middle'
+        }, opt || {}) });
+    }
+    function poly(points) {
+        g.push({ type: 'polyline', silent: true, shape: { points: points },
+                 style: { stroke: LINE, fill: 'none', lineWidth: 1 } });
+    }
+    function vline(x, y1, y2) {
+        g.push({ type: 'line', silent: true, shape: { x1: x, y1: y1, x2: x, y2: y2 },
+                 style: { stroke: LINE, lineWidth: 1 } });
+    }
+    /* 列表头 */
+    text(facX, top - 38, '派系（合并一致行动人）', { fontSize: 17, fill: '#888' });
+    text(detX, top - 38, '明细股东', { fontSize: 17, fill: '#888' });
+
+    named.forEach(function (f) {
+        var first = y, last = y + (f.members.length - 1) * ROW_H, mid = (first + last) / 2;
+        /* 派系列：引线从派系扇区拉到该派系行块的中线 */
+        poly(leaderPoints(geo, f.mid, mid, elbowX, facX - 8));
+        g.push({ type: 'rect', silent: true, shape: { x: facX, y: mid - 10, width: 6, height: 20, r: 2 },
+                 style: { fill: f.color } });
+        text(facX + 14, mid, f.short, { fontWeight: 'bold', fill: '#4a2a5a' });
+        text(facValRight, mid, f.value.toFixed(2) + '%',
+             { fontWeight: 'bold', fill: '#6c3483', align: 'right' });
+        /* 两列之间的括号：单成员画短横，多成员画竖线 + 逐行短横 */
+        if (f.members.length > 1) vline(brX, first, last);
+        f.members.forEach(function (m) {
+            g.push({ type: 'line', silent: true, shape: { x1: brX, y1: y, x2: brX + 14, y2: y },
+                     style: { stroke: LINE, lineWidth: 1 } });
+            g.push({ type: 'rect', silent: true, shape: { x: detX, y: y - 8, width: 16, height: 16, r: 3 },
+                     style: { fill: cmap[m.name] } });
+            text(detX + 24, y, m.short, { fontSize: 20, fill: '#444' });
+            text(valRight, y, m.value.toFixed(2) + '%', { fontSize: 20, fill: '#444', align: 'right' });
+            y += ROW_H;
+        });
+        if (f.members.length === 1) {
+            g.push({ type: 'line', silent: true,
+                     shape: { x1: facValRight + 8, y1: mid, x2: brX, y2: mid },
+                     style: { stroke: LINE, lineWidth: 1 } });
+        }
+    });
+
+    /* 残余项：与树状版一致，单独挂左侧、两行排 */
+    var res = FAC_ROWS.filter(function (f) { return f.residual; })[0];
+    if (res) {
+        var rp = pt(cx, cy, rEdge + 6, res.mid), ry = rp[1] + 16;
+        poly([rp, [rp[0] - 20, ry], [LEFT_PAD - 14, ry]]);
+        g.push({ type: 'rect', silent: true, shape: { x: 6, y: ry - 22, width: 18, height: 18, r: 3 },
+                 style: { fill: RESIDUAL_PATTERN } });
+        text(32, ry - 13, res.short, { fill: '#555' });
+        text(32, ry + 15, res.value.toFixed(2) + '%', { fill: '#555' });
+    }
+    return g;
+}
+function render() {
+    buildFacRows();
+    var d = buildSeriesData();
+    var w = chart.getWidth(), h = chart.getHeight();
+    var boxW = w - LEFT_PAD - rightPad();
+    var cx = LEFT_PAD + boxW / 2, cy = h / 2;
+    var R = Math.min(boxW / 2, h / 2 - 24);
+    /* 外圈（派系）留窄环带，内圈（明细）厚一些；两圈都以 R 为基准，切换圈序时圆心不动 */
+    var outBand = [R * 0.80, R * 0.98], inBand = [R * 0.44, R * 0.76];
+    var facR = order === 'detail-in' ? outBand : inBand;
+    var detR = order === 'detail-in' ? inBand : outBand;
+
+    /* 派系扇区中心角（12 点起顺时针），树状引线的起点靠它算 */
+    var a = 90;
+    FAC_ROWS.forEach(function (f) {
+        var span = f.value * 3.6;
+        f.mid = a - span / 2;
+        a -= span;
+    });
+
+    var facSeries = {
+        type: 'pie', radius: facR, center: [cx, cy], startAngle: 90, sort: null,
+        label: { show: false }, labelLine: { show: false },
+        itemStyle: { borderColor: '#fff', borderWidth: 2 }, data: d.fac,
+        z: 2, animation: false
+    };
+    var detSeries = {
+        type: 'pie', radius: detR, center: [cx, cy], startAngle: 90, sort: null,
+        label: { show: false }, labelLine: { show: false },
+        itemStyle: { borderColor: '#fff', borderWidth: 2 }, data: d.detail,
+        z: 2, animation: false
+    };
+    chart.setOption({
+        backgroundColor: '#fff',
+        tooltip: {
+            trigger: 'item', textStyle: { fontSize: 18 },
+            formatter: function (p) {
+                var it = p.data;
+                if (it._members) {
+                    var detail = it._members.length > 1 ? '<br>' + it._members.map(function (m) {
+                        return m.name + ' ' + m.value.toFixed(2) + '%';
+                    }).join('<br>') : '';
+                    return '<b>派系</b> ' + p.name + '：' + p.value + '%（占总股本）' + detail;
+                }
+                return p.name + '：' + (+p.value).toFixed(2) + '%（占总股本）'
+                    + '<br><span style="color:#888">派系：' + it._fac + '　' + it._tag + '</span>';
+            }
+        },
+        series: [facSeries, detSeries],
+        graphic: (layout === 'cols' ? buildCols : buildTree)(
+            { cx: cx, cy: cy, R: R, rEdge: outBand[1], w: w }, d.cmap)
+    }, true);
+    /* 两列排布已经把清单搬到右侧，图下方的清单就不再重复 */
+    document.getElementById('legend').style.display = layout === 'cols' ? 'none' : '';
+}
+/* 图下清单：派系一行，括号里列成员全称（与现有 holders-legend 同一写法） */
+function renderLegend() {
+    document.getElementById('legend').innerHTML = FAC_ROWS.map(function (g) {
+        var swatch = g.residual ? RESIDUAL_SWATCH_CSS : g.color;
+        var items = g.members.map(function (m) { return m.name + ' ' + m.value.toFixed(2) + '%'; }).join('　');
+        return '<div style="margin:3px 0"><span style="display:inline-block;width:12px;height:12px;'
+            + 'border-radius:3px;background:' + swatch + ';vertical-align:-1px;margin-right:6px"></span>'
+            + '<b style="color:#4a2a5a">' + g.title + '</b> '
+            + '<span style="color:#6c3483;font-weight:600">' + g.value.toFixed(2) + '%</span>'
+            + (g.members.length > 1 ? '　<span style="color:#777">（' + items + '）</span>' : '')
+            + '</div>';
+    }).join('');
+}
+
+function onBtnClick(e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    ['order', 'mode', 'layout', 'ds'].forEach(function (k) {
+        if (!b.hasAttribute('data-' + k)) return;
+        var v = b.getAttribute('data-' + k);
+        if (k === 'order') order = v;
+        else if (k === 'mode') mode = v;
+        else if (k === 'layout') layout = v;
+        else ds = v;
+        document.querySelectorAll('[data-' + k + ']').forEach(function (x) {
+            x.classList.toggle('active', x.getAttribute('data-' + k) === v);
+        });
+    });
+    render();
+    renderLegend();
+}
+document.getElementById('btns').addEventListener('click', onBtnClick);
+document.getElementById('btns2').addEventListener('click', onBtnClick);
+window.addEventListener('resize', function () { chart.resize(); render(); });
+render();
+renderLegend();
+</script>
+</body>
+</html>

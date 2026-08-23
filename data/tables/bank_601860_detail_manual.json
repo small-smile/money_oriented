@@ -71,7 +71,8 @@
     "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"],
     "corp": [607.28, null, null, 845.38, null, null, 1208.92, 1327.29],
     "retail": [217.88, null, null, 396.54, null, null, 414.73, 337.30],
-    "nplCorp": null
+    "nplCorp": null,
+    "nplRetail": [null, null, null, null, null, null, null, null]
   },
   "perloan-bal": {
     "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"],

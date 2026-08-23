@@ -36,7 +36,7 @@
     // 可切换的银行 = data/tables/company_charts_<code>.json 存在的那些，由后端
     // list_banks() 扫目录得出、注入 window.__BANKS（加行只需放数据文件，不用改前端）。
     // 下面这份是 file:// 静态打开时的兜底名单，可能与实际数据文件不同步。
-    // tier 用于分组面板分列（参考 dashboard/industry/oil/region_production.html 右侧
+    // tier 用于分组面板分列（参考 dashboard/subject/oil/region_production.html 右侧
     // 按洲分列的 HTML 悬浮图例），与 fetch_bank_financials.py 里的 BANKS 机构类型口径一致。
     const BANKS = Array.isArray(window.__BANKS) && window.__BANKS.length ? window.__BANKS : [
         {code: '601077', name: '渝农商行', tier: '农商行', aListDate: '2019-10-29', hListDate: '2010-12-16'},
@@ -87,7 +87,8 @@
         {code: '603323', name: '苏农银行', tier: '农商行', aListDate: '2016-11-29'},
         // 纯 H 股（仅 hListDate）
         {code: '01578', name: '天津银行', tier: '城商行', hListDate: '2016-03-30'},
-        {code: '01916', name: '江西银行', tier: '城商行', hListDate: '2018-06-26'}
+        {code: '01916', name: '江西银行', tier: '城商行', hListDate: '2018-06-26'},
+        {code: '06138', name: '哈尔滨银行', tier: '城商行', hListDate: '2014-03-31'}
     ];
     const DEFAULT_CODE = '601077';   // 与 charts.js、后端 DEFAULT_BANK_CODE 一致
     // 分组显示顺序：银行数量最多的国有大行放最前，城商行/农商行数据较薄放最后

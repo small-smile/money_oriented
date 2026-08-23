@@ -353,7 +353,16 @@
       241.9,
       236.88
     ],
-    "nplCorp": null
+    "nplCorp": null,
+    "nplRetail": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
   },
   "perloan-bal": {
     "years": [

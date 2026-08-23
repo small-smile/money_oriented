@@ -9,9 +9,20 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+/* 与 verify_refactor.js 一致：charts.js 拆成 charts/*.js 后，沙箱里要按页面的加载顺序
+ * 先拼分区脚本再拼入口；指向拆分前的单文件备份时照原样读。 */
+const PART_ORDER = ['core', 'compare', 'perf', 'asset', 'debt', 'risk',
+                    'shareholder', 'holders', 'intro', 'statement', 'switcher'];
+function readCharts(entry) {
+    const dir = path.join(path.dirname(entry), 'charts');
+    if (!fs.existsSync(dir)) return fs.readFileSync(entry, 'utf8');
+    return PART_ORDER.map(n => fs.readFileSync(path.join(dir, n + '.js'), 'utf8'))
+        .concat(fs.readFileSync(entry, 'utf8')).join('\n;\n');
+}
+
 const chartsPath = process.argv[2];
 const outPath = process.argv[3];
-const src = fs.readFileSync(chartsPath, 'utf8');
+const src = readCharts(chartsPath);
 
 const results = {};          // id -> last setOption payload
 let idSeq = 0;

@@ -65,11 +65,11 @@
         .code.a { background: #fee2e2; color: #b91c1c; }
         .code.h { background: #dbeafe; color: #1d4ed8; }
         .code.none { background: #f3f4f6; color: #9ca3af; }
-        .b-card.has-data { border-color: #d97706; box-shadow: 0 1px 4px rgba(217,119,6,0.15); }
-        .b-card.has-data .name::after {
-            content: "· 数据页";
+        .b-card.no-data { opacity: 0.55; }
+        .b-card.no-data .name::after {
+            content: "· 无数据";
             font-size: 14px;
-            color: #d97706;
+            color: #9ca3af;
             font-weight: 500;
             margin-left: 4px;
         }
@@ -156,7 +156,7 @@
     <div class="legend">
         <span><span class="code a">601xxx</span> A 股代码</span>
         <span><span class="code h">xxxx.HK</span> 港股代码</span>
-        <span style="color:#d97706;">橙色边框 = 已有专属数据页</span>
+        <span style="color:#9ca3af;">灰色变暗 = 暂无数据</span>
     </div>
 
     <h2>国有大行 <span class="count">6 家 · 均 A+H 两地上市</span></h2>
@@ -256,28 +256,57 @@ const BANKS = {
     ]
 };
 
-/* 已有专属详情页的银行：代码 → 相对 dashboard/industry/bank/ 的路径 */
+/* 已有专属详情页的银行：代码 → 相对 dashboard/industry/bank/ 的路径
+ * 默认跳到「股东」页（company/bank/shareholder.html），而非业绩页 index.html。 */
 const DETAIL_PAGES = {
-    '601077': '../../company/bank/index.html'
+    '601077': '../../company/bank/shareholder.html',
+    '601398': '../../company/bank/shareholder.html?code=601398'
 };
+
+/* 已有 data/tables/bank_<code>_annual.json 原始数据的银行代码：
+ * 覆盖几乎所有 A 股银行 + 天津/江西/哈尔滨三家纯 H 股，其余纯港股银行尚无数据源。
+ * 与 DETAIL_PAGES 是两个概念：有数据 ≠ 已建专属页，标注时分别处理。 */
+const HAS_ANNUAL = new Set([
+    '000001', '001227', '002142', '002807', '002839', '002936', '002948', '002958', '002966',
+    '01578', '01916', '06138', '600000', '600015', '600016', '600036', '600908', '600919',
+    '600926', '600928', '601009', '601077', '601128', '601166', '601169', '601187', '601229',
+    '601288', '601328', '601398', '601528', '601577', '601658', '601665', '601818', '601825',
+    '601838', '601860', '601916', '601939', '601963', '601988', '601997', '601998', '603323'
+]);
+
+function bankCode(bank) {
+    return bank.a || bank.h;
+}
+
+/* annual/charts 文件用的代码：A 股 6 位原样，港股去掉 .HK 后缀并补足 5 位（1578.HK → 01578） */
+function dataCode(bank) {
+    const code = bankCode(bank);
+    if (!code) return '';
+    return bank.a ? code : code.replace(/\.HK$/i, '').padStart(5, '0');
+}
+
+function hasAnnualData(bank) {
+    return HAS_ANNUAL.has(dataCode(bank));
+}
 
 function detailHref(bank) {
     if (bank.a && DETAIL_PAGES[bank.a]) return DETAIL_PAGES[bank.a];
     const q = new URLSearchParams();
-    if (bank.a) q.set('a', bank.a);
-    if (bank.h) q.set('h', bank.h);
-    q.set('name', bank.name);
-    return 'detail.html?' + q.toString();
+    const code = dataCode(bank);
+    if (code) q.set('code', code);
+    return '../../company/bank/shareholder.html?' + q.toString();
 }
 
 function render(id, banks) {
     const grid = document.getElementById(id);
     if (!grid) return;
     for (const b of banks) {
-        const a = document.createElement('a');
+        const noData = !(b.a && DETAIL_PAGES[b.a]) && !hasAnnualData(b);
+        // 无数据的银行不允许跳转：渲染成 div 而非 a，不设 href
+        const a = document.createElement(noData ? 'div' : 'a');
         a.className = 'b-card';
-        if (b.a && DETAIL_PAGES[b.a]) a.classList.add('has-data');
-        a.href = detailHref(b);
+        if (noData) a.classList.add('no-data');
+        if (!noData) a.href = detailHref(b);
 
         const name = document.createElement('span');
         name.className = 'name';
