@@ -142,26 +142,31 @@ mount('chart-voting-power', function () {
     var WB = CC.wvr_beneficiaries || [];
     var melissa = 0;
     WB.forEach(function (w) { if (/Melissa|马东敏/.test(w.name)) melissa = w.pct_of_voting_rights; });
-    /* 名称留短，扇区标签才放得下；完整口径见下方注释 */
     var named = [
-        { name: '李彦宏（含代理）', v: LI.pct_of_voting_power },
-        { name: '马东敏', v: melissa },
-        { name: 'BlackRock', v: (CC.blackrock || {}).pct_of_voting_power }
+        { name: '李彦宏（含员工不可撤销投票代理）', v: LI.pct_of_voting_power },
+        { name: '马东敏（Melissa Ma）', v: melissa },
+        { name: 'BlackRock, Inc.', v: (CC.blackrock || {}).pct_of_voting_power }
     ];
     var sum = named.reduce(function (s, d) { return s + d.v; }, 0);
     var data = named.map(function (d, i) {
         return { name: d.name, value: +d.v.toFixed(2), itemStyle: { color: PIE_COLORS[i] } };
     });
-    data.push({ name: '其他（不可穿透）', value: +(100 - sum).toFixed(2),
+    data.push({ name: '其他股东（不可穿透）', value: +(100 - sum).toFixed(2),
                 itemStyle: { color: RESIDUAL_PATTERN, borderColor: '#999', borderWidth: 1 } });
     return {
         tooltip: { trigger: 'item', fontSize: 17, valueFormatter: function (v) { return v + '%'; } },
         series: [{
-            type: 'pie', radius: ['38%', '56%'], center: ['50%', '52%'], sort: null,
+            type: 'pie', radius: ['52%', '72%'], center: ['50%', '52%'], sort: null,
             data: data,
-            label: { fontSize: 15, alignTo: 'edge', edgeDistance: 6, minMargin: 20, overflow: 'none',
-                     formatter: function (p) { return p.name + ' ' + fx(p.value, 2) + '%'; } },
-            labelLine: { length: 10, length2: 12 }
+            label: {
+                fontSize: 15, alignTo: 'edge', edgeDistance: 6, minMargin: 20, overflow: 'none',
+                formatter: function (p) { return '{n|' + p.name + '}{v|' + fx(p.value, 2) + '%}'; },
+                rich: {
+                    n: { fontSize: 15, color: '#374151', width: 254, align: 'left' },
+                    v: { fontSize: 15, color: NAVY, fontWeight: 'bold', width: 68, align: 'right' }
+                }
+            },
+            labelLine: { length: 10, length2: 14 }
         }]
     };
 });
@@ -173,7 +178,7 @@ mount('chart-voting-power', function () {
         + fx(VOTE_B / VOTE_ALL * 100, 2) + '% 的投票权，创始人一人即掌握 ' + fx(LI.pct_of_voting_power, 1)
         + '% 投票权，足以决定董事选举、章程修订、合并与重大资产出售。'
         + '<br><br>转换安排：' + esc(DC.conversion) + '；' + trig.join('；') + '。'
-        + '<br><br>右图的「李彦宏」一栏含 ' + thou(51550880) + ' 股以 ADS 形式由员工持有、但已向其授予不可撤销投票代理的 A 类股，'
+        + '<br><br>上图「李彦宏」一栏含 ' + thou(51550880) + ' 股以 ADS 形式由员工持有、但已向其授予不可撤销投票代理的 A 类股，'
         + '因此这部分投票权并非其自有持股。'
         + '<br><br>两点必须提示的口径问题：（1）年报<b>全文未使用「controlled company」表述</b>，也未声明依赖纳斯达克受控公司豁免，'
         + '创始人控制只能由 59.9% 投票权与 WVR 受益人合计 71.4% 间接说明；'
@@ -304,7 +309,7 @@ mount('chart-segrev', function () {
         '<b>' + esc(GV.board_size_quote_zh) + '</b>——五人董事会里只有创始人一人是执行董事，其余四位均为独立董事，'
         + '但在 B 类 10 票的架构下，董事选举本身由创始人的 ' + fx(LI.pct_of_voting_power, 1) + '% 投票权决定。'
         + '<br><br>' + esc(GV.board_diversity) + '。' + esc(GV.board_note) + '。'
-        + '<br><br>另需注意：港交所年报中译本是依《香港上市规则》第 13.46(2) 条提供的 20-F 摘录，<b>没有港式「企業管治報告」章节</b>，'
+        + '<br><br>另需注意：港交所年报中译本是依《香港上市规则》第 13.46(2) 条提供的 20-F 摘录，<b>没有港式「企业管治报告」章节</b>，'
         + '因此董事会会议出席率、企业管治守则偏离说明、审核委员会工作报告等港式披露在本地文件中完全缺失。');
 })();
 /* ── VIE 控制链 ─────────────────────────────────────────── */

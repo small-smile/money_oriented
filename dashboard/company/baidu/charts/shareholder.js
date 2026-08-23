@@ -89,9 +89,12 @@ function buildSeriesData() {
     });
     return { detail: detail, fac: fac, cmap: cmap };
 }
-var LEFT_PAD = 160, ROW_H = 36, LINE = '#bbb';
-var layout = 'tree';                 /* cols = 派系一列 + 明细一列；tree = 树状 */
-function rightPad() { return layout === 'cols' ? 640 : 520; }
+var ROW_H = 36, LINE = '#bbb';
+var layout = 'cols';                 /* cols = 派系一列 + 明细一列；tree = 树状 */
+/* 树状版把残余项也排进右侧清单，左侧不再留注释位，故留白比两列版窄；
+ * 右侧要容下股东全称（最长「Handsome Reward Limited（BVI，李彦宏 100% 持股）」）故留得更宽 */
+function leftPad() { return layout === 'cols' ? 160 : 40; }
+function rightPad() { return layout === 'cols' ? 640 : 720; }
 function pt(cx, cy, r, deg) {
     var a = deg * Math.PI / 180;
     return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
@@ -136,30 +139,40 @@ function gfx() {
         }
     };
 }
-/* 残余项（其他股东）两版一致：不进右侧清单，单独挂左侧、名称与比例分两行排 */
+/* 残余项（其他股东）：两列版单独挂左侧、名称与比例分两行排；树状版直接排进右侧清单末尾 */
 function residualNote(G, geo) {
     var res = FAC_ROWS.filter(function (f) { return f.residual; })[0];
     if (!res) return;
     var rp = pt(geo.cx, geo.cy, geo.rEdge + 6, res.mid), ry = rp[1] + 16;
-    G.poly([rp, [rp[0] - 20, ry], [LEFT_PAD - 14, ry]]);
+    G.poly([rp, [rp[0] - 20, ry], [leftPad() - 14, ry]]);
     G.rect(6, ry - 22, 18, 18, RESIDUAL_PATTERN);
     G.text(32, ry - 13, res.short, { fill: '#555' });
     G.text(32, ry + 15, fx(res.value) + '%', { fill: '#555' });
 }
-/* 树状标注：引线 → 派系节点 → 分叉出持股载体 */
+/* 引线锚点：默认取扇区中心角；跨度很大的扇区（残余项占七成圆周）取与标注行同高、
+ * 且落在扇区内的右侧角度，这样引线是一段平直短线，不必沿环底绕一大圈 */
+function anchorDeg(geo, f, rowY) {
+    if (f.a1 === undefined) return f.mid;
+    var s = Math.max(-1, Math.min(1, (geo.cy - rowY) / (geo.rEdge + 14)));
+    var cand = Math.asin(s) * 180 / Math.PI;
+    return (cand <= f.a0 && cand >= f.a1) ? cand : f.mid;
+}
+/* 树状标注：引线 → 派系节点 → 分叉出持股载体；名称一律用全称，残余派系无明细、单占一行垫最后 */
 function buildTree(geo, cmap) {
     var G = gfx(), cy = geo.cy;
     var elbowX = geo.cx + geo.R + 26, facX = geo.cx + geo.R + 62, valRight = geo.w - 12;
-    var named = FAC_ROWS.filter(function (f) { return !f.residual; });
     var rows = 0;
-    named.forEach(function (f) { rows += 1 + (f.members.length > 1 ? f.members.length : 0); });
+    FAC_ROWS.forEach(function (f) { rows += 1 + (f.members.length > 1 ? f.members.length : 0); });
     var y = cy - (rows - 1) * ROW_H / 2;
-    named.forEach(function (f) {
-        var facY = y;
-        G.poly(leaderPoints(geo, f.mid, facY, elbowX, facX - 8));
-        G.rect(facX, facY - 10, 6, 20, f.color, 2);
-        G.text(facX + 14, facY, f.short, { fontWeight: 'bold', fill: NAVY });
-        G.text(valRight, facY, fx(f.value) + '%', { fontWeight: 'bold', fill: NAVY, align: 'right' });
+    FAC_ROWS.forEach(function (f) {
+        var facY = y, ink = f.residual ? '#555' : NAVY;
+        G.poly(leaderPoints(geo, anchorDeg(geo, f, facY), facY, elbowX, facX - 8));
+        if (f.residual) G.rect(facX - 2, facY - 9, 18, 18, RESIDUAL_PATTERN);
+        else G.rect(facX, facY - 10, 6, 20, f.color, 2);
+        G.text(facX + (f.residual ? 24 : 14), facY, f.title,
+               { fontSize: 20, fontWeight: 'bold', fill: ink });
+        G.text(valRight, facY, fx(f.value) + '%',
+               { fontSize: 20, fontWeight: 'bold', fill: ink, align: 'right' });
         y += ROW_H;
         if (f.members.length > 1) {
             var trunkX = facX + 18, last = y + (f.members.length - 1) * ROW_H;
@@ -167,20 +180,20 @@ function buildTree(geo, cmap) {
             f.members.forEach(function (m) {
                 G.line(trunkX, y, trunkX + 16, y);
                 G.rect(trunkX + 22, y - 8, 16, 16, cmap[m.name]);
-                G.text(trunkX + 46, y, m.short, { fontSize: 19, fill: '#444' });
-                G.text(valRight, y, fx(m.value) + '%', { fontSize: 19, fill: '#444', align: 'right' });
+                G.text(trunkX + 46, y, m.name, { fontSize: 18, fill: '#444' });
+                G.text(valRight, y, fx(m.value) + '%', { fontSize: 18, fill: '#444', align: 'right' });
                 y += ROW_H;
             });
         }
     });
-    residualNote(G, geo);
     return G.list;
 }
 /* 两列标注：左列派系（引线接到派系扇区），右列持股载体，中间用括号连起来 */
 function buildCols(geo, cmap) {
     var G = gfx(), cy = geo.cy;
     var elbowX = geo.cx + geo.R + 24, facX = geo.cx + geo.R + 56;
-    /* 派系名最长「员工投票代理」6 字 21px 加粗 ≈ 126px，占比右对齐要留到 +238 才不贴字 */
+    /* 派系名最长「员工投票代理」6 字 21px 加粗 ≈ 126px，占比右对齐要留到 +238 才不贴字。
+     * 两列版横向被两组「名称 + 占比」占满，全称（最长约 490px）确实排不下，只能用简称 */
     var facValRight = facX + 238, brX = facValRight + 26, detX = brX + 24, valRight = geo.w - 12;
     var named = FAC_ROWS.filter(function (f) { return !f.residual; });
     var rows = 0;
@@ -210,16 +223,16 @@ function buildCols(geo, cmap) {
 function buildHolders(ins) {
     var d = buildSeriesData();
     var w = ins.getWidth(), h = ins.getHeight();
-    var boxW = w - LEFT_PAD - rightPad();
-    var cx = LEFT_PAD + boxW / 2, cy = h / 2;
+    var boxW = w - leftPad() - rightPad();
+    var cx = leftPad() + boxW / 2, cy = h / 2;
     var R = Math.min(boxW / 2, h / 2 - 24);
     /* 外圈（派系）留窄环带，内圈（明细载体）厚一些 */
     var outBand = [R * 0.80, R * 0.98], inBand = [R * 0.44, R * 0.76];
-    /* 派系扇区中心角（12 点起顺时针），引线起点靠它算 */
+    /* 派系扇区中心角与起止角（12 点起顺时针），引线起点靠它算 */
     var a = 90;
     FAC_ROWS.forEach(function (f) {
         var span = f.value * 3.6;
-        f.mid = a - span / 2;
+        f.a0 = a; f.a1 = a - span; f.mid = a - span / 2;
         a -= span;
     });
     function ring(radius, data) {
@@ -229,7 +242,7 @@ function buildHolders(ins) {
                  data: data, z: 2, animation: false };
     }
     var el = $('holders-legend');
-    if (el) el.style.display = layout === 'cols' ? 'none' : '';
+    if (el) el.style.display = '';
     return {
         tooltip: {
             trigger: 'item', textStyle: { fontSize: 17 },
@@ -252,7 +265,7 @@ function buildHolders(ins) {
     };
 }
 var holdersChart = mount('chart-holders', buildHolders);
-/* 图下清单（树状排布时才显示）：派系一行，括号里列全称 */
+/* 图下清单：派系一行，括号里列全称——两列排布图内只放得下简称，全称靠这里补齐 */
 function renderHoldersLegend() {
     setHTML('holders-legend', FAC_ROWS.map(function (g) {
         var swatch = g.residual ? RESIDUAL_SWATCH_CSS : g.color;
