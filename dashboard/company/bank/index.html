@@ -35,10 +35,13 @@
 
     <!-- ══════════ 1.1b 加权平均 ROE ══════════ -->
     <section id="sec-roe">
-        <h2>净资产收益率 ROE（2009–2025）</h2>
+        <h2>净资产收益率 ROE</h2>
         <p class="sub">口径：本集团合并数 · 单位：% · 三段口径见图例 · 当前显示：<b id="roe-current">渝农商行</b></p>
-        <!-- 快速切换：只换这一张图的银行，页面其余部分不动（按钮由 charts.js 按可切换银行清单生成） -->
-        <div class="chart-btns" id="roe-banks"><span class="label">快速切换</span></div>
+        <!-- 筛选：类型行一次勾整组 / 银行行是多选开关；视图行换呈现方式
+             （按钮由 charts/switcher.js 按可切换银行清单生成） -->
+        <div class="chart-btns" id="roe-tiers"><span class="label">按类型</span></div>
+        <div class="chart-btns" id="roe-views"><span class="label">视图</span></div>
+        <div class="chart-btns" id="roe-banks"><span class="label">银行（可多选）</span></div>
         <div id="chart-roe" class="chart" style="height:400px"></div>
         <div class="note yns-only" id="note-roe">
             <b>三段口径说明：</b><br>
@@ -52,7 +55,7 @@
 
     <!-- ══════════ 1.11 每股指标 EPS / BVPS ══════════ -->
     <section id="sec-pershare">
-        <h2>每股指标（基本每股收益 / 每股净资产，2010–2025）</h2>
+        <h2>每股指标（基本每股收益 / 每股净资产）</h2>
         <p class="sub">口径：本集团合并数 · 基本每股收益（元/股）· 归属普通股股东的每股净资产（元/股）</p>
         <div class="kpis yns-only">
             <div class="kpi"><div class="label">2025 基本每股收益 EPS</div><div class="value">1.05 元</div><div class="delta up">▲ 0.06</div></div>
@@ -68,7 +71,7 @@
 
     <!-- ══════════ 1.7 盈利质量与效率 ══════════ -->
     <section id="sec-efficiency">
-        <h2>盈利质量与效率（2010–2025）</h2>
+        <h2>盈利质量与效率</h2>
         <p class="sub">口径：本集团合并数 · 净息差/净利差为年报披露值 · 非息收入占比、成本收入比 2018 年前后为不同定义 · 单位：%</p>
         <div class="kpis yns-only">
             <div class="kpi"><div class="label">2025 净息差 NIM</div><div class="value">1.60%</div><div class="delta down">▼ 0.01pct</div></div>
@@ -117,7 +120,7 @@
 
     <!-- ══════════ 1.10 其他综合收益 ══════════ -->
     <section id="sec-oci">
-        <h2>其他综合收益（OCI）（2010–2025）</h2>
+        <h2>其他综合收益（OCI）</h2>
         <p class="sub">口径：本集团合并数 · 其他综合收益（税后净额）为合并综合收益表科目 · 单位：亿元 · 2018 年起执行新金融工具准则（IFRS9），前后构成口径不完全可比</p>
         <div class="kpis yns-only">
             <div class="kpi"><div class="label">2025 其他综合收益</div><div class="value">-28.97 亿</div></div>
@@ -137,7 +140,7 @@
 
     <!-- ══════════ 1.13 员工人数与人均效能 ══════════ -->
     <section id="sec-staff">
-        <h2>员工人数与人均效能（2011–2025）</h2>
+        <h2>员工人数与人均效能</h2>
         <p class="sub">口径：本集团在职员工人数（年报「员工情况」披露）· 人均营业收入 / 人均归母净利润 = 当年营收 / 归母净利 ÷ 期末员工数 · 单位：人 / 万元每人</p>
         <div class="kpis yns-only">
             <div class="kpi"><div class="label">2025 年末员工数</div><div class="value">14,266 人</div><div class="delta down">▼ 276</div></div>

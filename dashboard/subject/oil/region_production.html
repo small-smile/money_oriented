@@ -363,7 +363,7 @@ let currentCountry = null;
 let percentStackChart = null, percentDetailChart = null;
 let currentPercentCountry = null;
 
-axios.get('http://127.0.0.1:5000/api/production_region')
+axios.get('/api/production_region')
     .then(res => {
         if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
         const d = res.data.data;

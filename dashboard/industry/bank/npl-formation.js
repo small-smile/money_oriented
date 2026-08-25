@@ -4,7 +4,7 @@
  *   · 净息差 NIM / 净利差 NIS（nim-trend.nim/nis，配 nim-trend.years10）
  * 上方两排按钮：先选指标（不良生成率／净息差／净利差），再选机构类型。
  * 「全部」按类型着色看四类聚簇，选单一类型时每行独立配色并在右端贴行名。 */
-const API = 'http://127.0.0.1:5000/api/bank_npl_formation';
+const API = '/api/bank_npl_formation';
 
 // 机构类型展示顺序与基准色（全部视图按类型着色，看聚簇）
 const TIERS = [
@@ -240,5 +240,5 @@ axios.get(API).then(function (res) {
     document.getElementById('loading').style.display = 'none';
     const box = document.getElementById('error-msg');
     box.style.display = 'block';
-    box.textContent = '数据加载失败：' + e.message + '（请确认 backend_python.py 已在 127.0.0.1:5000 运行）';
+    box.textContent = '数据加载失败：' + e.message + '（请确认后端服务已启动）';
 });

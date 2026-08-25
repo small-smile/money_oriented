@@ -59,9 +59,8 @@ Object.keys(notes).forEach(function (id) {
 
 
 (function () {
-    // 后端渲染时页面与接口同源，用相对路径（换端口/换机器都不用改代码）；
-    // file:// 直接打开时没有同源可言，仍指向本机 5000 端口的开发服务。
-    var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+    // 页面与接口同源，一律用相对路径（nginx 转发、换端口/换机器都不用改代码）。
+    var BASE = '';
     var API = BASE + '/api/company_charts?code=' + window.COMPANY_CODE;
     if (typeof axios !== 'undefined') {
         axios.get(API).then(function (res) {

@@ -326,7 +326,7 @@ let continentAbsChart = null, continentPctChart = null;
 let continentDetailAbsChart = null, continentDetailPctChart = null;
 let currentContinent = null;
 
-axios.get('http://127.0.0.1:5000/api/consumption_region')
+axios.get('/api/consumption_region')
     .then(res => {
         if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
         const d = res.data.data;
@@ -890,7 +890,7 @@ let productChart = null;
 let curRegion = 'World';
 let curMode = 'abs';            // abs = 千桶/日, share = 占本地区石油消费 %
 
-axios.get('http://127.0.0.1:5000/api/consumption_product')
+axios.get('/api/consumption_product')
     .then(res => {
         if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
         _pd = res.data.data;
@@ -1029,7 +1029,7 @@ function logLinearFit(years, values) {
     return { a, b, cagr: Math.exp(b) - 1, r2, fit };
 }
 
-axios.get('http://127.0.0.1:5000/api/consumption_growth')
+axios.get('/api/consumption_growth')
     .then(res => {
         if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
         const g = res.data.data;

@@ -40,7 +40,7 @@
 </div>
 
 <script>
-const API = 'http://127.0.0.1:5000/api/developer_peers';
+const API = '/api/developer_peers';
 const ORDER = ['600048', '001979', '000069', '00688', '01109', '00817'];
 const COLORS = {
     '600048': '#c0392b',   // 保利发展
@@ -436,7 +436,7 @@ axios.get(API).then(function (res) {
     document.getElementById('loading').style.display = 'none';
     const box = document.getElementById('error-msg');
     box.style.display = 'block';
-    box.textContent = '数据加载失败：' + e.message + '（请确认 backend_python.py 已在 127.0.0.1:5000 运行）';
+    box.textContent = '数据加载失败：' + e.message + '（请确认后端服务已启动）';
 });
 </script>
 </body>

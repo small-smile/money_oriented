@@ -13,7 +13,7 @@
     if (!box) return;
     var tierBox = document.getElementById('npl-amt-tiers');
 
-    var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+    var BASE = '';
     var CACHE = {};
     var cur = document.getElementById('npl-amt-current');
     var note = document.getElementById('note-npl-amt');
@@ -197,33 +197,99 @@
     }
 })();
 
-/* ────── ROE 图·快速切换银行 ──────
+/* ────── ROE 图·筛选银行（多选 / 按类型全选 / 五种视图） ──────
  * 只有业绩页（index.html）里有 #roe-banks 这排按钮，其余页面本块直接跳过。
  * 与导航条上的银行下拉框分工：下拉框换 ?code= 整页重载（整页都变成那家行），
  * 这排按钮不动页面主体，只把 ROE 一张图换成别家行的曲线 —— 用来快速对照 ROE 高低。
+ *
+ * 选择：银行按钮是**多选开关**（点第二次取消），类型按钮一次勾/取消整组，
+ *       「只看本行」「全部（45）」是两个批量动作。
+ * 视图（选中 ≥2 家时才有意义，切换不改选择）：
+ *   · 类型聚合（默认）每类型中位线 + 25–75 分位带 + 本行 —— 45 家时唯一读得动的画法
+ *   · 逐家叠线   每行一条线、按类型分色系、悬浮淡化其余
+ *   · 本行位次   本行在样本内 / 同类型内的历年名次（纵轴反向）
+ *   · 分类型小图 2×2 小倍数，每类型一格、共用纵轴
+ *   · 最新年份榜 取最新披露年份拉平成横条榜
+ * 选中 1 家时忽略视图，画那家行的三段口径图。
  * 数据按需向 /api/company_charts?code=<code> 拉（与主数据同一端点）并缓存，二次点击不再发请求。 */
 (function () {
     var box = document.getElementById('roe-banks');
     if (!box) return;
+    var tierBox = document.getElementById('roe-tiers');
+    var viewBox = document.getElementById('roe-views');
 
-    var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+    var BASE = '';
     var CACHE = {};          // code → payload；本页自身那家行进来时用 window.__companyD 填
     var cur = document.getElementById('roe-current');
     var note = document.getElementById('note-roe');
     var OWN_NOTE = note ? note.innerHTML : '';   // 本页银行的三段口径说明，切回来时还原
     var btns = [];
+    var TIER_ORDER = window.__TIER_ORDER || ['国有大行', '股份行', '城商行', '农商行'];
+    var selected = {};       // code → true，当前要画的银行
+    var view = 'agg';        // agg | lines | rank | facet | bar —— 多家时的呈现方式
+    var VIEWS = [
+        { id: 'agg',   label: '类型聚合' },
+        { id: 'lines', label: '逐家叠线' },
+        { id: 'rank',  label: '本行位次' },
+        { id: 'facet', label: '分类型小图' },
+        { id: 'bar',   label: '最新年份榜' }
+    ];
 
     // 可切换清单与导航下拉框同源：后端注入 window.__BANKS，静态打开时由 bank-header.js 兜底赋值。
     // bank-header.js 是 defer、本文件是普通脚本，所以按钮要等 DOMContentLoaded 再建。
     function banks() {
         return (Array.isArray(window.__BANKS) && window.__BANKS.length) ? window.__BANKS : [];
     }
-
-    function setActive(code) {
-        btns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-code') === code); });
+    function listByTier(tier) {
+        return banks().filter(function (b) { return (b.tier || '其他') === tier; });
+    }
+    function selectedList() {
+        return banks().filter(function (b) { return selected[b.code]; });
+    }
+    function ownBank() {
+        return banks().filter(function (b) { return b.code === window.COMPANY_CODE; })[0];
     }
 
-    // 对比模式要塞十条线加两行图例，400px 高度不够；切回单行时还原，避免图被拉得空旷
+    function syncActive() {
+        var n = selectedList().length, total = banks().length;
+        var onlyOwn = n === 1 && selected[window.COMPANY_CODE];
+        btns.forEach(function (b) {
+            var code = b.getAttribute('data-code');
+            var tier = b.getAttribute('data-tier');
+            var v = b.getAttribute('data-view');
+            if (v) {
+                b.classList.toggle('active', n > 1 && v === view);
+                b.style.opacity = n < 2 ? 0.5 : '';
+            } else if (code === '__all') {
+                b.classList.toggle('active', n === total && total > 0);
+            } else if (code === '__own') {
+                b.classList.toggle('active', onlyOwn);
+            } else if (tier) {
+                var grp = listByTier(tier);
+                b.classList.toggle('active', !!(grp.length &&
+                    grp.every(function (x) { return selected[x.code]; })));
+            } else {
+                b.classList.toggle('active', !!selected[code]);
+            }
+        });
+    }
+    function viewLabel() {
+        var v = VIEWS.filter(function (x) { return x.id === view; })[0];
+        return v ? v.label : '';
+    }
+    function curLabel() {
+        var n = selectedList().length;
+        if (n === 1) return selectedList()[0].name;
+        var tiers = TIER_ORDER.filter(function (t) {
+            var g = listByTier(t);
+            return g.length && g.every(function (x) { return selected[x.code]; });
+        });
+        var who = (n === banks().length) ? ('全部 ' + n + ' 家')
+                : ((tiers.length ? tiers.join(' + ') + ' ' : '') + n + ' 家');
+        return viewLabel() + '　' + who;
+    }
+
+    // 各视图对图高的需求不同：条形榜按家数算高度，小倍数要四格，聚合/位次一屏就够
     function setHeight(px) {
         var el = document.getElementById('chart-roe');
         if (!el || el.style.height === px) return;
@@ -231,6 +297,21 @@
         var ins = window.echarts && echarts.getInstanceByDom(el);
         if (ins) ins.resize();   // 容器高度是 JS 改的，ECharts 不会自己知道
     }
+
+    // 图下说明里的类型色标：与 compare.js 的 __TIER_COLORS 同源，家数多时图上没有银行图例，
+    // 靠这行认「哪个色系是哪类机构」
+    function tierKey() {
+        var C = window.__TIER_COLORS || {};
+        return TIER_ORDER.filter(function (t) { return C[t]; }).map(function (t) {
+            return '<span style="display:inline-block;width:26px;height:3px;vertical-align:middle;' +
+                   'background:' + C[t][0] + ';margin:0 5px 0 12px"></span>' + t;
+        }).join('');
+    }
+    var CALIBER = '口径拼接规则——同一年优先取年报披露的<b>新准则加权平均净资产收益率</b>，' +
+        '该年未披露时退到<b>旧准则加权平均股东权益回报率</b>，仍无则用<b>简单 ROE</b>（净利/平均权益，' +
+        '仅渝农商行 2009–2013 手工补算）；2018 年前后同一条线存在准则切换断口。' +
+        '各行起始年份不同（多数行数据自 2014 或 2018 年起），缺披露的年份断开。' +
+        '数据来源：各行历年年度报告「主要财务指标」，经 <code>data/tables/company_charts_&lt;code&gt;.json</code>。';
 
     function draw(code, name, D) {
         if (!document.getElementById('chart-roe')) return;   // 本页该图已被 __stub 摘掉 id
@@ -245,89 +326,157 @@
         }
     }
 
-    function drawCompare(items) {
-        if (!document.getElementById('chart-roe')) return;
-        setHeight('600px');
-        window.__renderRoeCompare(items);
-        if (cur) cur.textContent = '全部对比（' + items.length + ' 家）';
-        if (note) {
-            note.innerHTML = '一键对比：' + items.length + ' 家银行的 ROE 画在同一张图，每行一条线。' +
-                '口径拼接规则——同一年优先取年报披露的<b>新准则加权平均净资产收益率</b>，' +
-                '该年未披露时退到<b>旧准则加权平均股东权益回报率</b>，仍无则用<b>简单 ROE</b>（净利/平均权益，' +
-                '仅渝农商行 2009–2013 手工补算）。因此 2018 年前后同一条线存在准则切换断口，跨段比较请留意。' +
-                '各行起始年份不同（多数行数据自 2014 或 2018 年起），缺披露的年份线段断开。' +
-                '本页银行画粗线并在末端标数值；银行家数超过配色轮数时，第二轮改用虚线区分。' +
-                '数据来源：各行历年年度报告「主要财务指标」，经 <code>data/tables/company_charts_&lt;code&gt;.json</code>。';
+    // 各视图：渲染函数 + 图高 + 图下说明，一处配齐，paint 只管派发
+    var RENDER = {
+        agg: function (items, label) {
+            setHeight('520px');
+            window.__renderRoeTierAgg(items);
+            return '<b>类型聚合</b>：选中的 ' + items.length + ' 家按机构类型收成每类型一条<b>中位数线</b>，' +
+                '本行所属类型再加一条<b>25–75 分位带</b>（其余类型不画带，四条带叠在一起会糊）。' +
+                '深色粗线是本页银行：落在带内属中游，带上/带下即高于/低于四分之三同类。' +
+                '分位数按<b>每年实际有披露的行</b>现算；悬停按类型 2×2 分块。色标：' + tierKey() + '。' + CALIBER;
+        },
+        lines: function (items, label) {
+            setHeight(items.length > 14 ? '560px' : '520px');
+            window.__renderRoeCompare(items);
+            return '<b>逐家叠线</b>：' + items.length + ' 家各一条线，按机构类型分配色系：' + tierKey() +
+                '（同类型内换深浅、色板用尽再叠虚线，深粗线是本页银行）。悬浮某条线时其余线淡出；' +
+                'tooltip 按类型 2×2 分块、块内由高到低，超过 8 家的类型再分两栏。超过 14 家时不放银行图例，' +
+                '认线靠悬浮与 tooltip。家数多时更适合「类型聚合」或「分类型小图」。' + CALIBER;
+        },
+        rank: function (items, label) {
+            setHeight('480px');
+            window.__renderRoeRank(items);
+            return '<b>本行位次</b>：不看 ROE 绝对值，只看本页银行在样本里排第几 —— 实线是在选中的 ' +
+                items.length + ' 家中的名次，虚线是在<b>同类型内</b>的名次，纵轴反向（第 1 名在最上）。' +
+                '分母逐年变（当年有披露的行才计入），tooltip 里给出「第 a / n 名」与当年 ROE。' +
+                '并列时取靠前的名次。' + CALIBER;
+        },
+        facet: function (items, label) {
+            setHeight('720px');
+            window.__renderRoeFacet(items);
+            return '<b>分类型小图</b>：一个机构类型一格（2×2 小倍数），每格家数落到十家上下、线就分得开。' +
+                '四格<b>共用同一纵轴上限</b>，格与格之间可以直接横比（否则轴不同会造成「城商行更高」的错觉）。' +
+                '本页银行在自己那一格是深色实线，其余三格补一条深色虚线做参照。' + CALIBER;
+        },
+        bar: function (items, label) {
+            setHeight(Math.max(360, items.length * 24 + 90) + 'px');
+            window.__renderRoeBar(items);
+            return '<b>最新年份榜</b>：把最新披露年份的 ROE 拉平成横条、由高到低排，按类型着色，' +
+                '本页银行深色加粗 —— 回答「今年谁高谁低」。个别行年报未出时取<b>它自己最新的披露年份</b>' +
+                '并在数值后标出该年份，读数时注意年份不齐。' + CALIBER;
         }
-    }
+    };
 
-    function pick(code, name) {
-        setActive(code);
-        // 本页自身那家行：主数据已在 window.__companyD 里，不再发请求
-        var D = code === window.COMPANY_CODE ? window.__companyD : CACHE[code];
-        if (D) { draw(code, name, D); return; }
-        if (typeof axios === 'undefined') return;
-        if (cur) cur.textContent = name + '（加载中…）';
-        axios.get(BASE + '/api/company_charts?code=' + code).then(function (res) {
+    function fetchOne(b) {
+        var D = b.code === window.COMPANY_CODE ? window.__companyD : CACHE[b.code];
+        if (D) return Promise.resolve({ code: b.code, name: b.name, tier: b.tier || '其他', roe: D['roe'] });
+        if (typeof axios === 'undefined') return Promise.resolve(null);
+        return axios.get(BASE + '/api/company_charts?code=' + b.code).then(function (res) {
             if (!res.data || res.data.code !== 200 || !res.data.data) throw new Error(res.data && res.data.msg);
-            CACHE[code] = res.data.data;
-            draw(code, name, res.data.data);
+            CACHE[b.code] = res.data.data;
+            return { code: b.code, name: b.name, tier: b.tier || '其他', roe: res.data.data['roe'] };
         }).catch(function (e) {
-            console.error('ROE 快速切换：' + code + ' 数据拉取失败', e);
-            if (cur) cur.textContent = name + '（数据拉取失败）';
+            console.error('ROE 对比：' + b.code + ' 数据拉取失败', e);
+            return null;   // 谁失败就跳过谁，不因一家挂掉整图空白
         });
     }
 
-    // 一键对比：把清单里所有行的数据凑齐（缓存里没有的并发拉），谁失败就跳过谁，不因一家挂掉整图空白
-    function pickAll() {
-        setActive('__all');
-        if (typeof axios === 'undefined') return;
-        var list = banks();
-        if (cur) cur.textContent = '全部对比（加载中…）';
-        var jobs = list.map(function (b) {
-            var D = b.code === window.COMPANY_CODE ? window.__companyD : CACHE[b.code];
-            if (D) return Promise.resolve({ code: b.code, name: b.name, roe: D['roe'] });
-            return axios.get(BASE + '/api/company_charts?code=' + b.code).then(function (res) {
-                if (!res.data || res.data.code !== 200 || !res.data.data) throw new Error(res.data && res.data.msg);
-                CACHE[b.code] = res.data.data;
-                return { code: b.code, name: b.name, roe: res.data.data['roe'] };
-            }).catch(function (e) {
-                console.error('ROE 一键对比：' + b.code + ' 数据拉取失败', e);
-                return null;
-            });
-        });
-        Promise.all(jobs).then(function (rows) {
-            // 没有 roe 这一项的行（该行数据里缺这块）也一并剔掉，免得图例挂空名字
+    function paint() {
+        var list = selectedList();
+        if (!list.length) {                     // 全部取消后退回本行，不留空图
+            var own = ownBank();
+            if (own) { selected[own.code] = true; list = [own]; }
+        }
+        syncActive();
+        var label = curLabel();
+        if (cur) cur.textContent = label + (list.length > 1 ? '（加载中…）' : '');
+        Promise.all(list.map(fetchOne)).then(function (rows) {
             var items = rows.filter(function (r) { return r && r.roe && (r.roe.years || []).length; });
-            if (!items.length) { if (cur) cur.textContent = '全部对比（无可用数据）'; return; }
-            drawCompare(items);
+            if (!items.length) { if (cur) cur.textContent = label + '（无可用数据）'; return; }
+            if (!document.getElementById('chart-roe')) return;
+            if (items.length === 1) {
+                var b = list.filter(function (x) { return x.code === items[0].code; })[0] || list[0];
+                var D = b.code === window.COMPANY_CODE ? window.__companyD : CACHE[b.code];
+                if (D) draw(b.code, b.name, D);
+                return;
+            }
+            var txt = (RENDER[view] || RENDER.agg)(items, label);
+            if (cur) cur.textContent = label;
+            if (note) note.innerHTML = txt;
         });
+    }
+
+    function toggleBank(code) {
+        if (selected[code]) { delete selected[code]; } else { selected[code] = true; }
+        paint();
+    }
+    function toggleTier(tier) {
+        var grp = listByTier(tier);
+        var all = grp.length && grp.every(function (b) { return selected[b.code]; });
+        grp.forEach(function (b) { if (all) { delete selected[b.code]; } else { selected[b.code] = true; } });
+        paint();
+    }
+    function pickOwn() {
+        selected = {};
+        selected[window.COMPANY_CODE] = true;
+        paint();
+    }
+    function pickAll() {
+        selected = {};
+        banks().forEach(function (b) { selected[b.code] = true; });
+        // 45 家叠线读不动；点「全部」落到类型聚合（四条中位线 + 本行带）
+        if (view === 'lines') view = 'agg';
+        paint();
+    }
+    function pickView(id) {
+        view = id;
+        // 视图只对多家有意义：单家时收进本行所属类型，不要偷偷勾上全部 45 家
+        if (selectedList().length < 2) {
+            var own = ownBank();
+            var grp = own ? listByTier(own.tier || '') : [];
+            if (grp.length) grp.forEach(function (b) { selected[b.code] = true; });
+        }
+        paint();
+    }
+
+    function mkBtn(parent, text, cls, attrs, onClick) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        if (cls) btn.className = cls;
+        Object.keys(attrs || {}).forEach(function (k) { btn.setAttribute(k, attrs[k]); });
+        btn.textContent = text;
+        btn.addEventListener('click', onClick);
+        parent.appendChild(btn);
+        btns.push(btn);
+        return btn;
     }
 
     function build() {
         var list = banks();
         if (!list.length || box.querySelector('button')) return;
+        if (tierBox && !tierBox.querySelector('button')) {
+            TIER_ORDER.forEach(function (t) {
+                var n = listByTier(t).length;
+                if (!n) return;
+                mkBtn(tierBox, t + '（' + n + '）', 'tier', { 'data-tier': t },
+                    function () { toggleTier(t); });
+            });
+            mkBtn(tierBox, '只看本行', 'cmp', { 'data-code': '__own' }, pickOwn);
+            mkBtn(tierBox, '全部（' + list.length + '）', 'cmp', { 'data-code': '__all' }, pickAll);
+        }
+        if (viewBox && !viewBox.querySelector('button')) {
+            VIEWS.forEach(function (v) {
+                mkBtn(viewBox, v.label, 'tier', { 'data-view': v.id }, function () { pickView(v.id); });
+            });
+        }
         list.forEach(function (b) {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.setAttribute('data-code', b.code);
-            btn.textContent = b.name;
-            btn.addEventListener('click', function () { pick(b.code, b.name); });
-            box.appendChild(btn);
-            btns.push(btn);
+            mkBtn(box, b.name, '', { 'data-code': b.code }, function () { toggleBank(b.code); });
         });
-        // 对比按钮排在最后，用 .cmp 与单行按钮区分（样式里给了实心边框）
-        var all = document.createElement('button');
-        all.type = 'button';
-        all.className = 'cmp';
-        all.setAttribute('data-code', '__all');
-        all.textContent = '一键对比全部';
-        all.addEventListener('click', pickAll);
-        box.appendChild(all);
-        btns.push(all);
-        setActive(window.COMPANY_CODE);
+        selected[window.COMPANY_CODE] = true;
+        syncActive();
         // 本页银行的名字由数据里的 _bank 元信息给（HTML 里的静态文案是渝农商行版本）
-        var own = list.filter(function (b) { return b.code === window.COMPANY_CODE; })[0];
+        var own = ownBank();
         if (own && cur) cur.textContent = own.name;
     }
 

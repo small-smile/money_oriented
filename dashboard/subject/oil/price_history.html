@@ -554,7 +554,7 @@
         const chart = echarts.init(dom);
         chart.showLoading();
 
-        axios.get('http://127.0.0.1:5000/api/gold_oil')
+        axios.get('/api/gold_oil')
             .then(res => {
                 chart.hideLoading();
                 if (res.data.code !== 200) throw new Error('金油比接口异常');
@@ -719,8 +719,8 @@
     })();
 
     // 两个请求promise
-    const reqPrice = axios.get('http://127.0.0.1:5000/api/price');
-    const reqAdj = axios.get('http://127.0.0.1:5000/api/adj_price');
+    const reqPrice = axios.get('/api/price');
+    const reqAdj = axios.get('/api/adj_price');
 
     // 并发同时发起请求
     Promise.all([reqPrice, reqAdj])

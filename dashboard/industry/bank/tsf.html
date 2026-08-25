@@ -58,7 +58,7 @@
 </div>
 
 <script>
-var BASE = location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+var BASE = '';
 axios.get(BASE + '/api/tsf').then(function (res) {
     document.getElementById('loading').style.display = 'none';
     if (!res.data || res.data.code !== 200 || !res.data.data) {
@@ -71,7 +71,7 @@ axios.get(BASE + '/api/tsf').then(function (res) {
     document.getElementById('loading').style.display = 'none';
     var box = document.getElementById('error-msg');
     box.style.display = 'block';
-    box.textContent = '数据加载失败：' + e.message + '（请确认 backend_python.py 已在 127.0.0.1:5000 运行）';
+    box.textContent = '数据加载失败：' + e.message + '（请确认后端服务已启动）';
 });
 
 function render(D) {

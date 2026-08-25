@@ -27,9 +27,10 @@
 ./venv/bin/python backend_python.py   # 监听 5000
 ```
 
-必须用 venv 里的 python，系统 python 没装 `flask_cors`。起好后访问
-`http://127.0.0.1:5000/`（会跳到 `/dashboard/index.html`）。直接 `file://` 打开 HTML 也仍
-能用，此时页面跨域请求 `http://127.0.0.1:5000/api/...`，后端一样要先起来图才有数据。
+必须用 venv 里的 python，系统 python 没装 `flask_cors`。起好后访问后端根路径（本机直连是
+5000 端口，线上走 nginx 转发的域名，会跳到 `/dashboard/index.html`）。页面里的接口地址一律
+写成相对路径 `/api/...`，跟页面同源，换端口/换机器都不用改代码；因此不能再用 `file://`
+直接打开 HTML——那样相对路径无处可指，图会取不到数据。
 
 `company/bank/*.html` 是同一份页面按银行代码渲染：`?code=`（A 股 6 位 / H 股 5 位，缺省
 `601077` 渝农商行）决定向 `/api/company_charts?code=` 取哪家的图表数据，页面标题与 H1 由

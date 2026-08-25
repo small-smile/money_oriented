@@ -41,7 +41,7 @@
 </div>
 
 <script>
-const API = 'http://127.0.0.1:5000/api/insurer_peers';
+const API = '/api/insurer_peers';
 const ORDER = ['601318', '601628', '601601', '601336', '601319', '00966'];
 const COLORS = {
     '601318': '#c0392b',   // 平安
@@ -468,7 +468,7 @@ axios.get(API).then(function (res) {
     document.getElementById('loading').style.display = 'none';
     const box = document.getElementById('error-msg');
     box.style.display = 'block';
-    box.textContent = '数据加载失败：' + e.message + '（请确认 backend_python.py 已在 127.0.0.1:5000 运行）';
+    box.textContent = '数据加载失败：' + e.message + '（请确认后端服务已启动）';
 });
 </script>
 </body>

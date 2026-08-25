@@ -52,10 +52,10 @@ function showError(msg) {
 }
 
 Promise.all([
-    axios.get('http://127.0.0.1:5000/api/petrochina_reserves'),
-    axios.get('http://127.0.0.1:5000/api/cnooc_reserves'),
-    axios.get('http://127.0.0.1:5000/api/petrochina_production'),
-    axios.get('http://127.0.0.1:5000/api/cnooc_production')
+    axios.get('/api/petrochina_reserves'),
+    axios.get('/api/cnooc_reserves'),
+    axios.get('/api/petrochina_production'),
+    axios.get('/api/cnooc_production')
 ]).then(([resPtr, resCnc, resPtrProd, resCncProd]) => {
     if (resPtr.data.code !== 200 || resCnc.data.code !== 200 ||
         resPtrProd.data.code !== 200 || resCncProd.data.code !== 200) {

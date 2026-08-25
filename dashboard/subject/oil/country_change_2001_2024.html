@@ -39,7 +39,7 @@ function showError(msg) {
     el.textContent = '加载失败：' + msg + '（请确保 Flask 后端已启动）';
 }
 
-axios.get('http://127.0.0.1:5000/api/production_region')
+axios.get('/api/production_region')
     .then(res => {
         if (res.data.code !== 200) { showError(res.data.msg || '未知错误'); return; }
         document.getElementById('loading').style.display = 'none';
