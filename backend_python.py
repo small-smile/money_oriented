@@ -1162,6 +1162,221 @@ def read_industry_peers(industry):
     return {"code": 200, "data": peers}
 
 
+# ── 股权结构：银行/险企/开发商/水泥/运营商共用一套 ─────────────────────────────
+# 五个板块的 <板块>_<code>_annual.json 里 holders（接口前十名股东快照）字段结构完全相同，
+# 所以股权结构不按板块各写一页，统一由 dashboard/company/shareholder.html 一页读这份 payload，
+# 靠 ?industry=&code= 切换。银行表另有 holder_num（逐期股东户数）与 holder_concentration
+# （集中度序列）两层，有就下发、页面多画两张图，其余板块自然缺省。
+HOLDER_INDUSTRIES = {
+    "bank": {"label": "银行", "codes": list(BANK_ORDER)},
+    "insurer": {"label": "险企", "codes": INSURER_PEERS},
+    "developer": {"label": "开发商", "codes": DEVELOPER_PEERS},
+    "cement": {"label": "水泥企业", "codes": CEMENT_PEERS},
+    "telecom": {"label": "运营商", "codes": TELECOM_PEERS},
+    # 下面两个板块没有 <板块>_<code>_annual.json，股东块整份来自手工层（年报／20-F 原文抽取）
+    "tech": {"label": "科技（百度）", "codes": ["09888"]},
+    "food": {"label": "食品", "codes": ["605338"]},
+}
+
+# 一致行动人（派系）与手工股东块：holders_manual.json 一个文件按 "<板块>:<代码>" 索引。
+# 两种用法都在这里：① 只补 factions（telecom 这类 annual 表已有接口股东快照的板块）；
+# ② 连 holders 一起给（tech/food 这类没有 annual 表的公司，股东块直接抄年报／20-F 原文）。
+HOLDERS_MANUAL_FILE = os.path.join(TABLES_DIR, "holders_manual.json")
+
+
+def _holders_manual():
+    if not os.path.exists(HOLDERS_MANUAL_FILE):
+        return {}
+    with open(HOLDERS_MANUAL_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _company_charts_holders(code):
+    """company_charts_<code>.json 里的 holders 块（年报口径：holders / holderData / factions）。"""
+    path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return (json.load(f).get("holders")) or None
+
+
+def _bank_factions(code):
+    """银行的一致行动人早就画在年报口径股东页里，派系表就存在 company_charts_<code>.json。
+    那份 names 是年报「前十名股东」的长名，与接口快照的名字大体同源、但不保证全部对得上；
+    对不上的股东在前端各自成组（normalize 容错），不影响其余派系。"""
+    blk = _company_charts_holders(code)
+    return (blk or {}).get("factions") or None
+
+
+def _holder_table(industry, code):
+    """只读 annual 表里股权结构要用的那几块，不做手工层合并（股东数据与经营口径无关）。"""
+    path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _norm_holder_name(s):
+    """比对股东名用的归一化：全角括号/破折号折半角、去空白、砍掉通用公司后缀。
+    年报原文与接口名册在这三处系统性不同（年报写「太平人寿保险有限公司－传统－…－022L－CT001 沪」，
+    接口写「太平人寿保险有限公司-传统-…-022L-CT001沪」），不折一下没有一个名字能对上。
+    银行那 45 份派系表里另有 5 家用的是年报页面上的简称（「渝富资本」「大家人寿-万能」），
+    那类差异归一化救不回来，只能靠唯一前缀匹配或干脆不归组。"""
+    s = (s or "")
+    for a, b in (("（", "("), ("）", ")"), ("－", "-"), ("—", "-"), ("‐", "-"), ("–", "-")):
+        s = s.replace(a, b)
+    s = re.sub(r"\s+", "", s)
+    for tail in ("股份有限公司", "有限责任公司", "有限公司", "公司"):
+        if s.endswith(tail) and len(s) > len(tail) + 1:
+            return s[: -len(tail)]
+    return s
+
+
+def _resolve_factions(holders, factions):
+    """把派系表里的股东名对到名册里的真实名字上；对不上的成员直接丢掉，整组空了就丢整组。
+    只认两种命中：归一化后完全相同，或名册里唯一一个以它开头的名字（唯一才算，多个视为对不上）。
+    宁可少归一个成员（那家股东在前端自成一组），也不猜——猜错就是把股份记到别人名下。"""
+    if not factions or not holders:
+        return None
+    exact, out = {}, []
+    for h in holders:
+        exact.setdefault(_norm_holder_name(h.get("name")), h.get("name"))
+    for f in factions:
+        hit = []
+        for n in f.get("names") or []:
+            key = _norm_holder_name(n)
+            if key in exact:
+                hit.append(exact[key])
+                continue
+            cand = [v for k, v in exact.items() if k.startswith(key)]
+            if len(cand) == 1:
+                hit.append(cand[0])
+        if hit:
+            g = dict(f)
+            g["names"] = hit
+            out.append(g)
+    return out or None
+
+
+def _ring_block_from_charts(code):
+    """年报口径的环形图数据块 —— 取 company_charts_<code>.json 的 holders 块。
+    bank/shareholder.html（各行业的标准模板）画的就是这一份：holderData 是图上的名字 +
+    占总股本比例、已含「其他流通股东」那一块，factions 引用的正是这套名字；
+    另一份 holders 带类别与报告期内增减（文字，如「+79.14 万股」「不变」）。
+    两份名字 44 家银行完全一致，个别行（渝农商行）图上用简称、表里用另一套简称，
+    这时按比例值唯一对上 —— 对不上就只是少两列，不猜。"""
+    blk = _company_charts_holders(code)
+    if not blk or not blk.get("holderData"):
+        return None
+    by_name, by_pct = {}, {}
+    for h in blk.get("holders") or []:
+        by_name[h.get("name")] = h
+        by_pct.setdefault(round(float(h.get("pct") or 0), 2), []).append(h)
+    out = []
+    for x in blk["holderData"]:
+        m = by_name.get(x.get("name"))
+        if m is None:
+            cand = by_pct.get(round(float(x.get("value") or 0), 2)) or []
+            m = cand[0] if len(cand) == 1 else None
+        out.append({"name": x.get("name"), "value": x.get("value"),
+                    "type": (m or {}).get("type") or "",
+                    # 年报口径这份增减是文字（「+79.14 万股」），不是股数，原样传给前端
+                    "chgText": (m or {}).get("chg") or ""})
+    return {"caliber": "占总股本", "holderData": out, "factions": blk.get("factions") or []}
+
+
+def read_holders(industry, code=None):
+    """某板块的成员名单 + 指定公司的股东快照。code 省略时取第一家有股东数据的公司。
+    纯 H 股公司（如中国海外发展 00688）接口不返回前十名股东，名单里保留但标 has_holders=false，
+    页面把它画成不可点，避免看着像取数遗漏。"""
+    spec = HOLDER_INDUSTRIES.get(industry)
+    if not spec:
+        return {"code": 400, "msg": f"未知板块 {industry}；已支持 {list(HOLDER_INDUSTRIES)}", "data": {}}
+    manual = _holders_manual()
+    roster, tables = [], {}
+    for c in spec["codes"]:
+        d = _holder_table(industry, c)
+        man = manual.get(f"{industry}:{c}") or {}
+        if d is None:
+            # 没有 annual 表时，手工层自带 holders 的公司照样进名单（tech/food）
+            if not man.get("holders"):
+                continue
+            d = {}
+        rec = dict(d)
+        for k in ("name", "secucode", "holders_end_date", "holders", "holder_num", "source", "ring",
+                  # 下面三层是照 bank/shareholder.html 那套模板补的历史序列（手工层才有）
+                  "holder_concentration", "share_capital", "dividend_per10",
+                  # 股本序列中间跨了口径断点（百度 1 拆 80）时，图上要打一条界线
+                  "share_capital_break"):
+            if man.get(k):
+                rec[k] = man[k]
+        rec["factions"] = man.get("factions") or (_bank_factions(c) if industry == "bank" else None)
+        rec["factions_source"] = man.get("factions_source") or (
+            f"银行年报口径股东页的一致行动人表（data/tables/company_charts_{c}.json）"
+            if rec["factions"] and industry == "bank" else None)
+        rec["caliber_note"] = man.get("caliber_note")
+        rec["residual_label"] = man.get("residual_label")
+        rec["history_source"] = man.get("history_source")
+        # 名册是接口快照还是年报原文，页面要照实说（手工层给了名册的公司在这里写明）
+        rec["holders_caliber"] = man.get("holders_caliber")
+        rec["history_gaps"] = man.get("history_gaps")
+        rec["dividend_unit"] = man.get("dividend_unit")
+        tables[c] = rec
+        roster.append({"code": c, "name": rec.get("name") or c,
+                       "tag": rec.get("tier") or rec.get("group") or man.get("tag") or "",
+                       "has_holders": bool(rec.get("holders"))})
+    if not roster:
+        return {"code": 404, "msg": f"尚无{spec['label']}数据文件", "data": {}}
+    if not code:
+        code = next((r["code"] for r in roster if r["has_holders"]), roster[0]["code"])
+    if code not in tables:
+        return {"code": 404, "msg": f"{spec['label']} {code} 尚无年度数据文件", "data": {}}
+    d = tables[code]
+    return {"code": 200, "data": {
+        "industry": industry,
+        "label": spec["label"],
+        "roster": roster,
+        "company": {
+            "code": code,
+            "name": d.get("name") or code,
+            "secucode": d.get("secucode"),
+            "tag": d.get("tier") or d.get("group") or next(
+                (r["tag"] for r in roster if r["code"] == code), ""),
+            "source": d.get("source"),
+            "holders_end_date": d.get("holders_end_date"),
+            "holders": d.get("holders") or [],
+            "holder_num": d.get("holder_num") or None,
+            "holder_concentration": d.get("holder_concentration") or None,
+            # 历年总股本 [[年, 股数, 变动原因]] 与历年每 10 股分红 [[年, 元]]：
+            # bank/shareholder.html 那套模板有这两张图，其余板块的数据在手工层补齐后自然也画得出来
+            "share_capital": d.get("share_capital") or None,
+            "dividend_per10": d.get("dividend_per10") or None,
+            # 股本序列的口径断点 {at, text}：拆股／并股前后基数不可直接比较，图上画界线
+            "share_capital_break": d.get("share_capital_break") or None,
+            "history_source": d.get("history_source"),
+            "holders_caliber": d.get("holders_caliber") or "接口口径的前十名股东快照",
+            # 逐年抽取时记下的披露缺口，页面「口径与接口限制」原样列出
+            "history_gaps": d.get("history_gaps") or None,
+            # 分红图的单位：中国移动的股息以港元宣派，年报不给人民币每股金额，就照港元画
+            "dividend_unit": d.get("dividend_unit") or "元",
+            # 一致行动人：有派系表才画双层环，没有就只有单层（内外圈同一份数据没意义）
+            "factions": _resolve_factions(d.get("holders") or [], d.get("factions")),
+            # 环形图的标准数据块（bank/shareholder.html 那套年报口径数据）：银行取 company_charts，
+            # 手工层给了 ring 的公司取手工层，都没有时前端拿接口快照 + 分组现拼一份
+            "ring": d.get("ring") or (_ring_block_from_charts(code) if industry == "bank" else None),
+            "factions_source": d.get("factions_source"),
+            # 手工层公司（百度按 20-F beneficial ownership、巴比按年报名册）口径与接口快照不同，
+            # 页面把这句原样印出来，不让两套口径混着读
+            "caliber_note": d.get("caliber_note"),
+            # 环形图里「名册外那一块」的叫法：前十名口径叫「前十名之外」，20-F 口径不是名册前十名
+            "residual_label": d.get("residual_label") or "其他股东（前十名之外）",
+            # 银行另有一套年报口径的股东页（含一致行动人、按 A 股基数重算），在这里给出入口
+            "detail_page": f"/bank/{code}/shareholder.html" if industry == "bank" else None,
+        },
+    }}
+
+
 @app.route("/api/insurer_annual")
 def api_insurer_annual():
     """参数: code（险企 A 股 6 位代码），默认中国平安 601318"""
@@ -1208,6 +1423,14 @@ def api_telecom_annual():
 def api_telecom_peers():
     """三大运营商同业对比数据，一次返回"""
     return jsonify(read_industry_peers("telecom"))
+
+
+@app.route("/api/holders")
+def api_holders():
+    """参数: industry（bank/insurer/developer/cement/telecom，默认 bank）、code（省略取首家）
+    股权结构页共用接口：返回板块成员名单 + 该公司的前十名股东（银行另带股东户数与集中度）"""
+    return jsonify(read_holders(request.args.get("industry", "bank"),
+                                request.args.get("code")))
 
 
 if __name__ == "__main__":

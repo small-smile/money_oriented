@@ -413,7 +413,7 @@ def build_cement(code: str, refresh: bool) -> dict:
         "h_code": h_code,
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富 F10 数据接口（各期 A 股年报合并数）。" + ah_note +
+        "source": ("东方财富公司数据接口（各期 A 股年报合并数）。" + ah_note +
                    "已核验：海螺水泥 2025 年营业收入 825.32 亿元、归母净利润 81.13 亿元、"
                    "毛利率 24.16%，与年报原文一致"),
         "unit_note": "金额字段单位为元；比率字段单位为 %；cash_short_debt / asset_turnover / "
@@ -487,7 +487,7 @@ def build_cement_hk(code: str, refresh: bool) -> dict:
         "h_code": secucode,
         "currency": currency,
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数）。"
+        "source": ("东方财富港股公司数据接口（主要指标） RPT_HKF10_FN_MAININDICATOR（各期年报数）。"
                    f"{name} 仅在港交所上市（{secucode}），无 A 股年报，故不适用「A/H 都有时优先取"
                    "A 股」规则；接口行内一律写 CURRENCY=HKD、IS_CNY_CODE=0，这个标记不可信——"
                    f"本公司年报以 {currency} 编制，接口金额即该本位币原值、未做折算（已用量级反查："

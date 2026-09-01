@@ -37,28 +37,32 @@
                 {href: 'industry/bank/overview.html',                    title: 'A/H 股概览'},
                 {href: 'industry/bank/tsf.html',                         title: '社会融资规模'},
                 {href: 'industry/bank/npl-formation.html',               title: '息差与不良生成对比'},
-                {href: 'industry/bank/reform_timeline.html',             title: '重要变革时间线'}
+                {href: 'industry/bank/reform_timeline.html',             title: '重要变革时间线'},
+                {href: 'company/shareholder.html?industry=bank',         title: '股权结构'}
             ]
         },
         {
             dir: 'industry/insurance/',
             pages: [
                 {href: 'industry/insurance/overview.html',               title: 'A/H 股概览'},
-                {href: 'industry/insurance/peers.html',                  title: '五大险企对比'}
+                {href: 'industry/insurance/peers.html',                  title: '五大险企对比'},
+                {href: 'company/shareholder.html?industry=insurer',      title: '股权结构'}
             ]
         },
         {
             dir: 'industry/realestate/',
             pages: [
                 {href: 'industry/realestate/overview.html',              title: '央企名录与政策线'},
-                {href: 'industry/realestate/peers.html',                 title: '六家央企开发商对比'}
+                {href: 'industry/realestate/peers.html',                 title: '六家央企开发商对比'},
+                {href: 'company/shareholder.html?industry=developer',    title: '股权结构'}
             ]
         },
         {
             dir: 'industry/cement/',
             pages: [
                 {href: 'industry/cement/overview.html',                  title: '名录与供给侧政策线'},
-                {href: 'industry/cement/peers.html',                     title: '八家水泥企业对比'}
+                {href: 'industry/cement/peers.html',                     title: '八家水泥企业对比'},
+                {href: 'company/shareholder.html?industry=cement',       title: '股权结构'}
             ]
         },
         {
@@ -66,7 +70,8 @@
             pages: [
                 {href: 'industry/telecom/overview.html',                 title: '名录与变革时间线'},
                 {href: 'industry/telecom/peers.html',                    title: '三大运营商对比'},
-                {href: 'company/telecom/index.html',                     title: '公司详情'}
+                {href: 'company/telecom/index.html',                     title: '公司详情'},
+                {href: 'company/shareholder.html?industry=telecom',      title: '股权结构'}
             ]
         },
         {

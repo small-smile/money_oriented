@@ -460,7 +460,7 @@ def build_developer(code: str, refresh: bool) -> dict:
         "group": group,
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富 F10 数据接口（各期 A 股年报合并数）。A 股与 H 股年报都存在的年份"
+        "source": ("东方财富公司数据接口（各期 A 股年报合并数）。A 股与 H 股年报都存在的年份"
                    "一律取 A 股年报口径；已核验：保利发展 2024 年营业收入 3,081.44 亿元、"
                    "归母净利润 50.01 亿元，招商蛇口 2024 年营业收入 1,547.28 亿元、"
                    "归母净利润 40.39 亿元，与年报原文一致"),
@@ -535,7 +535,7 @@ def build_developer_hk(code: str, refresh: bool) -> dict:
         "group": group,
         "currency": currency,
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数）；"
+        "source": ("东方财富港股公司数据接口（主要指标） RPT_HKF10_FN_MAININDICATOR（各期年报数）；"
                    "已售未结（presale）逐年取自 HKEXnews 年度业绩公告原文。"
                    f"{name} 仅在港交所上市（{secucode}），无 A 股年报，故不适用「A/H 都有时优先取 A 股」"
                    "规则；接口行内一律写 CURRENCY=HKD、IS_CNY_CODE=0，这个标记不可信——已用年报"

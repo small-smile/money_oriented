@@ -310,3 +310,103 @@ class TestIndustryTables:
                 rev = d["annual"][year]["revenue"]
                 assert abs(canon["total"] - rev / 1e8) < 0.05, f"{code} {year} 合计与营业收入不符"
 
+
+class TestHolders:
+    """股权结构共用接口：各板块同一份 payload 形状"""
+
+    @pytest.mark.parametrize("industry", sorted(bk.HOLDER_INDUSTRIES))
+    def test_payload_shape(self, industry):
+        r = bk.read_holders(industry)
+        assert r["code"] == 200, r.get("msg")
+        d = r["data"]
+        assert d["industry"] == industry and d["label"] and d["roster"]
+        c = d["company"]
+        assert set(c) == {"code", "name", "secucode", "tag", "source", "holders_end_date",
+                          "holders", "holder_num", "holder_concentration", "detail_page",
+                          "factions", "factions_source", "caliber_note", "residual_label", "ring",
+                          "share_capital", "dividend_per10", "history_source", "holders_caliber",
+                          "history_gaps", "dividend_unit", "share_capital_break"}
+        # 默认公司必须是有股东数据的那一家，比例分母（total_shares）也要在
+        assert c["holders"] and c["holders"][0]["total_shares"]
+        assert all(r0["code"] in [x["code"] for x in d["roster"]] for r0 in [c])
+
+    def test_manual_only_industries(self):
+        """百度与巴比没有 annual 表，股东块整份来自 holders_manual.json，照样能出 payload"""
+        for industry, code, total in (("tech", "09888", 2722021272), ("food", "605338", 239566662)):
+            c = bk.read_holders(industry)["data"]["company"]
+            assert c["code"] == code and c["holders"], industry
+            assert c["holders"][0]["total_shares"] == total
+            assert c["caliber_note"], "手工层公司必须写清口径，不能与接口快照混着读"
+            # 比例是按 股数 ÷ 总股本 重算的，逐行都要能对上
+            for h in c["holders"]:
+                assert abs(h["hold_num"] / total * 100 - h["ratio"]) < 0.006, (industry, h["name"])
+
+    def test_factions_resolved_against_roster(self):
+        """分组里点名的股东必须真在名册里 —— 对不上的成员由后端剔除，不许留下悬空名字"""
+        for industry in sorted(bk.HOLDER_INDUSTRIES):
+            for r in bk.read_holders(industry)["data"]["roster"]:
+                c = bk.read_holders(industry, r["code"])["data"]["company"]
+                names = {h["name"] for h in c["holders"]}
+                for g in c["factions"] or []:
+                    assert g["names"], f"{industry} {r['code']} 空分组不该下发"
+                    assert set(g["names"]) <= names, f"{industry} {r['code']} {g['title']}"
+
+    def test_ring_block_sums_to_100(self):
+        """银行的环形图数据块是年报口径（含「其他流通股东」），一圈铺满 100%"""
+        for code in ("601398", "601077", "600036"):
+            ring = bk.read_holders("bank", code)["data"]["company"]["ring"]
+            assert ring and ring["caliber"] == "占总股本"
+            assert abs(sum(x["value"] for x in ring["holderData"]) - 100) < 0.05, code
+            names = {x["name"] for x in ring["holderData"]}
+            for g in ring["factions"]:
+                assert set(g["names"]) <= names, f"{code} {g['title']} 引用了 holderData 里没有的名字"
+
+    def test_history_layers_are_monotone_and_consistent(self):
+        """照 bank/shareholder.html 那套模板补的历年序列：股本/户数/集中度/分红四层的内部一致性。
+        集中度必须满足 top1 ≤ top3 ≤ top10（同一年的前 N 名累计），否则就是排序或加总错了。"""
+        cases = [("telecom", "600941"), ("telecom", "601728"), ("telecom", "600050"),
+                 ("food", "605338")]
+        for industry, code in cases:
+            c = bk.read_holders(industry, code)["data"]["company"]
+            cap = c["share_capital"]
+            assert cap and len(cap) >= 5, f"{code} 缺历年股本"
+            assert [r[0] for r in cap] == sorted(r[0] for r in cap), f"{code} 股本年份未升序"
+            assert all(r[1] > 0 for r in cap), code
+            hn = c["holder_num"]
+            assert hn and len({r[0] for r in hn}) == len(hn), f"{code} 户数日期有重复"
+            for r in c["holder_concentration"]:
+                t1, t3, t10 = r.get("top1"), r.get("top3"), r.get("top10")
+                assert t1 is not None, (code, r["date"])
+                if t3 is not None:
+                    assert t1 <= t3 + 1e-9, (code, r["date"], t1, t3)
+                    if t10 is not None:
+                        assert t3 <= t10 + 1e-9, (code, r["date"], t3, t10)
+                if r.get("top1_ex") is not None:
+                    assert r["top1_ex"] <= t1 + 1e-9, (code, r["date"])
+            assert all(v >= 0 for _, v in (c["dividend_per10"] or [])), code
+            # 港元宣派的公司必须把单位标出来，不能混进「元」的序列里
+            assert c["dividend_unit"] in ("元", "港元"), (code, c["dividend_unit"])
+            assert c["history_source"], f"{code} 历年序列必须留来源"
+
+    def test_pure_h_marked_not_dropped(self):
+        """纯 H 股公司接口不返回股东，名单里要保留并标 has_holders=false（不是取数遗漏）"""
+        roster = bk.read_holders("developer")["data"]["roster"]
+        assert [r["code"] for r in roster if not r["has_holders"]], "开发商板块应有纯 H 股缺股东数据的公司"
+
+    def test_bank_extra_layers_and_link(self):
+        """银行表另带股东户数与集中度两层，并给出年报口径股东页入口"""
+        c = bk.read_holders("bank", "601077")["data"]["company"]
+        assert c["holder_num"] and c["holder_concentration"]
+        assert c["detail_page"] == "/bank/601077/shareholder.html"
+
+    def test_unknown_industry_and_code(self):
+        assert bk.read_holders("foo")["code"] == 400
+        assert bk.read_holders("bank", "999999")["code"] == 404
+
+    @pytest.mark.parametrize("industry", sorted(bk.HOLDER_INDUSTRIES))
+    def test_source_no_f10_branding(self, industry):
+        """项目规则：对外文本不写「F10」品牌字样（接口报表名 RPT_HKF10_* 除外）"""
+        for r in bk.read_holders(industry)["data"]["roster"]:
+            src = (bk.read_holders(industry, r["code"])["data"]["company"]["source"] or "")
+            assert "F10 " not in src.replace("RPT_HKF10_FN_MAININDICATOR", ""), f"{industry} {r['code']}"
+

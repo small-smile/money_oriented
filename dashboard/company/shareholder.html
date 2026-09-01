@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../common/base.css">
+    <link rel="stylesheet" href="page.css">
+    <title>股权结构（各板块共用）</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="shareholder.css">
+</head>
+<body>
+<div class="wrap">
+    <div class="page-head">
+        <h1 id="page-title">股权结构</h1>
+        <div class="meta" id="page-meta"></div>
+        <div class="tags"><span>前十名股东</span><span>持股集中度</span><span>增减动向</span><span id="tag-extra" hidden>股东户数</span></div>
+    </div>
+
+    <div id="loading">加载中…（需先启动 backend_python.py，端口 5000）</div>
+    <div id="error-msg"></div>
+
+    <section id="sec-kpi" hidden>
+        <h2 id="kpi-title">股东结构概览</h2>
+        <p class="sub" id="kpi-sub"></p>
+        <div class="kpis" id="kpis"></div>
+        <div class="entity" id="entity-note"></div>
+    </section>
+
+    <!-- 双层环形图：内圈一名股东一块、外圈按分组归并，圈序可互换。版面（行高、字号、列宽、
+         圆环半径、画布高度）全部由数据量与文字实测宽度算出，这里只给一个空容器 -->
+    <section id="sec-ring" hidden>
+        <div class="ring-hd">
+            <h2 style="margin-bottom:0">股东结构环形图</h2>
+            <button type="button" id="btn-order" title="点一下两圈互换">内圈：股东明细</button>
+        </div>
+        <p class="sub" id="ring-sub"></p>
+        <div class="chart-card" style="padding:8px 10px 14px">
+            <div id="chart-ring" style="height:640px"></div>
+        </div>
+        <div class="note" id="ring-note" style="max-width:1100px;color:#6b7280;font-size:16px"></div>
+    </section>
+
+    <div id="charts"></div>
+
+    <section id="sec-table" hidden>
+        <h2>前十名股东明细</h2>
+        <p class="sub" id="tbl-sub"></p>
+        <div style="overflow-x:auto">
+            <table>
+                <thead><tr id="tbl-head"></tr></thead>
+                <tbody id="tbl-body"></tbody>
+                <tfoot id="tbl-foot"></tfoot>
+            </table>
+        </div>
+    </section>
+
+    <section id="sec-gaps" hidden>
+        <h2>口径与接口限制</h2>
+        <p class="sub">这页只有接口口径的股东快照，年报口径（一致行动人、按 A 股基数重算）见各板块自己的详情页</p>
+        <ul class="gap-list" id="gaps"></ul>
+    </section>
+</div>
+<!-- 点击环形图右侧标注行时在那一行下面弹出全称（列里的名字是按实测宽度截断的） -->
+<div id="row-full"></div>
+<!-- 股东明细弹层：点图上「股东明细」出全量长名清单，含所属分组与色块 -->
+<div class="modal" id="det-modal">
+    <div class="modal-box">
+        <div class="modal-hd">
+            <button type="button" id="det-close" title="关闭">&#10005;</button>
+        </div>
+        <div id="det-body"></div>
+    </div>
+</div>
+<script src="shareholder.js"></script>
+</body>
+</html>

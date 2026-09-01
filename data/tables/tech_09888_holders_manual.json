@@ -292,7 +292,7 @@
       }
     ],
     "institutions_not_disclosed": {
-      "baillie_gifford": "未披露。已在 FY2021—FY2025 五份 20-F 全文检索 \"Baillie\"，命中数均为 0，即百度从未在 20-F 的 beneficial ownership 表中列出 Baillie Gifford",
+      "baillie_gifford": "FY2021—FY2025 未披露：已在这五份 20-F 全文检索 \"Baillie\"，命中数均为 0。但更早年份是披露过的 —— FY2010—FY2018 九份 20-F 的主要股东表连续列出 Baillie Gifford & Co（2010 年 2,621,936 股／7.5% → 2018 年 1,811,319 股／5.2%，均以 ADS 形式、依 Schedule 13G），FY2019 起跌破 5% 后不再出表（逐年数字见 data/extract/out/ownership_hist_09888.json）",
       "others": "除 BlackRock 外，FY2025 表中无任何其他机构投资者（无 Vanguard、无主权基金等）"
     },
     "us_record_holders": {
@@ -835,8 +835,8 @@
       "affected_fields": "blackrock 各年行"
     },
     {
-      "gap": "Baillie Gifford 及其他机构股东完全缺失",
-      "detail": "已对 FY2021—FY2025 五份 20-F 全文检索 \"Baillie\"，命中数均为 0；FY2025 表中除 BlackRock 外无任何机构投资者。20-F 只披露『据公司所知』达 5% 的持有人，而绝大多数机构通过 ADS 与 HKSCC 间接持有、不进在册名册，故机构股东图谱在本地文件中无法还原。若需 Baillie Gifford / Vanguard 等持仓，须另取 13F/13G 或港交所 CCASS 数据（本次未联网，此处留空）",
+      "gap": "近五年机构股东几乎全部缺失（Baillie Gifford 早年披露过，FY2019 起退出表内）",
+      "detail": "已对 FY2021—FY2025 五份 20-F 全文检索 \"Baillie\"，命中数均为 0；FY2025 表中除 BlackRock 外无任何机构投资者。注意这不是「从未披露」：FY2010—FY2018 的主要股东表连续列有 Baillie Gifford & Co（7.5% → 5.2%），FY2019 起持仓跌破 5% 披露线后不再出表。20-F 只披露『据公司所知』达 5% 的持有人，而绝大多数机构通过 ADS 与 HKSCC 间接持有、不进在册名册，故近年的机构股东图谱在本地文件中无法还原。若需 Baillie Gifford / Vanguard 等当前持仓，须另取 13F/13G 或港交所 CCASS 数据（本次未联网，此处留空）",
       "affected_fields": "beneficial_ownership_fy2025.institutions_not_disclosed"
     },
     {

@@ -648,7 +648,7 @@ def build_insurer(code: str, refresh: bool) -> dict:
         "secucode": secucode,
         "name": name,
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富 F10 数据接口（各期 A 股年报合并数）。2025 年度已逐项对照五家 A 股年报"
+        "source": ("东方财富公司数据接口（各期 A 股年报合并数）。2025 年度已逐项对照五家 A 股年报"
                    "原文核验：营业收入/保险服务收入/归母净利润/总资产/股东权益/偿付能力/投资收益率/"
                    "新业务价值/ROE/EPS/BPS/员工数/总股本/退保率全部一致；2022 年（中国人寿为 2023 年）"
                    "接口为新旧准则混排行，不可直接同比，详见 data/tables/data_sources.txt。"
@@ -764,7 +764,7 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
         "name": name,
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("东方财富港股 F10 主要指标接口 RPT_HKF10_FN_MAININDICATOR（各期年报数），"
+        "source": ("东方财富港股公司数据接口（主要指标） RPT_HKF10_FN_MAININDICATOR（各期年报数），"
                    "投资收益率、偿付能力充足率、寿险新业务价值、投资资产、员工数与逐年股息"
                    "取自港交所 HKEXnews 中文年报原文（data/raw/annual_00966_2007~2025.pdf，"
                    "见 HK_REPORT_00966 手工表）。"

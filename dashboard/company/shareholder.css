@@ -1,0 +1,62 @@
+/* 股权结构页（shareholder.html）自己的样式 —— 通用部分在 ../common/base.css 与 page.css 里。
+ * 只放这一页特有的三块：① 板块/公司切换导航条上的下拉框；② 双层环形图的圈序开关与
+ * 点击标注行弹出的全称框；③ 股东明细弹层（含表格列对齐规矩）。 */
+body { background: #f5f6f8; }
+
+/* 主体口径那条提示：琥珀色左边框，与页面正文的灰蓝区分开 */
+.entity { margin: 10px 0 0; padding: 12px 16px; background: #fff7ed;
+          border-left: 4px solid #f59e0b; border-radius: 6px;
+          font-size: 17px; color: #78350f; line-height: 1.7; }
+
+/* 成员多的板块（银行 45 家）用下拉切换，导航条里的 select 跟着深色导航配色 */
+.site-nav select { font-size: 15px; padding: 3px 6px; border-radius: 6px;
+                   border: 1px solid #4b5563; background: #1f2937; color: #f9fafb; max-width: 220px; }
+.site-nav .sep { flex: 0 0 14px; }
+
+td.num, th.num { white-space: nowrap; }
+td.nm { text-align: left; }
+td.nat { text-align: left; color: #6b7280; }
+.gap-list { margin: 6px 0 0 18px; font-size: 17px; color: #555; line-height: 1.8; }
+.chart-card { padding: 14px 18px 20px; margin-bottom: 20px; }
+.note-more > summary { cursor: pointer; color: #1d4ed8; font-size: 15px; }
+.note-more > div { margin-top: 6px; padding-left: 10px; border-left: 3px solid #e5e7eb; }
+
+/* 环形图右上角的圈序按钮：只是个开关，字号比正文小一档，免得抢掉图的注意力 */
+.ring-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.ring-hd button { font: inherit; font-size: 14px; line-height: 1.5; padding: 3px 10px;
+                  border: 1px solid #cfc6d8; background: #fff; color: #4a2a5a;
+                  border-radius: 12px; cursor: pointer; white-space: nowrap; }
+
+/* 点击标注行弹出的全称框：贴在那一行下面（下面放不下就翻到上面），太长就折行。
+ * 带边框和投影，跟画布上的文字明显分层，不假装是同一行。 */
+#row-full { position: absolute; display: none; z-index: 60; max-width: 560px;
+            background: #fff; border: 1px solid #d8cfe0; border-radius: 10px;
+            padding: 12px 16px; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+            font-size: 20px; line-height: 1.6; word-break: break-all; pointer-events: none; }
+
+/* 股东明细弹层：表比一屏长时在框内滚，滚动区是内层 #det-body ——
+ * 让 .modal-box 自己滚会把竖滚动条压在右侧圆角上、看着右边被切平；交给内层后
+ * 滚动条落在 22px 的内边距里，四角完好。表头 sticky 钉在滚动区顶部。 */
+.modal { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.35);
+         display: none; z-index: 99; overflow: auto; }
+.modal.on { display: block; }
+.modal-box { position: relative; margin: 2vh auto; width: 1320px; max-width: 96vw;
+             box-sizing: border-box; max-height: 92vh; display: flex; flex-direction: column;
+             overflow: hidden; background: #fff; border-radius: 10px; padding: 14px 22px 22px;
+             box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+#det-body { overflow: auto; flex: 1; min-height: 0; }
+/* 只剩一个关闭按钮，靠右；标题与口径说明那一行不要（图上方已有同样的信息） */
+.modal-hd { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+.modal-hd button { font: inherit; font-size: 18px; line-height: 1; color: #888;
+                   background: none; border: 0; cursor: pointer; padding: 4px 6px; }
+.modal thead th { position: sticky; top: 0; z-index: 1; }
+.modal th.tl, .modal td.tl { text-align: left; }
+/* 只有数字列不许折行（金额折成两半就读不成数了）；文字列该折就折 */
+.modal th.num, .modal td.num { white-space: nowrap; }
+/* 分组列的值都很短（汇金系／社保基金／ETF），却会被挤成「社保基 金」，一律不折 */
+.modal th.fac, .modal td.fac { text-align: left; white-space: nowrap; }
+.modal td.nat { text-align: left; color: #777; }
+.modal td.idx { color: #aaa; width: 34px; }
+.modal .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px;
+             vertical-align: -2px; margin-right: 6px; }
+.modal .tag { color: #999; font-size: 14px; margin-left: 6px; }

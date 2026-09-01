@@ -520,7 +520,7 @@ def build_bank(code: str, refresh: bool) -> dict:
         "name": name,
         "tier": tier,
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": "东方财富 F10 数据接口（取值源自各期年度报告，合并口径）",
+        "source": "东方财富公司数据接口（取值源自各期年度报告，合并口径）",
         "unit_note": "金额字段单位为元；比率字段单位为 %",
         "annual": annual,
         "holders_end_date": latest_end,
@@ -614,7 +614,7 @@ def build_bank_hk(code: str, refresh: bool) -> dict:
         "tier": tier,
         "currency": "CNY",
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "source": ("① 东方财富港股 F10 主要指标 RPT_HKF10_FN_MAININDICATOR（各期年报数）提供"
+        "source": ("① 东方财富港股公司数据接口（主要指标） RPT_HKF10_FN_MAININDICATOR（各期年报数）提供"
                    "现金流量、营业利润、每股经营现金流；② 其余字段（含全部银行监管指标）取自"
                    f"{name}历年 H 股年度报告原文，见 data/tables/bank_{code}_ar_manual.json。"
                    f"{name}仅在港交所上市（{secucode}），无 A 股年报，因此不适用"
