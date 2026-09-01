@@ -152,9 +152,16 @@ function renderHead(d) {
     const title = c.name + '（' + (c.secucode || c.code) + '）· 股权结构';
     document.title = title;
     document.getElementById('page-title').textContent = title;
+    /* 两地代码：同一家公司在 A 股／港交所／美股各有一个代码，?code= 给哪个都落到这一家
+     * （company_codes.json 的对应表）；两地不是同一法人的（中国联通 A 股与红筹）接口会拒绝互换 */
+    const cd = c.codes || {};
+    const mkts = [cd.a ? 'A 股 ' + cd.a : '', cd.h ? 'H 股 ' + cd.h : '', cd.us ? '美股 ' + cd.us : '']
+        .filter(Boolean).join(' · ');
     document.getElementById('page-meta').innerHTML =
-        d.label + (c.tag ? ' · ' + c.tag : '') + ' · 报告期末 <b>' + (c.holders_end_date || '—') +
+        d.label + (c.tag ? ' · ' + c.tag : '') + (mkts ? ' · ' + mkts : '') +
+        ' · 报告期末 <b>' + (c.holders_end_date || '—') +
         '</b> 的前十名股东快照 · 比例分母为总股本 ' + shareFmt(base) + '<br>' +
+        (c.code_note ? '<b>' + c.code_note + '</b><br>' : '') +
         '全站只有这一页股权结构（' + INDUSTRIES.map(i => i.label).join(' / ') +
         ' 共用，只有顶部导航按板块不同），数据层有多少就画多少图';
 
@@ -198,6 +205,12 @@ function typeColor(t) {
 
 function buildCharts(d, agg) {
     const c = d.company, holders = c.holders || [];
+    /* 每张图下那段解读由接口按本公司自己的序列现算（narrative.<图 id>），
+     * 原先银行那套年报口径股东页把这些话写死在 HTML 里，只对渝农商行成立；
+     * 现在缺哪层数据就少哪段话，通用说明照旧接在后面。 */
+    const NAR = c.narrative || {};
+    const nar = id => (NAR[id] && NAR[id].text) ? mdBold(NAR[id].text) + ' ' : '';
+    const narDetail = id => (NAR[id] && NAR[id].detail) ? mdBold(NAR[id].detail) + '<br>' : '';
 
     // ① 前十名股东各自的比例（横向条形，按股份类别着色）
     if (holders.length) {
@@ -205,7 +218,8 @@ function buildCharts(d, agg) {
         const ch = chartCard({
             id: 'holders', title: '前十名股东持股比例',
             sub: '横条：占总股本（%）· 颜色按股份类别（A 股／H 股／限售股，百度按 A 类／B 类）',
-            note: '这张图与上面环形图是同一批数字的两种读法：环形图看的是<b>分组结构</b>' +
+            note: nar('holders') +
+                '这张图与上面环形图是同一批数字的两种读法：环形图看的是<b>分组结构</b>' +
                 '（谁和谁是一伙的、名册外还剩多少），横条看的是<b>逐名股东的量级差</b> —— ' +
                 '第一名与第二名差几倍，这在环形图的角度上不好比。',
             detail: '<b>比例分母是总股本：</b>H 股与 A 股同在一张名册上，按 A 股基数重算会把 H 股股东的比例放大到荒谬值。<br>' +
@@ -284,10 +298,12 @@ function buildCharts(d, agg) {
         const ch = chartCard({
             id: 'holdernum', title: '股东户数（逐披露期）',
             sub: '线：定期报告披露的股东总数（户）· A/H 拆分只有少数期次披露，其余留空断线',
-            note: '户数下行通常意味着筹码集中（散户离场或被机构吸收），上行意味着分散。' +
+            note: nar('holdernum') +
+                '户数下行通常意味着筹码集中（散户离场或被机构吸收），上行意味着分散。' +
                 '上市首日附近的高点是打新账户尚未离场的峰值，' +
                 '<b>本图保留这类非报告期快照</b>，因为那正是户数曲线最有信息量的一个点。',
-            detail: '<b>口径：</b>HOLDER_TOTAL_NUM 为该期定期报告披露的股东总数（A 股上市公司口径，' +
+            detail: narDetail('holdernum') +
+                '<b>口径：</b>HOLDER_TOTAL_NUM 为该期定期报告披露的股东总数（A 股上市公司口径，' +
                 'A+H 行含 H 股登记股东）；A/H 拆分字段多数期次为空，不插值。' +
                 '目前只有银行板块的数据表带这一层，其余板块缺省。'
         }, '52vh');
@@ -343,7 +359,7 @@ function buildCharts(d, agg) {
             id: 'concseries', title: '持股集中度（逐披露期）',
             sub: '线：' + s.map(x => x.name).join('／') + '（%）· 分母为总股本' +
                 (hasVote ? '，投票权那条的分母为总表决权' : ''),
-            note: notes.join(' '),
+            note: nar('concseries') + notes.join(' '),
             detail: '这一层<b>银行表自带</b>（<code>holder_concentration</code>），其余板块由手工层' +
                 '（逐年年报「前十名股东」表原文）补齐后同样会出现 —— 页面结构一套，图随数据层增减。' +
                 '剔代理人那两条只有名册里确有港股代理人时才画，投票权那条只有同股不同权的公司才有。'
@@ -379,11 +395,11 @@ function buildCharts(d, agg) {
                 (brk ? (brk.factor
                     ? ' · 竖虚线为口径断点，左侧各年按 1 拆 ' + brk.factor + ' 折算（描边浅柱）'
                     : ' · 竖虚线为口径断点') : ''),
-            note: (brk ? mdBold(brk.text) + ' ' : '') +
+            note: (brk ? mdBold(brk.text) + ' ' : '') + nar('sharecap') +
                 '股本台阶是判断摊薄与融资节奏的第一层信息。' +
                 '<b>本图不用接口的 total_share</b>：那是当前值被回填到每一年（历年完全相同），' +
                 '台阶在那份数据里根本看不出来；这里逐年取自年报「股份变动情况表」。',
-            detail: (c.history_source ? mdBold(c.history_source) : '') +
+            detail: narDetail('sharecap') + (c.history_source ? mdBold(c.history_source) : '') +
                 '<br>「变动原因」为年报原文摘要，未变动的年份原文写「未变动」，不做推测。'
         }, '46vh');
         ch.setOption({
@@ -434,9 +450,10 @@ function buildCharts(d, agg) {
             id: 'divper10', title: '历年每 10 股分红',
             sub: '柱：各年度每 10 股派现（' + (c.dividend_unit || '元') +
                 '，含税 · 按年度累计，中期＋末期合并）',
-            note: '与股东结构一起看：股东高度集中的公司，分红更像是向控股方的现金回流；' +
+            note: nar('divper10') +
+                '与股东结构一起看：股东高度集中的公司，分红更像是向控股方的现金回流；' +
                 '分散持股的公司，分红率变化直接影响二级市场的持有成本。',
-            detail: (c.history_source ? mdBold(c.history_source) : '') +
+            detail: narDetail('divper10') + (c.history_source ? mdBold(c.history_source) : '') +
                 '<br>只画年报／分红公告里明确写出的数，未分红的年份记 0（原文依据在数据层里），不插值。' +
                 (c.dividend_unit === '港元' ? '<br><b>本公司的股息以港元宣派</b>，年报明确人民币金额要按' +
                     '股东周年大会前一周的汇率折算，所以这里照港元画，<b>不做汇率换算</b>。' : '')
@@ -536,6 +553,8 @@ function renderGaps(d) {
  * 没有任何按公司手调的常量。原型见 bank/_preview_holders_merged.html。
  */
 var RING_ORDER = 'detail-in';    /* detail-in = 明细在内 / 分组在外；fac-in = 反过来 */
+/* -1 = 主口径（最新年报／接口快照），>=0 = ring_alt 里的第几个附加口径 */
+var RING_ALT_I = -1;
 var RING_LABEL = '占总股本';      /* 比例口径，跟本页其余部分一致（分母为总股本） */
 var HATCH_CACHE = {};
 /* 斜线纹理工厂：底色 + 斜线色，10×10 平铺；同一组合只画一次 */
@@ -1262,6 +1281,19 @@ function closeDetail() { document.getElementById('det-modal').classList.remove('
  * 那套标准模板画的就是这一份：holderData 已含「其他流通股东」、factions 引用同一套名字）；
  * 没有 ring 的板块退回接口快照 + 手工分组，前十名之外那一块由 normalizeRing 自动补差额。 */
 function ringBlock(c) {
+    /* 切到附加口径（H 股年报那两张）时用那一块的数据与残余项叫法 */
+    var alt = (c.ring_alt || [])[RING_ALT_I];
+    if (alt) {
+        RING_LABEL = alt.caliber || '占总股本';
+        return {
+            residualLabel: alt.residual_label || c.residual_label || '其他股东',
+            factions: alt.factions || [],
+            holderData: alt.holderData.map(function (h) {
+                return {name: h.name, value: h.value, type: h.type || '', shares: 0,
+                    chg: null, chgText: h.chgText || ''};
+            })
+        };
+    }
     if (c.ring && c.ring.holderData && c.ring.holderData.length) {
         RING_LABEL = c.ring.caliber || '占总股本';
         return {
@@ -1292,19 +1324,28 @@ function ringBlock(c) {
         })
     };
 }
+/* 环形图上方那行说明：口径切换后要跟着换（附加口径的分母、年份都与主口径不同） */
+function ringSub(d) {
+    var c = d.company, alt = (c.ring_alt || [])[RING_ALT_I];
+    document.getElementById('ring-sub').innerHTML =
+        '内圈每一块是一名股东，外圈把他们归成分组（点右上角按钮两圈互换）· 比例为' + RING_LABEL +
+        '，合计不足 100% 的部分自动补成「' + RING_BLOCK.residualLabel + '」· ' +
+        '点右侧任一行看全称，点「股东明细」出全量表格<br>' +
+        (alt ? '当前口径：<b>' + alt.label + '</b>（与主口径不是同一年、也不一定是同一个分母，' +
+            '见图下说明）'
+            : (c.ring ? '数据为<b>' + (c.ring_label || '年报口径') +
+                '</b>（一致行动人归并、含「其他流通股东」铺满 100%，' +
+                '就是原先银行那一页年报口径股东页画的那份）'
+                : '数据为<b>' + (c.holders_caliber || '接口口径的前十名股东快照') + '</b>（报告期末 ' +
+                (c.holders_end_date || '—') + '）'));
+}
+
 function buildRing(d) {
     var c = d.company;
     if (!c.holders || !c.holders.length) return;
     RING_BLOCK = ringBlock(c);
     document.getElementById('sec-ring').hidden = false;
-    document.getElementById('ring-sub').innerHTML =
-        '内圈每一块是一名股东，外圈把他们归成分组（点右上角按钮两圈互换）· 比例为' + RING_LABEL +
-        '，合计不足 100% 的部分自动补成「' + RING_BLOCK.residualLabel + '」· ' +
-        '点右侧任一行看全称，点「股东明细」出全量表格<br>' +
-        (c.ring ? '数据为<b>年报口径</b>（一致行动人归并、含「其他流通股东」铺满 100%，' +
-            '就是原先银行那一页年报口径股东页画的那份）'
-            : '数据为<b>' + (c.holders_caliber || '接口口径的前十名股东快照') + '</b>（报告期末 ' +
-            (c.holders_end_date || '—') + '）');
+    ringSub(d);
     RCHART = echarts.init(document.getElementById('chart-ring'));
     /* 环上悬浮：不弹浮层，只把对应的明细行 / 分组行点亮；
      * 移出图外时 zrender 只给 globalout，series 的 mouseout 不一定到，两个都接。 */
@@ -1327,6 +1368,30 @@ function buildRing(d) {
         btn.textContent = RING_ORDER === 'detail-in' ? '内圈：股东明细' : '内圈：股东分组';
         ringRender();
     };
+    /* 口径切换按钮：只有数据层给了附加口径的公司才出现（渝农商行的两张 H 股年报环形图）。
+     * 切口径要连带换掉上方说明与图下的口径注 —— 分母与年份都不一样，说明不换就成了串口径。 */
+    if (c.ring_alt && c.ring_alt.length) {
+        var hd = document.querySelector('#sec-ring .ring-hd');
+        var labels = [c.ring_label || '最新年报 · 占总股本'].concat(
+            c.ring_alt.map(function (a) { return a.label; }));
+        var btns = labels.map(function (label, k) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = label;
+            b.title = '切换环形图口径';
+            b.onclick = function () {
+                RING_ALT_I = k - 1;
+                RING_BLOCK = ringBlock(c);
+                btns.forEach(function (x, j) { x.style.opacity = (j === k) ? '1' : '.55'; });
+                ringRender();
+                ringSub(d);
+                renderRingNote(d);
+            };
+            hd.appendChild(b);
+            return b;
+        });
+        btns.forEach(function (x, j) { x.style.opacity = j === 0 ? '1' : '.55'; });
+    }
     document.getElementById('det-close').onclick = closeDetail;
     document.getElementById('det-modal').onclick = function (e) {
         if (e.target.id === 'det-modal') closeDetail();
@@ -1342,6 +1407,7 @@ function buildRing(d) {
  * 与本项目按股东性质做的同类归并是两件事，混着读会把后者当成前者。 */
 function renderRingNote(d) {
     var c = d.company, rows = FAC_ROWS.filter(function (g) { return !g.residual; });
+    var alt = (c.ring_alt || [])[RING_ALT_I];
     var byBasis = {};
     rows.forEach(function (g) {
         var k = g.basis || '未标注依据';
@@ -1351,6 +1417,7 @@ function renderRingNote(d) {
         return '<b>' + k + '</b>：' + byBasis[k].join('、');
     });
     document.getElementById('ring-note').innerHTML =
+        (alt && alt.note ? mdBold(alt.note) + '<br>' : '') +
         '外圈一共 ' + rows.length + ' 组' +
         (leftRows().length ? '（名册外的那一块挂在图左边）' : '') + '。' +
         '<b>「同类归并」不是年报披露的一致行动人</b>，只是本项目按股东性质归的堆；' +

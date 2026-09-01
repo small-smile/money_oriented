@@ -879,4 +879,49 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #         A 类 1 票 / B 类 10 票的双重股权自 2005 年 IPO 起就有, 只是 FY2019 及以前的表不分列 A/B 股数, 也不给投票权%.
 #     集中度图与股本图的说明文字跟着实际画出来的线走: 剔代理人那两条只有名册里确有港股代理人时才画,
 #     投票权那条只有同股不同权的公司才有 —— 不许把银行页「实线与虚线的差额就是港股代理人」那句原样印到别的公司页上.
+#
+# ── 代码 ↔ 公司对应表 (2026-09-01) ────────────────────────────────────────────
+#   data/tables/company_codes.json (生成脚本 data/extract/build_company_codes.py,
+#   底稿 data/extract/out/company_codes_draft.json —— 逐条带本地出处, 不联网、不凭常识补代码):
+#     70 家实体, A+H 双代码 25 家, 纯 H 股 11 家, 仅 A 股 34 家; H 股代码一律补零到 5 位(03618/00941).
+#     每条 = {key, short, full, industry, a_code, h_code, us_code, tier, same_entity, note, sources};
+#     key 为实体唯一键(有 A 股用 A 股代码, 纯 H 股用 H 股代码), 与 HOLDER_INDUSTRIES 登记的代码一致.
+#     出处: 银行取 company_charts_<code>.json 的 _bank 块(aCode/hCode/fullName/tier)+ bank-header.js 的两地上市日;
+#     其余板块取 dashboard/industry/<行业>/overview.html 的 A/H 概览表 + <板块>_<code>_annual.json 的 name/secucode.
+#     用途: /api/holders?code= 给 H 股或美股代码时换成同一家公司在本板块名单里的代码(backend _resolve_company_code),
+#     换过的在 payload 里给 code_note(「01398 与 601398 是同一家公司(工商银行)的两地代码, 已按 601398 取数」),
+#     页头同时印「A 股 xxx · H 股 xxx · 美股 xxx」. 百度: h_code=09888 / us_code=BIDU 同一法人, 给 BIDU 也能取到.
+#     **same_entity=false 不当同一家**: 中国联通 A 股 600050(中国联合网络通信股份有限公司)与红筹 00762
+#     不是同一法人, 给 00762 接口返回 404 并把原因写在 msg 里(不静默换成 600050); 底稿 gaps 里另记着
+#     两处本地出处对「谁在上谁在下」说法相反(overview.html 说红筹在上、A 股 2025 年报释义把红筹定为子公司), 未裁定.
+#     一个代码只能指向一家公司: 生成时断言撞号(002233 塔牌 vs 02233 西部水泥这类必须在底稿里就分清).
+#
+# ── 每张图下的解读文字 (2026-09-01) ──────────────────────────────────────────
+#   原先银行那页年报口径股东页把「本年分红多少/股本哪几年动过/户数从多少到多少/集中度区间与第一大股东是谁」
+#   写死在 HTML 里(只对渝农商行成立). 页面合成一页后改由接口现算: /api/holders 的 company.narrative =
+#   {holders|concseries|holdernum|sharecap|divper10: {text, detail?}}, 加粗用 **…**(前端 mdBold 转 <b>), 不下发 HTML.
+#   全部从**本公司自己的序列**算, 所以七个板块任何 code 都有话可说, 缺哪层就少哪段(测试 test_narrative_is_per_company
+#   逐家断言每段都带本公司名字、且有那一层数据才有那一段):
+#     分红: 每 10 股派现 → 现金分红总额(= 每 10 股 ÷ 10 × 当年末股份总数) → 分红率(÷ 当年归母净利润) → 近 5 年累计.
+#       股份总数**优先用本页那条股本序列**(逐年抄年报股份变动表的股数); 没有序列的板块才退回 annual 表的 share_capital,
+#       且要过一道合理性检查(与 total_share 相差 >25% 就弃用) —— 中国移动 annual.share_capital 是 468 亿「元」而总股本
+#       只有 216 亿股(该科目含发行溢价), 不检查就会把分红总额算大 20 倍. 港元宣派的公司不与人民币利润相除, 只写明原因.
+#     股本: 区间两端股数 + 哪几年动过各动多少(有口径断点的按断点后口径折算再比, 拆股不算一次增发);
+#       变动年份多于 10 个的只列幅度最大的 8 个 + 其余的上限值; 逐次成因(年报原文)收进「展开详细口径」.
+#     户数/集中度: 披露期数、区间、起止与极值、A/H 拆分覆盖期数; 集中度给前十大区间(含出现的期次)与期末第一大股东,
+#       剔代理人那句只在与第一大股东不同名时才写.
+#   分红序列统一成 [[年, 值]]: annual 表里那份是「年→值」的字典, 原先直接下发, 前端 length 为 undefined,
+#   险企/开发商/水泥三个板块的分红图一直静默不画(现已出图, 测试 test_dividend_series_is_array 兜底).
+#
+# ── 环形图的附加口径 (2026-09-01) ────────────────────────────────────────────
+#   渝农商行 2010-12 在港上市、2019-10-29 才上 A 股, H 股年报只到 2018、A 股年报从 2019 起, **两边没有重叠年份**;
+#   原先那页把两张 H 股年报环形图并排画在主图右边并写了口径说明, 页面合成一页后改成图上按钮切口径:
+#     数据: company_charts_601077.json 的 holders-h(H 股年报 2018 · 占总股本, 第一大「香港中央结算(代理人)」25.13%
+#       是 H 股名义持有人账户, 代持全部 H 股)与 holders-h-only(同一份年报「重大权益和淡仓」章节, 依 SFO 披露的
+#       持 H 股 ≥5% 主要股东, **分母是已发行 H 股总股本 25.13 亿股**, BlackRock 13.84% 已并其受控法团, 合计 33.25%);
+#     标签与口径说明: holders_manual.json 的 "bank:601077".ring_alt_meta(main_label / 各 key 的 label/caliber/
+#       residual_label/note), build_holders_manual.py 生成时断言 company_charts 里确有那两块;
+#     下发: /api/holders 的 company.ring_alt = [{key,label,caliber,residual_label,note,holderData,factions}] +
+#       company.ring_label; 没写口径说明的块不下发(分母是总股本还是 H 股股本、取哪一年年报, 说不清的不让人切过去看).
+#     切换后上方口径说明与图下口径注一起换, 每圈各自铺满 100%(测试 test_ring_alt_calibers 逐块核对).
 

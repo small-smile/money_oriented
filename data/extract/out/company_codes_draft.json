@@ -1,0 +1,1303 @@
+{
+ "entities": [
+  {
+   "key": "000001",
+   "short": "平安银行",
+   "full": "平安银行股份有限公司",
+   "industry": "bank",
+   "a_code": "000001",
+   "h_code": null,
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_000001.json:1 → _bank.aCode=\"000001\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_000001_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:203 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:56 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "001227",
+   "short": "兰州银行",
+   "full": "兰州银行股份有限公司",
+   "industry": "bank",
+   "a_code": "001227",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_001227.json:1 → _bank.aCode=\"001227\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_001227_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:225 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:77 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002142",
+   "short": "宁波银行",
+   "full": "宁波银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002142",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_002142.json:1 → _bank.aCode=\"002142\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002142_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:213 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:64 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002807",
+   "short": "江阴银行",
+   "full": "江苏江阴农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002807",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_002807.json:1 → _bank.aCode=\"002807\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002807_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:250 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:83 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002839",
+   "short": "张家港行",
+   "full": "江苏张家港农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002839",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_002839.json:1 → _bank.aCode=\"002839\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002839_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:251 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:85 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002936",
+   "short": "郑州银行",
+   "full": "郑州银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002936",
+   "h_code": "06196",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_002936.json:1 → _bank.aCode=\"002936\" / _bank.hCode=\"06196\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002936_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:219 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:69 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002948",
+   "short": "青岛银行",
+   "full": "青岛银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002948",
+   "h_code": "03866",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_002948.json:1 → _bank.aCode=\"002948\" / _bank.hCode=\"03866\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002948_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:220 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:70 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002958",
+   "short": "青农商行",
+   "full": "青岛农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002958",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_002958.json:1 → _bank.aCode=\"002958\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002958_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:246 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:81 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "002966",
+   "short": "苏州银行",
+   "full": "苏州银行股份有限公司",
+   "industry": "bank",
+   "a_code": "002966",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_002966.json:1 → _bank.aCode=\"002966\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_002966_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:221 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:72 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "01578",
+   "short": "天津银行",
+   "full": "天津银行股份有限公司",
+   "industry": "bank",
+   "a_code": null,
+   "h_code": "01578",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "纯 H 股行：_bank 块的 aCode 与 hCode 都是空字符串，H 代码取文件名/annual 表 secucode（01578.HK）；bank_01578_annual.json 的 source 明确「仅在港交所上市，无 A 股年报」",
+   "sources": [
+    "data/tables/company_charts_01578.json:1 → _bank.aCode=\"\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_01578_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:232 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:89 → aListDate / hListDate",
+    "data/raw/annual_01578_2025.txt:1-2（封面「(於中華人民共和國註冊成立的股份有限公司) (股份代號 : 1578)」）、:10（天津銀行股份有限公司）"
+   ]
+  },
+  {
+   "key": "01916",
+   "short": "江西银行",
+   "full": "江西银行股份有限公司",
+   "industry": "bank",
+   "a_code": null,
+   "h_code": "01916",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "纯 H 股行：_bank 块的 aCode 与 hCode 都是空字符串，H 代码取文件名/annual 表 secucode（01916.HK）；bank_01916_annual.json 的 source 明确「仅在港交所上市，无 A 股年报」",
+   "sources": [
+    "data/tables/company_charts_01916.json:1 → _bank.aCode=\"\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_01916_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:234 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:90 → aListDate / hListDate",
+    "data/raw/annual_01916_2025.txt:1-3、:53（法定中文名稱 江西銀行股份有限公司）、:60（股份代號 1916）、:74（H股股票上市交易所）"
+   ]
+  },
+  {
+   "key": "06138",
+   "short": "哈尔滨银行",
+   "full": "哈尔滨银行股份有限公司",
+   "industry": "bank",
+   "a_code": null,
+   "h_code": "06138",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "纯 H 股行：_bank 块的 aCode 与 hCode 都是空字符串，H 代码取文件名/annual 表 secucode（06138.HK）；bank_06138_annual.json 的 source 明确「仅在港交所上市，无 A 股年报」",
+   "sources": [
+    "data/tables/company_charts_06138.json:1 → _bank.aCode=\"\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_06138_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:229 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:91 → aListDate / hListDate",
+    "data/raw/annual_06138_2025.txt:1-4（哈爾濱銀行股份有限公司，股份代號 6138）"
+   ]
+  },
+  {
+   "key": "600000",
+   "short": "浦发银行",
+   "full": "上海浦东发展银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600000",
+   "h_code": null,
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600000.json:1 → _bank.aCode=\"600000\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600000_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:198 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:53 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600015",
+   "short": "华夏银行",
+   "full": "华夏银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600015",
+   "h_code": null,
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600015.json:1 → _bank.aCode=\"600015\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600015_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:202 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:57 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600016",
+   "short": "民生银行",
+   "full": "中国民生银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600016",
+   "h_code": "01988",
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_600016.json:1 → _bank.aCode=\"600016\" / _bank.hCode=\"01988\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600016_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:200 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:55 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600036",
+   "short": "招商银行",
+   "full": "招商银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600036",
+   "h_code": "03968",
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_600036.json:1 → _bank.aCode=\"600036\" / _bank.hCode=\"03968\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600036_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:196 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:51 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600908",
+   "short": "无锡银行",
+   "full": "无锡农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600908",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600908.json:1 → _bank.aCode=\"600908\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600908_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:248 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:82 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600919",
+   "short": "江苏银行",
+   "full": "江苏银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600919",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600919.json:1 → _bank.aCode=\"600919\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600919_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:210 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:63 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600926",
+   "short": "杭州银行",
+   "full": "杭州银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600926",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600926.json:1 → _bank.aCode=\"600926\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600926_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:214 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:67 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "600928",
+   "short": "西安银行",
+   "full": "西安银行股份有限公司",
+   "industry": "bank",
+   "a_code": "600928",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_600928.json:1 → _bank.aCode=\"600928\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_600928_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:224 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:76 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601009",
+   "short": "南京银行",
+   "full": "南京银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601009",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601009.json:1 → _bank.aCode=\"601009\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601009_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:212 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:65 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601077",
+   "short": "渝农商行",
+   "full": "重庆农村商业银行",
+   "industry": "bank",
+   "a_code": "601077",
+   "h_code": "03618",
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601077.json:1 → _bank.aCode=\"601077\" / _bank.hCode=\"03618\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601077_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:242 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:42 → aListDate / hListDate",
+    "data/raw/annual_03618_2010.txt:1-2（「重慶農村商業銀行股份有限公司 股份代號：3618」，H 股年报原文）"
+   ]
+  },
+  {
+   "key": "601128",
+   "short": "常熟银行",
+   "full": "江苏常熟农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601128",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601128.json:1 → _bank.aCode=\"601128\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601128_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:244 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:80 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601166",
+   "short": "兴业银行",
+   "full": "兴业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601166",
+   "h_code": null,
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601166.json:1 → _bank.aCode=\"601166\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601166_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:197 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:52 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601169",
+   "short": "北京银行",
+   "full": "北京银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601169",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601169.json:1 → _bank.aCode=\"601169\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601169_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:209 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:61 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601187",
+   "short": "厦门银行",
+   "full": "厦门银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601187",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601187.json:1 → _bank.aCode=\"601187\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601187_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:223 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:68 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601229",
+   "short": "上海银行",
+   "full": "上海银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601229",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601229.json:1 → _bank.aCode=\"601229\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601229_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:211 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:62 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601288",
+   "short": "农业银行",
+   "full": "中国农业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601288",
+   "h_code": "01288",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601288.json:1 → _bank.aCode=\"601288\" / _bank.hCode=\"01288\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601288_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:190 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:45 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601328",
+   "short": "交通银行",
+   "full": "交通银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601328",
+   "h_code": "03328",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601328.json:1 → _bank.aCode=\"601328\" / _bank.hCode=\"03328\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601328_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:192 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:48 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601398",
+   "short": "工商银行",
+   "full": "中国工商银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601398",
+   "h_code": "01398",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601398.json:1 → _bank.aCode=\"601398\" / _bank.hCode=\"01398\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601398_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:188 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:44 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601528",
+   "short": "瑞丰银行",
+   "full": "浙江绍兴瑞丰农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601528",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601528.json:1 → _bank.aCode=\"601528\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601528_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:247 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:86 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601577",
+   "short": "长沙银行",
+   "full": "长沙银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601577",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601577.json:1 → _bank.aCode=\"601577\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601577_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:216 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:71 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601658",
+   "short": "邮储银行",
+   "full": "中国邮政储蓄银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601658",
+   "h_code": "01658",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601658.json:1 → _bank.aCode=\"601658\" / _bank.hCode=\"01658\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601658_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:193 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:49 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601665",
+   "short": "齐鲁银行",
+   "full": "齐鲁银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601665",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601665.json:1 → _bank.aCode=\"601665\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601665_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:222 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:74 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601818",
+   "short": "光大银行",
+   "full": "中国光大银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601818",
+   "h_code": "06818",
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601818.json:1 → _bank.aCode=\"601818\" / _bank.hCode=\"06818\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601818_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:201 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:58 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601825",
+   "short": "沪农商行",
+   "full": "上海农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601825",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601825.json:1 → _bank.aCode=\"601825\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601825_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:243 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:79 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601838",
+   "short": "成都银行",
+   "full": "成都银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601838",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601838.json:1 → _bank.aCode=\"601838\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601838_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:215 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:66 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601860",
+   "short": "紫金银行",
+   "full": "江苏紫金农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601860",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601860.json:1 → _bank.aCode=\"601860\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601860_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:245 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:84 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601916",
+   "short": "浙商银行",
+   "full": "浙商银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601916",
+   "h_code": "02016",
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601916.json:1 → _bank.aCode=\"601916\" / _bank.hCode=\"02016\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601916_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:204 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:59 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601939",
+   "short": "建设银行",
+   "full": "中国建设银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601939",
+   "h_code": "00939",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601939.json:1 → _bank.aCode=\"601939\" / _bank.hCode=\"00939\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601939_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:189 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:47 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601963",
+   "short": "重庆银行",
+   "full": "重庆银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601963",
+   "h_code": "01963",
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601963.json:1 → _bank.aCode=\"601963\" / _bank.hCode=\"01963\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601963_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:218 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:73 → aListDate / hListDate",
+    "data/raw/hk_annual_01963_2013.txt 起共 13 份重庆银行 H 股年报存档（文件名即 01963）"
+   ]
+  },
+  {
+   "key": "601988",
+   "short": "中国银行",
+   "full": "中国银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601988",
+   "h_code": "03988",
+   "us_code": null,
+   "tier": "国有大行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601988.json:1 → _bank.aCode=\"601988\" / _bank.hCode=\"03988\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601988_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:191 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:46 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601997",
+   "short": "贵阳银行",
+   "full": "贵阳银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601997",
+   "h_code": null,
+   "us_code": null,
+   "tier": "城商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_601997.json:1 → _bank.aCode=\"601997\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601997_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:217 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:75 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601998",
+   "short": "中信银行",
+   "full": "中信银行股份有限公司",
+   "industry": "bank",
+   "a_code": "601998",
+   "h_code": "00998",
+   "us_code": null,
+   "tier": "股份行",
+   "same_entity": true,
+   "note": "A+H 同一法人（同一家中资银行的 A 股与 H 股），hCode 已按项目约定补零成 5 位",
+   "sources": [
+    "data/tables/company_charts_601998.json:1 → _bank.aCode=\"601998\" / _bank.hCode=\"00998\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_601998_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:199 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:54 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "603323",
+   "short": "苏农银行",
+   "full": "江苏苏州农村商业银行股份有限公司",
+   "industry": "bank",
+   "a_code": "603323",
+   "h_code": null,
+   "us_code": null,
+   "tier": "农商行",
+   "same_entity": true,
+   "note": "仅 A 股：_bank.hCode 为空，且 bank-header.js 该行无 hListDate，两处本地出处一致，判定无 H 股（未逐家回溯年报原文）",
+   "sources": [
+    "data/tables/company_charts_603323.json:1 → _bank.aCode=\"603323\" / _bank.hCode=\"\" / _bank.tier / _bank.fullName",
+    "data/tables/bank_603323_annual.json → name / secucode / source",
+    "dashboard/industry/bank/overview.html:249 → BANKS[].a / BANKS[].h",
+    "dashboard/common/bank-header.js:87 → aListDate / hListDate"
+   ]
+  },
+  {
+   "key": "601318",
+   "short": "中国平安",
+   "full": "中国平安保险（集团）股份有限公司",
+   "industry": "insurer",
+   "a_code": "601318",
+   "h_code": "02318",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；年报原文自述「在香港联合交易所主板(2318.HK)及上海证券交易所(601318.SH)两地上市」",
+   "sources": [
+    "data/tables/insurer_601318_annual.json → name=\"中国平安\" / secucode=\"601318.SH\" / source（各期 A 股年报合并数）",
+    "dashboard/industry/insurance/overview.html:158 → INSURERS[].a / .h",
+    "data/raw/annual_601318_2025.txt:155（两地上市表述）、:60（全称定义）"
+   ]
+  },
+  {
+   "key": "601628",
+   "short": "中国人寿",
+   "full": "中国人寿保险股份有限公司",
+   "industry": "insurer",
+   "a_code": "601628",
+   "h_code": "02628",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；A 股年报「公司股票简况」表同时列 A 股 601628 与 H 股 2628",
+   "sources": [
+    "data/tables/insurer_601628_annual.json → name / secucode=\"601628.SH\"",
+    "dashboard/industry/insurance/overview.html:159 → INSURERS[].a / .h",
+    "data/raw/annual_601628_2025.txt:4052（法定中文名称）、:4101-4103（股票简况 A 股 601628 / H 股 2628）"
+   ]
+  },
+  {
+   "key": "601601",
+   "short": "中国太保",
+   "full": "中国太平洋保险（集团）股份有限公司",
+   "industry": "insurer",
+   "a_code": "601601",
+   "h_code": "02601",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；A 股年报封二写明「H 股上市交易所：香港联合交易所有限公司 / H 股简称：中国太保 / H 股代号：02601」",
+   "sources": [
+    "data/tables/insurer_601601_annual.json → name / secucode=\"601601.SH\"",
+    "dashboard/industry/insurance/overview.html:160 → INSURERS[].a / .h",
+    "data/raw/annual_601601_2025.txt:579-583（H 股上市交易所/简称/代号 02601）、:78（全称）"
+   ]
+  },
+  {
+   "key": "601336",
+   "short": "新华保险",
+   "full": "新华人寿保险股份有限公司",
+   "industry": "insurer",
+   "a_code": "601336",
+   "h_code": "01336",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；年报正文直接写「A+H股上市公司，A股证券代码601336，H股证券代码01336」",
+   "sources": [
+    "data/tables/insurer_601336_annual.json → name / secucode=\"601336.SH\"",
+    "dashboard/industry/insurance/overview.html:161 → INSURERS[].a / .h",
+    "data/raw/annual_601336_2025.txt:222（A+H 代码表述）、:601（法定中文名称）、:676-680（股票简况两行）"
+   ]
+  },
+  {
+   "key": "601319",
+   "short": "中国人保",
+   "full": "中国人民保险集团股份有限公司",
+   "industry": "insurer",
+   "a_code": "601319",
+   "h_code": "01339",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人。注意同集团另有已上市子公司「中国财险」02328.HK（保险概览页把它单列在纯 H 股一栏），02328 不是 601319 的 H 股，不可当作 A/H 配对",
+   "sources": [
+    "data/tables/insurer_601319_annual.json → name / secucode=\"601319.SH\"",
+    "dashboard/industry/insurance/overview.html:162 → INSURERS[].a / .h",
+    "data/raw/annual_601319_2025.ocr.txt:11（「于2012年12月在香港联交所上市（H股股票代码：1339）」）、:78（法定中文名称）、:89（股票代码：1339）",
+    "dashboard/industry/insurance/overview.html:166 → 中国财险 2328.HK 单列为纯 H 股"
+   ]
+  },
+  {
+   "key": "00966",
+   "short": "中国太平",
+   "full": "中国太平保险控股有限公司",
+   "industry": "insurer",
+   "a_code": null,
+   "h_code": "00966",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，无 A 股主体；annual 表 source 明确「仅在港交所上市（00966.HK），无 A 股年报，不适用 A/H 优先取 A 的规则」",
+   "sources": [
+    "data/tables/insurer_00966_annual.json → name / secucode=\"00966.HK\" / source",
+    "dashboard/industry/insurance/overview.html:165 → INSURERS[].a / .h",
+    "data/raw/annual_00966_2025.txt:41（中國太平保險控股有限公司）、:83（China Taiping Insurance Holdings Company Limited）、:231（香港聯合交易所有限公司主板）"
+   ]
+  },
+  {
+   "key": "600048",
+   "short": "保利发展",
+   "full": "保利发展控股集团股份有限公司",
+   "industry": "developer",
+   "a_code": "600048",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股；全称的本地出处是别家银行年报里的董事兼职/关联方提及（非本公司年报，本地无 00688 式的自身年报存档）",
+   "sources": [
+    "data/tables/developer_600048_annual.json → name / secucode=\"600048.SH\" / source（A/H 都有时取 A 股口径）",
+    "dashboard/industry/realestate/overview.html:164 → DEVELOPERS[].a / .h / group",
+    "data/raw/annual_601916_2021.txt:4345（全称，间接出处）"
+   ]
+  },
+  {
+   "key": "001979",
+   "short": "招商蛇口",
+   "full": "招商局蛇口工业区控股股份有限公司",
+   "industry": "developer",
+   "a_code": "001979",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（深交所）；同集团另有港股「招商局置地」00978.HK，是不同上市主体，不可当作它的 H 股",
+   "sources": [
+    "data/tables/developer_001979_annual.json → name / secucode=\"001979.SZ\"",
+    "dashboard/industry/realestate/overview.html:165 → DEVELOPERS[].a / .h / group",
+    "dashboard/industry/realestate/overview.html:177 → 招商局置地 00978.HK（同集团另一上市平台）",
+    "data/raw/annual_600036_2023.txt:3902（全称 + 「深圳证券交易所上市公司」，间接出处）"
+   ]
+  },
+  {
+   "key": "000069",
+   "short": "华侨城A",
+   "full": "深圳华侨城股份有限公司",
+   "industry": "developer",
+   "a_code": "000069",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（深交所）",
+   "sources": [
+    "data/tables/developer_000069_annual.json → name / secucode=\"000069.SZ\"",
+    "dashboard/industry/realestate/overview.html:166 → DEVELOPERS[].a / .h / group",
+    "data/raw/annual_601818_2025.txt:11565（全称，间接出处）"
+   ]
+  },
+  {
+   "key": "00688",
+   "short": "中国海外发展",
+   "full": "中国海外发展有限公司",
+   "industry": "developer",
+   "a_code": null,
+   "h_code": "00688",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（00688.HK），无 A 股年报」。地产概览页把它归到「中国建筑集团」，但本地没有任何「A 股 601668 与 00688 是同一法人」的表述，因此不与任何 A 股代码配对",
+   "sources": [
+    "data/tables/developer_00688_annual.json → name / secucode=\"00688.HK\" / source",
+    "dashboard/industry/realestate/overview.html:169 → DEVELOPERS[].a / .h / group",
+    "data/raw/annual_601998_2024.txt:12142（「中国海外发展有限公司 香港 00688.HK」，间接出处）"
+   ]
+  },
+  {
+   "key": "01109",
+   "short": "华润置地",
+   "full": "华润置地有限公司",
+   "industry": "developer",
+   "a_code": null,
+   "h_code": "01109",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（01109.HK），无 A 股年报」",
+   "sources": [
+    "data/tables/developer_01109_annual.json → name / secucode=\"01109.HK\" / source",
+    "dashboard/industry/realestate/overview.html:170 → DEVELOPERS[].a / .h / group",
+    "data/raw/annual_601288_2012.txt:4274（全称，间接出处）"
+   ]
+  },
+  {
+   "key": "00817",
+   "short": "中国金茂",
+   "full": "中国金茂控股集团有限公司",
+   "industry": "developer",
+   "a_code": null,
+   "h_code": "00817",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（00817.HK），无 A 股年报」",
+   "sources": [
+    "data/tables/developer_00817_annual.json → name / secucode=\"00817.HK\" / source",
+    "dashboard/industry/realestate/overview.html:171 → DEVELOPERS[].a / .h / group",
+    "data/raw/annual_601336_2025.txt:102（全称）、:10193（同名主体，间接出处）"
+   ]
+  },
+  {
+   "key": "600585",
+   "short": "海螺水泥",
+   "full": "安徽海螺水泥股份有限公司",
+   "industry": "cement",
+   "a_code": "600585",
+   "h_code": "00914",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；A 股年报封面直接印「（A股：600585  H股：00914）」",
+   "sources": [
+    "data/tables/cement_600585_annual.json → name / secucode=\"600585.SH\" / source（「A+H 两地上市（H 股 00914.HK）」）",
+    "dashboard/industry/cement/overview.html:199 → CEMENTS[].a / .h / group",
+    "data/raw/annual_600585_2025.txt:5（封面 A/H 代码）、:266（法定中文名称）、:296-305（股票上市交易所 H 股 00914 / A 股 600585）"
+   ]
+  },
+  {
+   "key": "600801",
+   "short": "华新水泥",
+   "full": "华新建材集团股份有限公司",
+   "industry": "cement",
+   "a_code": "600801",
+   "h_code": "06655",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人；2025 年报股票简况已把 A 股与 H 股简称都改为「华新建材」（变更前「华新水泥」）。年报里 H 股代码写 4 位 6655，本项目按 overview.html:281-285 的约定补零成 06655",
+   "sources": [
+    "data/tables/cement_600801_annual.json → name / secucode=\"600801.SH\" / source（「A+H 两地上市（H 股 06655.HK）」）",
+    "dashboard/industry/cement/overview.html:201 → CEMENTS[].a / .h / group",
+    "data/raw/annual_600801_2025.txt:227（法定中文名称）、:265-267（股票简况 A 股 600801 / H 股 6655，变更前简称华新水泥）、:205-211（A股/H股定义）"
+   ]
+  },
+  {
+   "key": "000877",
+   "short": "天山股份",
+   "full": "天山材料股份有限公司",
+   "industry": "cement",
+   "a_code": "000877",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（深交所）。它是 03323.HK 中国建材的并表子公司/水泥业务平台——不同法人，不可把 03323 当成它的 H 股，也不可与 03323 相加做行业合计；另外 2025 年报的法定中文名称已改为「天山材料股份有限公司」，仓库里的简称仍是「天山股份」",
+   "sources": [
+    "data/tables/cement_000877_annual.json → name / secucode=\"000877.SZ\" / source（「本公司仅 A 股上市」）",
+    "dashboard/industry/cement/overview.html:200 → CEMENTS[].a / .h / group",
+    "dashboard/industry/cement/overview.html:190（口径提示：天山股份是中国建材 03323.HK 的并表子公司）",
+    "dashboard/industry/cement/peers.html:50（样本重叠提示）",
+    "backend_python.py:900（同一结论的代码注释）",
+    "data/raw/annual_000877_2025.txt:164-170（股票简况 + 公司的中文名称）"
+   ]
+  },
+  {
+   "key": "000401",
+   "short": "冀东水泥",
+   "full": "金隅冀东水泥集团股份有限公司",
+   "industry": "cement",
+   "a_code": "000401",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（深交所）；2025 年报股票简称已变更为「金隅冀东」（变更前「冀东水泥」）",
+   "sources": [
+    "data/tables/cement_000401_annual.json → name / secucode=\"000401.SZ\" / source（「本公司仅 A 股上市」）",
+    "dashboard/industry/cement/overview.html:202 → CEMENTS[].a / .h / group",
+    "data/raw/annual_000401_2025.txt:245-251（股票简称/变更前简称/中文名称）"
+   ]
+  },
+  {
+   "key": "002233",
+   "short": "塔牌集团",
+   "full": "广东塔牌集团股份有限公司",
+   "industry": "cement",
+   "a_code": "002233",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（深交所）。撞号陷阱：港股 02233.HK 是「西部水泥」（水泥概览页另列），与 002233.SZ 数字相同但完全是另一家公司，绝不可当作它的 H 股",
+   "sources": [
+    "data/tables/cement_002233_annual.json → name / secucode=\"002233.SZ\" / source（「本公司仅 A 股上市」）",
+    "dashboard/industry/cement/overview.html:203 → CEMENTS[].a / .h / group",
+    "dashboard/industry/cement/overview.html:214（西部水泥 02233.HK）",
+    "data/raw/annual_002233_2025.txt:159-167（股票简况 + 公司的中文名称）"
+   ]
+  },
+  {
+   "key": "03323",
+   "short": "中国建材",
+   "full": "中国建材股份有限公司",
+   "industry": "cement",
+   "a_code": null,
+   "h_code": "03323",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（03323.HK），无 A 股年报」。它的并表子公司天山股份在 A 股上市（000877），两者不是同一法人——03323 是集团层面的水泥平台，不是 000877 的 H 股",
+   "sources": [
+    "data/tables/cement_03323_annual.json → name / secucode=\"03323.HK\" / source",
+    "dashboard/industry/cement/overview.html:206 → CEMENTS[].a / .h / group",
+    "data/raw/annual_03323_2025.txt:1-2（封面「中國建材股份有限公司（股份代號：03323）」）",
+    "dashboard/industry/cement/overview.html:190、peers.html:50（并表子公司关系）"
+   ]
+  },
+  {
+   "key": "01313",
+   "short": "华润建材科技",
+   "full": "华润建材科技控股有限公司",
+   "industry": "cement",
+   "a_code": null,
+   "h_code": "01313",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（01313.HK），无 A 股年报」；开曼群岛注册，前称「华润水泥控股有限公司」，是华润集团水泥/混凝土/骨料业务的控股公司",
+   "sources": [
+    "data/tables/cement_01313_annual.json → name / secucode=\"01313.HK\" / source",
+    "dashboard/industry/cement/overview.html:207 → CEMENTS[].a / .h / group",
+    "data/raw/annual_01313_2025.txt:4-14（注册地、前称、上市沿革、已发行股份总数）、:150-151（中英文全称）"
+   ]
+  },
+  {
+   "key": "00743",
+   "short": "亚洲水泥（中国）",
+   "full": "亚洲水泥（中国）控股公司",
+   "industry": "cement",
+   "a_code": null,
+   "h_code": "00743",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "纯 H 股，annual 表 source 明确「仅在港交所上市（00743.HK），无 A 股年报」；开曼群岛注册",
+   "sources": [
+    "data/tables/cement_00743_annual.json → name / secucode=\"00743.HK\" / source",
+    "dashboard/industry/cement/overview.html:208 → CEMENTS[].a / .h / group",
+    "data/raw/annual_00743_2025.txt:1（於開曼群島註冊成立的有限公司）、:3318 与 :4046（亞洲水泥（中國）控股公司 / Asia Cement (China) Holdings Corporation）"
+   ]
+  },
+  {
+   "key": "600941",
+   "short": "中国移动",
+   "full": "中国移动有限公司",
+   "industry": "telecom",
+   "a_code": "600941",
+   "h_code": "00941",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人、同一套合并报表。港股有双柜台：941（港币柜台）与 80941（人民币柜台，2023-06-19 增设）",
+   "sources": [
+    "data/tables/telecom_600941_annual.json → name / secucode=\"600941.SH\" / source（「A+H 两地上市（H 股 00941.HK）、A/H 为同一法人同一套合并报表」）",
+    "dashboard/industry/telecom/overview.html:182 → CARRIERS[].a / .h",
+    "dashboard/industry/telecom/overview.html:155-156（中国移动 600941 与 00941 同一法人）",
+    "data/raw/annual_600941_2025.txt:157（公司的中文名称）、:200-206（A 股 600941 / 港股 941 与 80941 双柜台）、:111-113（1997-10-23 港交所、2022-01-05 上交所上市）"
+   ]
+  },
+  {
+   "key": "601728",
+   "short": "中国电信",
+   "full": "中国电信股份有限公司",
+   "industry": "telecom",
+   "a_code": "601728",
+   "h_code": "00728",
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "A+H 同一法人、同一套合并报表",
+   "sources": [
+    "data/tables/telecom_601728_annual.json → name / secucode=\"601728.SH\" / source（「A+H 两地上市（H 股 00728.HK）、A/H 为同一法人同一套合并报表」）",
+    "dashboard/industry/telecom/overview.html:183 → CARRIERS[].a / .h",
+    "dashboard/industry/telecom/overview.html:155-156",
+    "data/raw/annual_601728_2025.txt:184-187（公司的中文/外文名称）、:218-220（股票简况 H 股 00728）"
+   ]
+  },
+  {
+   "key": "600050",
+   "short": "中国联通",
+   "full": "中国联合网络通信股份有限公司",
+   "industry": "telecom",
+   "a_code": "600050",
+   "h_code": "00762",
+   "us_code": null,
+   "tier": null,
+   "same_entity": false,
+   "note": "已知特例：A 股 600050 是「中国联合网络通信股份有限公司」，00762.HK 是红筹主体「中国联通（香港）有限公司」/年报定义里的「中国联合网络通信（香港）股份有限公司」，两者不是同一法人，不可当作同一公司的 A/H 口径混比、更不可相加，本项目联通数据一律取 600050。另注意：A 股 2025 年报「公司股票简况」只列 A 股 600050 一行，没有把 00762 列为本公司 H 股。持股方向本地两处说法相反（见 gaps）",
+   "sources": [
+    "data/tables/telecom_600050_annual.json → name / secucode=\"600050.SH\" / source（「与 600050 不是同一法人…不可相加。本表只用 600050」）",
+    "dashboard/industry/telecom/overview.html:184 → CARRIERS[].a / .h",
+    "dashboard/industry/telecom/overview.html:153-161（主体结构专段：红筹与 A 股不是同一家公司）",
+    "data/raw/annual_600050_2025.txt:163-166（公司的中文/外文名称 China United Network Communications Limited）",
+    "data/raw/annual_600050_2025.txt:114-121（「联通集团」「联通红筹公司」「联通运营公司」定义）",
+    "data/raw/annual_600050_2025.txt:195-197（公司股票简况：只有 A 股 上交所 600050 一行）"
+   ]
+  },
+  {
+   "key": "09888",
+   "short": "百度集团",
+   "full": "百度集团股份有限公司 Baidu, Inc.",
+   "industry": "tech",
+   "a_code": null,
+   "h_code": "09888",
+   "us_code": "BIDU",
+   "tier": null,
+   "same_entity": true,
+   "note": "无 A 股。纳斯达克为首次上市地（2005-08-05，代码 BIDU，以 ADS 形式，1 ADS = 8 股 A 类普通股）；港交所为《香港上市规则》第 19C 章二次上市（2021-03-23，代码 9888，另有人民币柜台 89888）。ADS 与 A 类普通股完全可互换，美股与港股实为同一类股份的两个交易场所，因此 09888 与 BIDU 是同一法人（开曼注册、不同投票权架构）",
+   "sources": [
+    "data/tables/tech_09888_annual.json:3-7 → _meta.codes.hk=\"09888\" / _meta.codes.us=\"BIDU\"、_meta.company",
+    "data/tables/tech_09888_profile_manual.json:86-99 → listings.nasdaq（date/ticker/instrument）与 listings.hkex（date/code/type 第19C章二次上市）",
+    "data/tables/tech_09888_holders_manual.json:5-9 → _meta.codes（hkex \"9888 (HKD counter) / 89888 (RMB counter)\"、nasdaq \"BIDU\"、sec_cik、incorporation）、:105、:119",
+    "data/tables/holders_manual.json → \"tech:09888\" 的 name=\"百度集团\" / secucode=\"09888.HK\" / source（FY2025 Form 20-F）",
+    "dashboard/company/baidu/charts/intro.js:36-37、:79-81（两地上市日期与「同一类股份的两个交易场所」表述）",
+    "dashboard/index.html:227（百度集团　09888 / BIDU）",
+    "dashboard/company/baidu/intro.html:59（首次上市地/第19C章二次上市）"
+   ]
+  },
+  {
+   "key": "605338",
+   "short": "巴比食品",
+   "full": "中饮巴比食品股份有限公司",
+   "industry": "food",
+   "a_code": "605338",
+   "h_code": null,
+   "us_code": null,
+   "tier": null,
+   "same_entity": true,
+   "note": "仅 A 股（上交所主板）：2025 年报「公司股票简况」只有「人民币普通股（A股）／上海证券交易所／巴比食品／605338」一行，无 H 股",
+   "sources": [
+    "data/tables/holders_manual.json → \"food:605338\" 的 name=\"巴比食品\" / secucode=\"605338.SH\" / source（2025 年年度报告，上交所）",
+    "backend_python.py:1178 → HOLDER_INDUSTRIES[\"food\"].codes = [\"605338\"]",
+    "data/raw/annual_605338_2025.txt:306-309（公司的中文/外文名称）、:337-341（股票简况仅 A 股一行）",
+    "dashboard/company/food/overview.html:22（中饮巴比食品股份有限公司（巴比食品））"
+   ]
+  }
+ ],
+ "gaps": [
+  {
+   "item": "中国联通 600050 与 00762 的持股方向，本地两处说法相反",
+   "why": "dashboard/industry/telecom/overview.html:158-159 与 data/tables/telecom_600050_annual.json 的 source 都写「红筹在上、A 股在下，红筹的合并报表包含 600050 及大额少数股东权益」；但 A 股 2025 年报 data/raw/annual_600050_2025.txt:115-120 把「联通红筹公司」定义为「中国联合网络通信（香港）股份有限公司，本公司间接控股子公司，在香港注册成立…其股票在香港联合交易所上市」，即红筹是 600050 的子公司（方向相反）。两处一致的结论是「不是同一法人」，故仍标 same_entity=false；但谁在上谁在下未在本地取得一致出处，未做裁定"
+  },
+  {
+   "item": "红筹主体的中文全称有两种写法",
+   "why": "overview.html:157-158 写「中国联通（香港）有限公司」/ China Unicom (Hong Kong) Limited；A 股年报释义（annual_600050_2025.txt:115）写「中国联合网络通信（香港）股份有限公司」。本地无第三处可裁决，未改写、按原文各自记录"
+  },
+  {
+   "item": "27 家「仅 A 股」银行的无 H 股结论属本地推断",
+   "why": "company_charts_<code>.json 的 _bank.hCode 为空字符串，且 dashboard/common/bank-header.js 对应行没有 hListDate，两处独立出处一致；但未逐家回溯年报原文确认，属交叉一致的推断"
+  },
+  {
+   "item": "三家纯 H 股银行 01578 / 01916 / 06138 的 hCode 字段在 company_charts 里也是空的",
+   "why": "_bank.aCode 与 _bank.hCode 双空，H 代码只能取文件名/bank_<code>_annual.json 的 secucode（如 01578.HK）与港股年报封面股份代號（annual_01578_2025.txt:1-2），已按此记录"
+  },
+  {
+   "item": "三家港股开发商 00688 / 01109 / 00817 的中文全称只有间接出处",
+   "why": "data/raw 下没有它们自己的年报存档（无 annual_00688/01109/00817），全称来自别家 A 股银行/险企年报里的关联方或持股名单提及（如 annual_601998_2024.txt:12142 写「中国海外发展有限公司 香港 00688.HK」），非发行人自身披露"
+  },
+  {
+   "item": "六家开发商与五家险企的 A 股全称同样多为间接出处",
+   "why": "这些板块的 <板块>_<code>_annual.json 只有简称 name 与 secucode，没有 fullName 字段；A 股全称取自 data/raw 里本公司或他公司年报原文，已在每条 sources 注明行号"
+  },
+  {
+   "item": "H 代码位数在本地不统一",
+   "why": "年报原文写 4 位（941 / 728 / 3618 / 6655 / 2318），company_charts 的 hCode 与 annual 表 secucode 写 5 位补零（00941 / 06655 / 03618）。本 JSON 统一按项目约定（dashboard/industry/bank/overview.html:281-285 的 padStart(5,\"0\")）输出 5 位"
+  },
+  {
+   "item": "「同集团不同上市主体」与「代码撞号」不属于 A/H 配对，已逐条标注但不映射",
+   "why": "000877 天山股份 ↔ 03323 中国建材（并表母子，overview.html:190 / peers.html:50 / backend_python.py:900）；601319 中国人保 ↔ 02328 中国财险（母子，insurance/overview.html:162 与 :166 分列两栏）；002233 塔牌集团（深交所）↔ 02233 西部水泥（港交所，cement/overview.html:214）纯属代码数字撞号；001979 招商蛇口 ↔ 00978 招商局置地、600048 保利发展 ↔ 00119 保利置业（realestate/overview.html:176-177）同集团不同上市平台"
+  },
+  {
+   "item": "百度 09888 的美股代码 BIDU 有本地出处，但 A 股一栏确定为 null",
+   "why": "tech_09888_annual.json / profile_manual / holders_manual 三处都只给 hk=09888（另有人民币柜台 89888）与 us=BIDU，本地没有任何百度 A 股代码的出处，故 a_code 记 null 而非猜测"
+  },
+  {
+   "item": "本次未覆盖概览页里「暂未取数」的其他公司",
+   "why": "HOLDER_INDUSTRIES 只含 70 个代码；概览页另列了渤海银行 09668、徽商 03698、中国铁塔 00788、中国通信服务 00552、中国再保险 01508、上峰 000672 等「暂未取数」主体，它们不在 backend 的板块清单内，按任务范围未纳入 entities"
+  }
+ ]
+}

@@ -1191,6 +1191,51 @@ def _holders_manual():
         return json.load(f)
 
 
+# 代码 ↔ 公司的对应表：一家公司在 A 股 / 港交所 / 美股各有一个代码，页面与外链给哪个都要能落到
+# 同一家公司上（?code=601398 与 ?code=01398 都是工商银行）。表由 data/extract/build_company_codes.py
+# 生成，每条都带本地出处，不靠常识补代码。
+COMPANY_CODES_FILE = os.path.join(TABLES_DIR, "company_codes.json")
+
+
+def _company_codes():
+    """返回 (entities, index)：entities 按实体唯一键索引，index 是「任意代码 → 实体」的反查表。
+    same_entity=false 的两地主体（中国联通 A 股 600050 与红筹 00762 不是同一法人）照样进 index，
+    但标着 same_entity=false —— 解析时按这个标记拒绝互换，只把原因说清楚，不静默换成另一家。"""
+    if not os.path.exists(COMPANY_CODES_FILE):
+        return {}, {}
+    with open(COMPANY_CODES_FILE, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+    entities = {e["key"]: e for e in raw.get("entities") or []}
+    index = {}
+    for e in entities.values():
+        for c in (e.get("a_code"), e.get("h_code"), e.get("us_code")):
+            if c:
+                index.setdefault(c, []).append(e)
+    return entities, index
+
+
+def _resolve_company_code(industry, code, known):
+    """把任意一地的代码解析成本板块名单里的那个代码。known 是该板块已有数据的代码集合。
+    返回 (代码 or None, 说明)：能换的给换后的代码 + 一句「H 股 01398 即 A 股 601398」，
+    换不了的给 None + 原因（两地不是同一法人、或这家公司不在本板块名单里）。"""
+    entities, index = _company_codes()
+    cands = index.get(code) or []
+    for e in cands:
+        if e["key"] in known:
+            if e["key"] == code:
+                return code, None
+            if not e.get("same_entity", True):
+                return None, (f"{code} 与 {e['key']}（{e.get('short') or ''}）不是同一法人，"
+                              f"不做代码互换：{e.get('note') or ''}")
+            return e["key"], (f"{code} 与 {e['key']} 是同一家公司（{e.get('short') or ''}）的两地代码，"
+                              f"已按 {e['key']} 取数")
+    if cands:
+        e = cands[0]
+        return None, (f"{code} 对应 {e.get('short') or e['key']}，"
+                      f"属 {e.get('industry') or '其他'} 板块，不在本板块名单里")
+    return None, None
+
+
 def _company_charts_block(code, key):
     """company_charts_<code>.json 里的任意一块（银行年报口径页的数据源）。"""
     path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
@@ -1330,8 +1375,240 @@ def _ring_block_from_charts(code):
     return {"caliber": "占总股本", "holderData": out, "factions": blk.get("factions") or []}
 
 
+# 环形图的附加口径：company_charts_<code>.json 里除 holders 之外的股东块。
+# 渝农商行 2010 年在港上市、2019 年才上 A 股，H 股年报只到 2018、A 股年报从 2019 起，
+# 两边没有重叠年份 —— 原先那一页把这两张环形图并排画在主图右边，并写了一段口径说明；
+# 页面合成一页后改成图上切口径，说明文字（label/caliber/note）在手工层 ring_alt_meta 里。
+_RING_ALT_KEYS = ("holders-h", "holders-h-only")
+
+
+def _ring_alt_from_charts(code, meta):
+    """附加口径的环形图数据块，按 ring_alt_meta 里给了说明的那几块下发（没有说明就不下发 ——
+    分母是总股本还是 H 股股本、取的是哪一年年报，这些不写清楚的图不该让人切过去看）。"""
+    out = []
+    for key in _RING_ALT_KEYS:
+        m = (meta or {}).get(key)
+        blk = _company_charts_block(code, key) if m else None
+        if not blk or not blk.get("holderData"):
+            continue
+        out.append({
+            "key": key,
+            "label": m.get("label") or key,
+            "caliber": m.get("caliber") or "占总股本",
+            "residual_label": m.get("residual_label"),
+            "note": m.get("note"),
+            "holderData": [{"name": x.get("name"), "value": x.get("value"),
+                            "type": "", "chgText": ""} for x in blk["holderData"]],
+            "factions": blk.get("factions") or [],
+        })
+    return out or None
+
+
+# ── 逐公司的解读文字 ───────────────────────────────────────────────────────────
+# 银行原先那套年报口径股东页上每张图下都有一段解读（本年分红多少、股本哪几年动过、
+# 户数从多少到多少、集中度区间与第一大股东是谁）。页面合成一页后这些话不能再写死在 HTML 里，
+# 全部由下面几个函数**从本公司自己的序列现算**——所以任何板块、任何 code 都有话可说，
+# 数据层缺哪一层就少哪一段，绝不会串到别家公司的数字。
+# 文字里的加粗用 **…**（前端 mdBold 转 <b>），接口不下发 HTML。
+YI = 1e8
+
+
+def _n(v, nd=2):
+    return f"{v:,.{nd}f}"
+
+
+def _narr_dividend(name, div, unit, annual, cap_by_year):
+    """分红解读：最近年度每 10 股派现 → 现金分红总额与分红率，再给近五年累计与派现年份数。
+    分红总额 = 每 10 股 ÷ 10 × 当年末股份总数；分红率 = 分红总额 ÷ 当年归母净利润。
+    股份总数优先用本页那条股本序列（逐年抄年报「股份变动情况表」的股数），只有没有序列的板块
+    才退回年度表的 share_capital —— 那个字段是「股本」科目的元金额，面值 1 元的公司才等于股数，
+    中国移动那样两者差 20 倍以上的（股本科目里含发行溢价）会被下面的合理性检查挡掉，宁可不给
+    分红总额，也不拿一个错了一个量级的分母去算分红率。
+    以港元宣派的公司（中国移动）不算分红率——港元派现除人民币利润是混币种，只说明原因。"""
+    rows = [(str(y), float(v)) for y, v in (div or []) if v is not None]
+    if not rows:
+        return None
+
+    def shares(y):
+        if y in cap_by_year:
+            return cap_by_year[y]
+        v = (annual or {}).get(y, {}).get("share_capital")
+        now = (annual or {}).get(y, {}).get("total_share")
+        if v and now and abs(float(v) / float(now) - 1) > 0.25:
+            return None          # 股本科目的元金额与接口总股本差得太远，不是股数，弃用
+        return float(v) if v else None
+
+    def yi(v):
+        return _n(v, 2 if v < 100 else 0)
+
+    ly, lp = rows[-1]
+    paid = [r for r in rows if r[1] > 0]
+    bits = [f"{name} **{ly} 年度每 10 股派现 {_n(lp, 4)} {unit}**（含税）"]
+    amt = (lp / 10 * shares(ly) / YI) if shares(ly) else None
+    if amt:
+        bits.append(f"对应现金分红约 **{yi(amt)} 亿{unit}**")
+        np_ = (annual or {}).get(ly, {}).get("parent_netprofit")
+        if np_ and unit == "元":
+            bits.append(f"分红率（占归母净利润）约 **{_n(amt * YI / float(np_) * 100, 1)}%**")
+        elif np_:
+            bits.append(f"归母净利润以人民币计、派现以{unit}宣派，两者不同币种，**不算分红率**")
+    five = [(y, p) for y, p in rows if int(y) >= int(ly) - 4]
+    cum = [(lp2 / 10 * shares(y2) / YI) if shares(y2) else None for y2, lp2 in five]
+    if len(five) > 1 and all(x is not None for x in cum):
+        bits.append(f"近 {len(five)} 年（{five[0][0]}–{ly}）累计分红约 **{yi(sum(cum))} 亿{unit}**")
+    text = "；".join(bits) + "。"
+    text += (f"图上 {rows[0][0]}–{rows[-1][0]} 共 {len(rows)} 个年度，其中 **{len(paid)} 个年度派现**"
+             f"、{len(rows) - len(paid)} 个年度为 0。")
+    if amt is None:
+        text += "（当年末股份总数取不到可信值，分红总额与分红率算不出来，只给每 10 股金额。）"
+    return text
+
+
+def _narr_share_capital(name, rows, brk):
+    """股本解读：区间两端的股数、哪几年动过、各动了多少，以及有原文成因的那几次。
+    有口径断点（拆股／并股）时按断点后的口径折算再比，否则「1 拆 80」会被读成一次增发。"""
+    if not rows or len(rows) < 2:
+        return None, None
+    at = str((brk or {}).get("at") or "")
+    factor = float((brk or {}).get("factor") or 0) or None
+    idx = next((i for i, r in enumerate(rows) if str(r[0]) == at), -1)
+    val = [float(r[1]) * (factor if (factor and 0 <= i < idx) else 1) / YI
+           for i, r in enumerate(rows)]
+    chg = [(str(rows[i][0]), round(val[i] - val[i - 1], 4)) for i in range(1, len(rows))
+           if abs(val[i] - val[i - 1]) >= 0.005 and not (idx > 0 and i == idx and factor)]
+    text = (f"{name} {rows[0][0]}–{rows[-1][0]} 年股份总数由 **{_n(val[0])} 亿股**"
+            f"{'增' if val[-1] >= val[0] else '减'}至 **{_n(val[-1])} 亿股**，"
+            f"其间 **{len(chg)} 个年份**发生变动")
+    if chg:
+        # 变动年份多的公司（百度 21 年里动过 19 次）逐年列会把这段读成一串数字，
+        # 超过 10 次就只列幅度最大的 8 次，其余给个上限值，逐年数值本来就在 tooltip 里
+        show, rest = chg, []
+        if len(chg) > 10:
+            big = sorted(chg, key=lambda x: -abs(x[1]))[:8]
+            show = [x for x in chg if x in big]
+            rest = [x for x in chg if x not in big]
+        text += "：" + "、".join(f"{y} 年 {d:+,.2f} 亿股" for y, d in show)
+        text += (f"，其余 {len(rest)} 个年份每年变动不超过 "
+                 f"{_n(max(abs(d) for _, d in rest))} 亿股。" if rest else "。")
+    else:
+        text += "。"
+    if factor and idx > 0:
+        text += f"（{at} 年为 1 拆 {factor:.0f} 的口径断点，不计入上面的逐年增减。）"
+    why = [(str(r[0]), r[2]) for r in rows if len(r) > 2 and r[2] and r[2] != "未变动"]
+    detail = None
+    if why:
+        detail = ("**各次变动的年报原文成因：**" +
+                  "；".join(f"{y} 年 {t}" for y, t in why) + "。")
+    else:
+        detail = ("本公司的数据层只有逐年股数、**没有逐次成因**（IPO／定增／配股／转增要读当年年报"
+                  "「股本变动及股东情况」章节），所以变动年份的原因一律写「未变动」以外的空缺。")
+    return text, detail
+
+
+def _narr_holder_num(name, rows):
+    """户数解读：披露期数、区间、起止与极值，以及 A/H 拆分覆盖到哪几期。"""
+    rows = [r for r in (rows or []) if r and len(r) > 1]
+    if len(rows) < 2:
+        return None
+    tot = [r[1] for r in rows if r[1] is not None]
+    if not tot:                       # 手工年报层只给 A/H 拆分、不给合计（天津银行只有 H 股登记股东数）
+        tot = [v for r in rows for v in r[2:4] if v is not None]
+    if not tot:
+        return None
+    na = len([r for r in rows if len(r) > 2 and r[2] is not None])
+    nh = len([r for r in rows if len(r) > 3 and r[3] is not None])
+    text = (f"{name} 共 **{len(rows)} 个披露期**（{rows[0][0]} ~ {rows[-1][0]}）："
+            f"由 **{tot[0]:,} 户**到 **{tot[-1]:,} 户**，区间最高 {max(tot):,} 户、"
+            f"最低 {min(tot):,} 户，"
+            f"{'累计' + ('减少' if tot[-1] < tot[0] else '增加') + f' {abs(tot[-1] - tot[0]):,} 户'}"
+            f"（{_n(abs(tot[-1] - tot[0]) / tot[0] * 100, 1)}%）。")
+    text += (f"A 股拆分 {na} 期、H 股拆分 {nh} 期有披露，其余期次留空断线，不插值。"
+             if (na or nh) else "本公司各期只披露股东总数、没有 A/H 拆分。")
+    return text
+
+
+def _narr_concentration(name, rows):
+    """集中度解读：期数、前十大区间（含出现的期次）、期末第一大股东，有剔代理人口径就一并说。"""
+    rows = [r for r in (rows or []) if isinstance(r, dict)]
+    if len(rows) < 2:
+        return None
+    t10 = [(r.get("date"), r.get("top10")) for r in rows if r.get("top10") is not None]
+    last = rows[-1]
+    bits = [f"{name} 共 **{len(rows)} 个报告期**（{rows[0].get('date')} ~ {last.get('date')}）"]
+    if t10:
+        lo = min(t10, key=lambda x: x[1])
+        hi = max(t10, key=lambda x: x[1])
+        bits.append(f"前十大股东合计占比在 **{_n(lo[1])}%**（{lo[0]}）~ **{_n(hi[1])}%**（{hi[0]}）之间")
+    if last.get("top1_name"):
+        bits.append(f"期末第一大股东为 **{last['top1_name']}**"
+                    + (f"（{_n(float(last['top1']))}%）" if last.get("top1") is not None else ""))
+    if last.get("top1_ex_name") and last.get("top1_ex_name") != last.get("top1_name"):
+        bits.append(f"剔除港股代理人后为 **{last['top1_ex_name']}**"
+                    + (f"（{_n(float(last['top1_ex']))}%）" if last.get("top1_ex") is not None else ""))
+    return "；".join(bits) + "。"
+
+
+def _narr_holders(name, holders, end_date, caliber, hn):
+    """名册解读：这一期名册的口径、前十大合计、第一大股东，能配上户数就配一句。"""
+    holders = holders or []
+    if not holders:
+        return None
+    base = holders[0].get("total_shares") or None
+    s10 = sum(h.get("hold_num") or 0 for h in holders)
+    bits = [f"{name} **{end_date or '最新一期'}** 的{caliber}共 {len(holders)} 名"]
+    if base:
+        bits.append(f"合计持股 **{_n(s10 / base * 100)}%**（{_n(s10 / YI)} 亿股，分母为总股本 "
+                    f"{_n(base / YI)} 亿股）")
+    top = holders[0]
+    if top.get("ratio") is not None:
+        bits.append(f"第一大股东 **{top.get('name') or '—'}** 持 **{_n(float(top['ratio']))}%**")
+    hn = [r for r in (hn or []) if r and r[1] is not None]
+    if hn:
+        bits.append(f"同期股东总数 {hn[-1][1]:,} 户（{hn[-1][0]} 披露）")
+    return "；".join(bits) + "。"
+
+
+def _company_narrative(rec, industry, code):
+    """把上面几段合成一个块下发：{图/段落: {text, detail?}}，缺数据的段落直接不出现。
+    页面把 text 接在该图原有的通用说明前面，detail 收进「展开详细口径」里。"""
+    cap = rec.get("share_capital") or []
+    cap_by_year = {str(r[0]): float(r[1]) for r in cap if r and r[1] is not None}
+    annual = rec.get("annual") if isinstance(rec.get("annual"), dict) else None
+    name = rec.get("name") or code
+    out = {}
+    t = _narr_holders(name, rec.get("holders"), rec.get("holders_end_date"),
+                      rec.get("holders_caliber") or "接口口径的前十名股东名册", rec.get("holder_num"))
+    if t:
+        out["holders"] = {"text": t}
+    t = _narr_concentration(name, rec.get("holder_concentration"))
+    if t:
+        out["concseries"] = {"text": t}
+    t = _narr_holder_num(name, rec.get("holder_num"))
+    if t:
+        out["holdernum"] = {"text": t}
+    t, detail = _narr_share_capital(name, cap, rec.get("share_capital_break"))
+    if t:
+        out["sharecap"] = {"text": t, "detail": detail}
+    t = _narr_dividend(name, rec.get("dividend_per10"), rec.get("dividend_unit") or "元",
+                       annual, cap_by_year)
+    if t:
+        out["divper10"] = {"text": t}
+    return out or None
+
+
+def _as_year_pairs(v):
+    """分红序列统一成 [[年, 值]]：银行以外的板块，annual 表里的 dividend_per10 是「年→值」的字典，
+    手工层给的却是逐年数组 —— 前端只吃数组，两种形态在这里合一（原先字典直接被当数组，
+    length 为 undefined，险企/开发商/水泥三个板块的分红图静默不画）。"""
+    if isinstance(v, dict):
+        return [[str(y), v[y]] for y in sorted(v, key=str) if v[y] is not None] or None
+    return v or None
+
+
 def read_holders(industry, code=None):
     """某板块的成员名单 + 指定公司的股东快照。code 省略时取第一家有股东数据的公司。
+    code 给的是另一地的代码（H 股 01398 / 美股 BIDU）时按 company_codes.json 换成同一家公司
+    在本板块名单里的代码（同一法人才换，中国联通 A 股与红筹不换，只说明原因）。
     纯 H 股公司（如中国海外发展 00688）接口不返回前十名股东，名单里保留但标 has_holders=false，
     页面把它画成不可点，避免看着像取数遗漏。"""
     spec = HOLDER_INDUSTRIES.get(industry)
@@ -1363,6 +1640,7 @@ def read_holders(industry, code=None):
             if rec["factions"] and industry == "bank" else None)
         rec["caliber_note"] = man.get("caliber_note")
         rec["residual_label"] = man.get("residual_label")
+        rec["ring_alt_meta"] = man.get("ring_alt_meta")
         rec["history_source"] = man.get("history_source")
         if industry == "bank":
             # 银行的股本与分红原来画在自己的年报口径股东页里，页面合成一份后改由接口下发；
@@ -1381,6 +1659,8 @@ def read_holders(industry, code=None):
         rec["holders_caliber"] = man.get("holders_caliber")
         rec["history_gaps"] = man.get("history_gaps")
         rec["dividend_unit"] = man.get("dividend_unit")
+        # 分红序列两种形态（手工层数组 / annual 表字典）在这里合一，各板块的分红图才画得出来
+        rec["dividend_per10"] = _as_year_pairs(rec.get("dividend_per10"))
         tables[c] = rec
         roster.append({"code": c, "name": rec.get("name") or c,
                        "tag": rec.get("tier") or rec.get("group") or man.get("tag") or "",
@@ -1389,9 +1669,16 @@ def read_holders(industry, code=None):
         return {"code": 404, "msg": f"尚无{spec['label']}数据文件", "data": {}}
     if not code:
         code = next((r["code"] for r in roster if r["has_holders"]), roster[0]["code"])
+    code_note = None
     if code not in tables:
-        return {"code": 404, "msg": f"{spec['label']} {code} 尚无年度数据文件", "data": {}}
+        # A 股／H 股／美股代码指向同一家公司时换成本板块名单里的那个代码
+        alt, why = _resolve_company_code(industry, code, set(tables))
+        if not alt:
+            return {"code": 404, "msg": (f"{spec['label']} {code} 尚无年度数据文件"
+                                         + (f"：{why}" if why else "")), "data": {}}
+        code, code_note = alt, why
     d = tables[code]
+    ent = _company_codes()[0].get(code) or {}
     return {"code": 200, "data": {
         "industry": industry,
         "label": spec["label"],
@@ -1425,6 +1712,9 @@ def read_holders(industry, code=None):
             # 环形图的标准数据块（bank/shareholder.html 那套年报口径数据）：银行取 company_charts，
             # 手工层给了 ring 的公司取手工层，都没有时前端拿接口快照 + 分组现拼一份
             "ring": d.get("ring") or (_ring_block_from_charts(code) if industry == "bank" else None),
+            # 环形图的附加口径（渝农商行的 H 股年报两张）：图上给按钮切，切过去连口径说明一起换
+            "ring_alt": d.get("ring_alt") or _ring_alt_from_charts(code, d.get("ring_alt_meta")),
+            "ring_label": (d.get("ring_alt_meta") or {}).get("main_label"),
             "factions_source": d.get("factions_source"),
             # 手工层公司（百度按 20-F beneficial ownership、巴比按年报名册）口径与接口快照不同，
             # 页面把这句原样印出来，不让两套口径混着读
@@ -1434,6 +1724,15 @@ def read_holders(industry, code=None):
             # 股权结构只剩 dashboard/company/bank/shareholder.html 一页（各板块靠 ?industry= 切换、
             # 只有顶部 header 不同），银行原先那套独立的年报口径股东页已并入本页 —— 不再有外链入口
             "detail_page": None,
+            # 同一家公司的三地代码：页面把两地代码印在页头，?code= 给哪个都落到这一家
+            "codes": {"a": ent.get("a_code"), "h": ent.get("h_code"), "us": ent.get("us_code"),
+                      "same_entity": ent.get("same_entity", True),
+                      "short": ent.get("short"), "full": ent.get("full"),
+                      "note": ent.get("note")} if ent else None,
+            # 传进来的 code 与最终取数的 code 不是同一个时，说明为什么（两地代码互换 / 不能互换）
+            "code_note": code_note,
+            # 每张图下那段解读（原先写死在银行年报口径股东页里的话），逐公司从自己的序列现算
+            "narrative": _company_narrative(d, industry, code),
         },
     }}
 

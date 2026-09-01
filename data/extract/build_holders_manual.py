@@ -488,11 +488,58 @@ def attach_bank_aliases():
     # 不给它编别名 —— 环形图那一圈的残余由前端按 100% − 合计自己补。
 
 
+# 环形图的第二、第三个口径（company_charts_<code>.json 的 holders-h / holders-h-only 两块）
+# 在页面上要说清「为什么另画一张、跟主口径差在哪」。数据在 company_charts 里、这段话在这里，
+# 前端只按 label 出切换按钮、把 note 原样印在图下 —— 任何公司补上这两块 + 一段 note 就同样能切。
+BANK_RING_ALT_META = {
+    "601077": {
+        "main_label": "A 股年报（2025）· 占总股本",
+        "holders-h": {
+            "label": "H 股年报（2018）· 占总股本",
+            "caliber": "占总股本",
+            "residual_label": "其他流通股东",
+            "note": ("本行 2010-12 在港上市、2019-10-29 才登陆 A 股，**H 股年报只有 2010–2018 年、"
+                     "A 股年报自 2019 年起才有，两边没有重叠年份** —— 所以这一口径取现有最新的 "
+                     "H 股年报（2018），与主口径（2025 年 A 股年报）对照看的是 A 股上市前后的股权结构变化，"
+                     "不是同一年的两种算法。两者分母都是总股本（2018 年 100 亿股、2025 年 113.57 亿股）。"
+                     "第一大「香港中央结算（代理人）25.13%」是 H 股名义持有人账户（HKSCC Nominees），"
+                     "代境外投资者集中登记持有**全部** H 股，并非单一实益股东。"
+                     "来源：03618 港股 2018 年报「股本变动及股东情况——本行前 10 大股东持股情况」（p.89–92）。"),
+        },
+        "holders-h-only": {
+            "label": "H 股年报（2018）· 占 H 股股本",
+            "caliber": "占已发行 H 股总股本",
+            "residual_label": "其他 H 股股东（未达 5% 披露线）",
+            "note": ("**这一口径只看 H 股内部**：按 2018 年报「重大权益和淡仓」章节、依香港《证券及期货条例》"
+                     "(SFO) 披露的持 H 股 ≥5% 主要股东，分母是**已发行 H 股总股本（25.13 亿股）**、"
+                     "不是总股本（好仓口径）。BlackRock 13.84%（已合并其受控法团 BlackRock Global Funds "
+                     "6.98%）、复星系 7.00%（郭广昌经 Fosun 控股链持有的同一批股份，未重复计）、"
+                     "Citigroup 6.43%、LSV 5.98%，合计 33.25%；其余约 66.75% 为未达 5% 披露线的其他 H 股股东。"
+                     "来源：03618 港股 2018 年报「股本变动及股东情况——重大权益和淡仓」（p.89–92）。"),
+        },
+    },
+}
+
+
+def attach_ring_alt_meta():
+    """把第二/第三口径环形图的标签与口径说明写进手工层，并核对 company_charts 里确有那两块数据。"""
+    for code, meta in BANK_RING_ALT_META.items():
+        path = os.path.join(TABLES, f"company_charts_{code}.json")
+        with open(path, encoding="utf-8") as f:
+            chart = json.load(f)
+        keys = [k for k in meta if k != "main_label"]
+        missing = [k for k in keys if not (chart.get(k) or {}).get("holderData")]
+        assert not missing, f"company_charts_{code}.json 缺 {missing}，别给它写口径说明"
+        MANUAL.setdefault(f"bank:{code}", {})["ring_alt_meta"] = meta
+        print(f"  [ring-alt] bank:{code}: {len(keys)} 个附加口径（{'、'.join(keys)}）")
+
+
 if __name__ == "__main__":
     for _key, _code in HIST_CODES.items():
         attach_history(_key, _code)
     attach_tech_history()
     attach_bank_aliases()
+    attach_ring_alt_meta()
     MANUAL["_meta"] = {
         "generated_by": "data/extract/build_holders_manual.py",
         "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/bank/shareholder.html",

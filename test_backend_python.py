@@ -325,7 +325,9 @@ class TestHolders:
                           "holders", "holder_num", "holder_concentration", "detail_page",
                           "factions", "factions_source", "caliber_note", "residual_label", "ring",
                           "share_capital", "dividend_per10", "history_source", "holders_caliber",
-                          "history_gaps", "dividend_unit", "share_capital_break"}
+                          "history_gaps", "dividend_unit", "share_capital_break",
+                          # 两地代码对应表 + 每张图下那段现算的解读 + 环形图的附加口径
+                          "codes", "code_note", "narrative", "ring_alt", "ring_label"}
         # 默认公司必须是有股东数据的那一家，比例分母（total_shares）也要在
         assert c["holders"] and c["holders"][0]["total_shares"]
         assert all(r0["code"] in [x["code"] for x in d["roster"]] for r0 in [c])
@@ -435,4 +437,94 @@ class TestHolders:
         for r in bk.read_holders(industry)["data"]["roster"]:
             src = (bk.read_holders(industry, r["code"])["data"]["company"]["source"] or "")
             assert "F10 " not in src.replace("RPT_HKF10_FN_MAININDICATOR", ""), f"{industry} {r['code']}"
+
+    @pytest.mark.parametrize("industry", sorted(bk.HOLDER_INDUSTRIES))
+    def test_dividend_series_is_array(self, industry):
+        """分红序列一律是 [[年, 值]]：annual 表里那份是「年→值」的字典，前端只吃数组
+        （原先字典直下发，险企/开发商/水泥三个板块的分红图 length 为 undefined，静默不画）"""
+        for r in bk.read_holders(industry)["data"]["roster"]:
+            div = bk.read_holders(industry, r["code"])["data"]["company"]["dividend_per10"]
+            if div is None:
+                continue
+            assert isinstance(div, list), (industry, r["code"])
+            assert all(isinstance(x, list) and len(x) == 2 for x in div), (industry, r["code"])
+            assert [x[0] for x in div] == sorted(x[0] for x in div), (industry, r["code"])
+
+    @pytest.mark.parametrize("industry", sorted(bk.HOLDER_INDUSTRIES))
+    def test_narrative_is_per_company(self, industry):
+        """每张图下那段解读必须是本公司自己的数（原先银行那套话写死在 HTML 里，只对渝农商行成立）：
+        每段都要带本公司名字，且有那一层数据才有那一段 —— 反过来说，没有的层不许凭空出现解读。"""
+        for r in bk.read_holders(industry)["data"]["roster"]:
+            c = bk.read_holders(industry, r["code"])["data"]["company"]
+            nar = c["narrative"] or {}
+            if not c["holders"]:
+                continue
+            assert nar, (industry, r["code"])
+            for k, v in nar.items():
+                assert c["name"] in v["text"], (industry, r["code"], k)
+                assert "**" in v["text"], f"{r['code']} {k} 没有一个加粗的关键数字"
+                assert "F10" not in v["text"] + (v.get("detail") or ""), (r["code"], k)
+            assert ("divper10" in nar) == bool(c["dividend_per10"]), (industry, r["code"])
+            assert ("sharecap" in nar) == bool(c["share_capital"]
+                                               and len(c["share_capital"]) > 1), r["code"]
+            assert ("holdernum" in nar) == bool(c["holder_num"]
+                                                and len(c["holder_num"]) > 1), r["code"]
+
+    def test_narrative_numbers_match_series(self):
+        """解读里的数字是从序列现算的，不是抄来的：抽三家核对每 10 股派现与股本两端"""
+        for industry, code in (("bank", "601398"), ("telecom", "600941"), ("food", "605338")):
+            c = bk.read_holders(industry, code)["data"]["company"]
+            nar = c["narrative"]
+            ly, lp = c["dividend_per10"][-1]
+            assert f"{ly} 年度每 10 股派现 {lp:,.4f}" in nar["divper10"]["text"], code
+            cap = c["share_capital"]
+            assert f"{cap[0][0]}–{cap[-1][0]} 年" in nar["sharecap"]["text"], code
+            assert f"{cap[-1][1] / 1e8:,.2f} 亿股" in nar["sharecap"]["text"], code
+
+    def test_dividend_ratio_only_when_base_is_trustworthy(self):
+        """分红率的分母必须可信：中国移动 annual 表里的「股本」科目是 468 亿元、总股本只有 216 亿股
+        （科目含发行溢价，不等于股数），这种情况只给每 10 股金额，不许拿错一个量级的数算分红率；
+        港元宣派的公司也不与人民币利润相除。"""
+        c = bk.read_holders("telecom", "600941")["data"]["company"]
+        t = c["narrative"]["divper10"]["text"]
+        assert "不算分红率" in t and "分红率（占归母净利润）" not in t
+        # 现金分红总额按本页股本序列（年报股数）算：52.70/10 × 216.45 亿股 ≈ 1,141 亿港元
+        assert "1,141 亿港元" in t, t
+
+    def test_code_map_resolves_both_markets(self):
+        """A 股／H 股／美股代码指向同一家公司时可互换；不是同一法人的不许换"""
+        c = bk.read_holders("bank", "01398")["data"]["company"]
+        assert c["code"] == "601398" and c["codes"]["h"] == "01398"
+        assert "同一家公司" in (c["code_note"] or "")
+        c = bk.read_holders("tech", "BIDU")["data"]["company"]
+        assert c["code"] == "09888" and c["codes"]["us"] == "BIDU"
+        # 中国联通 A 股 600050 与红筹 00762 不是同一法人：接口拒绝互换并说明原因
+        r = bk.read_holders("telecom", "00762")
+        assert r["code"] == 404 and "不是同一法人" in r["msg"]
+        # 别的板块的代码也不会被误认成本板块的公司
+        assert bk.read_holders("bank", "600585")["code"] == 404
+
+    def test_code_map_no_collision(self):
+        """对应表本身不许有一个代码指向两家公司，也不许 key 不在自己的三个代码里"""
+        entities, index = bk._company_codes()
+        assert len(entities) > 60
+        for e in entities.values():
+            assert e["key"] in (e.get("a_code"), e.get("h_code"), e.get("us_code")), e["key"]
+        for code, es in index.items():
+            assert len(es) == 1, (code, [x["key"] for x in es])
+
+    def test_ring_alt_calibers(self):
+        """环形图的附加口径（渝农商行两张 H 股年报环）：每圈自成 100%，且必须带口径说明 ——
+        分母是总股本还是 H 股股本、取哪一年年报，说不清的图不下发"""
+        c = bk.read_holders("bank", "601077")["data"]["company"]
+        alt = c["ring_alt"]
+        assert alt and len(alt) == 2 and c["ring_label"]
+        for a in alt:
+            assert a["note"] and a["label"] and a["caliber"]
+            assert abs(sum(x["value"] for x in a["holderData"]) - 100) < 0.05, a["key"]
+            names = {x["name"] for x in a["holderData"]}
+            for g in a["factions"]:
+                assert set(g["names"]) <= names, (a["key"], g["title"])
+        # 附加口径是逐公司的数据层给的，没有那两块的行不许凭空出现
+        assert bk.read_holders("bank", "601398")["data"]["company"]["ring_alt"] is None
 
