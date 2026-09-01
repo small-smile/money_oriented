@@ -1164,7 +1164,7 @@ def read_industry_peers(industry):
 
 # ── 股权结构：银行/险企/开发商/水泥/运营商共用一套 ─────────────────────────────
 # 五个板块的 <板块>_<code>_annual.json 里 holders（接口前十名股东快照）字段结构完全相同，
-# 所以股权结构不按板块各写一页，统一由 dashboard/company/shareholder.html 一页读这份 payload，
+# 所以股权结构不按板块各写一页，统一由 dashboard/company/bank/shareholder.html 一页读这份 payload（各板块只有 header 不同），
 # 靠 ?industry=&code= 切换。银行表另有 holder_num（逐期股东户数）与 holder_concentration
 # （集中度序列）两层，有就下发、页面多画两张图，其余板块自然缺省。
 HOLDER_INDUSTRIES = {
@@ -1191,13 +1191,49 @@ def _holders_manual():
         return json.load(f)
 
 
-def _company_charts_holders(code):
-    """company_charts_<code>.json 里的 holders 块（年报口径：holders / holderData / factions）。"""
+def _company_charts_block(code, key):
+    """company_charts_<code>.json 里的任意一块（银行年报口径页的数据源）。"""
     path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
     if not os.path.exists(path):
         return None
     with open(path, "r", encoding="utf-8") as f:
-        return (json.load(f).get("holders")) or None
+        return json.load(f).get(key) or None
+
+
+def _company_charts_holders(code):
+    """company_charts_<code>.json 里的 holders 块（年报口径：holders / holderData / factions）。"""
+    return _company_charts_block(code, "holders")
+
+
+def _bank_history_from_charts(code, annual_div=None):
+    """银行的历年股本与历年每 10 股分红 —— 原先画在银行自己的年报口径股东页里，
+    数据在 company_charts_<code>.json 的 share-capital / dividend-per10 两块。
+    股权结构合成一页后这两张图也由接口下发，字段名与手工层保持一致：
+      share_capital  [[年, 股数(股), 变动原因]]  ← share-capital.years / shares(亿股) / events
+      dividend_per10 [[年, 每 10 股(元)]]        ← dividend-per10.years9 / per10
+                                                 ∪ bank 表的 dividend_per10（年→值的字典）
+    events 给的是当年资本运作的原文摘要，没有 events 的年份写「未变动」（与手工层同约定，
+    前端按这个字段给柱子上色）。分红取两源并集：company_charts 那份是逐年抄年报的，
+    bank 表那份来自公司数据接口，**重叠年份以年报口径（company_charts）为准**（信息源优先级），
+    接口那份只补年报口径缺的年份（渝农商行 2011–2018 只有年报口径有、民生银行 2000 只有接口有）。
+    44 家逐年比对过，重叠年份只有 600016 的 2017 两源不一致（接口 2.10 / 年报口径 1.50），
+    按上面的优先级取 1.50 —— 见 data/tables/data_sources.txt 里这一条。"""
+    cap = _company_charts_block(code, "share-capital") or {}
+    div = _company_charts_block(code, "dividend-per10") or {}
+    events = cap.get("events") or {}
+    sc = []
+    for y, v in zip(cap.get("years") or [], cap.get("shares") or []):
+        if v is None:
+            continue
+        items = (events.get(str(y)) or {}).get("items") or []
+        sc.append([str(y), int(round(float(v) * 1e8)), "；".join(items) if items else "未变动"])
+    dp = {}
+    if isinstance(annual_div, dict):
+        dp.update({str(y): v for y, v in annual_div.items() if v is not None})
+    # 年报口径后写，重叠年份就覆盖掉接口那份
+    dp.update({str(y): v for y, v in zip(div.get("years9") or [], div.get("per10") or [])
+               if v is not None})
+    return (sc or None), ([[y, dp[y]] for y in sorted(dp)] or None)
 
 
 def _bank_factions(code):
@@ -1327,6 +1363,19 @@ def read_holders(industry, code=None):
         rec["caliber_note"] = man.get("caliber_note")
         rec["residual_label"] = man.get("residual_label")
         rec["history_source"] = man.get("history_source")
+        if industry == "bank":
+            # 银行的股本与分红原来画在自己的年报口径股东页里，页面合成一份后改由接口下发；
+            # bank 表的 dividend_per10 是「年→每 10 股」的字典，前端要的是逐年数组，在这里并成一份
+            sc, dp = _bank_history_from_charts(c, rec.get("dividend_per10"))
+            rec["share_capital"] = rec.get("share_capital") or sc
+            rec["dividend_per10"] = dp
+            if (sc or dp) and not rec["history_source"]:
+                rec["history_source"] = (
+                    f"历年股本与每 10 股分红取自本行年报口径数据表 "
+                    f"data/tables/company_charts_{c}.json（share-capital / dividend-per10 两块，"
+                    f"逐年取自 A 股／H 股年报，A+H 同一年份优先用 A 股口径），"
+                    f"分红另与 bank_{c}_annual.json 的 dividend_per10 取并集"
+                    f"（重叠年份以年报口径为准，接口那份只补缺年）。")
         # 名册是接口快照还是年报原文，页面要照实说（手工层给了名册的公司在这里写明）
         rec["holders_caliber"] = man.get("holders_caliber")
         rec["history_gaps"] = man.get("history_gaps")
@@ -1381,8 +1430,9 @@ def read_holders(industry, code=None):
             "caliber_note": d.get("caliber_note"),
             # 环形图里「名册外那一块」的叫法：前十名口径叫「前十名之外」，20-F 口径不是名册前十名
             "residual_label": d.get("residual_label") or "其他股东（前十名之外）",
-            # 银行另有一套年报口径的股东页（含一致行动人、按 A 股基数重算），在这里给出入口
-            "detail_page": f"/bank/{code}/shareholder.html" if industry == "bank" else None,
+            # 股权结构只剩 dashboard/company/bank/shareholder.html 一页（各板块靠 ?industry= 切换、
+            # 只有顶部 header 不同），银行原先那套独立的年报口径股东页已并入本页 —— 不再有外链入口
+            "detail_page": None,
         },
     }}
 

@@ -4,189 +4,93 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../../common/base.css">
     <link rel="stylesheet" href="../page.css">
-    <script src="../../common/bank-header.js" defer></script>
-    <style>
-        /* 银行切换控件在顶部导航条的居中链接簇里（common/base.css 的 .nav-banks +
-         * bank-header.js 注入的下拉框，7 个银行页共用），本页正文不再放分段控件 */
-        .note-generic {
-            margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
-            border-left: 4px solid #b7b1c4; border-radius: 6px;
-            font-size: 18px; color: #555; line-height: 1.75;
-        }
-    </style>
-    <title>渝农商行（601077 / 03618）2025 年报 · 股东</title>
+    <link rel="stylesheet" href="../shareholder.css">
+    <title>股权结构（各板块共用一页）</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        /* 全站只剩这一份股权结构页：正文、图、表对所有板块完全一样，**只有顶部 header 不同** ——
+         * 银行走 bank-header.js（银行页链接簇 + 45 家下拉切换，本页就在 bank/ 目录下，
+         * 它那套相对路径正好对得上），其余板块走 site-header.js 并用 window.__HEADER_GROUP
+         * 指定用哪一组链接（site-header.js 原本按目录判板块，这一页判不出来）。
+         * 食品板块没有行业页分组，就只留 shareholder.js 自己画的那条切换行。
+         * 板块与公司的切换行始终由 shareholder.js 的 buildNav 画，与 header 各管一层。 */
+        (function () {
+            var ind = new URLSearchParams(location.search).get('industry') || 'bank';
+            var GROUP = {insurer: 'industry/insurance/', developer: 'industry/realestate/',
+                cement: 'industry/cement/', telecom: 'industry/telecom/', tech: 'company/baidu/'};
+            if (ind !== 'bank' && !GROUP[ind]) return;
+            if (ind !== 'bank') window.__HEADER_GROUP = GROUP[ind];
+            var s = document.createElement('script');
+            s.src = ind === 'bank' ? '../../common/bank-header.js' : '../../common/site-header.js';
+            s.defer = true;
+            document.head.appendChild(s);
+        })();
+    </script>
 </head>
 <body>
 <div class="wrap">
-
     <div class="page-head">
-        <h1 id="page-h1" data-page="股东">重庆农村商业银行（渝农商行）2025 年报 · 股东</h1>
-        <div class="meta" id="page-meta">
-            A 股 601077（上交所） · H 股 03618（港交所） · 董事长 刘小军 · 行长 隋军<br>
-            全国首家"万亿"农商行 · 西部首家"A+H"股上市银行 · 单位：人民币百万元（另标注除外）
-        </div>
-        <div class="tags"><span>股东</span><span>分红</span><span>股权结构</span></div>
+        <h1 id="page-title" data-page="股东">股权结构</h1>
+        <div class="meta" id="page-meta"></div>
+        <div class="tags"><span>前十名股东</span><span>持股集中度</span><span>增减动向</span><span id="tag-extra" hidden>股东户数</span></div>
     </div>
 
-    <!-- 银行切换器在顶部导航条的居中链接簇里（bank-header.js 注入下拉框），换行即带 ?code= 重新加载本页 -->
+    <div id="loading">加载中…（需先启动 backend_python.py，端口 5000）</div>
+    <div id="error-msg"></div>
 
-    <!-- ══════════ 分红与股东回报 ══════════ -->
-    <section id="sec-dividend">
-        <h2>分红与股东回报</h2>
-        <p class="sub yns-only" id="dividend-sub">来源：2025 年报「利润分配方案」及历年分红公告 · A 股 601077 上市（2019-10-29）以来历年每 10 股分红</p>
-        <div class="cards yns-only" id="dividend-cards">
-            <div class="card2">
-                <h3>2025 年度分红</h3>
-                <ul>
-                    <li>2025 中期股息：每 10 股 2.0336 元（含税）</li>
-                    <li>2025 末期拟派：每 10 股 1.1755 元（含税）</li>
-                    <li>全年累计：每 10 股 3.2091 元</li>
-                    <li>近五年累计分红 150 亿元，分红率≥30%</li>
-                </ul>
-            </div>
-        </div>
-        <h3 class="chart-title" style="margin-top:18px">历年每 10 股分红（元，含税 · 按年度累计）</h3>
-        <div id="chart-dividend-per10" class="chart" style="height:340px"></div>
-        <details class="note yns-only">
-            <summary>数据说明（点击展开）</summary>
-            2011–2018 年为 H 股上市后按内资股/H 股同股同权披露的每股派息（元）折算每 10 股；2010 年董事会未提常规股息（仅有 IPO 前特别股息，口径不可比，未纳入）。2019 年度为 A 股上市后首个完整年度分红；2019–2024 各年度均为「末期一次派现」，2025 年度起改为中期 + 末期两次派发（图中按年度合计）。数据来源：2011–2018 取自 03618 港股历年年报「盈利与股息」章节；2019–2025 取自本行历年年度报告「利润分配方案」。
-        </details>
-        <div id="note-dividend-g" class="note-generic" style="display:none"></div>
+    <section id="sec-kpi" hidden>
+        <h2 id="kpi-title">股东结构概览</h2>
+        <p class="sub" id="kpi-sub"></p>
+        <div class="kpis" id="kpis"></div>
+        <div class="entity" id="entity-note"></div>
     </section>
 
-    <!-- ══════════ 3 股东及股东变动 ══════════ -->
-    <section id="sec-holders">
-        <h2>股东及股东变动</h2>
-        <!-- 两处 .sub 副标题写的是渝农商行的户数/上市日，挂 .yns-only + id：生成脚本按本行数据
-             重拼同 id 文案覆盖，拼不出来才隐藏（决不让别的行显示渝农商行的 116,634 户） -->
-        <p class="sub yns-only" id="holders-sub">报告期末股东总数 116,634 户（A 股 115,547 户、H 股 1,087 户）· 前十名股东持股情况</p>
-
-        <!-- 标题与说明段是渝农商行的具体数字，挂 .yns-only + id：生成脚本给出同 id 文案的行会被
-             整段覆盖（各行的股本序列都来自资产负债表「股本」科目），给不出的才隐藏 -->
-        <h3 class="chart-title yns-only" id="share-capital-title">历年总股本变动</h3>
-        <div id="chart-share-capital" class="chart" style="height:420px"></div>
-        <details class="note yns-only" id="share-capital-note">
-            <summary>数据说明（点击展开）</summary>
-            本行 2008-06 由农信社改制设立，期初内资股 <b>60 亿股</b>。此后共 <b>5 次资本运作</b>改变总股本，逐级增至当前 <b>113.57 亿股</b>：<br>
-            ① <b>2010-03 定向增发</b>（橙）：向渝富资本 / 城投集团 / 交旅集团定向增发内资股 <b>10 亿股</b>，募资 19.1 亿元 → 70 亿股。<br>
-            ② <b>2010-12 H 股 IPO</b>（红）：港交所首发 <b>20 亿股</b> @5.25 港元 → 90 亿股。<br>
-            ③ <b>2011-01 超额配售</b>（青）：绿鞋（超额配股权）行使增发 H 股 <b>3 亿股</b> → 93 亿股。<br>
-            ④ <b>2017-09 定向增发</b>（橙）：非公开定向增发内资股 <b>7 亿股</b> @5.75 元补充核心一级资本 → 100 亿股。<br>
-            ⑤ <b>2019-10 A 股 IPO</b>（红）：上交所首发 <b>13.57 亿股</b> @7.36 元 → <b>113.57 亿股</b>。<br>
-            此后（2020–2025）总股本未再变动——<b>历史上从未发生过回购注销、送 / 转增股、公开增发或可转债转股</b>，期间仅有限售股陆续解禁（不改变总股本）。数据来源：2010–2017 各节点取自 03618 港股年报「股本变动及股东情况」；2019 年 A 股 IPO 及以后取自本行 A 股年度报告（A+H 两地上市，同一年份优先采用 A 股口径）。
-        </details>
-        <div id="note-share-capital-g" class="note-generic" style="display:none"></div>
-
-        <h3 class="chart-title">历年股东户数</h3>
-        <div id="chart-holder-count" class="chart" style="height:460px"></div>
-        <details class="note yns-only">
-            <summary>数据说明（点击展开）</summary>
-            <b>紫色主线 · 股东总数（A+H，左轴 · 万户）：</b>2019-10-29 A 股 601077 上市首日约 <b>94.87 万</b>户（网上申购中签及打新账户尚未离场），一周内即降至 <b>58.31 万</b>户；随后逐季稳步下降，至 2025-12-31 年报口径 <b>11.66 万</b>户，2026-03-31 一季报进一步降至 <b>10.70 万</b>户，累计降幅约 <b>−88.7%</b>。趋势解读：上市初期打新账户集中撤离 → 之后逐年提升的股东集中度（前十大 58.29%）与 ETF/指数化沉淀共同压低散户数量，即"筹码逐渐向长线机构与 A/H 通道集中"。（2024-09-30 一期系数据源回填前值，图中保留原样。）<br>
-            <b>青色副线 · H 股登记股东数（右轴 · 户）：</b>2010-12 港股上市至 2016 年，港股年报「股本变动及股东情况」章节仅披露公众持 H 股比例（27% 上下）与前十名 H 股股东，<b>未单独披露 H 股登记股东户数</b>；该口径自 <b>2017 年报</b>首次引入（正文写作"本行非境外上市股东总数 XX,XXX 户；H 股登记股东 X,XXX 户"）。已披露的 9 个年末观察点由 2017 末 <b>1,420 户</b>缓慢下行至 2025 末 <b>1,087 户</b>（累计 −23.4%），量级 ~1 千户，与 A 股 ~10 万户完全不在一个数量级，因此单独用右轴呈现。<br>
-            数据来源：① 2019-10-29~2026-03-31 共 43 期 → 本行历年定期报告（年报/中报/季报）「股东情况」章节披露值；② 2017/2018 年末 H 股 2 期 → 03618 港股年报 p.85 / p.89（元数据 <code>data/tables/holder_count_hshare_2010_2018.json</code>）。
-        </details>
-        <div id="note-holder-count-g" class="note-generic" style="display:none"></div>
-
-        <h3 class="chart-title" style="margin-top:22px">股东结构环形图（扇区角度 = 占总股本比例 · 同派系同色）</h3>
-        <!-- 竖排而不是并排：这几张图用的是 core.js 里 alignTo:'edge' 的边缘对齐标注，
-             一条标注要 336px，分三栏后每栏只剩 400px 出头，股东全称会被推出画布只剩比例 -->
-        <div style="display:flex;flex-direction:column;gap:24px">
-            <div>
-                <div class="yns-only" id="holders-title-a" style="font-size:18px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:6px">A 股年报（2025）· 前十大股东占总股本</div>
-                <div id="chart-holders" class="chart" style="height:560px"></div>
-                <div id="holders-legend" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
-            </div>
-            <!-- 以下两列是「H 股年报口径」专属：渝农商 H 股年报只到 2018、A 股年报从 2019 起，
-                 两边没有重叠年份，才值得把 A/H 两套结构并排看。其余 A+H 行同一年两份年报都有，
-                 按 A 股优先只画 A 股，这两列对它们恒定无意义 → .yns-h-only 一律隐藏 -->
-            <div class="yns-h-only">
-                <div style="font-size:18px;color:#4a2a5a;font-weight:600;text-align:center;margin-bottom:6px">H 股年报（2018）· 前十大股东占总股本</div>
-                <div id="chart-holders-h" class="chart" style="height:560px"></div>
-                <div id="holders-legend-h" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
-            </div>
-            <div class="yns-h-only">
-                <div style="font-size:18px;color:#16a085;font-weight:600;text-align:center;margin-bottom:6px">H 股年报（2018）· 主要 H 股股东占 H 股总股本</div>
-                <div id="chart-holders-h-only" class="chart" style="height:560px"></div>
-                <div id="holders-legend-h-only" style="font-size:18px;color:#444;line-height:1.9;margin:8px 4px 0"></div>
-            </div>
+    <!-- 双层环形图：内圈一名股东一块、外圈按分组归并，圈序可互换。版面（行高、字号、列宽、
+         圆环半径、画布高度）全部由数据量与文字实测宽度算出，这里只给一个空容器 -->
+    <section id="sec-ring" hidden>
+        <div class="ring-hd">
+            <h2 style="margin-bottom:0">股东结构环形图</h2>
+            <button type="button" id="btn-order" title="点一下两圈互换">内圈：股东明细</button>
         </div>
-        <details class="note yns-h-only">
-            <summary>为什么第三张图取 2018 年 H 股年报（点击展开）</summary>
-            渝农商行 2010-12 在港上市、2019-10-29 才登陆 A 股，因此 <b>H 股年报仅 2010-2018 年存在</b>、<b>A 股年报自 2019 年起才有</b>，两边<b>没有重叠年份</b>。第一张图取现有最新 A 股年报（2025）前十大股东占总股本；第二张图取现有最新 H 股年报（2018）前十大股东占总股本，用以对比 A 股上市前后的股权结构变化。<br>
-            前两张图口径均为「持股占总股本比例」（2018 年总股本 100 亿股，2025 年总股本 113.57 亿股）。第二张图第一大「香港中央结算（代理人）25.13%」为 H 股名义持有人账户（HKSCC Nominees），代众多境外投资者集中登记持有全部 H 股（2018 年 H 股占总股本 25.13%），并非单一实益股东。<br>
-            <b>第三张图口径不同：只看 H 股内部</b>——按 2018 年报「重大权益和淡仓」章节、依香港《证券及期货条例》(SFO) 披露的持 H 股 ≥5% 主要股东，占比为「占本行已发行 H 股总股本（25.13 亿股）之百分比」（好仓口径）。BlackRock 13.84%（已合并其受控法团 BlackRock Global Funds 6.98%）、复星系 7.00%（郭广昌经 Fosun 控股链持有的同一批股份，未重复计）、Citigroup 6.43%、LSV 5.98%，合计 33.25%；其余约 66.75% 为未达 5% 披露线的其他 H 股股东。数据来源：03618 港股 2018 年报「股本变动及股东情况——本行前 10 大股东持股情况 / 重大权益和淡仓」（p.89-92）；601077 沪股 2025 年报「股东情况」。
-        </details>
-        <div style="overflow-x:auto;margin-top:22px">
+        <p class="sub" id="ring-sub"></p>
+        <div class="chart-card" style="padding:8px 10px 14px">
+            <div id="chart-ring" style="height:640px"></div>
+        </div>
+        <div class="note" id="ring-note" style="max-width:1100px;color:#6b7280;font-size:16px"></div>
+    </section>
+
+    <div id="charts"></div>
+
+    <section id="sec-table" hidden>
+        <h2>前十名股东明细</h2>
+        <p class="sub" id="tbl-sub"></p>
+        <div style="overflow-x:auto">
             <table>
-                <thead><tr><th>股东名称</th><th>比例</th><th>报告期内增减</th><th>类别</th></tr></thead>
-                <tbody id="holder-tbody"></tbody>
+                <thead><tr id="tbl-head"></tr></thead>
+                <tbody id="tbl-body"></tbody>
+                <tfoot id="tbl-foot"></tfoot>
             </table>
         </div>
-        <details class="note yns-only">
-            <summary>数据说明（点击展开）</summary>
-            <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:12px;font-size:18px;color:#444">
-                <b style="color:#333">同色 = 同一致行动派系：</b>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#6c3483;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>渝富系（渝富资本 / 水利投资 / 水务）</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>发展系（发展置业 / 发展投资）</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#16a085;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>香港中央结算（代理人 / 沪股通）</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#e67e22;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>城投集团</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#c0392b;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>财信集团</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#f1c40f;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>社保116</span>
-                <span><span style="display:inline-block;width:12px;height:12px;background:#95a5a6;border-radius:3px;vertical-align:-1px;margin-right:4px"></span>其他流通股东</span>
-            </div>
-            环形图：全部股东（<b>「其他流通股东」也作为一个普通股东参与排序</b>）按<b>持股比例从大到小</b>铺满整圈（合计 100%）；<b>每段角度 = 其占总股本比例</b>，<b>同一致行动派系用同一颜色</b>（青=香港中央结算、紫=渝富系、蓝=发展系，其余城投橙 / 财信红 / 社保黄 / 其他灰）。圆心标注前十大合计 58.29%。
-            扇区过小的标签已隐藏，可 hover 或看下方派系清单 / 底部明细表。
-            一致行动关系：重庆发展置业管理与重庆发展投资互为一致行动人；重庆市水利投资（集团）、重庆水务集团为重庆渝富资本运营集团的一致行动人。
-            重庆财信企业集团所持 1.125 亿股处于质押、司法冻结状态。持股比例按总股本 113.57 亿股计算。
-        </details>
-        <div id="note-holders-g" class="note-generic" style="display:none"></div>
     </section>
 
-    <!-- ══════════ 4 历年股东持股集中度（独立板块 · 三张柱状图） ══════════
-         第一大 / 前三大 / 前十大各占一张全宽柱状图：三个口径量级差得远（渝农商第一大 22% 上下、
-         前十大 55%~67%），挤在同一张图里波动会被压平；每年一根柱（年末口径，最新年份取最近报告期），
-         柱顶直接写数值，tooltip 里三口径 + 其他流通股东一次列全。 -->
-    <section id="sec-concentration">
-        <h2>历年股东持股集中度</h2>
-        <p class="sub yns-only" id="conc-sub">每年一根柱（年末口径，最新年份取最近报告期）· <b>按披露来源分开画</b>：浅色柱 = 2010–2018 <b>港交所披露</b>（03618 H 股年报口径，其中 2010–2017 为重构合并 A+H 口径，柱身红色虚线框标出）、深色柱 = 2019 年起 <b>A 股定期报告披露</b>（601077 上交所）</p>
-
-        <h3 class="chart-title yns-only" id="conc-title-top1">第一大股东持股比例（占总股本 % · 香港中央结算·代理人）</h3>
-        <div id="chart-conc-top1" class="chart" style="height:400px"></div>
-
-        <h3 class="chart-title yns-only" id="conc-title-top3" style="margin-top:18px">前三大股东合计（占总股本 %）</h3>
-        <div id="chart-conc-top3" class="chart" style="height:400px"></div>
-
-        <h3 class="chart-title yns-only" id="conc-title-top10" style="margin-top:18px">前十大股东合计（占总股本 %）</h3>
-        <div id="chart-conc-top10" class="chart" style="height:400px"></div>
-
-        <details class="note yns-only" id="conc-note">
-            <summary>数据说明（点击展开）</summary>
-            <b>三张图的纵轴都不从 0 起</b>（按各自数据取整），否则第一大、前三大这两个口径的年际差异（不到 0.2pp）在图上完全看不出来；绝对水平看柱顶数值。<br>
-            <b>第一大股东</b>自 2010 年 H 股上市起一直是<b>香港中央结算（代理人）</b>——<b>该账户为 H 股名义持有人（HKSCC Nominees），代众多境外投资者集中登记持有全部 H 股，属代理人（名义持有）账户而非单一实益股东</b>，故其"第一大"占比虽高（2011–2016 年 27% 上下、A 股上市摊薄后 22% 上下），并不代表股权集中于某一控股方。<b>前三大合计</b>（含渝富资本、城投集团）A 股上市后稳定在 <b>37.8%</b> 上下。<b>前十大合计</b>在 A 股上市后走出一个 <b>U 形</b>：2019 年报 <b>59.00%</b>，2020-10-29 首发限售股解禁后民营股东退出（隆鑫控股 5.02%→1.20%，九鼎地产 / 江苏华西 / 业瑞地产先后掉出前十），2022 年报降到 <b>54.50%</b> 的低点；2023 年起重庆国资系补位（水利投资 4.99% 新进、重庆发展投资 3.81%→4.81%）加沪股通（香港中央结算）增持，回升到 <b>58%~59%</b>（"其他流通股东"= 100% − 前十大，与之严格镜像，只在 tooltip 里给出）。<br>
-            <b>港交所口径与 A 股口径分开披露（图例两项、颜色深浅区分）：</b>本行 2010 年 H 股上市、2019 年 A 股上市，2010–2018 年只有港交所 H 股年报，2019 年起才有上交所定期报告。两边披露主体与股东表范围不同（H 股年报里 HKSCC 名义持有人代持全部 H 股；A 股定期报告的「前十名股东」是登记在册股东），因此<b>不合成一条序列</b>，各占一个 series 单独成图例项，看趋势时请注意跨越 2018/2019 这道口径界线。<br>
-            <b>2010–2017 为重构合并 A+H 口径（柱身红色虚线框）：</b>这几年港股年报只披露「非境外上市（内资股）前十大」（第一大为渝富约 7–10%），<b>没有</b>含 HKSCC 名义持有 H 股的合并 A+H 前十大表——合并口径的表 <b>2018 年报</b>才首次自行披露。为与 2018 年起的口径对齐，2010–2017 各年系重构：把当年披露的<b>公众持 H 股整体比例</b>（≈代理人代持的全部 H 股）当作第一大『香港中央结算（代理人）』行，与内资股前十大按占总股本比例合并重排后取前十。重构值 2017 年前十大合计 ≈ <b>67.0%</b>，与 2018 年报披露原值 <b>67.0%</b> 相接，序列连续可信。<br>
-            <b>不入图的期次：</b>2019-10-29（A 股上市日）等非报告期快照——彼时前十大只列内资股 / 发行前股东，未含 HKSCC 名义持有的 H 股，合计仅 40%~46%，与年报全口径不可比；2022-12-22 是隆鑫控股 4.33 亿股（3.81%）过户给重庆发展投资当天东财记下的事件型快照，只列了 4 名股东（合计 43.04%），前十大合计无从计算。<br>
-            数据来源：2010–2018 取自 03618 港股年报「股本变动及股东情况」（重构方法与逐年取数见 <code>data/tables/data_sources.txt</code>）；2019 年起取自本行 A 股定期报告 / 东方财富 F10「前十名股东」接口按报告期汇总（A+H 两地上市，同一年份优先采用 A 股口径）。
-        </details>
-        <div id="note-holder-concentration-g" class="note-generic" style="display:none"></div>
+    <section id="sec-gaps" hidden>
+        <h2>口径与接口限制</h2>
+        <p class="sub">名册口径、缺失年份与穿透不了的名义持有人逐条列出，本页不做推算</p>
+        <ul class="gap-list" id="gaps"></ul>
     </section>
-
 </div>
-
-<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->
-<script src="charts/core.js"></script>
-<script src="charts/compare.js"></script>
-<script src="charts/perf.js"></script>
-<script src="charts/asset.js"></script>
-<script src="charts/debt.js"></script>
-<script src="charts/risk.js"></script>
-<script src="charts/shareholder.js"></script>
-<script src="charts/holders.js"></script>
-<script src="charts/intro.js"></script>
-<script src="charts/statement.js"></script>
-<script src="charts/switcher.js"></script>
-<script src="charts.js"></script>
+<!-- 点击环形图右侧标注行时在那一行下面弹出全称（列里的名字是按实测宽度截断的） -->
+<div id="row-full"></div>
+<!-- 股东明细弹层：点图上「股东明细」出全量长名清单，含所属分组与色块 -->
+<div class="modal" id="det-modal">
+    <div class="modal-box">
+        <div class="modal-hd">
+            <button type="button" id="det-close" title="关闭">&#10005;</button>
+        </div>
+        <div id="det-body"></div>
+    </div>
+</div>
+<script src="../shareholder.js"></script>
 </body>
 </html>

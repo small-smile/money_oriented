@@ -1,11 +1,14 @@
-/* 股权结构页（dashboard/company/shareholder.html）—— 银行/险企/开发商/水泥/运营商/百度/巴比共用一页
+/* 股权结构页（dashboard/company/bank/shareholder.html）—— 全站唯一一份，银行/险企/开发商/水泥/
+ * 运营商/百度/巴比共用；各板块只有顶部 header 不同（银行 bank-header.js，其余 site-header.js），
+ * 正文、图、表完全一样。页面文件放在 bank/ 目录下，脚本与样式在上一级（../shareholder.js|css）。
  *
  * 各板块的 <板块>_<code>_annual.json 里 holders 字段结构完全相同（东方财富公司数据接口的
  * 前十名股东快照），所以股权结构不按板块各写一份，全部走 /api/holders?industry=&code=。
  * 百度（tech:09888，20-F beneficial ownership 口径）与巴比食品（food:605338，年报名册）没有
  * annual 表，股东块整份来自 data/tables/holders_manual.json，页面照样这一套。
- * 银行表另有 holder_num（逐期股东户数）与 holder_concentration（集中度序列），
- * 有就多画两张图，没有就自然少两张 —— 页面结构一套，图随数据层增减。
+ * 银行的历年股本／每 10 股分红来自 company_charts_<code>.json（原先画在银行自己的年报口径
+ * 股东页里，那一页已并入本页），户数与集中度序列来自 bank 表，手工层公司则来自年报原文抽取件 ——
+ * 字段名一律与银行表对齐，所以图随数据层增减，不用为板块写分支。
  *
  * 比例列的分母是**总股本**（holders 记录自带 total_shares）：A+H 公司的名册上两类股份混排
  * （如中国移动前两名 BVI 68.79% 与香港中央结算(代理人) 25.96% 都是 H 股），
@@ -47,11 +50,16 @@ function shareFmt(v) {
 function buildNav(data) {
     const nav = document.createElement('nav');
     nav.className = 'site-nav';
-    const brand = document.createElement('a');
-    brand.className = 'brand';
-    brand.href = '../index.html';
-    brand.textContent = '📊 行业看板';
-    nav.appendChild(brand);
+    // header 已经带了「行业看板」品牌，这一行就不重复挂，只有没有 header 时（食品板块）才挂
+    const hdNav = document.querySelector('nav.site-nav');
+    if (!hdNav) {
+        const brand = document.createElement('a');
+        brand.className = 'brand';
+        // 本页是 dashboard/company/bank/shareholder.html（全站唯一一份股权结构页），回首页退两级
+        brand.href = '../../index.html';
+        brand.textContent = '📊 行业看板';
+        nav.appendChild(brand);
+    }
     for (const i of INDUSTRIES) {
         const a = document.createElement('a');
         a.href = '?industry=' + i.id;
@@ -89,13 +97,14 @@ function buildNav(data) {
             nav.appendChild(a);
         });
     }
-    if (data.company.detail_page) {
-        const a = document.createElement('a');
-        a.href = data.company.detail_page;
-        a.textContent = '↗ 年报口径股东页';
-        nav.appendChild(a);
+    /* 这条切换行排在 header 下面：header 由页面按 ?industry= 选（银行 bank-header.js／
+     * 其余 site-header.js），两个脚本都是动态注入、执行时机不定，所以这里不抢 body 首位，
+     * 有 header 就插到它后面，没有（如食品板块）才自己占首位。 */
+    if (hdNav) {
+        hdNav.insertAdjacentElement('afterend', nav);
+    } else {
+        document.body.insertBefore(nav, document.body.firstChild);
     }
-    document.body.insertBefore(nav, document.body.firstChild);
 }
 
 /* change 字段是接口原样字符串：数字（含负号）、「不变」「新进」 */
@@ -146,8 +155,8 @@ function renderHead(d) {
     document.getElementById('page-meta').innerHTML =
         d.label + (c.tag ? ' · ' + c.tag : '') + ' · 报告期末 <b>' + (c.holders_end_date || '—') +
         '</b> 的前十名股东快照 · 比例分母为总股本 ' + shareFmt(base) + '<br>' +
-        '本页五个板块共用一套结构（' + INDUSTRIES.map(i => i.label).join(' / ') +
-        '），数据层有多少就画多少图';
+        '全站只有这一页股权结构（' + INDUSTRIES.map(i => i.label).join(' / ') +
+        ' 共用，只有顶部导航按板块不同），数据层有多少就画多少图';
 
     document.getElementById('kpi-title').textContent = '股东结构概览';
     document.getElementById('kpi-sub').textContent =
@@ -508,9 +517,12 @@ function renderGaps(d) {
             '<code>holder_num</code> / <code>holder_concentration</code>，其余板块要按' +
             '<b>年报口径逐年抄「股东情况」章节</b>才有），所以少这两张图。');
     }
-    if (c.detail_page) {
-        gaps.push('本页是<b>接口口径</b>；该行另有<b>年报口径</b>的股东页（一致行动人归并、剔 H 股按 A 股基数重算、' +
-            '逐年增减来自年报「前十名股东持股情况表」）：<a href="' + c.detail_page + '">' + c.name + ' 年报口径股东页</a>。');
+    if (c.ring && c.ring.caliber) {
+        /* 银行原先另有一页年报口径股东页，已并入本页：环形图这一圈就是那份数据
+         * （一致行动人归并、含「其他流通股东」铺满 100%），下面的名册仍是接口快照口径 */
+        gaps.push('本页<b>两套口径同页呈现</b>：环形图与右侧分组是<b>年报口径</b>' +
+            '（一致行动人归并，含「其他流通股东」铺满 100%），下方「前十名股东明细」表是' +
+            '<b>接口口径</b>的报告期末快照 —— 两处的名字与增减写法本就不同，不要相互对齐着读。');
     }
     document.getElementById('gaps').innerHTML = gaps.map(g => '<li>' + g + '</li>').join('');
     document.getElementById('sec-gaps').hidden = false;
@@ -1289,7 +1301,8 @@ function buildRing(d) {
         '内圈每一块是一名股东，外圈把他们归成分组（点右上角按钮两圈互换）· 比例为' + RING_LABEL +
         '，合计不足 100% 的部分自动补成「' + RING_BLOCK.residualLabel + '」· ' +
         '点右侧任一行看全称，点「股东明细」出全量表格<br>' +
-        (c.ring ? '数据为<b>年报口径</b>（与该公司年报股东页同一份数据：含一致行动人归并与「其他流通股东」）'
+        (c.ring ? '数据为<b>年报口径</b>（一致行动人归并、含「其他流通股东」铺满 100%，' +
+            '就是原先银行那一页年报口径股东页画的那份）'
             : '数据为<b>' + (c.holders_caliber || '接口口径的前十名股东快照') + '</b>（报告期末 ' +
             (c.holders_end_date || '—') + '）');
     RCHART = echarts.init(document.getElementById('chart-ring'));

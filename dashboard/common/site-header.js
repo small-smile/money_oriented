@@ -38,7 +38,7 @@
                 {href: 'industry/bank/tsf.html',                         title: '社会融资规模'},
                 {href: 'industry/bank/npl-formation.html',               title: '息差与不良生成对比'},
                 {href: 'industry/bank/reform_timeline.html',             title: '重要变革时间线'},
-                {href: 'company/shareholder.html?industry=bank',         title: '股权结构'}
+                {href: 'company/bank/shareholder.html?industry=bank',         title: '股权结构'}
             ]
         },
         {
@@ -46,7 +46,7 @@
             pages: [
                 {href: 'industry/insurance/overview.html',               title: 'A/H 股概览'},
                 {href: 'industry/insurance/peers.html',                  title: '五大险企对比'},
-                {href: 'company/shareholder.html?industry=insurer',      title: '股权结构'}
+                {href: 'company/bank/shareholder.html?industry=insurer',      title: '股权结构'}
             ]
         },
         {
@@ -54,7 +54,7 @@
             pages: [
                 {href: 'industry/realestate/overview.html',              title: '央企名录与政策线'},
                 {href: 'industry/realestate/peers.html',                 title: '六家央企开发商对比'},
-                {href: 'company/shareholder.html?industry=developer',    title: '股权结构'}
+                {href: 'company/bank/shareholder.html?industry=developer',    title: '股权结构'}
             ]
         },
         {
@@ -62,7 +62,7 @@
             pages: [
                 {href: 'industry/cement/overview.html',                  title: '名录与供给侧政策线'},
                 {href: 'industry/cement/peers.html',                     title: '八家水泥企业对比'},
-                {href: 'company/shareholder.html?industry=cement',       title: '股权结构'}
+                {href: 'company/bank/shareholder.html?industry=cement',       title: '股权结构'}
             ]
         },
         {
@@ -71,7 +71,7 @@
                 {href: 'industry/telecom/overview.html',                 title: '名录与变革时间线'},
                 {href: 'industry/telecom/peers.html',                    title: '三大运营商对比'},
                 {href: 'company/telecom/index.html',                     title: '公司详情'},
-                {href: 'company/shareholder.html?industry=telecom',      title: '股权结构'}
+                {href: 'company/bank/shareholder.html?industry=telecom',      title: '股权结构'}
             ]
         },
         {
@@ -82,7 +82,7 @@
                 {href: 'company/baidu/index.html',                       title: '业绩'},
                 {href: 'company/baidu/segment.html',                     title: '分部与运营'},
                 {href: 'company/baidu/balance-sheet.html',               title: '资产与现金'},
-                {href: 'company/baidu/shareholder.html',                 title: '股权结构'},
+                {href: 'company/bank/shareholder.html?industry=tech',                 title: '股权结构'},
                 {href: 'company/baidu/intro.html',                       title: '简介'}
             ]
         }
@@ -90,8 +90,12 @@
 
     // 当前页在 dashboard/ 下的路径，用于判定所属行业 + 高亮
     const path = location.pathname.replace(/\/$/, '/index.html');
-    // 当前页所属行业分组；不在任何行业目录下（如 dashboard/index.html）时不注入导航
-    const GROUP = GROUPS.find(g => path.toLowerCase().includes('/' + g.dir.toLowerCase()));
+    /* 当前页所属行业分组；不在任何行业目录下（如 dashboard/index.html）时不注入导航。
+     * 例外：股权结构页只有一份（company/bank/shareholder.html，按 ?industry= 服务七个板块），
+     * 它的目录判不出板块，所以允许页面自己用 window.__HEADER_GROUP 指定用哪一组。 */
+    const GROUP = GROUPS.find(g => (window.__HEADER_GROUP
+        ? g.dir === window.__HEADER_GROUP
+        : path.toLowerCase().includes('/' + g.dir.toLowerCase())));
 
     function makeLink(p) {
         const a = document.createElement('a');
@@ -103,9 +107,12 @@
 
     function build() {
         if (!GROUP) return;                                // 非行业页（首页等）不加导航条
-        if (document.querySelector('.site-nav')) return;   // 幂等：避免重复注入
+        // 幂等只针对本脚本自己注入的那条：股权结构页另有一条自己画的板块/公司切换行，
+        // 那条也用 .site-nav 样式，不能因为它存在就不注入 header
+        if (document.querySelector('nav.site-nav[data-site-header]')) return;
         const nav = document.createElement('nav');
         nav.className = 'site-nav';
+        nav.dataset.siteHeader = '1';
         const brand = document.createElement('a');
         brand.className = 'brand';
         brand.href = ROOT + 'index.html';

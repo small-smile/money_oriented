@@ -408,10 +408,22 @@ class TestHolders:
         assert [r["code"] for r in roster if not r["has_holders"]], "开发商板块应有纯 H 股缺股东数据的公司"
 
     def test_bank_extra_layers_and_link(self):
-        """银行表另带股东户数与集中度两层，并给出年报口径股东页入口"""
+        """银行四层历史序列都要在：户数与集中度来自 bank 表，股本与分红来自 company_charts
+        （银行原先独立的年报口径股东页已并入唯一一份股权结构页，所以不再给外链入口）"""
         c = bk.read_holders("bank", "601077")["data"]["company"]
         assert c["holder_num"] and c["holder_concentration"]
-        assert c["detail_page"] == "/bank/601077/shareholder.html"
+        assert c["detail_page"] is None
+        cap, div = c["share_capital"], c["dividend_per10"]
+        assert cap and len(cap) > 5 and all(len(r) == 3 for r in cap)
+        # 股本单位是股（渝农商行 113.57 亿股），不是数据表里那个「亿股」
+        assert cap[-1][1] > 1e9, cap[-1]
+        assert div and all(len(r) == 2 and r[1] is not None for r in div)
+        # company_charts 里 share-capital / dividend-per10 是各行标配，有股东数据的行都该有这两层
+        for r in bk.read_holders("bank")["data"]["roster"]:
+            if not r["has_holders"]:
+                continue
+            cc = bk.read_holders("bank", r["code"])["data"]["company"]
+            assert cc["share_capital"] and cc["dividend_per10"], r["code"]
 
     def test_unknown_industry_and_code(self):
         assert bk.read_holders("foo")["code"] == 400

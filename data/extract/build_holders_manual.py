@@ -495,7 +495,7 @@ if __name__ == "__main__":
     attach_bank_aliases()
     MANUAL["_meta"] = {
         "generated_by": "data/extract/build_holders_manual.py",
-        "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/shareholder.html",
+        "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/bank/shareholder.html",
         "note": ("按 \"<板块>:<代码>\" 索引。factions 只做分组，不改任何数字；"
                  "food/tech 两家没有 annual 表，holders 整份在这里，口径见各自 caliber_note。"
                  "basis 字段区分「年报披露／20-F 披露」与「同类归并」，页面会原样印出。"

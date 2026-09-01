@@ -12,13 +12,13 @@ const TELECOM_CODES = [
     {code: '601728', name: '中国电信', color: '#c0392b', pre: '#f0a9a0'},
     {code: '600050', name: '中国联通', color: '#0f766e', pre: '#7fc3bb'}
 ];
-/* 股权结构不在这套页面里：五个板块共用 dashboard/company/shareholder.html 一页，
+/* 股权结构不在这套页面里：五个板块共用 dashboard/company/bank/shareholder.html 一页，
  * 所以这里只留一个带 industry 参数的外链（q 字段），不再各行业复制一份 */
 const TELECOM_PAGES = [
     {href: 'index.html', title: '业绩与财务'},
     {href: 'segment.html', title: '收入构成'},
     {href: 'operation.html', title: '运营与资本开支'},
-    {href: '../shareholder.html', q: 'industry=telecom', title: '股权结构'}
+    {href: '../bank/shareholder.html', q: 'industry=telecom', title: '股权结构'}
 ];
 const CODE = (function () {
     const c = new URLSearchParams(location.search).get('code');

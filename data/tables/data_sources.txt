@@ -812,10 +812,19 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #   股东数据: holders 只有 holders_end_date 那一期快照(2025-12-31, 前十名), 历史各期未入库; 比例分母是**总股本**(H 股与 A 股混排在一张名册上,
 #     移动前两名 BVI 68.79% 与香港中央结算(代理人) 25.96% 都是 H 股); 接口的 total_share 是当前值被回填到每一年(三家历年值完全相同),
 #     **不可当历史股本用**, 回 A 发行与联通 2017 混改定增的股本台阶在这份数据里看不出来.
-#     股权结构不按板块各写一页: 银行/险企/开发商/水泥/运营商共用 dashboard/company/shareholder.html + /api/holders?industry=&code=,
-#     五个板块的 holders 字段结构完全一致; 银行表另有 holder_num(逐期股东户数)与 holder_concentration(逐期集中度, 含剔代理人口径)两层,
-#     有就多画两张图, 其余板块自然少两张. 纯 H 股公司(00966/00688/01109/00817/03323/01313/00743)接口不返回前十名股东, 名单里置灰保留.
-#     银行另有**年报口径**股东页(/bank/<code>/shareholder.html, 一致行动人归并、剔 H 股按 A 股基数重算), 与共用页的接口口径是两套, 页面互相给了入口.
+#     股权结构全站只剩一页: dashboard/company/bank/shareholder.html + /api/holders?industry=&code=,
+#     七个板块(银行/险企/开发商/水泥/运营商/百度/食品)正文完全一样, **只有顶部 header 不同**
+#     (industry=bank 走 common/bank-header.js, 其余走 common/site-header.js, 由页面 head 里的小脚本按 ?industry= 选);
+#     脚本与样式在上一级: dashboard/company/shareholder.js / shareholder.css.
+#     原先的三份页面已删: dashboard/company/shareholder.html(共用页旧址)、company/baidu/shareholder.html(百度专页)、
+#     company/bank/shareholder-noyns.html(A+H 合并视角预览页); 百度专页的 charts/shareholder.js 一并删除.
+#     银行表另有 holder_num(逐期股东户数)与 holder_concentration(逐期集中度, 含剔代理人口径)两层;
+#     历年股本与每 10 股分红改由接口从 company_charts_<code>.json 的 share-capital / dividend-per10 下发
+#     (原先画在银行那页年报口径股东页里, 那页已并入本页, company.detail_page 因此恒为 null).
+#     分红两源并集: company_charts 那份逐年抄年报、bank_<code>_annual.json 那份来自公司数据接口,
+#     **重叠年份以年报口径为准**, 接口只补缺年(渝农商行 2011-2018 只有年报口径有、民生银行 2000 只有接口有);
+#     44 家逐年比对, 重叠年份只有 600016 民生银行 2017 两源不一致(接口 2.10 / 年报口径 1.50), 现取 1.50, **待回年报原文复核**.
+#     纯 H 股公司(00966/00688/01109/00817/03323/01313/00743)接口不返回前十名股东, 名单里置灰保留.
 #
 # ── 股权结构共用页的分组层与手工股东块 (2026-09-01) ────────────────────────────────
 #   data/tables/holders_manual.json (生成脚本 data/extract/build_holders_manual.py, 按 "<板块>:<代码>" 索引):
@@ -832,7 +841,8 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #     所以除控股股东外全是同类归并; 巴比第一组抄的是年报「刘会平和丁仕梅为实际控制人…系夫妻/姐妹/有限合伙人」那段原文.
 #     百度是 SEC beneficial ownership 口径(含 60 日内可行使期权与不可撤销投票代理), 不是 A 股「前十名股东」口径;
 #     贝莱德那行股数数据日是 2023-12-31 的 13G/A, 三份 20-F 沿用未更新, 只换分母 —— caliber_note 里写明.
-#   双层环形图(内圈一名股东/外圈分组, 可互换)已并入共用页: dashboard/company/shareholder.{html,js,css},
+#   双层环形图(内圈一名股东/外圈分组, 可互换)已并入唯一那一页: dashboard/company/bank/shareholder.html
+#     + dashboard/company/shareholder.{js,css},
 #     原型 dashboard/company/bank/_preview_holders_merged.html. 环形图吃的标准数据块由接口下发, 不在前端写死:
 #     /api/holders 的 company.ring = {caliber, holderData:[{name,value,type,chgText}], factions};
 #     银行取 company_charts_<code>.json 的 holders 块(年报口径, 已含「其他流通股东」, 一圈铺满 100%),
