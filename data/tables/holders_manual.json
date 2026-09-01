@@ -1708,6 +1708,47 @@
   ],
   "history_source": "各财年 Form 20-F（SEC）Item 6.E Share Ownership / Item 7.A Major Shareholders，本地存档 data/raw/20f_09888_<年>.htm/.txt　逐年抽取件：data/extract/out/ownership_hist_09888.json（21 份 20-F，从 .htm 表格按列取数，抽取方式见其 _meta.method，缺口见其 gaps）。"
  },
+ "bank:601077": {
+  "faction_aliases": {
+   "香港代理人(H股)": "香港中央结算(代理人)有限公司",
+   "沪股通(A股)": "香港中央结算有限公司",
+   "渝富资本": "重庆渝富资本运营集团有限公司",
+   "水利投资": "重庆市水利投资(集团)有限公司",
+   "水务集团": "重庆水务集团股份有限公司",
+   "发展置业": "重庆发展置业管理有限公司",
+   "发展投资": "重庆发展投资有限公司",
+   "城投集团": "重庆市城市建设投资(集团)有限公司",
+   "财信集团": "重庆财信企业集团有限公司",
+   "社保116": "全国社保基金一一六组合"
+  }
+ },
+ "bank:601288": {
+  "faction_aliases": {
+   "财政部": "中华人民共和国财政部",
+   "香港中央结算(沪股通)": "香港中央结算有限公司",
+   "全国社保基金": "全国社会保障基金理事会",
+   "中央汇金": "中央汇金投资有限责任公司"
+  }
+ },
+ "bank:600036": {
+  "faction_aliases": {
+   "香港中央结算(沪股通)": "香港中央结算有限公司"
+  }
+ },
+ "bank:600016": {
+  "faction_aliases": {
+   "香港中央结算(沪股通)": "香港中央结算有限公司",
+   "大家人寿-万能": "大家人寿保险股份有限公司-万能产品",
+   "大家人寿-传统": "大家人寿保险股份有限公司-传统产品"
+  }
+ },
+ "bank:01578": {
+  "faction_aliases": {
+   "天津医药集团": "天津市医药集团有限公司",
+   "澳新银行": "澳大利亚和新西兰银行集团有限公司",
+   "天津宁福投资": "天津市宁福投资有限公司"
+  }
+ },
  "_meta": {
   "generated_by": "data/extract/build_holders_manual.py",
   "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/shareholder.html",

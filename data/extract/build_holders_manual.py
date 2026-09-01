@@ -431,10 +431,68 @@ def attach_tech_history(key="tech:09888", code="09888"):
     print(f"  [hist] {key}: 股本 {len(cap)} 年 / 集中度 {len(conc)} 年（无户数、无分红）")
 
 
+# ── 银行：派系表用年报页面简称，接口名册用工商全称，靠别名表接上 ─────────────────
+# 接口名册的出处：data/extract/fetch_bank_financials.py 抓东财 datacenter 的
+# RPT_F10_EH_HOLDERS（前十名股东，HOLDER_NAME 为工商全称），落在 bank_<code>_annual.json 的 holders；
+# 派系表的出处：data/tables/company_charts_<code>.json 的 holders 块（银行年报口径股东页那份，
+# 名字是年报图上的简称）。两边对不上的只有下面这 5 家，逐个人工核对后写死；
+# 生成时断言每个目标名字确实在该行当期名册里，名册换期后对不上会直接报错，不会静默丢组。
+BANK_FACTION_ALIASES = {
+    "601077": {  # 渝农商行：整份派系表都是简称
+        "香港代理人(H股)": "香港中央结算(代理人)有限公司",
+        "沪股通(A股)": "香港中央结算有限公司",
+        "渝富资本": "重庆渝富资本运营集团有限公司",
+        "水利投资": "重庆市水利投资(集团)有限公司",
+        "水务集团": "重庆水务集团股份有限公司",
+        "发展置业": "重庆发展置业管理有限公司",
+        "发展投资": "重庆发展投资有限公司",
+        "城投集团": "重庆市城市建设投资(集团)有限公司",
+        "财信集团": "重庆财信企业集团有限公司",
+        "社保116": "全国社保基金一一六组合",
+    },
+    "601288": {  # 农业银行
+        "财政部": "中华人民共和国财政部",
+        "香港中央结算(沪股通)": "香港中央结算有限公司",
+        "全国社保基金": "全国社会保障基金理事会",
+        # 名册里「中央汇金投资」与「中央汇金资产管理」同时在列，「中央汇金」这个前缀不唯一，
+        # 派系表另有一条「中央汇金资产」，所以这条指的是母公司汇金投资
+        "中央汇金": "中央汇金投资有限责任公司",
+    },
+    "600036": {"香港中央结算(沪股通)": "香港中央结算有限公司"},
+    "600016": {  # 民生银行
+        "香港中央结算(沪股通)": "香港中央结算有限公司",
+        "大家人寿-万能": "大家人寿保险股份有限公司-万能产品",
+        "大家人寿-传统": "大家人寿保险股份有限公司-传统产品",
+    },
+    "01578": {  # 天津银行
+        "天津医药集团": "天津市医药集团有限公司",
+        "澳新银行": "澳大利亚和新西兰银行集团有限公司",
+        "天津宁福投资": "天津市宁福投资有限公司",
+    },
+}
+# 「沪股通(A股)」→「香港中央结算有限公司」：后者是沪/深股通的名义持有人，
+# 与「香港中央结算(代理人)有限公司」（H 股代理人）是两个不同主体，别名不能互换。
+
+
+def attach_bank_aliases():
+    """把别名表写进手工层，并核对目标名字确实在该行当期接口名册里。"""
+    for code, amap in BANK_FACTION_ALIASES.items():
+        path = os.path.join(TABLES, f"bank_{code}_annual.json")
+        with open(path, encoding="utf-8") as f:
+            roster = [h.get("name") for h in (json.load(f).get("holders") or [])]
+        missing = [v for v in amap.values() if v not in roster]
+        assert not missing, f"bank:{code} 别名目标不在接口名册里：{missing}\n名册：{roster}"
+        MANUAL.setdefault(f"bank:{code}", {})["faction_aliases"] = amap
+        print(f"  [alias] bank:{code}: {len(amap)} 个简称对上名册")
+    # 派系表里的「其他流通股东」是年报口径环形图的残余块，接口名册里本来就没有这一行，
+    # 不给它编别名 —— 环形图那一圈的残余由前端按 100% − 合计自己补。
+
+
 if __name__ == "__main__":
     for _key, _code in HIST_CODES.items():
         attach_history(_key, _code)
     attach_tech_history()
+    attach_bank_aliases()
     MANUAL["_meta"] = {
         "generated_by": "data/extract/build_holders_manual.py",
         "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/shareholder.html",

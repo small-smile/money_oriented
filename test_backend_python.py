@@ -351,6 +351,20 @@ class TestHolders:
                     assert g["names"], f"{industry} {r['code']} 空分组不该下发"
                     assert set(g["names"]) <= names, f"{industry} {r['code']} {g['title']}"
 
+    def test_bank_faction_members_all_resolve(self):
+        """银行派系表（年报口径页那份）的每个成员都要落到接口名册上：
+        用年报简称的 5 家（601077/601288/600036/600016/01578）靠手工层 faction_aliases 接，
+        名册换期后别名失效会在这里暴露 —— 只有「其他流通股东」是环形图残余块，名册里本来没有。"""
+        for r in bk.read_holders("bank")["data"]["roster"]:
+            d = bk._holder_table("bank", r["code"])
+            fac = bk._bank_factions(r["code"])
+            if not d or not fac:
+                continue
+            man = bk._holders_manual().get("bank:" + r["code"]) or {}
+            want = sum(1 for f in fac for n in (f.get("names") or []) if n != "其他流通股东")
+            got = bk._resolve_factions(d.get("holders") or [], fac, man.get("faction_aliases")) or []
+            assert sum(len(f["names"]) for f in got) == want, r["code"]
+
     def test_ring_block_sums_to_100(self):
         """银行的环形图数据块是年报口径（含「其他流通股东」），一圈铺满 100%"""
         for code in ("601398", "601077", "600036"):

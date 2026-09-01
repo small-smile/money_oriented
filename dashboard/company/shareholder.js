@@ -175,13 +175,92 @@ function renderHead(d) {
     return {base: base, sum10: sum10};
 }
 
-function buildCharts(d) {
-    const c = d.company;
+/* 名册里的「股份类别」写法各板块不一：A 股公司是「流通A股／限售流通A股／流通H股」，
+ * 百度那份 20-F 名册写的是「A 类 xxx + B 类 xxx」这种长句 —— 所以按关键字归几个大类着色，
+ * 认不出来的一律灰色，不给每行都发一个新颜色（那样图上颜色比信息多）。 */
+function typeColor(t) {
+    const s = String(t || '').replace(/\s/g, '');
+    if (/H股|限售流通H/.test(s)) return '#b45309';
+    if (/B类/.test(s)) return '#0f766e';
+    if (/限售/.test(s)) return '#7c3aed';
+    if (/A股|A类/.test(s)) return IND_COLOR[IND] || '#1f6feb';
+    return '#94a3b8';
+}
 
-    /* 前十名股东各自的比例不再单独画横条：环形图右侧那两列已经把同一批数字按分组列全，
-     * 精确值在下方「前十名股东明细」表与环形图的股东明细弹层里，画三遍只是占版面。 */
+function buildCharts(d, agg) {
+    const c = d.company, holders = c.holders || [];
 
-    // ① 股东户数（只有银行表有 holder_num：逐披露期 [日期, 总数, A 股, H 股]）
+    // ① 前十名股东各自的比例（横向条形，按股份类别着色）
+    if (holders.length) {
+        const rows = holders.slice().reverse();   // 横向条形从下往上画，倒序让第一名在顶
+        const ch = chartCard({
+            id: 'holders', title: '前十名股东持股比例',
+            sub: '横条：占总股本（%）· 颜色按股份类别（A 股／H 股／限售股，百度按 A 类／B 类）',
+            note: '这张图与上面环形图是同一批数字的两种读法：环形图看的是<b>分组结构</b>' +
+                '（谁和谁是一伙的、名册外还剩多少），横条看的是<b>逐名股东的量级差</b> —— ' +
+                '第一名与第二名差几倍，这在环形图的角度上不好比。',
+            detail: '<b>比例分母是总股本：</b>H 股与 A 股同在一张名册上，按 A 股基数重算会把 H 股股东的比例放大到荒谬值。<br>' +
+                '<b>「港股股东A／B」不是本项目起的名：</b>接口对部分港股股东不给具体名称，原样保留，不猜不补全。'
+        }, '58vh');
+        ch.setOption({
+            tooltip: {
+                trigger: 'item',
+                formatter: p => p.name + '<br><b>' + fmt(p.value, 2) + ' %</b>　' +
+                    shareFmt(rows[p.dataIndex].hold_num) +
+                    (rows[p.dataIndex].shares_type ? '<br><span style="color:#888">' +
+                        rows[p.dataIndex].shares_type + '</span>' : '')
+            },
+            grid: {left: 300, right: 90, top: 20, bottom: 40},
+            xAxis: Object.assign({}, AXIS, {name: '%'}),
+            yAxis: {
+                type: 'category',
+                data: rows.map(h => (h.name || '').length > 24 ? (h.name || '').slice(0, 23) + '…' : h.name),
+                axisLabel: {fontSize: 13}, axisTick: {show: false}
+            },
+            series: [{
+                type: 'bar', barMaxWidth: 22,
+                label: {show: true, position: 'right', fontSize: 13, formatter: p => fmt(p.value, 2) + '%'},
+                itemStyle: {color: p => typeColor(rows[p.dataIndex].shares_type)},
+                data: rows.map(h => h.ratio)
+            }]
+        });
+    }
+
+    // ② 持股集中度：第一大股东 / 第 2—10 名 / 名册外其余股份，一条 100% 横条
+    if (agg && agg.base && holders.length) {
+        const first = holders[0].hold_num || 0;
+        const pct = v => +(v / agg.base * 100).toFixed(2);
+        const seg = [
+            {name: '第一大股东', value: pct(first), color: '#10243e'},
+            {name: '第 2—10 名股东', value: pct(agg.sum10 - first), color: IND_COLOR[IND] || '#1f6feb'},
+            {name: (c.residual_label || '名册外其余股份'), value: pct(agg.base - agg.sum10), color: '#cbd5e1'}
+        ];
+        const ch = chartCard({
+            id: 'concentration', title: '持股集中度',
+            sub: '一条 100% 横条：第一大股东／第 2—10 名／名册之外的全部股份（占总股本 %）',
+            note: '第一大股东与名册外股份的比例，是判断这家公司「实际可流通筹码」的第一个数。',
+            detail: '<b>「名册外其余股份」不等于自由流通盘：</b>它只是总股本减去名册合计，里面仍包含第 11 名之后的' +
+                '国资平台、战投、指数基金与港股代理人未穿透的部分 —— 名册只给到前十名，无法再往下拆。' +
+                (c.caliber_note ? '<br>' + mdBold(c.caliber_note) : '')
+        }, '26vh');
+        ch.setOption({
+            tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}, valueFormatter: v => fmt(v, 2) + ' %'},
+            legend: {top: 0, itemGap: 16, textStyle: {fontSize: 15}},
+            grid: {left: 40, right: 40, top: 48, bottom: 30},
+            xAxis: Object.assign({}, AXIS, {max: 100, name: '%'}),
+            yAxis: {type: 'category', data: [''], axisTick: {show: false}},
+            series: seg.map(s => ({
+                name: s.name, type: 'bar', stack: 'all', barWidth: 46,
+                itemStyle: {color: s.color},
+                label: {show: s.value >= 4, fontSize: 14,
+                    color: s.color === '#cbd5e1' ? '#374151' : '#fff',
+                    formatter: () => fmt(s.value, 1) + '%'},
+                data: [s.value]
+            }))
+        });
+    }
+
+    // ③ 股东户数（只有银行表有 holder_num：逐披露期 [日期, 总数, A 股, H 股]）
     if (c.holder_num && c.holder_num.length > 1) {
         const rows = c.holder_num;
         const dates = rows.map(r => r[0]);
@@ -214,7 +293,7 @@ function buildCharts(d) {
         });
     }
 
-    // ② 集中度序列（holder_concentration：逐期 top1/top3/top10，另有剔除代理人的口径）
+    // ④ 集中度序列（holder_concentration：逐期 top1/top3/top10，另有剔除代理人的口径）
     if (c.holder_concentration && c.holder_concentration.length > 1) {
         const rows = c.holder_concentration;
         const dates = rows.map(r => r.date);
@@ -271,7 +350,7 @@ function buildCharts(d) {
         });
     }
 
-    // ③ 历年总股本变动（手工层从年报「股份变动情况表」抄来的才有；银行在自己的年报口径页里已有此图）
+    // ⑤ 历年总股本变动（手工层从年报「股份变动情况表」抄来的才有；银行在自己的年报口径页里已有此图）
     if (c.share_capital && c.share_capital.length > 1) {
         const rows = c.share_capital;
         /* 拆股／并股会让断点前后两段的股数完全不可比（百度 1 拆 80：3,500 万股 → 27 亿股），
@@ -339,7 +418,7 @@ function buildCharts(d) {
         });
     }
 
-    // ④ 历年每 10 股分红（同上：手工层补齐后才画）
+    // ⑥ 历年每 10 股分红（同上：手工层补齐后才画）
     if (c.dividend_per10 && c.dividend_per10.length > 1) {
         const rows = c.dividend_per10.filter(r => r[1] !== null && r[1] !== undefined);
         const ch = chartCard({
@@ -373,13 +452,20 @@ function buildCharts(d) {
 function renderTable(d, agg) {
     const c = d.company, holders = c.holders;
     const hasPledge = holders.some(h => h.pledged !== null && h.pledged !== undefined);
+    /* 「所属分组」列：后端把派系表的名字对到这张名册上（用年报简称的几家银行靠手工层
+     * faction_aliases 接），对不上的成员后端已剔除，所以这里出现的分组都是核对过的。 */
+    const facOf = {};
+    (c.factions || []).forEach(f => (f.names || []).forEach(n => { facOf[n] = f.title; }));
+    const hasFac = Object.keys(facOf).length > 0;
     document.getElementById('tbl-head').innerHTML =
         '<th class="num">序号</th><th>股东名称</th><th class="num">持股数（股）</th>' +
         '<th class="num">报告期内增减（股）</th><th class="num">占总股本</th>' +
-        (hasPledge ? '<th class="num">质押/冻结（股）</th>' : '') + '<th>类别</th>';
+        (hasPledge ? '<th class="num">质押/冻结（股）</th>' : '') +
+        (hasFac ? '<th>所属分组</th>' : '') + '<th>类别</th>';
     document.getElementById('tbl-sub').innerHTML =
         '报告期末 ' + (c.holders_end_date || '—') + ' · 「报告期内增减」与「新进／不变」为接口原样字段' +
-        '（增红／减绿／新进橙），缺失显示「—」，不做推算 · 占比分母为总股本 ' + shareFmt(agg.base);
+        '（增红／减绿／新进橙），缺失显示「—」，不做推算 · 占比分母为总股本 ' + shareFmt(agg.base) +
+        (hasFac ? ' · 「所属分组」为一致行动人／同类归并，依据见环形图下方说明' : '');
     document.getElementById('tbl-body').innerHTML = holders.map(h =>
         '<tr><td class="num">' + h.rank + '</td>' +
         '<td class="nm">' + (h.name || '—') + '</td>' +
@@ -387,13 +473,15 @@ function renderTable(d, agg) {
         changeCell(h) +
         '<td class="num">' + fmt(h.ratio, 2) + '%</td>' +
         (hasPledge ? '<td class="num">' + (h.pledged ? h.pledged.toLocaleString('zh-CN') : '—') + '</td>' : '') +
+        (hasFac ? '<td class="nat">' + (facOf[h.name] || '—') + '</td>' : '') +
         '<td class="nat">' + (h.shares_type || '—') + '</td></tr>').join('');
     document.getElementById('tbl-foot').innerHTML =
         '<tr class="row-total"><td class="num"></td><td class="nm">前十名合计</td>' +
         '<td class="num">' + agg.sum10.toLocaleString('zh-CN') + '</td>' +
         '<td class="num" style="color:#6b7280">见各行</td>' +
         '<td class="num">' + (agg.base ? fmt(agg.sum10 / agg.base * 100, 2) : '—') + '%</td>' +
-        (hasPledge ? '<td class="num"></td>' : '') + '<td class="nat"></td></tr>';
+        (hasPledge ? '<td class="num"></td>' : '') +
+        (hasFac ? '<td class="nat"></td>' : '') + '<td class="nat"></td></tr>';
     document.getElementById('sec-table').hidden = false;
 }
 
@@ -1276,7 +1364,7 @@ axios.get('/api/holders?industry=' + IND + (CODE ? '&code=' + CODE : '')).then(f
     }
     const agg = renderHead(d);
     buildRing(d);
-    buildCharts(d);
+    buildCharts(d, agg);
     renderTable(d, agg);
     renderGaps(d);
 }).catch(function (e) {

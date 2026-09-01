@@ -839,6 +839,15 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #     其中 holderData 与 holders 两份名字 44 家一致、渝农商行(601077)图上/表里用两套简称, 按比例值唯一对上补类别与增减;
 #     没有 ring 的板块退回接口快照 + 分组, 前十名之外那一块由前端按 100% − 合计自动补(名字用 residual_label).
 #     页面自己的 CSS 已拆到 dashboard/company/shareholder.css(弹层/全称框/圈序按钮), HTML 里不再留 <style>.
+#   一致行动人分组对名册: 接口名册来自 fetch_bank_financials.py 抓的 RPT_F10_EH_HOLDERS(HOLDER_NAME 是工商全称),
+#     派系表来自 company_charts_<code>.json 的 holders 块(名字是年报图上的简称) —— 两边对不上的 5 家
+#     (601077 渝农商行整份简称 / 601288 农行 / 600036 招行 / 600016 民生 / 01578 天津银行)
+#     由 holders_manual.json 的 faction_aliases 逐个人工核对后写死, build_holders_manual.py 生成时断言
+#     每个目标名字确实在该行当期名册里(名册换期后失效会直接报错, 不会静默丢组);
+#     另有测试 test_bank_faction_members_all_resolve 兜底 —— 44 家的派系成员现已全部对上.
+#     「沪股通(A股)」→「香港中央结算有限公司」与「香港代理人(H股)」→「香港中央结算(代理人)有限公司」是两个不同主体, 不可互换;
+#     派系表里的「其他流通股东」是年报口径环形图的残余块, 接口名册本来没有这一行, 不编别名.
+#     页面「前十名股东明细」表因此多一列「所属分组」(后端已剔除对不上的成员, 出现的分组都是核对过的).
 #   历史序列层(照 bank/shareholder.html 那套模板补的, 手工层字段与银行表同名, 所以图不用改代码就出来):
 #     share_capital [[年, 股数, 变动原因]] / holder_num [{date, total, a_share, h_share}] /
 #     holder_concentration [{date, top1, top3, top10, top1_name, ...}] / dividend_per10 [[年, 每 10 股]] (+ dividend_unit),

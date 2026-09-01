@@ -1233,12 +1233,17 @@ def _norm_holder_name(s):
     return s
 
 
-def _resolve_factions(holders, factions):
+def _resolve_factions(holders, factions, aliases=None):
     """把派系表里的股东名对到名册里的真实名字上；对不上的成员直接丢掉，整组空了就丢整组。
-    只认两种命中：归一化后完全相同，或名册里唯一一个以它开头的名字（唯一才算，多个视为对不上）。
-    宁可少归一个成员（那家股东在前端自成一组），也不猜——猜错就是把股份记到别人名下。"""
+    只认三种命中：别名表里给定、归一化后完全相同、或名册里唯一一个以它开头的名字（唯一才算）。
+    宁可少归一个成员（那家股东在前端自成一组），也不猜——猜错就是把股份记到别人名下。
+
+    aliases 是手工层的 faction_aliases（「年报页面简称」→「接口名册全称」），
+    给那几家派系表用简称的银行（渝农商行、农行、招行、民生、天津）人工核对后写死，
+    build_holders_manual.py 在生成时会断言每个目标名字确实在该行的接口名册里。"""
     if not factions or not holders:
         return None
+    alias = {_norm_holder_name(k): v for k, v in (aliases or {}).items()}
     exact, out = {}, []
     for h in holders:
         exact.setdefault(_norm_holder_name(h.get("name")), h.get("name"))
@@ -1246,6 +1251,8 @@ def _resolve_factions(holders, factions):
         hit = []
         for n in f.get("names") or []:
             key = _norm_holder_name(n)
+            if key in alias:
+                key = _norm_holder_name(alias[key])
             if key in exact:
                 hit.append(exact[key])
                 continue
@@ -1312,6 +1319,8 @@ def read_holders(industry, code=None):
             if man.get(k):
                 rec[k] = man[k]
         rec["factions"] = man.get("factions") or (_bank_factions(c) if industry == "bank" else None)
+        # 派系表用年报简称、接口名册用全称的那几家，靠手工层的别名表接上（见 _resolve_factions）
+        rec["faction_aliases"] = man.get("faction_aliases")
         rec["factions_source"] = man.get("factions_source") or (
             f"银行年报口径股东页的一致行动人表（data/tables/company_charts_{c}.json）"
             if rec["factions"] and industry == "bank" else None)
@@ -1361,7 +1370,8 @@ def read_holders(industry, code=None):
             # 分红图的单位：中国移动的股息以港元宣派，年报不给人民币每股金额，就照港元画
             "dividend_unit": d.get("dividend_unit") or "元",
             # 一致行动人：有派系表才画双层环，没有就只有单层（内外圈同一份数据没意义）
-            "factions": _resolve_factions(d.get("holders") or [], d.get("factions")),
+            "factions": _resolve_factions(d.get("holders") or [], d.get("factions"),
+                                          d.get("faction_aliases")),
             # 环形图的标准数据块（bank/shareholder.html 那套年报口径数据）：银行取 company_charts，
             # 手工层给了 ring 的公司取手工层，都没有时前端拿接口快照 + 分组现拼一份
             "ring": d.get("ring") or (_ring_block_from_charts(code) if industry == "bank" else None),
