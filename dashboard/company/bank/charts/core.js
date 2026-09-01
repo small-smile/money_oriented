@@ -9,8 +9,6 @@
  *   charts/asset.js       资产端：金融投资、公允价值、贷款结构与投向
  *   charts/debt.js        负债端：存款成本、已发行债务证券、重定价缺口
  *   charts/risk.js        风控：盈利质量与减值、核销、五级分类、迁徙率、到期结构、权益资产比
- *   charts/shareholder.js 分红、总股本、股东户数
- *   charts/holders.js     前十大股东（含穿透）、持股集中度、可排序表格
  *   charts/intro.js       公司概览：投诉、员工人数/岗位/学历/年龄、董监高薪酬
  *   charts/statement.js   分部信息、资产负债表趋势与结构、现金流
  *   charts/switcher.js    ROE 图 / 不良总额图上方的「快速切换银行」按钮面板
@@ -138,9 +136,6 @@ const KEY_DOM = {
     'creditamount': ['chart-creditamount'],
     'oci': ['chart-oci'],
     'pershare': ['chart-pershare'],
-    'dividend-per10': ['chart-dividend-per10'],
-    'holder-count': ['chart-holder-count'],
-    'share-capital': ['chart-share-capital'],
     'complaint': ['chart-complaint'],
     'invest': ['chart-invest'],
     'fvtpl-mix': ['chart-fvtpl-mix'],
@@ -153,13 +148,6 @@ const KEY_DOM = {
     'repricing': ['chart-repricing'],
     'loantrend': ['chart-loantrend'],
     'perloan-bal': ['chart-perloan-bal', 'chart-perloan-npl'],
-    'holders': ['chart-holders', 'chart-holders-faction', 'chart-holders-through', 'chart-holders-through-faction'],
-    'holders-h': ['chart-holders-h'],
-    'holders-h-only': ['chart-holders-h-only'],
-    // 三张柱图共用 holder-concentration（A 股定期报告口径）；港交所 H 股年报口径走
-    // holder-concentration-hist，在同一张图里作为单独的 series 披露，不另占图位，
-    // 所以不进 KEY_DOM——上面的空载荷占位循环对这个 key 有特例（纯 H 股行只有 hist）
-    'holder-concentration': ['chart-conc-top1', 'chart-conc-top3', 'chart-conc-top10'],
     'seg-rev': ['chart-seg-rev'],
     'geo': ['chart-geo'],
     'loan-industry': ['chart-loan-industry'],

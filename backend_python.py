@@ -1216,8 +1216,9 @@ def _bank_history_from_charts(code, annual_div=None):
     前端按这个字段给柱子上色）。分红取两源并集：company_charts 那份是逐年抄年报的，
     bank 表那份来自公司数据接口，**重叠年份以年报口径（company_charts）为准**（信息源优先级），
     接口那份只补年报口径缺的年份（渝农商行 2011–2018 只有年报口径有、民生银行 2000 只有接口有）。
-    44 家逐年比对过，重叠年份只有 600016 的 2017 两源不一致（接口 2.10 / 年报口径 1.50），
-    按上面的优先级取 1.50 —— 见 data/tables/data_sources.txt 里这一条。"""
+    44 家逐年比对过，重叠年份只有 600016 的 2017 两源不一致（接口 2.10 / 年报口径 1.50）：
+    民生 2017 年报「普通股股利」段写明上半年每 10 股 1.20 元 + 下半年 0.30 元（另送股 2 股），
+    全年现金 1.50 元，接口那个 2.10 在年报里没有对应口径 —— 所以这里取 1.50。"""
     cap = _company_charts_block(code, "share-capital") or {}
     div = _company_charts_block(code, "dividend-per10") or {}
     events = cap.get("events") or {}

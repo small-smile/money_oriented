@@ -25,25 +25,9 @@ if (window.COMPANY_CODE !== '601077') {
 
 Object.keys(KEY_DOM).forEach(function (k) {
     if (!__emptyPayload(D[k])) return;
-    // 集中度三张图还能靠港交所口径（holder-concentration-hist）单独画出来（纯 H 股行只有这一份），
-    // A 股口径为空不等于整块没数据，别提前占位
-    if (k === 'holder-concentration' && !__emptyPayload(D['holder-concentration-hist'])) {
-        D[k] = EMPTY_D;
-        return;
-    }
     KEY_DOM[k].forEach(__stub);
     D[k] = EMPTY_D;
 });
-
-// 「历年股东持股集中度」是独立板块、三张图共用同一份数据：数据整份缺失时（如只有 H 股年报、
-// F10 没有前十大历史的天津银行/江西银行）别留三块 400px 的"暂无数据"占位撑掉一屏，整块收起。
-(function () {
-    const sec = document.getElementById('sec-concentration');
-    if (!sec) return;
-    if (__emptyPayload(D['holder-concentration']) && __emptyPayload(D['holder-concentration-hist'])) {
-        sec.style.display = 'none';
-    }
-})();
 
 // 覆盖页面上的渝农商行静态文案（上面的 .yns-only 门控已经按 notes 决定了哪些块留着）
 Object.keys(notes).forEach(function (id) {
