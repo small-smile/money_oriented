@@ -1431,6 +1431,13 @@ function renderRingNote(d) {
 
 axios.get('/api/holders?industry=' + IND + (CODE ? '&code=' + CODE : '')).then(function (res) {
 
+    /* 代码认得出、但属别的板块时接口给 data.redirect（板块 + 该板块里的代码）——
+     * 直接换 ?industry= 重载：本页的 header、配色与成员名单都跟着板块走，等于跳到对应样式。 */
+    var red = res.data && res.data.data && res.data.data.redirect;
+    if (red && red.industry && red.industry !== IND) {
+        location.replace('?industry=' + red.industry + '&code=' + red.code);
+        return;
+    }
     if (!res.data || res.data.code !== 200) throw new Error((res.data && res.data.msg) || 'load failed');
     const d = res.data.data;
     document.getElementById('loading').style.display = 'none';

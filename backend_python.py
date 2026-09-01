@@ -612,9 +612,17 @@ def api_population():
 
 @app.route("/api/bank_financials")
 def api_bank_financials():
-    """获取银行财务数据 - 参数: code (如 sh.601288)"""
+    """获取银行财务数据 - 参数: code (如 sh.601288，也接受 H 股代码 01288 这类另一地代码)"""
     stock_code = request.args.get('code', 'sh.601288')
     data = read_bank_financials(stock_code)
+    if data is None:
+        # 只带数字的代码（含 H 股）先按两地代码对应表换成 A 股代码，再按 sh./sz. 前缀重试
+        num = re.sub(r"^[a-z]{2}\.", "", stock_code)
+        alt = _resolve_company_code(num, set(BANK_ORDER))[0]
+        for cand in ([f"sh.{alt}", f"sz.{alt}"] if alt else []):
+            data = read_bank_financials(cand)
+            if data is not None:
+                break
     if data is None:
         return jsonify({"code": 500, "msg": "财务数据文件不存在"})
     return jsonify({"code": 200, "data": data})
@@ -622,12 +630,22 @@ def api_bank_financials():
 
 def read_company_charts(code):
     """公司详情页全部图表数据，按银行代码取 data/tables/company_charts_<code>.json。
-    数据由 data/extract/ 提取管线从 charts.js 原值程序化抽取，未经手工重录。"""
+    数据由 data/extract/ 提取管线从 charts.js 原值程序化抽取，未经手工重录。
+    给 H 股代码（03618 / 01398）时按 company_codes.json 换成同一家公司的 A 股代码 ——
+    银行的数据文件按 A 股代码存（纯 H 股行按 H 股代码存），两地代码都要能取到同一份。"""
     if not re.fullmatch(r"[0-9]{5,6}", code):
         return {"code": 400, "msg": f"非法银行代码 {code}", "data": {}}
     path = f"data/tables/company_charts_{code}.json"
     if not os.path.exists(path):
-        return {"code": 404, "msg": f"银行 {code} 尚无 company_charts 数据文件", "data": {}}
+        alt, why, ent = _resolve_company_code(code, set(BANK_ORDER))
+        if alt and os.path.exists(f"data/tables/company_charts_{alt}.json"):
+            with open(f"data/tables/company_charts_{alt}.json", "r", encoding="utf-8") as f:
+                return {"code": 200, "data": json.load(f), "msg": why}
+        red = _cross_industry_redirect(code, ent, {"bank"})
+        return {"code": 404,
+                "msg": (f"银行 {code} 尚无 company_charts 数据文件"
+                        + (f"：{why}" if why else (f"：{red['msg']}" if red else ""))),
+                "data": {"redirect": red} if red else {}}
     with open(path, "r", encoding="utf-8") as f:
         return {"code": 200, "data": json.load(f)}
 
@@ -1136,14 +1154,38 @@ def _read_industry_table(industry, code):
 
 
 def read_industry_annual(industry, code):
-    """单家公司历年数据（含该行业的经营口径手工层，如果有）。"""
+    """单家公司历年数据（含该行业的经营口径手工层，如果有）。
+    code 给的是另一地的代码（海螺水泥 H 股 00914 / 中国平安 H 股 02318）时，按 company_codes.json
+    换成本行业名单里的那个代码并在 code_note 里说明；认得出但属别的行业的给 data.redirect
+    （行业 + 该行业里的代码），页面照它跳到对应行业的页面，不是死在一个 404 上。"""
     spec = INDUSTRIES[industry]
+    code_note = None
     if not re.fullmatch(spec["code_re"], code):
-        return {"code": 400, "msg": f"非法{spec['label']}代码 {code}", "data": {}}
+        # 代码形状不合本行业规则（中国移动 H 股 00941 是 5 位、运营商只收 6 位 A 股代码）时，
+        # 先看它是不是本行业某家公司的另一地代码 —— 是就换过来，不是才算非法
+        alt, why, _ = _resolve_company_code(code, set(spec["peers"]))
+        if not alt or not re.fullmatch(spec["code_re"], alt):
+            return {"code": 400, "msg": f"非法{spec['label']}代码 {code}", "data": {}}
+        code, code_note = alt, why
     d = _read_industry_table(industry, code)
     if d is None:
-        return {"code": 404, "msg": f"{spec['label']} {code} 尚无年度数据文件", "data": {}}
-    return {"code": 200, "data": d}
+        alt, why, ent = _resolve_company_code(code, set(spec["peers"]))
+        if alt:
+            code, code_note, d = alt, why, _read_industry_table(industry, alt)
+        if d is None:
+            red = _cross_industry_redirect(code, ent, set(INDUSTRIES))
+            return {"code": 404,
+                    "msg": (f"{spec['label']} {code} 尚无年度数据文件"
+                            + (f"：{why}" if why else (f"：{red['msg']}" if red else ""))),
+                    "data": {"redirect": red} if red else {}}
+    ent = _company_entity(code) or {}
+    out = dict(d)
+    out["codes"] = {"a": ent.get("a_code"), "h": ent.get("h_code"), "us": ent.get("us_code"),
+                    "same_entity": ent.get("same_entity", True),
+                    "industry": ent.get("industry"), "short": ent.get("short"),
+                    "full": ent.get("full"), "note": ent.get("note")} if ent else None
+    out["code_note"] = code_note
+    return {"code": 200, "data": out}
 
 
 def read_industry_peers(industry):
@@ -1214,26 +1256,47 @@ def _company_codes():
     return entities, index
 
 
-def _resolve_company_code(industry, code, known):
-    """把任意一地的代码解析成本板块名单里的那个代码。known 是该板块已有数据的代码集合。
-    返回 (代码 or None, 说明)：能换的给换后的代码 + 一句「H 股 01398 即 A 股 601398」，
-    换不了的给 None + 原因（两地不是同一法人、或这家公司不在本板块名单里）。"""
-    entities, index = _company_codes()
-    cands = index.get(code) or []
-    for e in cands:
-        if e["key"] in known:
-            if e["key"] == code:
-                return code, None
-            if not e.get("same_entity", True):
-                return None, (f"{code} 与 {e['key']}（{e.get('short') or ''}）不是同一法人，"
-                              f"不做代码互换：{e.get('note') or ''}")
-            return e["key"], (f"{code} 与 {e['key']} 是同一家公司（{e.get('short') or ''}）的两地代码，"
-                              f"已按 {e['key']} 取数")
-    if cands:
-        e = cands[0]
-        return None, (f"{code} 对应 {e.get('short') or e['key']}，"
-                      f"属 {e.get('industry') or '其他'} 板块，不在本板块名单里")
-    return None, None
+def _company_entity(code):
+    """任意一地的代码 → 对应实体（找不到给 None）。撞号在生成时就断言过，这里只会有一条。"""
+    es = _company_codes()[1].get(code) or []
+    return es[0] if es else None
+
+
+def _resolve_company_code(code, known):
+    """把任意一地的代码解析成 known（某个板块已有数据的代码集合）里的那个代码。
+    返回 (代码 or None, 说明, 实体)：
+      · 本来就在 known 里 → (code, None, 实体)
+      · 同一法人的另一地代码 → (换后的代码, 「H 股 01398 即 A 股 601398」, 实体)
+      · 两地不是同一法人（中国联通 A 股 600050 vs 红筹 00762）→ (None, 原因, 实体)
+      · 这家公司不在 known 里（属别的板块）→ (None, None, 实体) —— 由调用方决定是报错还是给跳转
+      · 表里根本没这个代码 → (None, None, None)"""
+    e = _company_entity(code)
+    if e is None:
+        return None, None, None
+    if code in known:
+        return code, None, e
+    if e["key"] not in known:
+        return None, None, e
+    if not e.get("same_entity", True):
+        return None, (f"{code} 与 {e['key']}（{e.get('short') or ''}）不是同一法人，"
+                      f"不做代码互换：{e.get('note') or ''}"), e
+    return e["key"], (f"{code} 与 {e['key']} 是同一家公司（{e.get('short') or ''}）的两地代码，"
+                      f"已按 {e['key']} 取数"), e
+
+
+def _cross_industry_redirect(code, e, want=None):
+    """代码认得出、但不属于当前板块时给一份跳转指引（板块 + 该板块里的代码 + 公司名）。
+    want 为调用方支持的板块集合，不在其中的（本接口不服务的板块）不给跳转、只给说明。"""
+    if not e:
+        return None
+    msg = (f"{code} 是{e.get('short') or e['key']}的代码，属 {e.get('industry')} 板块"
+           f"（该板块里的代码是 {e['key']}）")
+    if want is not None and e.get("industry") not in want:
+        return {"industry": None, "code": e["key"],
+                "name": e.get("short") or e.get("full") or e["key"],
+                "msg": msg + "，本接口不服务该板块"}
+    return {"industry": e.get("industry"), "code": e["key"],
+            "name": e.get("short") or e.get("full") or e["key"], "msg": msg}
 
 
 def _company_charts_block(code, key):
@@ -1671,11 +1734,15 @@ def read_holders(industry, code=None):
         code = next((r["code"] for r in roster if r["has_holders"]), roster[0]["code"])
     code_note = None
     if code not in tables:
-        # A 股／H 股／美股代码指向同一家公司时换成本板块名单里的那个代码
-        alt, why = _resolve_company_code(industry, code, set(tables))
+        # A 股／H 股／美股代码指向同一家公司时换成本板块名单里的那个代码；
+        # 认得出但属别的板块的（水泥代码问到银行页）给一份跳转指引，页面照它换 ?industry= 重载
+        alt, why, ent0 = _resolve_company_code(code, set(tables))
         if not alt:
-            return {"code": 404, "msg": (f"{spec['label']} {code} 尚无年度数据文件"
-                                         + (f"：{why}" if why else "")), "data": {}}
+            red = _cross_industry_redirect(code, ent0, set(HOLDER_INDUSTRIES))
+            return {"code": 404,
+                    "msg": (f"{spec['label']} {code} 尚无年度数据文件"
+                            + (f"：{why}" if why else (f"：{red['msg']}" if red else ""))),
+                    "data": {"redirect": red} if red else {}}
         code, code_note = alt, why
     d = tables[code]
     ent = _company_codes()[0].get(code) or {}
@@ -1727,6 +1794,8 @@ def read_holders(industry, code=None):
             # 同一家公司的三地代码：页面把两地代码印在页头，?code= 给哪个都落到这一家
             "codes": {"a": ent.get("a_code"), "h": ent.get("h_code"), "us": ent.get("us_code"),
                       "same_entity": ent.get("same_entity", True),
+                      # 行业字段：页面据此换 header 与配色（跨板块的代码也按它跳转）
+                      "industry": ent.get("industry"),
                       "short": ent.get("short"), "full": ent.get("full"),
                       "note": ent.get("note")} if ent else None,
             # 传进来的 code 与最终取数的 code 不是同一个时，说明为什么（两地代码互换 / 不能互换）

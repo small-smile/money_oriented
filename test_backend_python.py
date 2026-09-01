@@ -504,8 +504,36 @@ class TestHolders:
         # 别的板块的代码也不会被误认成本板块的公司
         assert bk.read_holders("bank", "600585")["code"] == 404
 
+    def test_code_map_cross_industry_redirect(self):
+        """代码认得出但属别的板块时给跳转指引（板块 + 该板块里的代码），页面照它换 ?industry= 重载，
+        而不是死在一个 404 上；同一板块内的另一地代码则直接换过来取数。"""
+        r = bk.read_holders("bank", "00914")          # 海螺水泥的 H 股代码问到银行页
+        assert r["code"] == 404
+        red = r["data"]["redirect"]
+        assert red["industry"] == "cement" and red["code"] == "600585" and red["name"]
+        # 联通红筹不是同一法人：跳转指引给 telecom/600050，但 msg 必须先说清两者不是一家
+        r = bk.read_holders("telecom", "00762")
+        assert "不是同一法人" in r["msg"] and r["data"]["redirect"]["code"] == "600050"
+        # 板块字段随 payload 下发，页面据此换 header 与配色
+        c = bk.read_holders("cement", "00914")["data"]["company"]
+        assert c["code"] == "600585" and c["codes"]["industry"] == "cement"
+
+    def test_code_map_on_other_endpoints(self):
+        """两地代码对应表接到所有吃 ?code= 的接口上：行业年度表、银行 company_charts 都要能换"""
+        for industry, h, a in (("cement", "00914", "600585"), ("insurer", "02318", "601318"),
+                               ("telecom", "00941", "600941")):
+            d = bk.read_industry_annual(industry, h)
+            assert d["code"] == 200, (industry, h, d.get("msg"))
+            assert d["data"]["code"] == a and "同一家公司" in d["data"]["code_note"]
+            assert d["data"]["codes"]["industry"] == industry
+        for h, a in (("03618", "601077"), ("01398", "601398")):
+            r = bk.read_company_charts(h)
+            assert r["code"] == 200 and r["data"]["_bank"]["aCode"] == a, h
+        # 本接口不服务的板块只给说明、不给可跳的板块（industry=None），也不许静默返回别家数据
+        r = bk.read_company_charts("00914")
+        assert r["code"] == 404 and r["data"]["redirect"]["industry"] is None
+
     def test_code_map_no_collision(self):
-        """对应表本身不许有一个代码指向两家公司，也不许 key 不在自己的三个代码里"""
         entities, index = bk._company_codes()
         assert len(entities) > 60
         for e in entities.values():
