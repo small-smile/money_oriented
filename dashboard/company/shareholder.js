@@ -1369,20 +1369,23 @@ function buildRing(d) {
         ringRender();
     };
     /* 口径切换按钮：只有数据层给了附加口径的公司才出现（渝农商行的两张 H 股年报环形图）。
-     * 切口径要连带换掉上方说明与图下的口径注 —— 分母与年份都不一样，说明不换就成了串口径。 */
+     * 切口径要连带换掉上方说明与图下的口径注 —— 分母与年份都不一样，说明不换就成了串口径。
+     * 按钮必须进 .ring-btns 那一组：直接挂到 .ring-hd 上会被 space-between 撒满整行。 */
     if (c.ring_alt && c.ring_alt.length) {
-        var hd = document.querySelector('#sec-ring .ring-hd');
+        var hd = document.getElementById('ring-btns') ||
+            document.querySelector('#sec-ring .ring-hd');
         var labels = [c.ring_label || '最新年报 · 占总股本'].concat(
             c.ring_alt.map(function (a) { return a.label; }));
         var btns = labels.map(function (label, k) {
             var b = document.createElement('button');
             b.type = 'button';
+            b.className = 'cal' + (k === 0 ? ' on' : '');
             b.textContent = label;
             b.title = '切换环形图口径';
             b.onclick = function () {
                 RING_ALT_I = k - 1;
                 RING_BLOCK = ringBlock(c);
-                btns.forEach(function (x, j) { x.style.opacity = (j === k) ? '1' : '.55'; });
+                btns.forEach(function (x, j) { x.classList.toggle('on', j === k); });
                 ringRender();
                 ringSub(d);
                 renderRingNote(d);
@@ -1390,7 +1393,6 @@ function buildRing(d) {
             hd.appendChild(b);
             return b;
         });
-        btns.forEach(function (x, j) { x.style.opacity = j === 0 ? '1' : '.55'; });
     }
     document.getElementById('det-close').onclick = closeDetail;
     document.getElementById('det-modal').onclick = function (e) {

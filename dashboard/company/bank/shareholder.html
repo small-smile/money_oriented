@@ -51,7 +51,10 @@
     <section id="sec-ring" hidden>
         <div class="ring-hd">
             <h2 style="margin-bottom:0">股东结构环形图</h2>
-            <button type="button" id="btn-order" title="点一下两圈互换">内圈：股东明细</button>
+            <!-- 右侧一组按钮：圈序互换 + （数据层给了附加口径时）口径切换，由 shareholder.js 补进来 -->
+            <div class="ring-btns" id="ring-btns">
+                <button type="button" id="btn-order" title="点一下两圈互换">内圈：股东明细</button>
+            </div>
         </div>
         <p class="sub" id="ring-sub"></p>
         <div class="chart-card" style="padding:8px 10px 14px">

@@ -21,11 +21,16 @@ td.nat { text-align: left; color: #6b7280; }
 .note-more > summary { cursor: pointer; color: #1d4ed8; font-size: 15px; }
 .note-more > div { margin-top: 6px; padding-left: 10px; border-left: 3px solid #e5e7eb; }
 
-/* 环形图右上角的圈序按钮：只是个开关，字号比正文小一档，免得抢掉图的注意力 */
+/* 环形图右上角的按钮：只是开关，字号比正文小一档，免得抢掉图的注意力 */
 .ring-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+/* 按钮必须成组：.ring-hd 是 space-between，按钮直接当子元素时会被均匀撒在整行上
+ * （圈序按钮飘到标题右边、口径按钮各据一方），组内自己排、放不下就折行 */
+.ring-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .ring-hd button { font: inherit; font-size: 14px; line-height: 1.5; padding: 3px 10px;
                   border: 1px solid #cfc6d8; background: #fff; color: #4a2a5a;
                   border-radius: 12px; cursor: pointer; white-space: nowrap; }
+/* 口径切换是单选组：当前那个填色，其余留白 —— 调淡透明度会被当成禁用态 */
+.ring-hd button.cal.on { background: #4a2a5a; border-color: #4a2a5a; color: #fff; }
 
 /* 点击标注行弹出的全称框：贴在那一行下面（下面放不下就翻到上面），太长就折行。
  * 带边框和投影，跟画布上的文字明显分层，不假装是同一行。 */
