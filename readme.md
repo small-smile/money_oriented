@@ -32,6 +32,13 @@
 写成相对路径 `/api/...`，跟页面同源，换端口/换机器都不用改代码；因此不能再用 `file://`
 直接打开 HTML——那样相对路径无处可指，图会取不到数据。
 
+本机测试环境（nginx 反代，页面和接口同源、URL 不带端口）：配置在 `deploy/nginx/`。
+`standalone.conf` 是免 root 的独立实例，监听 `127.0.0.1:8080`，
+`nginx -e ~/.local/share/nginx-money/logs/error.log -c $PWD/deploy/nginx/standalone.conf` 起、
+`-s quit` 停；`money_oriented.conf` 是给系统 nginx（`/usr/local/nginx`）的 vhost，
+软链到 `conf/vhost/` 后 reload 即可用 80 端口的 `http://money.local/` 访问（需 root + hosts 记录）。
+两份都只监听 127.0.0.1——服务没有鉴权，别暴露到局域网。
+
 `company/bank/*.html` 是同一份页面按银行代码渲染：`?code=`（A 股 6 位 / H 股 5 位，缺省
 `601077` 渝农商行）决定向 `/api/company_charts?code=` 取哪家的图表数据，页面标题与 H1 由
 返回的 `_bank` 元信息拼出。后端渲染时会把 code 注入 `window.COMPANY_CODE`、把可切换银行
