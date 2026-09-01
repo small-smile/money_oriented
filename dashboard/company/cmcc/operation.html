@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <link rel="stylesheet" href="../page.css">
+    <script src="../../common/site-header.js" defer></script>
+    <style>
+        .note-generic {
+            margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
+            border-left: 4px solid #b7b1c4; border-radius: 6px;
+            font-size: 18px; color: #555; line-height: 1.75;
+        }
+        .gap-list { margin: 6px 0 0 18px; font-size: 18px; color: #555; line-height: 1.8; }
+        .gap-list b { color: #10243e; }
+    </style>
+    <title>中国移动（941 / 600941）· 客户与网络</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="charts/boot.js" data-page="operation"></script>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>中国移动 · 客户与网络</h1>
+        <div class="meta">
+            客户数单位：亿户（物联网连接数为亿）· 数据取自公司年报「业务概览－主要运营数据」与官网营运数据页<br>
+            连接数的构成变化，是产品更迭在「用户侧」的同一件事
+        </div>
+        <div class="tags"><span>移动客户</span><span>制式渗透</span><span>宽带</span><span>物联网</span><span>网络与员工</span></div>
+    </div>
+
+    <!-- ══════════ 概览 ══════════ -->
+    <section id="sec-kpi">
+        <h2>最新财年客户概览</h2>
+        <p class="sub" id="kpi-sub"></p>
+        <div class="kpis" id="main-kpis"></div>
+        <div class="note-generic" id="kpi-note"></div>
+    </section>
+
+    <!-- ══════════ 移动客户与净增 ══════════ -->
+    <section id="sec-subs">
+        <h2>移动客户总数与净增</h2>
+        <p class="sub">柱：移动客户总数（亿户）· 线：当年净增客户数（万户）。<b>净增在 2015 年后逐级掉档，2024 年起接近零增长</b>——这是「人口红利结束」在报表上的样子</p>
+        <div id="chart-subs" class="chart" style="height:440px"></div>
+        <div class="note-generic" id="subs-note"></div>
+    </section>
+
+    <!-- ══════════ 制式渗透 ══════════ -->
+    <section id="sec-tech">
+        <h2>网络制式渗透：3G → 4G → 5G</h2>
+        <p class="sub">柱：当年最新制式客户数 + 尚未升级的客户（亿户，柱高恒等于移动客户总数）· 实线：最新一代渗透率（%）· 虚线：上一代客户数与 5G 套餐客户数（另一口径）。三代客户的接棒节奏决定了资本开支的节奏</p>
+        <div id="chart-tech" class="chart" style="height:450px"></div>
+        <div class="note-generic" id="tech-note"></div>
+    </section>
+
+    <!-- ══════════ 宽带与家庭 ══════════ -->
+    <section id="sec-broadband">
+        <h2>有线宽带与家庭市场</h2>
+        <p class="sub">柱：有线宽带客户数 / 其中家庭宽带 / 千兆宽带（亿户）· 线：家庭客户综合 ARPU（元/户/月）</p>
+        <div id="chart-broadband" class="chart" style="height:440px"></div>
+        <div class="note-generic" id="broadband-note"></div>
+    </section>
+
+    <!-- ══════════ 物联网与政企 ══════════ -->
+    <section id="sec-iot">
+        <h2>物联网连接与政企客户</h2>
+        <p class="sub">柱：物联网卡连接数（亿）· 线：政企客户数（百万）。<b>连接数早已超过人口</b>——2020 年之后的「连接增长」主要来自物，不是人</p>
+        <div id="chart-iot" class="chart" style="height:430px"></div>
+        <div class="note-generic" id="iot-note"></div>
+    </section>
+
+    <!-- ══════════ 网络与人 ══════════ -->
+    <section id="sec-network">
+        <h2>网络规模与员工</h2>
+        <p class="sub">柱：5G 基站数（万站）／对外服务 IDC 标准机架（万架）· 线：员工总数（万人）。缺披露的年份留空，不做插值</p>
+        <div id="chart-network" class="chart" style="height:430px"></div>
+        <div class="note-generic" id="network-note"></div>
+    </section>
+
+    <!-- ══════════ 明细表 ══════════ -->
+    <section id="sec-table">
+        <h2>运营指标明细</h2>
+        <p class="sub">「—」表示该年年报未披露此项 · 单位见各行标注</p>
+        <div style="overflow-x:auto">
+            <table>
+                <thead><tr id="tbl-head"></tr></thead>
+                <tbody id="tbl-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ══════════ 口径与缺口 ══════════ -->
+    <section id="sec-gaps">
+        <h2>口径提示与披露缺口</h2>
+        <p class="sub">运营指标的口径变动比财务口径更频繁，下面这几条不知道就会读错趋势</p>
+        <ul class="gap-list" id="gaps-list"></ul>
+    </section>
+
+</div>
+</body>
+</html>

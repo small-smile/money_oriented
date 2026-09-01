@@ -85,6 +85,16 @@
                 {href: 'company/bank/shareholder.html?industry=tech',                 title: '股权结构'},
                 {href: 'company/baidu/intro.html',                       title: '简介'}
             ]
+        },
+        {
+            // 中国移动（941 / 600941）公司详情页：charts/boot.js 在页面加载时拉 data/tables/telecom_00941_*.json
+            dir: 'company/cmcc/',
+            pages: [
+                {href: 'company/cmcc/index.html',                        title: '业绩'},
+                {href: 'company/cmcc/product.html',                      title: '产品更迭'},
+                {href: 'company/cmcc/operation.html',                    title: '客户与网络'},
+                {href: 'company/cmcc/intro.html',                        title: '简介与股权'}
+            ]
         }
     ];
 
