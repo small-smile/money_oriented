@@ -62,6 +62,14 @@
             ]
         },
         {
+            dir: 'industry/telecom/',
+            pages: [
+                {href: 'industry/telecom/overview.html',                 title: '名录与变革时间线'},
+                {href: 'industry/telecom/peers.html',                    title: '三大运营商对比'},
+                {href: 'company/telecom/index.html',                     title: '公司详情'}
+            ]
+        },
+        {
             // 百度（09888 / BIDU）公司详情页：只有一家公司、数据全在 company/baidu/data.js，
             // 不像银行页要按 ?code= 切换上百家，所以复用本文件而不再单开一个 header 脚本
             dir: 'company/baidu/',

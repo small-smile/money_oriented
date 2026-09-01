@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <link rel="stylesheet" href="../page.css">
+    <title>运营商公司详情 · 运营与资本开支</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { background: #f5f6f8; }
+        .wrap { max-width: 1500px; }
+        .entity { margin: 10px 0 0; padding: 12px 16px; background: #fff7ed;
+                  border-left: 4px solid #f59e0b; border-radius: 6px;
+                  font-size: 17px; color: #78350f; line-height: 1.7; }
+        .gap-list { margin: 6px 0 0 18px; font-size: 17px; color: #555; line-height: 1.8; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="page-head">
+        <h1 id="page-title">运营与资本开支</h1>
+        <div class="meta" id="page-meta"></div>
+        <div class="tags"><span>用户数</span><span>ARPU</span><span>5G</span><span>宽带</span><span>云与第二曲线</span><span>资本开支</span></div>
+    </div>
+
+    <div id="loading">加载中…（需先启动 backend_python.py，端口 5000）</div>
+    <div id="error-msg"></div>
+
+    <section id="sec-kpi" hidden>
+        <h2 id="kpi-title">最新披露年度运营指标</h2>
+        <p class="sub" id="kpi-sub"></p>
+        <div class="kpis" id="kpis"></div>
+        <div class="entity" id="caliber-warn"></div>
+    </section>
+
+    <div id="charts"></div>
+
+    <section id="sec-gaps" hidden>
+        <h2>披露口径变更与缺口</h2>
+        <p class="sub">以下均为发行人年报披露口径收窄／变更，本页对近似表述不录入、也不按渗透率或净增数推算</p>
+        <ul class="gap-list" id="gaps"></ul>
+        <div class="note" id="gap-src" style="max-width:none"></div>
+    </section>
+</div>
+<script src="charts/common.js"></script>
+<script src="charts/operation.js"></script>
+</body>
+</html>

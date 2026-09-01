@@ -30,6 +30,7 @@ SECTORS = [
     ('insurer', '保险'),
     ('cement', '水泥'),
     ('developer', '房地产'),
+    ('telecom', '通信'),
 ]
 
 
@@ -85,7 +86,7 @@ def scan_tables():
     """按 <sector>_<code>_<kind>.json 归并成 {(sector, code): {kind: data}}。"""
     recs = defaultdict(dict)
     for fn in sorted(os.listdir(TABLES)):
-        m = re.match(r'^(bank|insurer|cement|developer)_([0-9]{5,6})_(\w+)\.json$', fn)
+        m = re.match(r'^(bank|insurer|cement|developer|telecom)_([0-9]{5,6})_(\w+)\.json$', fn)
         if m:
             sector, code, kind = m.groups()
             recs[(sector, code)][kind] = load(os.path.join(TABLES, fn))
@@ -209,6 +210,23 @@ holders / holder_num / holder_concentration / dividend_per10`。金额单位元,
 """
 
 
+def sector_manual_lines(sector):
+    """板块级手工层（不按公司分文件的 <板块>_*_manual.json，如 telecom_ops_manual.json、
+    telecom_segment_manual.json）：列出文件名与每家覆盖的年份，否则这两层在索引里查不到。"""
+    out = []
+    for fn in sorted(os.listdir(TABLES)):
+        if not re.fullmatch(rf'{sector}_[a-z_]+_manual\.json', fn):
+            continue                      # 按公司分的手工表（含 6 位代码）已在公司行里列出
+        d = load(os.path.join(TABLES, fn)) or {}
+        comps = d.get('companies') or {}
+        if not comps:
+            continue
+        bits = [f"{c.get('name') or code} {years_span((c.get('annual') or {}).keys())}"
+                for code, c in sorted(comps.items())]
+        out.append(f'- 板块手工层 `{fn}`: ' + '; '.join(bits))
+    return out
+
+
 def build():
     raw = scan_raw()
     recs = scan_tables()
@@ -221,6 +239,10 @@ def build():
         covered.update(r['code'] for r in rows)
         lines.append(f'\n## {label} ({len(rows)} 家) — `{sector}_<code>_*.json`\n')
         lines.extend(fmt_rows(rows))
+        man = sector_manual_lines(sector)
+        if man:
+            lines.append('')
+            lines.extend(man)
 
     orphan = sorted(set(raw) - covered)
     if orphan:

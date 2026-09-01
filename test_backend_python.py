@@ -8,6 +8,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 import backend_python as bk
 
+# monkeypatch 会把 builtins.open 换成下面的 lambda，lambda 体里若再写 open 就是调它自己
+# （无限递归 RecursionError），所以先把真的 open 存下来给替身用。
+_real_open = open
+
 
 # ─────────────────────────────────────────────
 # Helpers: 写临时数据文件，并 monkeypatch 路径
@@ -35,7 +39,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER + "2020\t100\n2021\t200\n2022\t300\n"
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -57,7 +61,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -69,7 +73,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER + "2020\t100\n\n2021\t200\n"
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["data"]["xAxis"] == ["2020", "2021"]
@@ -80,7 +84,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER + "2020\t100\nonlyone\n2021\t200\n"
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["data"]["xAxis"] == ["2020", "2021"]
@@ -90,7 +94,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER + "2020\tNOT_AN_INT\n"
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["code"] == 500
@@ -101,7 +105,7 @@ class TestReadProduction:
         content = PRODUCTION_HEADER + "1990\t999\n"
         fpath = write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.os.path, "exists", lambda p: True)
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -116,7 +120,7 @@ class TestReadProduction:
 class TestReadPrice:
 
     def _patch(self, monkeypatch, fpath):
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
     def test_normal_multiple_rows(self, tmp_path, monkeypatch):
         """正常多行：蜡烛图数据正确构造"""
@@ -196,7 +200,7 @@ class TestReadPrice:
 class TestReadAdjPrice:
 
     def _patch(self, monkeypatch, fpath):
-        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: open(fpath, *a, **kw))
+        monkeypatch.setattr("builtins.open", lambda p, *a, **kw: _real_open(fpath, *a, **kw))
 
     def test_uses_adj_column(self, tmp_path, monkeypatch):
         """使用 adj 列（第三列）而非 raw 列"""
@@ -254,3 +258,55 @@ class TestReadAdjPrice:
         monkeypatch.setattr("builtins.open", lambda p, *a, **kw: (_ for _ in ()).throw(FileNotFoundError("no file")))
         with pytest.raises(FileNotFoundError):
             bk.read_adj_price()
+
+
+# ─────────────────────────────────────────────
+# read_industry_annual / read_industry_peers
+# 保险/地产/水泥/通信四个行业共用的读表逻辑，用本地 data/tables 的真实成品表跑
+# ─────────────────────────────────────────────
+
+class TestIndustryTables:
+
+    @pytest.mark.parametrize("industry", sorted(bk.INDUSTRIES))
+    def test_illegal_code_400(self, industry):
+        """代码位数不合规直接 400，不去碰文件系统"""
+        r = bk.read_industry_annual(industry, "abc")
+        assert r["code"] == 400 and r["data"] == {}
+
+    @pytest.mark.parametrize("industry", sorted(bk.INDUSTRIES))
+    def test_unknown_code_404(self, industry):
+        """代码合规但没有数据文件时 404"""
+        r = bk.read_industry_annual(industry, "999999")
+        assert r["code"] == 404 and "尚无年度数据文件" in r["msg"]
+
+    @pytest.mark.parametrize("industry", sorted(bk.INDUSTRIES))
+    def test_peers_only_declared_fields(self, industry):
+        """同业对比只下发 spec['fields'] 声明的字段，且每家都带 annual"""
+        r = bk.read_industry_peers(industry)
+        assert r["code"] == 200, r.get("msg")
+        fields = set(bk.INDUSTRIES[industry]["fields"])
+        for code, d in r["data"].items():
+            assert set(d) == fields, f"{industry} {code} 字段与声明不一致"
+            assert isinstance(d["annual"], dict) and d["annual"]
+
+    @pytest.mark.parametrize("industry", ["cement", "telecom"])
+    def test_ops_manual_layer_merged(self, industry):
+        """带经营手工层的行业：annual 里应出现 ops_* 字段，且顶层有 ops_meta"""
+        r = bk.read_industry_peers(industry)
+        merged = [c for c, d in r["data"].items()
+                  if d.get("ops_meta") and any(k.startswith("ops_")
+                                               for rec in d["annual"].values() for k in rec)]
+        assert merged, f"{industry} 没有任何一家并进了 ops_* 手工层"
+
+    def test_telecom_segment_layer(self):
+        """通信板块的收入构成层：三家都要有 segments，且合计与利润表营业收入对得上
+        （单位从元归一到亿元，容差 0.05 亿）"""
+        data = bk.read_industry_peers("telecom")["data"]
+        for code, d in data.items():
+            seg = d["segments"]
+            assert seg and seg["annual"], f"{code} 缺收入构成层"
+            assert set(seg["labels"]) >= set(seg["order"]), f"{code} order 里有没有中文名的科目"
+            for year, canon in seg["annual"].items():
+                rev = d["annual"][year]["revenue"]
+                assert abs(canon["total"] - rev / 1e8) < 0.05, f"{code} {year} 合计与营业收入不符"
+

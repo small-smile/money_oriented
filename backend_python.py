@@ -60,7 +60,9 @@ def read_production():
         }
     }
 
-def read_price():
+def _read_oil_candles(col):
+    """oil.price.txt（年份 / 原价 / 通胀调整价）→ 年 K 线：开盘取上一年收盘，
+    首年开盘=收盘。col=1 取原价、col=2 取通胀调整价，两个接口只差这一列。"""
     path = "data/tables/oil.price.txt"
     candleData = []
     xAxis = []
@@ -72,16 +74,12 @@ def read_price():
             line = line.strip()
             if not line:
                 continue
-            year, raw_str, adj = line.split("\t")
-            curr_raw = float(raw_str)
+            parts = line.split("\t")
+            year = parts[0]
+            curr_raw = float(parts[col])
 
-            if prev_raw is None:
-                # 第一条没有上期数据，开盘=本期
-                open_p = curr_raw
-            else:
-                # 开盘 = 上一周期价格
-                open_p = prev_raw
-
+            # 开盘 = 上一周期价格；第一条没有上期数据，开盘=本期
+            open_p = curr_raw if prev_raw is None else prev_raw
             close_p = curr_raw
             high_p = max(open_p, close_p)
             low_p = min(open_p, close_p)
@@ -100,313 +98,157 @@ def read_price():
         }
     }
 
+
+def read_price():
+    return _read_oil_candles(1)
+
+
 def read_adj_price():
-    path = "data/tables/oil.price.txt"
-    candleData = []
-    xAxis = []
-    prev_raw = None  # 保存上一期价格
+    return _read_oil_candles(2)
 
-    with open(path, "r", encoding="utf-8") as f:
-        lines = f.readlines()[1:]
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            year, raw_str, adj = line.split("\t")
-            curr_raw = float(adj)
 
-            if prev_raw is None:
-                # 第一条没有上期数据，开盘=本期
-                open_p = curr_raw
+def _read_region_csv(path, value_col):
+    """production_region.csv / consumption_region.csv 的共用读法：两份表结构一样
+    （年份 / 洲 / 国家 + 一列数值），只差数值列名，产量与消费量的聚合、Top10、
+    首末年变化、2001 vs 2024 分洲对比、排序规则完全相同，所以只留一份实现。"""
+    df = pd.read_csv(path)
+
+    # ── 将 CIS 所有成员国合并为 "USSR/CIS"，避免苏联解体前后数值跳跃 ──
+    CIS_MEMBERS = {'USSR', 'Russian Federation', 'Azerbaijan', 'Kazakhstan',
+                   'Turkmenistan', 'Uzbekistan', 'Other CIS'}
+    cis_sum = (df[df['国家'].isin(CIS_MEMBERS)]
+               .groupby('年份')[value_col].sum()
+               .reset_index())
+    cis_sum['国家'] = 'USSR/CIS'
+    cis_sum['洲']  = 'CIS'
+    df = pd.concat([df[~df['国家'].isin(CIS_MEMBERS)], cis_sum], ignore_index=True)
+
+    years = sorted(df['年份'].unique().tolist())
+
+    # 按洲汇总
+    region_sum = df.groupby(['年份', '洲'])[value_col].sum().reset_index()
+    regions = sorted(df['洲'].unique().tolist())
+    region_data = {}
+    for r in regions:
+        sub = region_sum[region_sum['洲'] == r].sort_values('年份')
+        region_data[r] = [round(float(v), 1) for v in sub[value_col].tolist()]
+
+    # 2024 年 Top10 国家
+    top10 = df[df['年份'] == 2024].nlargest(10, value_col)['国家'].tolist()
+    country_data = {}
+    for c in top10:
+        sub = df[df['国家'] == c].sort_values('年份')
+        year_map = dict(zip(sub['年份'], sub[value_col]))
+        vals = []
+        for y in years:
+            v = year_map.get(y)
+            if v is not None and not (isinstance(v, float) and v != v):
+                vals.append(round(float(v), 1))
             else:
-                # 开盘 = 上一周期价格
-                open_p = prev_raw
+                vals.append(None)
+        country_data[c] = vals
 
-            close_p = curr_raw
-            high_p = max(open_p, close_p)
-            low_p = min(open_p, close_p)
+    # 2024 年各洲饼图数据
+    pie_2024 = []
+    for r in regions:
+        sub = region_sum[(region_sum['洲'] == r) & (region_sum['年份'] == 2024)]
+        pie_2024.append({'name': r, 'value': round(float(sub[value_col].values[0]), 1)})
 
-            candleData.append([open_p, close_p, low_p, high_p])
-            xAxis.append(year)
+    # 各国首末年（1965→2024）变化（有头有尾才纳入）
+    first_year, last_year = years[0], years[-1]
+    country_changes = []
+    for c in df['国家'].unique():
+        sub = df[df['国家'] == c].sort_values('年份')
+        year_map = dict(zip(sub['年份'], sub[value_col]))
+        v_first = year_map.get(first_year)
+        v_last  = year_map.get(last_year)
+        if (v_first is not None and v_last is not None
+                and not (isinstance(v_first, float) and v_first != v_first)
+                and not (isinstance(v_last,  float) and v_last  != v_last)):
+            continent = sub['洲'].iloc[0]
+            change = round(float(v_last) - float(v_first), 1)
+            country_changes.append({
+                'country':   c,
+                'continent': continent,
+                'v_first':   round(float(v_first), 1),
+                'v_last':    round(float(v_last),  1),
+                'change':    change
+            })
+    country_changes.sort(key=lambda x: x['change'])
 
-            # 更新上期价格
-            prev_raw = curr_raw
+    # 各国 2001 vs 2024 对比，按洲分组
+    continents = sorted(df['洲'].unique().tolist())
+    country_compare = {}
+    for cont in continents:
+        sub = df[df['洲'] == cont]
+        entries = []
+        for c in sorted(sub['国家'].unique()):
+            csub = sub[sub['国家'] == c].sort_values('年份')
+            ym = dict(zip(csub['年份'], csub[value_col]))
+            v2001 = ym.get(2001)
+            v2024 = ym.get(2024)
+            if v2001 is not None and v2024 is not None:
+                entries.append({
+                    'country': c,
+                    'v2001': round(float(v2001), 1),
+                    'v2024': round(float(v2024), 1)
+                })
+        country_compare[cont] = entries
+
+    # 所有国家逐年数据（用于 demo_3c/3d）
+    # 排序：① 增/减（2024 vs 1965 变化方向），② 2024 绝对值降序
+    all_countries = df['国家'].unique().tolist()
+    country_all_data = {}
+    country_meta = {}   # {country: {continent, v_last, change}}
+    for c in all_countries:
+        sub = df[df['国家'] == c].sort_values('年份')
+        ym = dict(zip(sub['年份'], sub[value_col]))
+        vals = []
+        for y in years:
+            v = ym.get(y)
+            vals.append(round(float(v), 1) if v is not None and not (isinstance(v, float) and v != v) else None)
+        country_all_data[c] = vals
+        v_last  = ym.get(years[-1])
+        v_first = ym.get(years[0])
+        v_last  = round(float(v_last),  1) if v_last  is not None else 0.0
+        v_first = round(float(v_first), 1) if v_first is not None else 0.0
+        country_meta[c] = {
+            'continent': sub['洲'].iloc[0],
+            'v_last': v_last,
+            'change': round(v_last - v_first, 1)
+        }
+
+    # 排序：先增后减，各组内按 2024 数值降序
+    def sort_key(c):
+        m = country_meta[c]
+        group = 0 if m['change'] >= 0 else 1   # 增加在前
+        return (group, -m['v_last'])
+
+    sorted_countries = sorted(all_countries, key=sort_key)
 
     return {
         "code": 200,
         "data": {
-            'candleData': candleData,
-            'xAxis': xAxis
+            "years": years,
+            "region_data": region_data,
+            "top10": top10,
+            "country_data": country_data,
+            "pie_2024": pie_2024,
+            "country_changes": country_changes,
+            "country_compare": country_compare,
+            "country_all_data": country_all_data,
+            "country_meta": country_meta,
+            "sorted_countries": sorted_countries
         }
     }
 
 
 def read_production_region():
-    path = "data/tables/production_region.csv"
-    df = pd.read_csv(path)
-
-    # ── 将 CIS 所有成员国合并为 "USSR/CIS"，避免苏联解体前后产量跳跃 ──
-    CIS_MEMBERS = {'USSR', 'Russian Federation', 'Azerbaijan', 'Kazakhstan',
-                   'Turkmenistan', 'Uzbekistan', 'Other CIS'}
-    cis_sum = (df[df['国家'].isin(CIS_MEMBERS)]
-               .groupby('年份')['产量(千桶/日)'].sum()
-               .reset_index())
-    cis_sum['国家'] = 'USSR/CIS'
-    cis_sum['洲']  = 'CIS'
-    df = pd.concat([df[~df['国家'].isin(CIS_MEMBERS)], cis_sum], ignore_index=True)
-
-    years = sorted(df['年份'].unique().tolist())
-
-    # 按洲汇总
-    region_sum = df.groupby(['年份', '洲'])['产量(千桶/日)'].sum().reset_index()
-    regions = sorted(df['洲'].unique().tolist())
-    region_data = {}
-    for r in regions:
-        sub = region_sum[region_sum['洲'] == r].sort_values('年份')
-        region_data[r] = [round(float(v), 1) for v in sub['产量(千桶/日)'].tolist()]
-
-    # 2024 年产量 Top10 国家
-    top10 = df[df['年份'] == 2024].nlargest(10, '产量(千桶/日)')['国家'].tolist()
-    country_data = {}
-    for c in top10:
-        sub = df[df['国家'] == c].sort_values('年份')
-        year_map = dict(zip(sub['年份'], sub['产量(千桶/日)']))
-        vals = []
-        for y in years:
-            v = year_map.get(y)
-            if v is not None and not (isinstance(v, float) and v != v):
-                vals.append(round(float(v), 1))
-            else:
-                vals.append(None)
-        country_data[c] = vals
-
-    # 2024 年各洲饼图数据
-    pie_2024 = []
-    for r in regions:
-        sub = region_sum[(region_sum['洲'] == r) & (region_sum['年份'] == 2024)]
-        pie_2024.append({'name': r, 'value': round(float(sub['产量(千桶/日)'].values[0]), 1)})
-
-    # 各国 1965→2024 产量变化（有头有尾才纳入）
-    first_year, last_year = years[0], years[-1]
-    country_changes = []
-    for c in df['国家'].unique():
-        sub = df[df['国家'] == c].sort_values('年份')
-        year_map = dict(zip(sub['年份'], sub['产量(千桶/日)']))
-        v_first = year_map.get(first_year)
-        v_last  = year_map.get(last_year)
-        if (v_first is not None and v_last is not None
-                and not (isinstance(v_first, float) and v_first != v_first)
-                and not (isinstance(v_last,  float) and v_last  != v_last)):
-            continent = sub['洲'].iloc[0]
-            change = round(float(v_last) - float(v_first), 1)
-            country_changes.append({
-                'country':   c,
-                'continent': continent,
-                'v_first':   round(float(v_first), 1),
-                'v_last':    round(float(v_last),  1),
-                'change':    change
-            })
-    country_changes.sort(key=lambda x: x['change'])
-
-    # 各国 2001 vs 2024 对比，按洲分组
-    continents = sorted(df['洲'].unique().tolist())
-    country_compare = {}
-    for cont in continents:
-        sub = df[df['洲'] == cont]
-        entries = []
-        for c in sorted(sub['国家'].unique()):
-            csub = sub[sub['国家'] == c].sort_values('年份')
-            ym = dict(zip(csub['年份'], csub['产量(千桶/日)']))
-            v2001 = ym.get(2001)
-            v2024 = ym.get(2024)
-            if v2001 is not None and v2024 is not None:
-                entries.append({
-                    'country': c,
-                    'v2001': round(float(v2001), 1),
-                    'v2024': round(float(v2024), 1)
-                })
-        country_compare[cont] = entries
-
-    # 所有国家逐年数据（用于 demo_3c/3d）
-    # 排序：① 增/减（2024 vs 1965 变化方向），② 2024 绝对产量降序
-    all_countries = df['国家'].unique().tolist()
-    country_all_data = {}
-    country_meta = {}   # {country: {continent, v_last, change}}
-    for c in all_countries:
-        sub = df[df['国家'] == c].sort_values('年份')
-        ym = dict(zip(sub['年份'], sub['产量(千桶/日)']))
-        vals = []
-        for y in years:
-            v = ym.get(y)
-            vals.append(round(float(v), 1) if v is not None and not (isinstance(v, float) and v != v) else None)
-        country_all_data[c] = vals
-        v_last  = ym.get(years[-1])
-        v_first = ym.get(years[0])
-        v_last  = round(float(v_last),  1) if v_last  is not None else 0.0
-        v_first = round(float(v_first), 1) if v_first is not None else 0.0
-        country_meta[c] = {
-            'continent': sub['洲'].iloc[0],
-            'v_last': v_last,
-            'change': round(v_last - v_first, 1)
-        }
-
-    # 排序：先增后减，各组内按 2024 产量降序
-    def sort_key(c):
-        m = country_meta[c]
-        group = 0 if m['change'] >= 0 else 1   # 增加在前
-        return (group, -m['v_last'])
-
-    sorted_countries = sorted(all_countries, key=sort_key)
-
-    return {
-        "code": 200,
-        "data": {
-            "years": years,
-            "region_data": region_data,
-            "top10": top10,
-            "country_data": country_data,
-            "pie_2024": pie_2024,
-            "country_changes": country_changes,
-            "country_compare": country_compare,
-            "country_all_data": country_all_data,
-            "country_meta": country_meta,
-            "sorted_countries": sorted_countries
-        }
-    }
+    return _read_region_csv("data/tables/production_region.csv", '产量(千桶/日)')
 
 
 def read_consumption_region():
-    path = "data/tables/consumption_region.csv"
-    df = pd.read_csv(path)
-
-    # ── 将 CIS 所有成员国合并为 "USSR/CIS"，避免苏联解体前后产量跳跃 ──
-    CIS_MEMBERS = {'USSR', 'Russian Federation', 'Azerbaijan', 'Kazakhstan',
-                   'Turkmenistan', 'Uzbekistan', 'Other CIS'}
-    cis_sum = (df[df['国家'].isin(CIS_MEMBERS)]
-               .groupby('年份')['消费量(千桶/日)'].sum()
-               .reset_index())
-    cis_sum['国家'] = 'USSR/CIS'
-    cis_sum['洲']  = 'CIS'
-    df = pd.concat([df[~df['国家'].isin(CIS_MEMBERS)], cis_sum], ignore_index=True)
-
-    years = sorted(df['年份'].unique().tolist())
-
-    # 按洲汇总
-    region_sum = df.groupby(['年份', '洲'])['消费量(千桶/日)'].sum().reset_index()
-    regions = sorted(df['洲'].unique().tolist())
-    region_data = {}
-    for r in regions:
-        sub = region_sum[region_sum['洲'] == r].sort_values('年份')
-        region_data[r] = [round(float(v), 1) for v in sub['消费量(千桶/日)'].tolist()]
-
-    # 2024 年产量 Top10 国家
-    top10 = df[df['年份'] == 2024].nlargest(10, '消费量(千桶/日)')['国家'].tolist()
-    country_data = {}
-    for c in top10:
-        sub = df[df['国家'] == c].sort_values('年份')
-        year_map = dict(zip(sub['年份'], sub['消费量(千桶/日)']))
-        vals = []
-        for y in years:
-            v = year_map.get(y)
-            if v is not None and not (isinstance(v, float) and v != v):
-                vals.append(round(float(v), 1))
-            else:
-                vals.append(None)
-        country_data[c] = vals
-
-    # 2024 年各洲饼图数据
-    pie_2024 = []
-    for r in regions:
-        sub = region_sum[(region_sum['洲'] == r) & (region_sum['年份'] == 2024)]
-        pie_2024.append({'name': r, 'value': round(float(sub['消费量(千桶/日)'].values[0]), 1)})
-
-    # 各国 1965→2024 产量变化（有头有尾才纳入）
-    first_year, last_year = years[0], years[-1]
-    country_changes = []
-    for c in df['国家'].unique():
-        sub = df[df['国家'] == c].sort_values('年份')
-        year_map = dict(zip(sub['年份'], sub['消费量(千桶/日)']))
-        v_first = year_map.get(first_year)
-        v_last  = year_map.get(last_year)
-        if (v_first is not None and v_last is not None
-                and not (isinstance(v_first, float) and v_first != v_first)
-                and not (isinstance(v_last,  float) and v_last  != v_last)):
-            continent = sub['洲'].iloc[0]
-            change = round(float(v_last) - float(v_first), 1)
-            country_changes.append({
-                'country':   c,
-                'continent': continent,
-                'v_first':   round(float(v_first), 1),
-                'v_last':    round(float(v_last),  1),
-                'change':    change
-            })
-    country_changes.sort(key=lambda x: x['change'])
-
-    # 各国 2001 vs 2024 对比，按洲分组
-    continents = sorted(df['洲'].unique().tolist())
-    country_compare = {}
-    for cont in continents:
-        sub = df[df['洲'] == cont]
-        entries = []
-        for c in sorted(sub['国家'].unique()):
-            csub = sub[sub['国家'] == c].sort_values('年份')
-            ym = dict(zip(csub['年份'], csub['消费量(千桶/日)']))
-            v2001 = ym.get(2001)
-            v2024 = ym.get(2024)
-            if v2001 is not None and v2024 is not None:
-                entries.append({
-                    'country': c,
-                    'v2001': round(float(v2001), 1),
-                    'v2024': round(float(v2024), 1)
-                })
-        country_compare[cont] = entries
-
-    # 所有国家逐年数据（用于 demo_3c/3d）
-    # 排序：① 增/减（2024 vs 1965 变化方向），② 2024 绝对产量降序
-    all_countries = df['国家'].unique().tolist()
-    country_all_data = {}
-    country_meta = {}   # {country: {continent, v_last, change}}
-    for c in all_countries:
-        sub = df[df['国家'] == c].sort_values('年份')
-        ym = dict(zip(sub['年份'], sub['消费量(千桶/日)']))
-        vals = []
-        for y in years:
-            v = ym.get(y)
-            vals.append(round(float(v), 1) if v is not None and not (isinstance(v, float) and v != v) else None)
-        country_all_data[c] = vals
-        v_last  = ym.get(years[-1])
-        v_first = ym.get(years[0])
-        v_last  = round(float(v_last),  1) if v_last  is not None else 0.0
-        v_first = round(float(v_first), 1) if v_first is not None else 0.0
-        country_meta[c] = {
-            'continent': sub['洲'].iloc[0],
-            'v_last': v_last,
-            'change': round(v_last - v_first, 1)
-        }
-
-    # 排序：先增后减，各组内按 2024 产量降序
-    def sort_key(c):
-        m = country_meta[c]
-        group = 0 if m['change'] >= 0 else 1   # 增加在前
-        return (group, -m['v_last'])
-
-    sorted_countries = sorted(all_countries, key=sort_key)
-
-    return {
-        "code": 200,
-        "data": {
-            "years": years,
-            "region_data": region_data,
-            "top10": top10,
-            "country_data": country_data,
-            "pie_2024": pie_2024,
-            "country_changes": country_changes,
-            "country_compare": country_compare,
-            "country_all_data": country_all_data,
-            "country_meta": country_meta,
-            "sorted_countries": sorted_countries
-        }
-    }
+    return _read_region_csv("data/tables/consumption_region.csv", '消费量(千桶/日)')
 
 
 def read_consumption_product():
@@ -1046,110 +888,10 @@ def api_bank_npl_formation():
 INSURER_PEERS = ["601318", "601628", "601601", "601336", "601319", "00966"]
 
 
-def _insurer_path(code):
-    return os.path.join(os.path.dirname(__file__), "data", "tables", f"insurer_{code}_annual.json")
-
-
-def read_insurer_annual(code):
-    """单家险企历年财务数据，取 data/tables/insurer_<code>_annual.json。"""
-    if not re.fullmatch(r"[0-9]{5,6}", code):
-        return {"code": 400, "msg": f"非法保险公司代码 {code}", "data": {}}
-    path = _insurer_path(code)
-    if not os.path.exists(path):
-        return {"code": 404, "msg": f"保险公司 {code} 尚无年度数据文件", "data": {}}
-    with open(path, "r", encoding="utf-8") as f:
-        return {"code": 200, "data": json.load(f)}
-
-
-def read_insurer_peers():
-    """同业对比用：code → {name, source, caliber_note, annual}，只带页面要用的字段。"""
-    peers = {}
-    for code in INSURER_PEERS:
-        path = _insurer_path(code)
-        if not os.path.exists(path):
-            continue
-        with open(path, "r", encoding="utf-8") as f:
-            d = json.load(f)
-        peers[code] = {
-            "name": d.get("name"),
-            "source": d.get("source"),
-            "unit_note": d.get("unit_note"),
-            "caliber_note": d.get("caliber_note"),
-            "annual": d.get("annual", {}),
-        }
-    if not peers:
-        return {"code": 404, "msg": "尚无险企年度数据文件，请先运行 data/extract/fetch_insurer_financials.py", "data": {}}
-    return {"code": 200, "data": peers}
-
-
-@app.route("/api/insurer_annual")
-def api_insurer_annual():
-    """参数: code（险企 A 股 6 位代码），默认中国平安 601318"""
-    return jsonify(read_insurer_annual(request.args.get("code", "601318")))
-
-
-@app.route("/api/insurer_peers")
-def api_insurer_peers():
-    """五家上市险企同业对比数据，一次返回"""
-    return jsonify(read_insurer_peers())
-
-
 # 六家头部央企开发商，数据由 data/extract/fetch_developer_financials.py 生成：
 # 前三家 A 股上市（取 A 股年报口径），后三家仅在港交所上市，走港股 F10；
 # 港股 F10 金额是年报本位币原值不折算，中海（00688）为港元口径，页面需单独标注
 DEVELOPER_PEERS = ["600048", "001979", "000069", "00688", "01109", "00817"]
-
-
-def _developer_path(code):
-    return os.path.join(os.path.dirname(__file__), "data", "tables", f"developer_{code}_annual.json")
-
-
-def read_developer_annual(code):
-    """单家开发商历年财务数据，取 data/tables/developer_<code>_annual.json。"""
-    if not re.fullmatch(r"[0-9]{5,6}", code):
-        return {"code": 400, "msg": f"非法开发商代码 {code}", "data": {}}
-    path = _developer_path(code)
-    if not os.path.exists(path):
-        return {"code": 404, "msg": f"开发商 {code} 尚无年度数据文件", "data": {}}
-    with open(path, "r", encoding="utf-8") as f:
-        return {"code": 200, "data": json.load(f)}
-
-
-def read_developer_peers():
-    """同业对比用：code → {name, group, currency, source, caliber_note, annual, dividend_per10}。"""
-    peers = {}
-    for code in DEVELOPER_PEERS:
-        path = _developer_path(code)
-        if not os.path.exists(path):
-            continue
-        with open(path, "r", encoding="utf-8") as f:
-            d = json.load(f)
-        peers[code] = {
-            "name": d.get("name"),
-            "secucode": d.get("secucode"),
-            "group": d.get("group"),
-            "currency": d.get("currency"),
-            "source": d.get("source"),
-            "unit_note": d.get("unit_note"),
-            "caliber_note": d.get("caliber_note"),
-            "annual": d.get("annual", {}),
-            "dividend_per10": d.get("dividend_per10", {}),
-        }
-    if not peers:
-        return {"code": 404, "msg": "尚无开发商年度数据文件，请先运行 data/extract/fetch_developer_financials.py", "data": {}}
-    return {"code": 200, "data": peers}
-
-
-@app.route("/api/developer_annual")
-def api_developer_annual():
-    """参数: code（开发商 A 股 6 位或 H 股 5 位代码），默认保利发展 600048"""
-    return jsonify(read_developer_annual(request.args.get("code", "600048")))
-
-
-@app.route("/api/developer_peers")
-def api_developer_peers():
-    """六家头部央企开发商同业对比数据，一次返回"""
-    return jsonify(read_developer_peers())
 
 
 # 八家水泥企业（地产的上游建材），数据由 data/extract/fetch_cement_financials.py 生成：
@@ -1157,10 +899,6 @@ def api_developer_peers():
 # 后三家仅在港交所上市走港股 F10（无资产负债表明细，净现金/重资产度等无序列）。
 # 注意 000877 天山股份是 03323 中国建材的并表子公司，两条线不是独立样本，不能相加。
 CEMENT_PEERS = ["600585", "000877", "600801", "000401", "002233", "03323", "01313", "00743"]
-
-
-def _cement_path(code):
-    return os.path.join(os.path.dirname(__file__), "data", "tables", f"cement_{code}_annual.json")
 
 
 def _cement_ops_manual():
@@ -1258,55 +996,218 @@ def _merge_cement_ops(code, payload):
     return payload
 
 
-def read_cement_annual(code):
-    """单家水泥企业历年财务数据，取 data/tables/cement_<code>_annual.json，
-    并合并 cement_ops_manual.json 的经营口径手工层（销量/吨收入/吨成本/吨毛利）。"""
-    if not re.fullmatch(r"[0-9]{5,6}", code):
-        return {"code": 400, "msg": f"非法水泥企业代码 {code}", "data": {}}
-    path = _cement_path(code)
+# ── 三大运营商（通信）────────────────────────────────────────────────────────
+
+TELECOM_PEERS = ["600941", "601728", "600050"]
+
+
+def _telecom_ops_manual():
+    """经营口径手工层 data/tables/telecom_ops_manual.json：逐份年报原文读出的
+    移动/5G/宽带用户数、ARPU、年报口径资本开支、云与产业数字化收入。财务接口没有这些字段。"""
+    path = os.path.join(os.path.dirname(__file__), "data", "tables", "telecom_ops_manual.json")
     if not os.path.exists(path):
-        return {"code": 404, "msg": f"水泥企业 {code} 尚无年度数据文件", "data": {}}
+        return None
     with open(path, "r", encoding="utf-8") as f:
-        return {"code": 200, "data": _merge_cement_ops(code, json.load(f))}
+        return json.load(f)
 
 
-def read_cement_peers():
-    """同业对比用：code → {name, group, currency, source, caliber_note, annual, dividend_per10}，
-    annual 已并入 cement_ops_manual.json 的经营口径手工层（ops_* 字段）。"""
+def _telecom_segment_manual():
+    """收入构成层 data/tables/telecom_segment_manual.json：年报「营业收入和营业成本」附注里的
+    收入分解表，由 data/extract/extract_telecom_segments.py 解析。三家科目体系不同，不可横比同名科目。"""
+    path = os.path.join(TABLES_DIR, "telecom_segment_manual.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _telecom_segment_labels(comp):
+    """canon 字段 → 年报中文科目名。items 与 canon 是同序生成的两份 dict，按位置对齐即可。
+    年份从新到旧遍历，让当前科目体系（联通 2017 年起）排在旧科目（legacy_*）前面。"""
+    labels, order = {}, []
+    for year in sorted(comp.get("annual") or {}, reverse=True):
+        rec = comp["annual"][year]
+        for canon, label in zip(rec.get("canon") or {}, rec.get("items") or {}):
+            if canon not in labels:
+                labels[canon] = label
+                order.append(canon)
+    return labels, order
+
+
+def _attach_telecom_segments(code, payload):
+    """收入构成挂成顶层 segments 块，不摊进 annual：三家科目集不同、联通 2017 年前后换过一套，
+    平铺进年份记录会得到一张到处是空洞的宽表，前端反而要再猜哪些字段属于哪家。"""
+    seg = _telecom_segment_manual()
+    if not seg:
+        return payload
+    comp = (seg.get("companies") or {}).get(code)
+    if not comp:
+        return payload
+    labels, order = _telecom_segment_labels(comp)
+    payload["segments"] = {
+        "source": seg.get("source"),
+        "unit_note": seg.get("unit_note"),
+        "caliber_note": seg.get("caliber_note"),
+        "unit": "亿元",
+        "labels": labels,
+        "order": order,
+        "annual": {y: r.get("canon") or {} for y, r in (comp.get("annual") or {}).items()},
+    }
+    return payload
+
+
+def _merge_telecom(code, payload):
+    """通信行业的手工层合并入口：经营口径（ops_）+ 年报收入构成（segments）。"""
+    return _attach_telecom_segments(code, _merge_telecom_ops(code, payload))
+
+
+def _merge_telecom_ops(code, payload):
+    """把经营手工层并进 annual 的每一年（ops_ 前缀已在手工表里带好），
+    并把口径说明挂到顶层 ops_meta。annual 里原有的接口字段不动，
+    缺该年份记录（如手工层覆盖到上市前）就补一条只有 ops_* 的年份。"""
+    ops = _telecom_ops_manual()
+    if not ops:
+        return payload
+    comp = (ops.get("companies") or {}).get(code)
+    if not comp:
+        return payload
+    annual = payload.setdefault("annual", {})
+    for year, rec in (comp.get("annual") or {}).items():
+        row = annual.setdefault(year, {})
+        for k, v in rec.items():
+            row["ops_" + k if not k.startswith("ops_") else k] = v
+    payload["ops_meta"] = {
+        "source": ops.get("source"),
+        "unit_note": ops.get("unit_note"),
+        "caliber_note": ops.get("caliber_note"),
+        "years": comp.get("years"),
+        "report_source": comp.get("report_source"),
+        "breaks": comp.get("breaks"),
+    }
+    return payload
+
+
+# ── 行业年度数据接口：保险/地产/水泥/通信共用一套读表逻辑 ─────────────────────
+# 四个行业的成品表都是 data/tables/<行业>_<code>_annual.json，读法只差四件事：
+# 成员清单、代码位数、同业对比要下发哪些字段（顺序即 JSON 里的字段顺序）、
+# 有没有经营口径手工层要合并。差异写在下面的 INDUSTRIES 里，逻辑只有一份。
+INDUSTRIES = {
+    "insurer": {
+        "label": "保险公司", "peers_label": "险企", "peers": INSURER_PEERS,
+        "code_re": r"[0-9]{5,6}", "script": "fetch_insurer_financials.py", "merge": None,
+        "fields": ["name", "source", "unit_note", "caliber_note", "annual"],
+    },
+    "developer": {
+        "label": "开发商", "peers_label": "开发商", "peers": DEVELOPER_PEERS,
+        "code_re": r"[0-9]{5,6}", "script": "fetch_developer_financials.py", "merge": None,
+        "fields": ["name", "secucode", "group", "currency", "source", "unit_note",
+                   "caliber_note", "annual", "dividend_per10"],
+    },
+    "cement": {
+        "label": "水泥企业", "peers_label": "水泥企业", "peers": CEMENT_PEERS,
+        "code_re": r"[0-9]{5,6}", "script": "fetch_cement_financials.py",
+        "merge": _merge_cement_ops,
+        "fields": ["name", "secucode", "group", "currency", "source", "unit_note",
+                   "caliber_note", "ops_meta", "annual", "dividend_per10"],
+    },
+    "telecom": {
+        "label": "运营商", "peers_label": "运营商", "peers": TELECOM_PEERS,
+        "code_re": r"[0-9]{6}", "script": "fetch_telecom_financials.py",
+        "merge": _merge_telecom,
+        "fields": ["name", "secucode", "group", "h_code", "h_same_entity", "a_report_from",
+                   "currency", "source", "unit_note", "caliber_note", "ops_meta", "segments",
+                   "annual", "dividend_per10"],
+    },
+}
+
+# 这两个字段缺失时给空 dict（前端直接 for-in 遍历），其余缺失给 None
+_PEERS_DICT_FIELDS = ("annual", "dividend_per10")
+
+
+def _read_industry_table(industry, code):
+    """读 data/tables/<industry>_<code>_annual.json 并按行业规则合并手工层；文件不存在返回 None。"""
+    spec = INDUSTRIES[industry]
+    path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        d = json.load(f)
+    return spec["merge"](code, d) if spec["merge"] else d
+
+
+def read_industry_annual(industry, code):
+    """单家公司历年数据（含该行业的经营口径手工层，如果有）。"""
+    spec = INDUSTRIES[industry]
+    if not re.fullmatch(spec["code_re"], code):
+        return {"code": 400, "msg": f"非法{spec['label']}代码 {code}", "data": {}}
+    d = _read_industry_table(industry, code)
+    if d is None:
+        return {"code": 404, "msg": f"{spec['label']} {code} 尚无年度数据文件", "data": {}}
+    return {"code": 200, "data": d}
+
+
+def read_industry_peers(industry):
+    """同业对比用：code → 只带 spec['fields'] 声明的字段；缺数据文件的公司跳过。"""
+    spec = INDUSTRIES[industry]
     peers = {}
-    for code in CEMENT_PEERS:
-        path = _cement_path(code)
-        if not os.path.exists(path):
+    for code in spec["peers"]:
+        d = _read_industry_table(industry, code)
+        if d is None:
             continue
-        with open(path, "r", encoding="utf-8") as f:
-            d = _merge_cement_ops(code, json.load(f))
-        peers[code] = {
-            "name": d.get("name"),
-            "secucode": d.get("secucode"),
-            "group": d.get("group"),
-            "currency": d.get("currency"),
-            "source": d.get("source"),
-            "unit_note": d.get("unit_note"),
-            "caliber_note": d.get("caliber_note"),
-            "ops_meta": d.get("ops_meta"),
-            "annual": d.get("annual", {}),
-            "dividend_per10": d.get("dividend_per10", {}),
-        }
+        peers[code] = {k: d.get(k, {} if k in _PEERS_DICT_FIELDS else None) for k in spec["fields"]}
     if not peers:
-        return {"code": 404, "msg": "尚无水泥企业年度数据文件，请先运行 data/extract/fetch_cement_financials.py", "data": {}}
+        return {"code": 404,
+                "msg": f"尚无{spec['peers_label']}年度数据文件，请先运行 data/extract/{spec['script']}",
+                "data": {}}
     return {"code": 200, "data": peers}
+
+
+@app.route("/api/insurer_annual")
+def api_insurer_annual():
+    """参数: code（险企 A 股 6 位代码），默认中国平安 601318"""
+    return jsonify(read_industry_annual("insurer", request.args.get("code", "601318")))
+
+
+@app.route("/api/insurer_peers")
+def api_insurer_peers():
+    """六家上市险企同业对比数据，一次返回"""
+    return jsonify(read_industry_peers("insurer"))
+
+
+@app.route("/api/developer_annual")
+def api_developer_annual():
+    """参数: code（开发商 A 股 6 位或 H 股 5 位代码），默认保利发展 600048"""
+    return jsonify(read_industry_annual("developer", request.args.get("code", "600048")))
+
+
+@app.route("/api/developer_peers")
+def api_developer_peers():
+    """六家头部央企开发商同业对比数据，一次返回"""
+    return jsonify(read_industry_peers("developer"))
 
 
 @app.route("/api/cement_annual")
 def api_cement_annual():
     """参数: code（A 股 6 位或 H 股 5 位代码），默认海螺水泥 600585"""
-    return jsonify(read_cement_annual(request.args.get("code", "600585")))
+    return jsonify(read_industry_annual("cement", request.args.get("code", "600585")))
 
 
 @app.route("/api/cement_peers")
 def api_cement_peers():
     """八家水泥企业同业对比数据，一次返回"""
-    return jsonify(read_cement_peers())
+    return jsonify(read_industry_peers("cement"))
+
+
+@app.route("/api/telecom_annual")
+def api_telecom_annual():
+    """参数: code（A 股 6 位代码），默认中国移动 600941"""
+    return jsonify(read_industry_annual("telecom", request.args.get("code", "600941")))
+
+
+@app.route("/api/telecom_peers")
+def api_telecom_peers():
+    """三大运营商同业对比数据，一次返回"""
+    return jsonify(read_industry_peers("telecom"))
 
 
 if __name__ == "__main__":

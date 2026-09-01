@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../common/base.css">
+    <link rel="stylesheet" href="../page.css">
+    <title>运营商公司详情 · 股权结构</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { background: #f5f6f8; }
+        .wrap { max-width: 1500px; }
+        .entity { margin: 10px 0 0; padding: 12px 16px; background: #fff7ed;
+                  border-left: 4px solid #f59e0b; border-radius: 6px;
+                  font-size: 17px; color: #78350f; line-height: 1.7; }
+        /* 表格照 page.css 正文表格：数字列 nowrap，文字列（股东名称／类别）该折就折 */
+        td.num, th.num { white-space: nowrap; }
+        td.nm { text-align: left; }
+        td.nat { text-align: left; color: #6b7280; }
+        .gap-list { margin: 6px 0 0 18px; font-size: 17px; color: #555; line-height: 1.8; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="page-head">
+        <h1 id="page-title">股权结构</h1>
+        <div class="meta" id="page-meta"></div>
+        <div class="tags"><span>十大股东</span><span>持股集中度</span><span>增减动向</span><span>A/H 股份混排</span></div>
+    </div>
+
+    <div id="loading">加载中…（需先启动 backend_python.py，端口 5000）</div>
+    <div id="error-msg"></div>
+
+    <section id="sec-kpi" hidden>
+        <h2 id="kpi-title">股东结构概览</h2>
+        <p class="sub" id="kpi-sub"></p>
+        <div class="kpis" id="kpis"></div>
+        <div class="entity" id="entity-note"></div>
+    </section>
+
+    <div id="charts"></div>
+
+    <section id="sec-table" hidden>
+        <h2>前十名股东明细</h2>
+        <p class="sub" id="tbl-sub"></p>
+        <div style="overflow-x:auto">
+            <table>
+                <thead><tr>
+                    <th class="num">序号</th><th>股东名称</th><th class="num">持股数（股）</th>
+                    <th class="num">报告期内增减（股）</th><th class="num">占总股本</th><th>类别</th>
+                </tr></thead>
+                <tbody id="tbl-body"></tbody>
+                <tfoot id="tbl-foot"></tfoot>
+            </table>
+        </div>
+    </section>
+
+    <section id="sec-gaps" hidden>
+        <h2>口径与接口限制</h2>
+        <p class="sub">股东数据是接口快照，只有最新一期，历史各期未入库</p>
+        <ul class="gap-list" id="gaps"></ul>
+    </section>
+</div>
+<script src="charts/common.js"></script>
+<script src="charts/shareholder.js"></script>
+</body>
+</html>
