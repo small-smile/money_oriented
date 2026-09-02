@@ -45,7 +45,6 @@ draft.json
 
 # 个人 prompt / 思考草稿，不入库（principle.txt 例外）
 prompt/*.txt
-!prompt/principle.txt
 
 # 原始抓取数据，可由 extract/ 脚本重新拉取
 data/raw/
