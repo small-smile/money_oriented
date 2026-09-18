@@ -20,8 +20,11 @@ def error(msg, code=500, data=None):
 
 
 # ── 通用路径常量 ──────────────────────────────────────────────────────────
-DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
-TABLES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tables")
+# 基准目录取自本文件的绝对位置，与进程启动时的工作目录（CWD）无关 —— gunicorn/systemd/
+# docker 等不在仓库根启动的场景也能定位到数据；需换数据根目录时设环境变量 MONEY_DATA_DIR。
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.abspath(os.environ.get("MONEY_DATA_DIR") or os.path.join(_BASE_DIR, "data"))
+TABLES_DIR = os.path.join(DATA_DIR, "tables")
 
 # 两种用法都在这里：① 只补 factions（telecom 这类 annual 表已有接口股东快照的板块）；
 # ② 连 holders 一起给（tech/food 这类没有 annual 表的公司，股东块直接抄年报／20-F 原文）。

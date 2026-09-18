@@ -44,7 +44,9 @@
 ./venv/bin/python app.py
 ```
 
-必须用 venv 里的 python，系统 python 没装 `flask_cors`。后端只提供 `/api/...`，根路径与
+必须用 venv 里的 python，系统 python 没装 `flask_cors`；首次或换机时先
+`./venv/bin/pip install -r requirements.txt`（依赖版本钉在仓库根 `requirements.txt`）。
+后端只提供 `/api/...`，根路径与
 任何页面路径都返回 404——页面全部由前端负责。
 
 前端开发（Vite dev server，热更新）：

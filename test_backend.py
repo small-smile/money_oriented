@@ -10,11 +10,11 @@ import backend as bk
 
 
 # ─────────────────────────────────────────────
-# Helpers: 把临时数据文件写到 tmp_path 下的真实相对路径
+# Helpers: 把临时数据文件写到 tmp_path 下，再把 backend.oil.TABLES_DIR 指过去
 #
-# 油价三个函数用的是硬编码相对路径（data/tables/oil.*.txt），所以测试
-# 直接 monkeypatch.chdir(tmp_path) 切到临时工作目录，让被测函数用真的
-# open / os.path.exists 去命中临时文件 —— 既验证了路径拼接本身对不对，
+# 油价三个函数现在按绝对基准 TABLES_DIR 拼路径（不再依赖进程 CWD），所以测试用
+# monkeypatch.setattr 把 backend.oil.TABLES_DIR 指向 tmp_path 下的临时表目录，
+# 让被测函数用真的 open / os.path.exists 去命中临时文件 —— 既验证了路径拼接本身对不对，
 # 又不必全局劫持 builtins.open（劫持会连函数内部别的 open 一起换掉，
 # 且路径拼错也照样绿）。文件不存在的分支也交给真的 os.path.exists 判定。
 # ─────────────────────────────────────────────
@@ -40,7 +40,7 @@ class TestReadProduction:
         """正常多行数据"""
         content = PRODUCTION_HEADER + "2020\t100\n2021\t200\n2022\t300\n"
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -49,7 +49,7 @@ class TestReadProduction:
 
     def test_file_not_exist(self, tmp_path, monkeypatch):
         """文件不存在时返回 500（切到空目录，让真的 os.path.exists 判定）"""
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["code"] == 500
@@ -61,7 +61,7 @@ class TestReadProduction:
         """只有表头，无数据行"""
         content = PRODUCTION_HEADER
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -72,7 +72,7 @@ class TestReadProduction:
         """空行被跳过"""
         content = PRODUCTION_HEADER + "2020\t100\n\n2021\t200\n"
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["data"]["xAxis"] == ["2020", "2021"]
@@ -82,7 +82,7 @@ class TestReadProduction:
         """列数不足的行被跳过"""
         content = PRODUCTION_HEADER + "2020\t100\nonlyone\n2021\t200\n"
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["data"]["xAxis"] == ["2020", "2021"]
@@ -91,7 +91,7 @@ class TestReadProduction:
         """产量字段非整数时返回 500"""
         content = PRODUCTION_HEADER + "2020\tNOT_AN_INT\n"
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["code"] == 500
@@ -101,7 +101,7 @@ class TestReadProduction:
         """仅一条数据行"""
         content = PRODUCTION_HEADER + "1990\t999\n"
         write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
         assert result["code"] == 200
@@ -117,7 +117,7 @@ class TestReadPrice:
 
     def _write(self, tmp_path, monkeypatch, content):
         write_tmp_file(tmp_path, "data/tables/oil.price.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
     def test_normal_multiple_rows(self, tmp_path, monkeypatch):
         """正常多行：蜡烛图数据正确构造"""
@@ -183,7 +183,7 @@ class TestReadPrice:
         切到没有数据表的空目录，让真的 open 抛出，而不是伪造一个异常。
         注：read_production 缺文件返回 500、read_price 直接抛，两者容错策略不一致，
         属未统一的后端技术债；此处如实记录现状，若后续统一为 500 需同步改本断言。"""
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
         with pytest.raises(FileNotFoundError):
             bk.read_price()
 
@@ -196,7 +196,7 @@ class TestReadAdjPrice:
 
     def _write(self, tmp_path, monkeypatch, content):
         write_tmp_file(tmp_path, "data/tables/oil.price.txt", content)
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
     def test_uses_adj_column(self, tmp_path, monkeypatch):
         """使用 adj 列（第三列）而非 raw 列"""
@@ -246,7 +246,7 @@ class TestReadAdjPrice:
 
     def test_file_not_found_raises(self, tmp_path, monkeypatch):
         """文件不存在时抛出 FileNotFoundError（切到空目录让真的 open 抛出）"""
-        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
         with pytest.raises(FileNotFoundError):
             bk.read_adj_price()
 

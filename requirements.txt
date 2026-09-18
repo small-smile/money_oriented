@@ -1,0 +1,9 @@
+# 后端纯 JSON API（app.py + backend/）的运行依赖，版本为 venv 实测值（Python 3.10）。
+# 重建环境：
+#   python3 -m venv venv
+#   ./venv/bin/pip install -r requirements.txt
+#   ./venv/bin/python app.py
+flask==3.1.3
+flask-cors==6.0.5
+pandas==2.3.2
+numpy==2.2.6

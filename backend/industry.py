@@ -29,25 +29,25 @@ DEVELOPER_PEERS = ["600048", "001979", "000069", "00688", "01109", "00817"]
 # 有没有经营口径手工层要合并。差异写在下面的 INDUSTRIES 里，逻辑只有一份。
 INDUSTRIES = {
     "insurer": {
-        "label": "保险公司", "peers_label": "险企", "peers": INSURER_PEERS,
+        "label": "保险公司", "peers_label": "险企", "peers": INSURER_PEERS, "default": "601318",
         "code_re": r"[0-9]{5,6}", "script": "fetch_insurer_financials.py", "merge": None,
         "fields": ["name", "source", "unit_note", "caliber_note", "annual"],
     },
     "developer": {
-        "label": "开发商", "peers_label": "开发商", "peers": DEVELOPER_PEERS,
+        "label": "开发商", "peers_label": "开发商", "peers": DEVELOPER_PEERS, "default": "600048",
         "code_re": r"[0-9]{5,6}", "script": "fetch_developer_financials.py", "merge": None,
         "fields": ["name", "secucode", "group", "currency", "source", "unit_note",
                    "caliber_note", "annual", "dividend_per10"],
     },
     "cement": {
-        "label": "水泥企业", "peers_label": "水泥企业", "peers": CEMENT_PEERS,
+        "label": "水泥企业", "peers_label": "水泥企业", "peers": CEMENT_PEERS, "default": "600585",
         "code_re": r"[0-9]{5,6}", "script": "fetch_cement_financials.py",
         "merge": _merge_cement_ops,
         "fields": ["name", "secucode", "group", "currency", "source", "unit_note",
                    "caliber_note", "ops_meta", "annual", "dividend_per10"],
     },
     "telecom": {
-        "label": "运营商", "peers_label": "运营商", "peers": TELECOM_PEERS,
+        "label": "运营商", "peers_label": "运营商", "peers": TELECOM_PEERS, "default": "600941",
         "code_re": r"[0-9]{6}", "script": "fetch_telecom_financials.py",
         "merge": _merge_telecom,
         "fields": ["name", "secucode", "group", "h_code", "h_same_entity", "a_report_from",
@@ -122,49 +122,25 @@ def read_industry_peers(industry):
     return success(peers)
 
 
-@industry_bp.route("/insurer_annual")
-def api_insurer_annual():
-    """参数: code（险企 A 股 6 位代码），默认中国平安 601318"""
-    return jsonify(read_industry_annual("insurer", request.args.get("code", "601318")))
+# ── 路由：每个行业两条（单家 annual / 同业 peers），按 INDUSTRIES 循环注册 ──────
+# 加一个行业只需在上面的 INDUSTRIES 里加一条（含 default 默认代码），不必再手写路由；
+# 端点名沿用 api_<industry>_annual / api_<industry>_peers，URL 与默认代码都不变。
+def _make_annual_view(industry, default):
+    def view():
+        return jsonify(read_industry_annual(industry, request.args.get("code", default)))
+    view.__doc__ = f"参数: code（{INDUSTRIES[industry]['label']}代码），默认 {default}"
+    return view
 
 
-@industry_bp.route("/insurer_peers")
-def api_insurer_peers():
-    """六家上市险企同业对比数据，一次返回"""
-    return jsonify(read_industry_peers("insurer"))
+def _make_peers_view(industry):
+    def view():
+        return jsonify(read_industry_peers(industry))
+    view.__doc__ = f"{INDUSTRIES[industry]['peers_label']}同业对比数据，一次返回"
+    return view
 
 
-@industry_bp.route("/developer_annual")
-def api_developer_annual():
-    """参数: code（开发商 A 股 6 位或 H 股 5 位代码），默认保利发展 600048"""
-    return jsonify(read_industry_annual("developer", request.args.get("code", "600048")))
-
-
-@industry_bp.route("/developer_peers")
-def api_developer_peers():
-    """六家头部央企开发商同业对比数据，一次返回"""
-    return jsonify(read_industry_peers("developer"))
-
-
-@industry_bp.route("/cement_annual")
-def api_cement_annual():
-    """参数: code（A 股 6 位或 H 股 5 位代码），默认海螺水泥 600585"""
-    return jsonify(read_industry_annual("cement", request.args.get("code", "600585")))
-
-
-@industry_bp.route("/cement_peers")
-def api_cement_peers():
-    """八家水泥企业同业对比数据，一次返回"""
-    return jsonify(read_industry_peers("cement"))
-
-
-@industry_bp.route("/telecom_annual")
-def api_telecom_annual():
-    """参数: code（A 股 6 位代码），默认中国移动 600941"""
-    return jsonify(read_industry_annual("telecom", request.args.get("code", "600941")))
-
-
-@industry_bp.route("/telecom_peers")
-def api_telecom_peers():
-    """三大运营商同业对比数据，一次返回"""
-    return jsonify(read_industry_peers("telecom"))
+for _ind, _spec in INDUSTRIES.items():
+    industry_bp.add_url_rule(f"/{_ind}_annual", endpoint=f"api_{_ind}_annual",
+                             view_func=_make_annual_view(_ind, _spec["default"]))
+    industry_bp.add_url_rule(f"/{_ind}_peers", endpoint=f"api_{_ind}_peers",
+                             view_func=_make_peers_view(_ind))

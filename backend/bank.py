@@ -19,7 +19,7 @@ def read_bank_financials(stock_code):
         'sh_601288': 'abc_financials.txt',
     }
     filename = FILE_MAP.get(code_name, f'{code_name}_financials.txt')
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'tables', filename)
+    path = os.path.join(TABLES_DIR, filename)
     if not os.path.exists(path):
         return None
     records = []
@@ -69,11 +69,11 @@ def read_company_charts(code):
     银行的数据文件按 A 股代码存（纯 H 股行按 H 股代码存），两地代码都要能取到同一份。"""
     if not re.fullmatch(r"[0-9]{5,6}", code):
         return error(f"非法银行代码 {code}", 400)
-    path = f"data/tables/company_charts_{code}.json"
+    path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
     if not os.path.exists(path):
         alt, why, ent = _resolve_company_code(code, set(BANK_ORDER))
-        if alt and os.path.exists(f"data/tables/company_charts_{alt}.json"):
-            with open(f"data/tables/company_charts_{alt}.json", "r", encoding="utf-8") as f:
+        if alt and os.path.exists(os.path.join(TABLES_DIR, f"company_charts_{alt}.json")):
+            with open(os.path.join(TABLES_DIR, f"company_charts_{alt}.json"), "r", encoding="utf-8") as f:
                 return success(json.load(f), why)
         red = _cross_industry_redirect(code, ent, {"bank"})
         return error(
@@ -93,7 +93,7 @@ def api_company_charts():
 def read_tsf():
     """社会融资规模（TSF）宏观数据，独立于任一银行 —— 直接沿用 601077 精编文件里
     已规整好的 tsf-stock 块（months/stock/yoy/flow_total/分项），供行业页 tsf.html 使用。"""
-    path = f"data/tables/company_charts_{DEFAULT_BANK_CODE}.json"
+    path = os.path.join(TABLES_DIR, f"company_charts_{DEFAULT_BANK_CODE}.json")
     if not os.path.exists(path):
         return error("社融数据文件不存在", 404)
     with open(path, "r", encoding="utf-8") as f:

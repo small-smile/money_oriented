@@ -7,7 +7,7 @@ import re          # noqa: F401
 
 from backend.shared import (          # noqa: F401
     success, error,
-    DASHBOARD_DIR, TABLES_DIR, HOLDERS_MANUAL_FILE, COMPANY_CODES_FILE,
+    TABLES_DIR, HOLDERS_MANUAL_FILE, COMPANY_CODES_FILE,
     _holders_manual, _company_codes, _company_entity,
     _resolve_company_code, _cross_industry_redirect,
 )

@@ -3,13 +3,13 @@ import pandas as pd
 from flask import Blueprint, jsonify
 import os
 
-from backend.shared import success, error
+from backend.shared import success, error, TABLES_DIR
 
 oil_bp = Blueprint("oil", __name__)
 
 
 def read_production():
-    path = "data/tables/oil.production.txt"
+    path = os.path.join(TABLES_DIR, "oil.production.txt")
     xAxis = []
     prodData = []
 
@@ -45,7 +45,7 @@ def read_production():
 def _read_oil_candles(col):
     """oil.price.txt（年份 / 原价 / 通胀调整价）→ 年 K 线：开盘取上一年收盘，
     首年开盘=收盘。col=1 取原价、col=2 取通胀调整价，两个接口只差这一列。"""
-    path = "data/tables/oil.price.txt"
+    path = os.path.join(TABLES_DIR, "oil.price.txt")
     candleData = []
     xAxis = []
     prev_raw = None  # 保存上一期价格
@@ -220,11 +220,11 @@ def _read_region_csv(path, value_col):
 
 
 def read_production_region():
-    return _read_region_csv("data/tables/production_region.csv", '产量(千桶/日)')
+    return _read_region_csv(os.path.join(TABLES_DIR, "production_region.csv"), '产量(千桶/日)')
 
 
 def read_consumption_region():
-    return _read_region_csv("data/tables/consumption_region.csv", '消费量(千桶/日)')
+    return _read_region_csv(os.path.join(TABLES_DIR, "consumption_region.csv"), '消费量(千桶/日)')
 
 
 def read_consumption_product():
@@ -233,7 +233,7 @@ def read_consumption_product():
     四个细分品种源表只有 1980 起，总计有 1965 起 —— 年轴统一用细分品种的跨度，
     否则 1965-1979 会留出一段只有总计的空白。
     """
-    df = pd.read_csv("data/tables/consumption_product.csv")
+    df = pd.read_csv(os.path.join(TABLES_DIR, "consumption_product.csv"))
     PRODUCTS = ["汽油", "柴油", "航空煤油", "石脑油"]
 
     sub = df[df['产品'].isin(PRODUCTS)]
@@ -300,16 +300,16 @@ def read_consumption_growth():
 
     三条序列各自年份跨度不同，一并返回，回归线与指数化对比由前端计算。
     """
-    df = pd.read_csv("data/tables/consumption_region.csv")
+    df = pd.read_csv(os.path.join(TABLES_DIR, "consumption_region.csv"))
     oil_sum = df.groupby("年份")["消费量(千桶/日)"].sum().sort_index()
     oil_years = [int(y) for y in oil_sum.index.tolist()]
     oil_vals = [round(float(v), 1) for v in oil_sum.tolist()]
 
-    pop = _read_two_col_txt("data/tables/world_population.txt")
+    pop = _read_two_col_txt(os.path.join(TABLES_DIR, "world_population.txt"))
     pop_years = sorted(pop.keys())
     pop_vals = [round(pop[y], 2) for y in pop_years]
 
-    elec = _read_two_col_txt("data/tables/electricity_generation.txt")
+    elec = _read_two_col_txt(os.path.join(TABLES_DIR, "electricity_generation.txt"))
     elec_years = sorted(elec.keys())
     elec_vals = [round(elec[y], 1) for y in elec_years]
 
@@ -382,7 +382,7 @@ def _read_reserves_csv(path, oil_col, price_col):
 
 def read_petrochina_reserves():
     return success(_read_reserves_csv(
-        "data/tables/petrochina_reserves.csv",
+        os.path.join(TABLES_DIR, "petrochina_reserves.csv"),
         oil_col="原油凝析油(百万桶)",
         price_col="中石油实现油价(美元/桶)"
     ))
@@ -390,7 +390,7 @@ def read_petrochina_reserves():
 
 def read_cnooc_reserves():
     return success(_read_reserves_csv(
-        "data/tables/cnooc_reserves.csv",
+        os.path.join(TABLES_DIR, "cnooc_reserves.csv"),
         oil_col="石油液体(百万桶)",
         price_col="中海油实现油价(美元/桶)"
     ))
@@ -432,18 +432,18 @@ def _read_company_production_csv(path):
 @oil_bp.route("/petrochina_production")
 def api_petrochina_production():
     return jsonify(success(
-        _read_company_production_csv("data/tables/petrochina_production.csv")))
+        _read_company_production_csv(os.path.join(TABLES_DIR, "petrochina_production.csv"))))
 
 
 @oil_bp.route("/cnooc_production")
 def api_cnooc_production():
     return jsonify(success(
-        _read_company_production_csv("data/tables/cnooc_production.csv")))
+        _read_company_production_csv(os.path.join(TABLES_DIR, "cnooc_production.csv"))))
 
 
 def _read_oil_years_usd():
     """读取 oil.price.txt，返回 (年份列表, {年份: 名义美元价})，作为对齐用的规范 x 轴"""
-    path = "data/tables/oil.price.txt"
+    path = os.path.join(TABLES_DIR, "oil.price.txt")
     years = []
     usd = {}
     with open(path, "r", encoding="utf-8") as f:
@@ -462,7 +462,7 @@ def read_gold_ratio():
     黄金数据从 1970 起，之前的年份返回 None。"""
     years, oil_usd = _read_oil_years_usd()
     gold = {}
-    with open("data/tables/gold.price.txt", "r", encoding="utf-8") as f:
+    with open(os.path.join(TABLES_DIR, "gold.price.txt"), "r", encoding="utf-8") as f:
         for line in f.readlines()[1:]:
             line = line.strip()
             if not line:
@@ -481,7 +481,7 @@ def read_gold_oil():
     只取两个序列都有数据的年份 (黄金 1970 起, 原油序列到 2024)。"""
     _, oil_usd = _read_oil_years_usd()
     gold = {}
-    with open("data/tables/gold.price.txt", "r", encoding="utf-8") as f:
+    with open(os.path.join(TABLES_DIR, "gold.price.txt"), "r", encoding="utf-8") as f:
         for line in f.readlines()[1:]:
             line = line.strip()
             if not line:
@@ -509,7 +509,7 @@ def read_population():
     """世界人口 (亿)，对齐到油价年份。数据从 1960 起 (World Bank SP.POP.TOTL)。"""
     years, _ = _read_oil_years_usd()
     pop = {}
-    with open("data/tables/world_population.txt", "r", encoding="utf-8") as f:
+    with open(os.path.join(TABLES_DIR, "world_population.txt"), "r", encoding="utf-8") as f:
         for line in f.readlines()[1:]:
             line = line.strip()
             if not line:
