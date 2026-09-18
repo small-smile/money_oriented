@@ -4,13 +4,13 @@
       <div class="chart-head">
         <h2 class="chart-title">中海油（0883.HK）油价 vs 单期 ROA（年化）<span class="sub">布伦特期内均价 × 单期总资产净利率（非累计，年化）· 2001H1–2026Q1</span></h2>
       </div>
-      <div ref="roaEl" id="chart-roa" class="chart-box"></div>
+      <EChart :option="roaOption" height="70vh" />
     </section>
     <section class="chart-card">
       <div class="chart-head">
         <h2 class="chart-title">中海油（0883.HK）油价 vs 单期 ROE（年化）<span class="sub">布伦特期内均价 × 单期净资产收益率（非累计，年化）· 2001H1–2026Q1</span></h2>
       </div>
-      <div ref="roeEl" id="chart-roe" class="chart-box"></div>
+      <EChart :option="roeOption" height="70vh" />
     </section>
     <section id="annotations-section">
       <h2>标注事件对照表</h2>
@@ -35,14 +35,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import * as echarts from 'echarts'
+import EChart from '../../components/EChart.vue'
 
 // 逐字搬自 dashboard/subject/oil/cnooc_roa_oil.html：DATA/EVENTS/option 与渲染逻辑原样保留，
-// 数据为源页内联示意数据（非 /api），数值一律不改；容器改用组件 ref，实例收集后卸载时 dispose。
-const roaEl = ref(null)
-const roeEl = ref(null)
-let charts = []
+// 数据为源页内联示意数据（非 /api），数值一律不改；两张图改用 EChart 组件承载（resize/dispose 内置）。
 /* 数据口径说明：
  *  p       报告期。2022 前中海油(0883.HK)只披露半年报 → 半年为一期(H1/H2)；
  *          2022 起(A股 600938 上市后)按季度披露 → 季度为一期(Q1..Q4)。
@@ -253,23 +249,9 @@ function buildOption(cfg) {
         ]
     };
 }
-function onResize() { charts.forEach(c => c.resize()) }
-
-onMounted(() => {
-  const domRefs = { 'chart-roa': roaEl, 'chart-roe': roeEl }
-  charts = CHARTS.map(cfg => {
-    const c = echarts.init(domRefs[cfg.dom].value)
-    c.setOption(buildOption(cfg), true)
-    return c
-  })
-  window.addEventListener('resize', onResize)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
-})
+// 两张图的 option 在 setup 期即可算出（数据为静态内联）；容器 resize/dispose 交给 EChart 组件。
+const roaOption = buildOption(CHARTS[0])
+const roeOption = buildOption(CHARTS[1])
 </script>
 
 <style scoped>
