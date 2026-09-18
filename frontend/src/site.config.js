@@ -1,11 +1,12 @@
 // 全站「板块 → 页面」唯一来源：router / SiteHeader 导航分组 / Home 首页卡片皆从此派生。
 // 加一个行业/专题：在这里加一条路由 + 对应导航分组（+ 首页卡片），三处自动生效，
 // 不必再分别改 router、SiteHeader、Home。数据仍走后端 /api，样式复用 base.css。
-import Home from './views/Home.vue'
+// 注：所有路由（含首页）都用 () => import() 懒加载，本文件因此不静态依赖任何 .vue，
+// Home 与本文件无循环引用，且可被 node 直接 import 做配置校验（见 scripts/check-config.mjs）。
 
 // ── 路由（router/index.js 直接消费）────────────────────────────────────
 export const routes = [
-  { path: '/', name: 'home', component: Home, meta: { title: '行业看板' } },
+  { path: '/', name: 'home', component: () => import('./views/Home.vue'), meta: { title: '行业看板' } },
 
   // 石油专题
   { path: '/subject/oil/country-change', name: 'oil-country-change', component: () => import('./views/oil/OilCountryChange.vue'), meta: { title: '各洲石油产量对比：2001 vs 2024' } },
