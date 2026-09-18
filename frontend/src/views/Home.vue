@@ -7,124 +7,31 @@
         <span class="l-empty"><i></i>待开发（仅占位）</span>
     </div>
 
-    <h2>食品</h2>
-    <div class="grid">
-        <router-link class="card card-wip" to="/company/food/overview">
-            <span class="tag tag-consumption">食品</span>
-            <span class="title">食品</span>
-            <span class="desc">巴比食品 605338 年报 · 同业对比</span>
-        </router-link>
-    </div>
-
-    <h2>地产链<span class="hint">上游 → 下游</span></h2>
-    <div class="flow">
-        <code>水泥（上游）</code> → 发货当期确认收入 → <code>地产（下游）</code> → 竣工结转后确认收入。
-        水泥的营收拐点<b>领先</b>开发商约 2 年。
-        注意水泥需求里还有很大一块来自基建（公路、桥梁、水利），不随地产销售同步，读水泥时别只对着地产看。
-        <b>地产（开发商）板块已不再维护</b>，卡片已从本页隐藏。
-    </div>
-    <div class="grid">
-        <router-link class="card card-wip" to="/industry/cement/overview">
-            <span class="tag tag-cement">水泥</span>
-            <span class="title">水泥<span class="pos">　上游</span></span>
-            <span class="desc">八家水泥企业名录 · 供给侧政策线 · 净现金分化与吨毛利代理指标</span>
-        </router-link>
-
-        <!-- 地产（开发商）板块 2026-09-01 起不再维护：卡片隐藏，页面与数据仍在
-             （industry/realestate/*、developer_* 数据表、/api/developer_*），需要时直接输 URL。
-        <a class="card card-wip" href="industry/realestate/overview.html">
-            <span class="tag tag-realestate">地产</span>
-            <span class="title">地产<span class="pos">　下游</span></span>
-            <span class="desc">六家头部央企开发商名录 · 政策线 · 历年财务与三道红线横向对比</span>
-        </a>
-        -->
-
-        <div class="card card-empty">
-            <span class="tag tag-decor">装修</span>
-            <span class="title">装修</span>
-        </div>
-    </div>
-
-    <h2>金融<span class="hint">为上下游提供杠杆</span></h2>
-    <div class="grid">
-        <router-link class="card card-wip" to="/industry/bank/overview">
-            <span class="tag tag-bank">银行</span>
-            <span class="title">银行</span>
-            <span class="desc">A/H 股上市银行名录 · 渝农商行 601077 年报全景</span>
-        </router-link>
-
-        <router-link class="card card-wip" to="/industry/insurance/overview">
-            <span class="tag tag-insurance">保险</span>
-            <span class="title">保险</span>
-            <span class="desc">A/H 股上市险企名录 · 五大险企历年数据横向对比</span>
-        </router-link>
-    </div>
-
-    <h2>科技<span class="hint">广告收入是上面各板块景气的同步指标</span></h2>
-    <div class="grid">
-        <router-link class="card card-wip" to="/company/baidu/index">
-            <span class="tag tag-tech">互联网</span>
-            <span class="title">百度集团<span class="pos">　09888 / BIDU</span></span>
-            <span class="desc">FY2025 20-F · 业绩 / 分部与运营 / 资产与现金 / 股权结构 / 简介</span>
-        </router-link>
-    </div>
-
-    <h2>能源<span class="hint">全行业的成本项</span></h2>
-    <div class="flow">
-        煤炭与电力占水泥吨成本的五到六成，油价则决定运输与化工成本——
-        <code>能源</code>是读上面所有板块毛利率时的共同外生变量。
-    </div>
-    <div class="grid">
-        <router-link class="card card-done" to="/subject/oil/price">
-            <span class="tag tag-price">石油</span>
-            <span class="title">石油</span>
-            <span class="desc">量价 · 产量 · 消费 · 储量 · 油企盈利</span>
-        </router-link>
-    </div>
-
-    <h2>酒店<span class="hint">消费服务，不并入地产</span></h2>
-    <div class="grid">
-        <div class="card card-empty">
-            <span class="tag tag-hotel">酒店</span>
-            <span class="title">酒店</span>
-        </div>
-    </div>
-
-    <h2>通信<span class="hint">上游 → 下游</span></h2>
-    <div class="flow">
-        <code>三大运营商（上游）</code> 提供接入与流量 → <code>互联网（下游）</code> 把流量变现为广告与电商成交。
-        运营商的资本开支与 ARPU 是读互联网板块用户增长天花板时的参照。
-    </div>
-    <div class="grid">
-        <router-link class="card card-wip" to="/industry/telecom/overview">
-            <span class="tag tag-telecom">运营商</span>
-            <span class="title">三大运营商<span class="pos">　上游</span></span>
-            <span class="desc">移动/电信/联通名录与变革时间线 · 三家对比 · 各家公司详情（业绩／收入构成／运营与资本开支）</span>
-        </router-link>
-
-        <router-link class="card card-wip" to="/company/cmcc/index">
-            <span class="tag tag-telecom">运营商</span>
-            <span class="title">中国移动<span class="pos">　941 / 600941　上游</span></span>
-            <span class="desc">1997 年上市至今 · 业绩 / 产品更迭（语音→流量→算力）/ 客户与网络 / 简介与股权</span>
-        </router-link>
-    </div>
-
-    <h2>互联网</h2>
-    <div class="grid">
-        <div class="card card-empty">
-            <span class="tag tag-ad">在线广告</span>
-            <span class="title">在线广告<span class="pos">　下游</span></span>
-        </div>
-
-        <div class="card card-empty">
-            <span class="tag tag-ecommerce">电商</span>
-            <span class="title">电商<span class="pos">　下游</span></span>
-        </div>
-    </div>
+    <template v-for="sec in hubSections" :key="sec.title">
+      <h2>{{ sec.title }}<span v-if="sec.hint" class="hint">{{ sec.hint }}</span></h2>
+      <div v-if="sec.flow" class="flow" v-html="sec.flow"></div>
+      <div class="grid">
+        <template v-for="c in sec.cards" :key="c.name">
+          <router-link v-if="c.to" class="card" :class="'card-' + c.status" :to="c.to">
+            <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
+            <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
+            <span v-if="c.desc" class="desc">{{ c.desc }}</span>
+          </router-link>
+          <div v-else class="card" :class="'card-' + c.status">
+            <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
+            <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
+            <span v-if="c.desc" class="desc">{{ c.desc }}</span>
+          </div>
+        </template>
+      </div>
+    </template>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+// 首页卡片数据抽到 src/site.config.js（与 router / SiteHeader 同源）；本页只负责按数据渲染 + 保留原样式。
+import { hubSections } from '../site.config'
+</script>
 
 <style scoped>
 /* 逐字搬自 dashboard/index.html <head> 的 <style>：

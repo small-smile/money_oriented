@@ -53,6 +53,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ensureBanks, exposeGlobals, setCompanyCode } from './useBankLegacy'
 // 银行页专属正文样式（dashboard/company/page.css 逐字复制）。base.css 已在 main.js 全局引入，不重复。
 import './legacy/page.css'
+// 银行栏目改由 site.config 单一来源提供（股权页银行导航共用同一份，加子页只改那里）。
+import { bankSubPages } from '../../../site.config'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,14 +62,7 @@ const router = useRouter()
 const DEFAULT_CODE = '601077' // 与 charts.js / 后端 DEFAULT_BANK_CODE 一致
 const TIER_ORDER = ['国有大行', '股份行', '城商行', '农商行']
 // 顺序与 bank-header.js 的 PAGES 一致（去掉「股东」单列，它是独立路由）
-const SUBPAGES = [
-  { seg: 'index', title: '业绩' },
-  { seg: 'asset', title: '资产端' },
-  { seg: 'debt', title: '负债端' },
-  { seg: 'risk', title: '风控' },
-  { seg: 'intro', title: '简介' },
-  { seg: 'balance-sheet', title: '资产负债表' },
-]
+const SUBPAGES = bankSubPages
 
 const banks = ref([])
 const open = ref(false)
