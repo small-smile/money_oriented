@@ -1,7 +1,7 @@
 {
  "_meta": {
   "generated_by": "data/extract/build_company_codes.py",
-  "consumed_by": "backend_python.py::_resolve_company_code → /api/holders → dashboard/company/bank/shareholder.html",
+  "consumed_by": "backend/shared.py::_resolve_company_code → /api/holders → dashboard/company/shareholder.html",
   "note": "key 为实体唯一键（有 A 股用 A 股代码，纯 H 股用 H 股代码）；a_code / h_code / us_code 是同一家公司在三地的代码，same_entity=false 表示两地主体不是同一法人（中国联通 A 股 vs 红筹），这类不做代码互换。每条的 sources 记着本地出处，不联网、不凭常识补代码。"
  },
  "entities": [
@@ -853,7 +853,7 @@
     "dashboard/industry/cement/overview.html:200 → CEMENTS[].a / .h / group",
     "dashboard/industry/cement/overview.html:190（口径提示：天山股份是中国建材 03323.HK 的并表子公司）",
     "dashboard/industry/cement/peers.html:50（样本重叠提示）",
-    "backend_python.py:900（同一结论的代码注释）",
+    "backend/shared.py（同一结论的代码注释）",
     "data/raw/annual_000877_2025.txt:164-170（股票简况 + 公司的中文名称）"
    ]
   },
@@ -1077,7 +1077,7 @@
    "note": "仅 A 股（上交所主板）：2025 年报「公司股票简况」只有「人民币普通股（A股）／上海证券交易所／巴比食品／605338」一行，无 H 股",
    "sources": [
     "data/tables/holders_manual.json → \"food:605338\" 的 name=\"巴比食品\" / secucode=\"605338.SH\" / source（2025 年年度报告，上交所）",
-    "backend_python.py:1178 → HOLDER_INDUSTRIES[\"food\"].codes = [\"605338\"]",
+    "backend/holders.py → HOLDER_INDUSTRIES[\"food\"].codes = [\"605338\"]",
     "data/raw/annual_605338_2025.txt:306-309（公司的中文/外文名称）、:337-341（股票简况仅 A 股一行）",
     "dashboard/company/food/overview.html:22（中饮巴比食品股份有限公司（巴比食品））"
    ]
@@ -1294,7 +1294,7 @@
   },
   {
    "item": "「同集团不同上市主体」与「代码撞号」不属于 A/H 配对，已逐条标注但不映射",
-   "why": "000877 天山股份 ↔ 03323 中国建材（并表母子，overview.html:190 / peers.html:50 / backend_python.py:900）；601319 中国人保 ↔ 02328 中国财险（母子，insurance/overview.html:162 与 :166 分列两栏）；002233 塔牌集团（深交所）↔ 02233 西部水泥（港交所，cement/overview.html:214）纯属代码数字撞号；001979 招商蛇口 ↔ 00978 招商局置地、600048 保利发展 ↔ 00119 保利置业（realestate/overview.html:176-177）同集团不同上市平台"
+   "why": "000877 天山股份 ↔ 03323 中国建材（并表母子，overview.html:190 / peers.html:50 / backend/shared.py）；601319 中国人保 ↔ 02328 中国财险（母子，insurance/overview.html:162 与 :166 分列两栏）；002233 塔牌集团（深交所）↔ 02233 西部水泥（港交所，cement/overview.html:214）纯属代码数字撞号；001979 招商蛇口 ↔ 00978 招商局置地、600048 保利发展 ↔ 00119 保利置业（realestate/overview.html:176-177）同集团不同上市平台"
   },
   {
    "item": "百度 09888 的美股代码 BIDU 有本地出处，但 A 股一栏确定为 null",

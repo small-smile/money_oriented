@@ -1,0 +1,983 @@
+<template>
+  <div>
+    <div class="page">
+      <div class="stack-tabs" ref="stackTabsEl"></div>
+      <div class="card-stack" ref="cardStackEl">
+        <div class="stack-card front" data-name="原油K线" data-color="#be123c">
+          <div class="card-title">原油K线 (1861 起)</div>
+          <div id="main" ref="mainEl"></div>
+          <div class="card-peek">原油K线 (1861 起) · 点击切到前面</div>
+        </div>
+        <div class="stack-card back" data-name="黄金 / 原油 / 金油比" data-color="#d4a017">
+          <div class="card-title">黄金 / 原油 / 金油比 (1970 起)</div>
+          <div id="gold-oil" ref="goldOilEl"></div>
+          <div class="card-peek">黄金 / 原油 / 金油比 (1970 起) · 点击切到前面</div>
+        </div>
+      </div>
+      <p class="chart-note">
+        原油K线：BP/EI 长期年度序列，1861 起，名义美元；图例可叠加 2024 平价价格。
+        金油比图：黄金 = 年度均价 (USD/oz, gold.org)，原油 = 年度名义均价 (USD/bbl)，
+        金油比 = 黄金价 / 原油价，即 1 盎司黄金可换的原油桶数；
+        三条线各用一条独立线性坐标轴（左：黄金；右：原油；最右：金油比），
+        量级不同，线间上下位置无可比性，只看各自形状与拐点，共同覆盖 1970–2024。
+      </p>
+      <section id="annotations-section">
+        <h2>标注事件对照表</h2>
+        <table id="annotation-table" ref="annotationTableEl">
+          <thead>
+          <tr>
+            <th style="width: 18%">时间</th>
+            <th style="width: 22%">事件</th>
+            <th>说明</th>
+          </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <!-- 点击 K 线弹出的居中标注浮层 -->
+    <div id="annotation-modal" ref="modalEl">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <button class="modal-close" type="button">×</button>
+        <div class="modal-year"></div>
+        <div class="modal-events"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import * as echarts from 'echarts'
+import { apiGet } from '../../api'
+
+// 逐字搬自 dashboard/subject/oil/price_history.html：EVENTS / SERIES_UNIT / axisTooltip、
+// 两张图（原油 K 线蜡烛图 + 黄金/原油/金油比折线）的 option 与全部渲染/交互逻辑原样保留，
+// 仅取数改走统一 apiGet、容器改用组件 ref、echarts 实例收集后在卸载时 dispose、resize 归拢。
+// 图与数据一律不变；K 线的 dataZoom(inside) 按原页保留。
+const mainEl = ref(null)
+const goldOilEl = ref(null)
+const stackTabsEl = ref(null)
+const cardStackEl = ref(null)
+const annotationTableEl = ref(null)
+const modalEl = ref(null)
+
+let charts = []
+const cleanups = []
+function onWin(type, fn) { window.addEventListener(type, fn); cleanups.push(() => window.removeEventListener(type, fn)) }
+function onDoc(type, fn) { document.addEventListener(type, fn); cleanups.push(() => document.removeEventListener(type, fn)) }
+function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
+
+// === 事件配置 ===
+// 色彩语义: 涨=红色 (#be123c) / 控价管制=蓝色 (#0369a1)
+const EVENTS = [
+  {
+    id: 'civil-war',
+    start: 1861,
+    end: 1865,
+    name: '美国内战 (南北战争)',
+    color: '#be123c',
+    time: '1861.4 - 1865.4',
+    desc: '1861.4.12 Fort Sumter 开战。同期石油工业刚诞生（1859.8 Drake Well），战争成为催化剂：1861.8 Elizabeth Watts 号首次运宾州油到伦敦；1862.7 联邦对精炼油征 10¢/加仑税——史上第一笔石油税；煤油迅速替代鲸油照明（南方私掠船切断了鲸油供应）；1863.11 Rockefeller 在 Cleveland 组建 Andrews, Clark & Rockefeller Refining，Standard Oil 之基。井口价 1861 $0.49 → 1862 崩到 $0.10 → 1864 战时峰 $8 → 1865 停战 $6.59。'
+  },
+  {
+    id: 'seep',
+    start: 1895,
+    end: 1911,
+    name: 'Standard Oil 定价期 (Seep posted price)',
+    color: '#0369a1',
+    time: '1895.2 - 1911.5',
+    desc: 'Seep Purchasing Agency 每日公开报价收购全美原油。Standard Oil 通过 pipeline + 收油定价一手遮天，价格窄幅横盘约 16 年。'
+  },
+  {
+    id: 'split',
+    start: 1911,
+    end: 1911,
+    name: 'Standard Oil 拆分',
+    color: '#be123c',
+    time: '1911.5.15',
+    desc: '最高法院终审 Standard Oil Co. of NJ v. United States，拆为 34 家（Jersey Standard→Exxon、Socony→Mobil、SoCal→Chevron 等）。posted price 单一定价机制瓦解。触发随后 1911-1913 拆分溢价：34 家继承公司争抢井口原油，Mid-Continent 井口价从 ~40¢ 拉到 ~74¢，利多定价。'
+  },
+  {
+    id: 'premium',
+    start: 1911,
+    end: 1913,
+    name: '拆分溢价',
+    color: '#be123c',
+    time: '1911 - 1913',
+    desc: '34 家继承公司争建独立分销 + 精炼产能，Mid-Continent 井口价从 ~40¢ 拉到 ~74¢/bbl。叠加 Model T 装配线（1913.12 Highland Park）汽油需求爆发 + Churchill 主导 Royal Navy 转油。'
+  },
+  {
+    id: 'ww1',
+    start: 1914,
+    end: 1918,
+    name: '一战',
+    color: '#be123c',
+    time: '1914.7 - 1918.11',
+    desc: '1914.7 开战。1914.11.2 英国海军对德实行远距离封锁 + 把石油列入 Absolute Contraband，拦截任何经荷兰/丹麦/挪威/瑞典等中立国转运到德国的美国原油。1916.11.26 Norton Griffiths 领导的 Ploiești 破坏行动：英军 + 罗马尼亚共同摧毁 70 眼油井 + 25 万吨库存，阻止德军占领后利用。1917.4 美国参战后德国石油完全断供，U-boat 燃料严重短缺。战前初期 (1914-15) Cushing 油田大喷 + 贸易断裂反导致油价回落；1916 起坦克/凡尔登卡车/汽车翻倍/Cushing 见顶叠加，油价至 1920 达 $3.07 名义峰。战后 Curzon 名言："The Allies floated to victory upon a wave of oil"（协约国是坐在石油浪潮上驶向胜利的）。'
+  },
+  {
+    id: 'sisters',
+    start: 1928,
+    end: 1973,
+    name: '七姊妹控价 (Seven Sisters)',
+    color: '#0369a1',
+    time: '1928 - 1973.10',
+    desc: 'Achnacarry "As-Is" Agreement (1928.9.17) + Red Line Agreement (1928.7) 建立国际卡特尔。Exxon/Mobil/Chevron/Gulf/Texaco/Shell/BP 控中下游 + Gulf-plus 定价。1973.10 OPEC 禁运终结。'
+  },
+  {
+    id: 'trc',
+    start: 1935,
+    end: 1972,
+    name: 'TRC 控价 (德州铁路委员会)',
+    color: '#0369a1',
+    time: '1935 - 1972.3',
+    desc: 'TRC 通过限制美国上游井口产量来定边际桶价格。传导前提：德州 ~40% 美国产量，美国为当时世界主产国，1959.3-1973.4 强制进口配额 (MOIP) 隔离国内市场，德州的边际桶即全球边际桶。月度闭环：炼厂与管道公司提交 nominations（下月采购计划）+ 矿务局需求预测 → 奥斯汀 market demand hearing 定全州 allowable → 摊到油田/租区/单井，执行口径是每月"允许生产天数"，1960 年代常年 8-10 天/月；需求转弱减天数收紧边际供给，转强则加天数。1935.2 Connally Hot Oil Act 禁止超配额原油 (hot oil) 跨州运输，配额有了联邦执法力，边际供给才真正可控。结果：1948-1970 年 posted price 钉在 ~$2.5-3.0/bbl。1971 年起 allowable 逐月上调，1972.3 给到 100%（部分来源记 4 月），备用产能耗尽，边际定价权移交 OPEC。'
+  },
+  {
+    id: 'nixon',
+    start: 1971,
+    end: 1971,
+    name: 'Nixon Shock',
+    color: '#be123c',
+    time: '1971.8.15',
+    desc: '尼克松单方面终止美元-黄金兑换，布雷顿森林体系崩解。美元贬值 → OPEC 卖油购买力下降 → 1973 禁运的货币诱因。1971.2 Tehran Agreement 已埋伏笔。'
+  },
+  {
+    id: 'oil-crisis',
+    start: 1973,
+    end: 1980,
+    name: '两次石油危机',
+    color: '#be123c',
+    time: '1973.10 - 1980.12',
+    desc: '【第一次 (1973.10-1974.3)】1973.10.6 赎罪日战争，10.16 OPEC 六国在科威特单方面把 posted price 从 $3.01 涨到 $5.11 (+70%)——Sisters 定价权正式终结。10.17 OAPEC 每月减产 5% + 对亲以色列国家禁运（美国、荷兰）。12.23 德黑兰会议再涨到 $11.65，全球油价 $3 → $12 四倍涨。1974.3.18 阿拉伯禁运解除。【盘整 (1974-1978)】OPEC 接管全球定价权，以 Arabian Light 为 marker crude 设官方售价 (OSP)，油价在 ~$11-13 名义高位窄幅盘整约四年。1976.12 Doha 会议 OPEC 内部分裂成两档价，沙特以增产压价。【第二次 (1978.10-1980.12)】1978.10 伊朗石油工人大罢工，出口从 550 万桶/日跌到近乎 0（全球缺口 4-7%）。1979.1.16 巴列维流亡，2.1 霍梅尼归国。市场恐慌抢购 → Rotterdam 现货冲到 $50。1979.11.4 伊朗占领美使馆，卡特制裁。1980.9.22 两伊战争爆发，互攻油田炼厂 (Abadan)。1979 $25 → 1980 $37-40 → 1981 名义峰 $35+。'
+  },
+  {
+    id: 'gulf',
+    start: 1990,
+    end: 1991,
+    name: '海湾战争',
+    color: '#be123c',
+    time: '1990.8 - 1991.2',
+    desc: '1990.8.2 伊拉克入侵科威特，油价 2 个月内从 ~$17 冲到 ~$36。1991.1.17 沙漠风暴，2.28 停火。战后 IEA 战略储备释放 + 沙特增产快速压回 $20 附近。'
+  },
+  {
+    id: 'china-india',
+    start: 2001,
+    end: 2011,
+    name: '亚洲需求超级周期',
+    color: '#be123c',
+    time: '2001 - 2011',
+    desc: '2001.12 中国入 WTO，2001-2011 中国石油消费从 480 万桶/日 → 963 万桶/日（2011 数据），印度从 230 → 350 万桶/日。全球每年新增石油需求 40-50% 来自中国，印度同步 +50%。叠加非 OPEC 供给见顶（北海 2000、Cantarell 2003）、美元贬值 (DXY 120→71)、地缘风险溢价、金融化 (GSCI 资金 $150亿→$2600亿)。WTI 2001 $28 → 2008.7.11 峰值 $147.27，回撤后 2011 均价 $95。石油史上首次由新兴市场需求主导的 super cycle。'
+  },
+  {
+    id: 'shale',
+    start: 2008,
+    end: 2016,
+    name: '页岩油革命',
+    color: '#0369a1',
+    time: '2008 - 2016',
+    desc: 'Bakken (北达科他) 2008 开始水平钻井 + 大规模压裂商业化，2011 产量到 60 万桶/日。Eagle Ford (德州) 2010 跟进。Permian Basin 2014 起爆发，成为全球增速最快的油田。美国原油产量 2008 500万桶/日 → 2015 950万桶/日 → 2019 破 1200万桶/日，重登全球最大产油国。2014.6 沙特启动 OPEC 价格战对付页岩：WTI 从 $107 → 2016.1 $26，7 年大熊市开启。2016.11 OPEC+ 减产协议是对页岩的战略妥协。Peak Oil 叙事被彻底反转。'
+  }
+]
+
+// === tooltip 统一规则（两张图共用）===
+// 1) trigger 'axis' + 十字准星：按 x 轴时点聚合当年全部系列
+// 2) 标题 18px 加粗，数值行 16px；单位按系列名从 SERIES_UNIT 取
+// 3) candlestick 的 data 是 [dataIndex, open, close, low, high]，只展示 开/收
+// 4) 传入 dom 时启用避让：指针在左半区 → 浮层靠右，否则靠左
+const SERIES_UNIT = {
+  '原油K线': '美元/桶',
+  '2024平价价格': '美元/桶',
+  '黄金': '美元/盎司',
+  '原油': '美元/桶',
+  '金油比': '桶/盎司'
+}
+
+function axisTooltip(avoidCursorDom) {
+  const conf = {
+    trigger: 'axis',
+    axisPointer: {type: 'cross'},
+    textStyle: {fontSize: 18},
+    formatter: params => {
+      const rows = params.map(p => {
+        const d = p.data;
+        if (d == null) return '';
+        let value;
+        if (p.seriesType === 'candlestick') {
+          const arr = Array.isArray(d) ? d : d.value;
+          value = '开: <b>' + arr[1] + '</b>&nbsp;&nbsp;收: <b>' + arr[2] + '</b>';
+        } else {
+          value = '<b>' + d + '</b>';
+        }
+        const unit = SERIES_UNIT[p.seriesName];
+        return '<div style="font-size:18px;line-height:1.7">'
+          + p.marker + p.seriesName + '&nbsp;&nbsp;' + value
+          + (unit ? ' ' + unit : '') + '</div>';
+      }).join('');
+      return '<div style="font-weight:600;font-size:20px;margin-bottom:6px">'
+        + params[0].axisValue + '</div>' + rows;
+    }
+  };
+  if (avoidCursorDom) {
+    conf.position = point =>
+      point[0] < avoidCursorDom.offsetWidth / 2 ? ['60%', '10%'] : ['5%', '10%'];
+  }
+  return conf;
+}
+
+onMounted(() => {
+  // === 原油 K 线主图容器（原 document.getElementById('main') → 组件 ref）===
+  const chartDom = mainEl.value
+  const myChart = echarts.init(chartDom)
+  charts.push(myChart)
+
+  // === 1970 年以后：黄金 / 原油 / 金油比 折线图 ===
+  renderGoldOilChart()
+
+  // === 卡片堆叠切换：页签是主入口，点后卡露出的那条也能翻到前面 ===
+  initCardStack()
+
+  // === 渲染底部标注表（不依赖数据接口，页面加载即可显示）===
+  renderAnnotationTable()
+
+  // 两个请求promise / 并发同时发起请求（原 axios.get → 统一 apiGet，解包后直接是 data）
+  Promise.all([apiGet('/api/price'), apiGet('/api/adj_price')])
+    .then(([price, adj]) => {
+      const {xAxis, candleData} = price;
+      // 调整后油价折线数组
+      const lineAdj = adj.candleData;
+
+      // 下面直接写option渲染多系列图表
+      const option = {
+        tooltip: axisTooltip(chartDom),
+        legend: {
+          data: ["原油K线", "2024平价价格"],
+          left: '50%',
+          bottom: 0,
+          selected: {"原油K线": true, "2024平价价格": false},
+          textStyle: {fontSize: 18}
+        },
+        grid: {bottom: 60},
+        xAxis: [
+          {type: "category", data: xAxis, axisLabel: {rotate: 45, fontSize: 18}},
+        ],
+        yAxis: [
+          {type: "value", name: "价格", scale: true,
+            nameTextStyle: {fontSize: 18}, axisLabel: {fontSize: 18}},
+          {
+            type: "value", name: "2024平价价格", scale: true,
+            position: 'right',
+            nameTextStyle: {fontSize: 18},
+            axisLabel: {margin: 8, fontSize: 18},
+          },
+        ],
+        dataZoom: [
+          // {type: "slider", xAxisIndex: 0},
+          {type: "inside", xAxisIndex: 0}
+        ],
+        series: [
+          {
+            name: "原油K线",
+            type: "candlestick",
+            yAxisIndex: 0,
+            data: candleData,
+            itemStyle: {
+              color: "#c85450",
+              color0: "#10b981",
+              borderColor: "#7c2d2b",
+              borderColor0: "#064e3b"
+            },
+            markLine: {
+              symbol: 'none',
+              silent: true,
+              lineStyle: {color: '#be123c', type: 'dashed', width: 1.5},
+              label: {fontSize: 18},
+              data: [
+                {
+                  name: 'Standard Oil 拆分',
+                  xAxis: xAxis.find(v => String(v).startsWith('1911')),
+                  label: {
+                    formatter: 'Standard Oil 拆分 (1911.5)',
+                    color: '#be123c',
+                    fontWeight: 'bold',
+                    position: 'insideMiddleTop',
+                    rotate: 90,
+                    distance: 10
+                  },
+                  lineStyle: {color: '#be123c'}
+                },
+                {
+                  name: 'Nixon Shock',
+                  xAxis: xAxis.find(v => String(v).startsWith('1971')),
+                  label: {
+                    formatter: 'Nixon Shock (1971.8)',
+                    color: '#be123c',
+                    fontWeight: 'bold',
+                    position: 'insideMiddleTop'
+                  }
+                }
+              ]
+            },
+            markArea: {
+              silent: true,
+              label: {fontSize: 18, fontWeight: 'bold', rotate: 0},
+              data: [
+                [
+                  {
+                    name: '美国内战 (南北战争)',
+                    xAxis: xAxis.find(v => String(v).startsWith('1861')),
+                    itemStyle: {color: 'rgba(190,18,60,0.14)'},
+                    label: {color: '#be123c', position: 'insideTop', distance: 8}
+                  },
+                  {xAxis: xAxis.find(v => String(v).startsWith('1865'))}
+                ],
+                [
+                  {
+                    name: 'Standard Oil 定价期 (Seep posted price)',
+                    xAxis: xAxis.find(v => String(v).startsWith('1895')),
+                    itemStyle: {color: 'rgba(14,165,233,0.12)'},
+                    label: {color: '#0369a1', position: 'insideTop', distance: 8}
+                  },
+                  {xAxis: xAxis.find(v => String(v).startsWith('1911'))}
+                ],
+                [
+                  {
+                    name: '一战 (1914.7-1918.11)',
+                    xAxis: xAxis.find(v => String(v).startsWith('1914')),
+                    itemStyle: {color: 'rgba(190,18,60,0.14)'},
+                    label: {color: '#be123c', position: 'insideTop', distance: 45}
+                  },
+                  {xAxis: xAxis.find(v => String(v).startsWith('1918'))}
+                ],
+                [
+                  {
+                    name: '七姊妹 & TRC 控价',
+                    xAxis: xAxis.find(v => String(v).startsWith('1928')),
+                    itemStyle: {color: 'rgba(14,165,233,0.14)'},
+                    label: {color: '#0369a1', position: 'insideTop', distance: 8}
+                  },
+                  {
+                    xAxis: xAxis.find(v => String(v).startsWith('1973'))
+                  }
+                ],
+                [
+                  {
+                    name: '两次石油危机 (1973-1980)',
+                    xAxis: xAxis.find(v => String(v).startsWith('1973')),
+                    itemStyle: {color: 'rgba(190,18,60,0.17)'},
+                    label: {color: '#be123c', position: 'insideTop', distance: 8}
+                  },
+                  {
+                    xAxis: xAxis.find(v => String(v).startsWith('1980'))
+                  }
+                ],
+                [
+                  {
+                    name: '海湾战争 (1990.8-1991.2)',
+                    xAxis: xAxis.find(v => String(v).startsWith('1990')),
+                    itemStyle: {color: 'rgba(190,18,60,0.15)'},
+                    label: {color: '#be123c', position: 'insideTop', distance: 78}
+                  },
+                  {
+                    xAxis: xAxis.find(v => String(v).startsWith('1991'))
+                  }
+                ],
+                [
+                  {
+                    name: '亚洲需求超级周期',
+                    xAxis: xAxis.find(v => String(v).startsWith('2001')),
+                    itemStyle: {color: 'rgba(190,18,60,0.15)'},
+                    label: {color: '#be123c', position: 'insideTop', distance: 8}
+                  },
+                  {xAxis: xAxis.find(v => String(v).startsWith('2011'))}
+                ],
+                [
+                  {
+                    name: '页岩油革命',
+                    xAxis: xAxis.find(v => String(v).startsWith('2008')),
+                    itemStyle: {color: 'rgba(14,165,233,0.14)'},
+                    label: {color: '#0369a1', position: 'insideBottom', distance: 30}
+                  },
+                  {xAxis: xAxis.find(v => String(v).startsWith('2016'))}
+                ]
+              ]
+            }
+          },
+
+          {
+            name: "2024平价价格",
+            type: "candlestick",
+            yAxisIndex: 1,
+            data: lineAdj,
+            itemStyle: {
+              color: "#fca5a5",
+              color0: "#6ee7b7",
+              borderColor: "#b91c1c",
+              borderColor0: "#047857"
+            },
+          },
+        ]
+      };
+      myChart.setOption(option);
+
+      // === 点击 K 线区域 → 弹出居中标注浮层 ===
+      const modal = modalEl.value;
+      const modalYear = modal.querySelector('.modal-year');
+      const modalEvents = modal.querySelector('.modal-events');
+      const modalClose = modal.querySelector('.modal-close');
+      const modalBackdrop = modal.querySelector('.modal-backdrop');
+
+      function openModal(xValue) {
+        const year = parseInt(String(xValue).slice(0, 4), 10);
+        const matches = isNaN(year) ? [] : EVENTS.filter(e => year >= e.start && year <= e.end);
+        modalYear.textContent = String(xValue);
+        if (matches.length === 0) {
+          modalEvents.innerHTML = '<div class="modal-empty">该时点无标注事件</div>';
+        } else {
+          modalEvents.innerHTML = matches.map(e => `
+            <div class="m-event" style="border-left-color:${e.color}">
+              <div class="m-event-name" style="color:${e.color}">${e.name}</div>
+              <div class="m-event-time">${e.time}</div>
+              <div class="m-event-desc">${e.desc}</div>
+            </div>
+          `).join('');
+        }
+        modal.classList.add('show');
+      }
+
+      function closeModal() {
+        modal.classList.remove('show');
+      }
+
+      modalClose.addEventListener('click', closeModal);
+      modalBackdrop.addEventListener('click', closeModal);
+      onDoc('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      // 通过 zrender 监听画布点击，转像素坐标为 xAxis 索引
+      myChart.getZr().on('click', (params) => {
+        // K 线卡在后面时，点击只用于换卡，不弹标注
+        if (!chartDom.closest('.stack-card').classList.contains('front')) return;
+        const pointInPixel = [params.offsetX, params.offsetY];
+        if (!myChart.containPixel('grid', pointInPixel)) return;
+        const dataCoord = myChart.convertFromPixel({seriesIndex: 0}, pointInPixel);
+        const xIdx = Math.round(dataCoord[0]);
+        if (xIdx < 0 || xIdx >= xAxis.length) return;
+        openModal(xAxis[xIdx]);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      alert("接口请求失败，请检查后端服务");
+    });
+
+  // echarts 实例 resize 统一交给收集起来的实例（原页对每张图各自 addEventListener('resize')）
+  onWin('resize', onResize)
+
+  // ---- 内部函数：黄金 / 原油 / 金油比 折线图（原 renderGoldOilChart IIFE）----
+  function renderGoldOilChart() {
+    const dom = goldOilEl.value;
+    const chart = echarts.init(dom);
+    charts.push(chart);
+    chart.showLoading();
+
+    apiGet('/api/gold_oil')
+      .then(({xAxis, gold, oil, ratio}) => {
+        chart.hideLoading();
+
+        chart.setOption({
+          // 图名由卡片标题承担，图内不再重复
+          tooltip: axisTooltip(),
+          legend: {
+            data: ['黄金', '原油', '金油比'],
+            bottom: 0,
+            textStyle: {fontSize: 18}
+          },
+          grid: {left: 90, right: 260, top: 40, bottom: 70},
+          xAxis: {
+            type: 'category',
+            data: xAxis,
+            axisLabel: {rotate: 45, fontSize: 18}
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '黄金 (美元/盎司)',
+              position: 'left',
+              nameTextStyle: {fontSize: 18, color: '#d4a017'},
+              axisLine: {show: true, lineStyle: {color: '#d4a017'}},
+              axisLabel: {fontSize: 18},
+              splitLine: {lineStyle: {color: '#eef0f3'}}
+            },
+            {
+              type: 'value',
+              name: '原油 (美元/桶)',
+              position: 'right',
+              nameTextStyle: {fontSize: 18, color: '#c0392b'},
+              axisLine: {show: true, lineStyle: {color: '#c0392b'}},
+              axisLabel: {fontSize: 18},
+              splitLine: {show: false}
+            },
+            {
+              type: 'value',
+              name: '金油比 (桶/盎司)',
+              position: 'right',
+              offset: 150,
+              nameTextStyle: {fontSize: 18, color: '#7c3aed'},
+              axisLine: {show: true, lineStyle: {color: '#7c3aed'}},
+              axisLabel: {fontSize: 18},
+              splitLine: {show: false}
+            }
+          ],
+          // 不用 inside dataZoom：只要存在 inside，ECharts 就会 preventDefault 滚轮事件，页面无法下滚
+          series: [
+            {
+              name: '黄金',
+              type: 'line',
+              yAxisIndex: 0,
+              data: gold,
+              symbol: 'circle',
+              symbolSize: 5,
+              lineStyle: {width: 2.5, color: '#d4a017'},
+              itemStyle: {color: '#d4a017'}
+            },
+            {
+              name: '原油',
+              type: 'line',
+              yAxisIndex: 1,
+              data: oil,
+              symbol: 'circle',
+              symbolSize: 5,
+              lineStyle: {width: 2.5, color: '#c0392b'},
+              itemStyle: {color: '#c0392b'}
+            },
+            {
+              name: '金油比',
+              type: 'line',
+              yAxisIndex: 2,
+              data: ratio,
+              symbol: 'circle',
+              symbolSize: 5,
+              lineStyle: {width: 2, color: '#7c3aed', type: 'dashed'},
+              itemStyle: {color: '#7c3aed'},
+              markLine: {
+                symbol: 'none',
+                silent: true,
+                lineStyle: {color: '#7c3aed', type: 'dotted'},
+                label: {
+                  formatter: '金油比均值 {c}',
+                  fontSize: 18,
+                  color: '#7c3aed',
+                  position: 'insideEndTop'
+                },
+                data: [{type: 'average'}]
+              }
+            }
+          ]
+        });
+      })
+      .catch(err => {
+        chart.hideLoading();
+        console.error(err);
+        dom.innerHTML = '<div style="padding:24px;font-size:18px;color:#6b7280">'
+          + '金油比数据加载失败，请检查后端服务 (/api/gold_oil)</div>';
+      });
+  }
+
+  // ---- 内部函数：卡片堆叠切换（原 initCardStack IIFE）----
+  function initCardStack() {
+    const cards = Array.from(cardStackEl.value.querySelectorAll(':scope > .stack-card'));
+    const tabBar = stackTabsEl.value;
+
+    const slider = document.createElement('span');
+    slider.className = 'tab-slider';
+    tabBar.appendChild(slider);
+
+    const tabs = cards.map((card, i) => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'stack-tab';
+      tab.innerHTML = '<span class="tab-dot" style="color:' + card.dataset.color + '"></span>'
+        + '<span>' + card.dataset.name + '</span>';
+      tab.addEventListener('click', () => activate(i));
+      tabBar.appendChild(tab);
+      return tab;
+    });
+
+    function moveSlider(tab) {
+      slider.style.width = tab.offsetWidth + 'px';
+      slider.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+    }
+
+    function activate(idx) {
+      cards.forEach((c, i) => {
+        c.classList.toggle('front', i === idx);
+        c.classList.toggle('back', i !== idx);
+      });
+      tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+      moveSlider(tabs[idx]);
+    }
+
+    cards.forEach((card, i) => card.addEventListener('click', () => {
+      if (card.classList.contains('front')) return;   // 前卡的点击留给图表本身
+      activate(i);
+    }));
+
+    activate(cards.findIndex(c => c.classList.contains('front')));
+    // 字体加载完 / 窗口变化后页签宽度会变，滑块跟上
+    onWin('resize', () => moveSlider(tabBar.querySelector('.stack-tab.active')));
+    if (document.fonts) document.fonts.ready.then(
+      () => moveSlider(tabBar.querySelector('.stack-tab.active')));
+  }
+
+  // ---- 内部函数：底部标注表（原 renderAnnotationTable IIFE）----
+  function renderAnnotationTable() {
+    const tbody = annotationTableEl.value.querySelector('tbody');
+    tbody.innerHTML = EVENTS.map(e => `
+      <tr>
+        <td class="time">${e.time}</td>
+        <td class="event" style="border-left-color:${e.color}; color:${e.color}">${e.name}</td>
+        <td>${e.desc}</td>
+      </tr>
+    `).join('');
+  }
+})
+
+onBeforeUnmount(() => {
+  cleanups.forEach(fn => { try { fn() } catch (_) {} })
+  charts.forEach(c => { try { c.dispose() } catch (_) {} })
+  charts = []
+})
+</script>
+
+<style>
+/* 逐字搬自 dashboard/subject/oil/price_history.html 的 <style>：本页自身元素依赖的规则。
+   用非 scoped：页签(.stack-tab/.tab-slider)、标注表 <tbody> 的 <tr>/<td>、
+   浮层 .modal-events 里的 .m-event 等节点由 document.createElement / innerHTML 动态生成，
+   拿不到 Vue 的 scoped 属性，scoped 规则不会命中它们。
+   base.css 已全局定义的 reset/body/.site-nav/.chart-card/.chart-title/#loading/#error-msg 不重复；
+   源页 body 的底色/字体交给 base.css，这里不搬 body 规则。 */
+.page {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 20px 24px 40px;
+    box-sizing: border-box;
+}
+
+/* 两张图等高，换卡时页面不跳动；卡片已负责白底和边框 */
+#main, #gold-oil {
+    width: 100%;
+    height: 800px;
+}
+
+#main {
+    cursor: crosshair;
+}
+
+/* === 页签：胶囊式分段控件，白色滑块随选中项平移；靠右侧对齐 === */
+.stack-tabs {
+    position: relative;
+    display: flex;
+    width: fit-content;
+    margin: 0 0 16px auto;   /* margin-left:auto 把整条页签推到右边 */
+    padding: 5px;
+    background: #eceff3;
+    border-radius: 999px;
+    box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.07);
+}
+
+.tab-slider {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 0;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.stack-tab {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font: inherit;
+    font-size: 18px;
+    line-height: 1.4;
+    padding: 10px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: #6b7280;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.25s ease;
+}
+
+.stack-tab .tab-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.stack-tab:hover {
+    color: #374151;
+}
+
+.stack-tab.active {
+    color: #0f172a;
+    font-weight: 600;
+    cursor: default;
+}
+
+.stack-tab.active .tab-dot {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* === 卡片堆叠：前卡在上，后卡向下露出一条 === */
+.card-stack {
+    position: relative;
+    margin-bottom: 70px;       /* 给露出的那截留位置，否则会压住下面的表格 */
+}
+.stack-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* 前卡留在文档流里，由它决定 .card-stack 的高度 */
+.stack-card.front {
+    position: relative;
+    z-index: 2;
+}
+
+.stack-card.back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    transform: translateY(16px) scale(0.985);
+    cursor: pointer;
+}
+
+.stack-card.back:hover {
+    transform: translateY(24px) scale(0.99);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 2px 4px 10px;
+}
+
+/* 露出的那条只在后卡显示，用来标明这是哪张图 */
+.card-peek {
+    display: none;
+}
+
+.stack-card.back .card-peek {
+    display: block;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 18px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.chart-note {
+    font-size: 18px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin: 16px 2px 0;
+}
+
+/* === 点击弹出的居中标注浮层 === */
+#annotation-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+#annotation-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(3px);
+}
+
+.modal-card {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    padding: 32px 36px;
+    width: 680px;
+    max-width: 92vw;
+    max-height: 82vh;
+    overflow-y: auto;
+    z-index: 1;
+    transform: scale(0.96);
+    transition: transform 0.2s ease;
+}
+
+#annotation-modal.show .modal-card {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    font-size: 36px;
+    color: #9ca3af;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+.modal-close:hover {
+    color: #111827;
+    background: #f3f4f6;
+}
+
+.modal-year {
+    font-size: 29px;
+    font-weight: bold;
+    color: #111827;
+    font-family: "SF Mono", Consolas, monospace;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
+
+.modal-events .m-event {
+    border-left: 4px solid transparent;
+    padding: 8px 0 14px 16px;
+    margin-bottom: 16px;
+}
+
+.modal-events .m-event:last-child {
+    margin-bottom: 0;
+}
+
+.modal-events .m-event-name {
+    font-size: 23px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.modal-events .m-event-time {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 18px;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+.modal-events .m-event-desc {
+    font-size: 27px;
+    color: #374151;
+    line-height: 1.7;
+}
+
+.modal-empty {
+    font-size: 18px;
+    color: #6b7280;
+    padding: 24px 0;
+    text-align: center;
+}
+
+/* === 底部完整标注表 === */
+#annotations-section {
+    margin-top: 24px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px 24px;
+}
+
+#annotations-section h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    color: #111827;
+    font-weight: bold;
+}
+
+#annotation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+#annotation-table th {
+    background: #f3f4f6;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 18px;
+    color: #4b5563;
+    border-bottom: 2px solid #d1d5db;
+    white-space: nowrap;
+}
+
+#annotation-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+    line-height: 1.7;
+}
+
+#annotation-table tr:hover td {
+    background: #fafafa;
+}
+
+#annotation-table td.time {
+    font-family: "SF Mono", Consolas, monospace;
+    white-space: nowrap;
+    color: #4b5563;
+    font-size: 18px;
+}
+
+#annotation-table td.event {
+    border-left: 4px solid transparent;
+    font-weight: 600;
+    padding-left: 12px;
+    white-space: nowrap;
+}
+
+#annotation-table td:last-child {
+    font-size: 20px;
+}
+</style>
+

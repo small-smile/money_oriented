@@ -1,0 +1,421 @@
+<template>
+  <div class="page">
+    <h1>A/H 股上市银行概览</h1>
+    <div class="lede">按 国有大行 / 股份制 / 城商行 / 农商行 分组，含 A 股与港股上市主体</div>
+    <div class="legend">
+      <span><span class="code a">601xxx</span> A 股代码</span>
+      <span><span class="code h">xxxx.HK</span> 港股代码</span>
+      <span style="color:#9ca3af;">灰色变暗 = 暂无数据</span>
+    </div>
+
+    <h2>国有大行 <span class="count">6 家 · 均 A+H 两地上市</span></h2>
+    <div class="grid" ref="gridBig"></div>
+
+    <h2>股份制银行 <span class="count">10 家（9 家 A 股 · 渤海银行仅 H）</span></h2>
+    <div class="grid" ref="gridJoint"></div>
+
+    <h2>城市商业银行 <span class="count">A 股 17 家 + 仅港股 12 家</span></h2>
+    <div class="grid" ref="gridCity"></div>
+
+    <h2>农村商业银行 <span class="count">A 股 10 家 + 仅港股 3 家</span></h2>
+    <div class="grid" ref="gridRural"></div>
+
+    <h2>银行业重要变革时间线 <span class="count">2013–2025 · 监管制度与会计准则变革</span></h2>
+    <div class="timeline" ref="timelineEl"></div>
+    <div class="note">
+      以渝农商行(601077)年报披露口径为主线，兼引同业通行监管规则；具体数据来源见本行「银行」相关数据页
+      （<a href="../../company/bank/risk.html">风控</a>、<a href="../../company/bank/intro.html">简介</a>、
+      <a href="../../company/bank/index.html">业绩</a>）图表说明。完整对照表见
+      <a href="reform_timeline.html">银行业重要变革时间线（独立页）</a>。
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+
+// 逐字搬自 dashboard/industry/bank/overview.html 的内联脚本：数据（BANKS/DETAIL_PAGES/
+// HAS_ANNUAL/EVENTS）与渲染逻辑原样保留，仅把 document.getElementById 换成组件模板 ref。
+// 纯名录 + 时间线页，无 ECharts、无 /api 请求，全部内联数据；无异步故无 loading/error。
+const gridBig = ref(null)
+const gridJoint = ref(null)
+const gridCity = ref(null)
+const gridRural = ref(null)
+const timelineEl = ref(null)
+
+/* 每家银行：name 简称，a A股代码（可空），h 港股代码（可空），page 已有专属页（可空） */
+const BANKS = {
+    big: [
+        {name: '工商银行', a: '601398', h: '1398.HK'},
+        {name: '建设银行', a: '601939', h: '0939.HK'},
+        {name: '农业银行', a: '601288', h: '1288.HK'},
+        {name: '中国银行', a: '601988', h: '3988.HK'},
+        {name: '交通银行', a: '601328', h: '3328.HK'},
+        {name: '邮储银行', a: '601658', h: '1658.HK'}
+    ],
+    joint: [
+        {name: '招商银行', a: '600036', h: '3968.HK'},
+        {name: '兴业银行', a: '601166', h: null},
+        {name: '浦发银行', a: '600000', h: null},
+        {name: '中信银行', a: '601998', h: '0998.HK'},
+        {name: '民生银行', a: '600016', h: '1988.HK'},
+        {name: '光大银行', a: '601818', h: '6818.HK'},
+        {name: '华夏银行', a: '600015', h: null},
+        {name: '平安银行', a: '000001', h: null},
+        {name: '浙商银行', a: '601916', h: '2016.HK'},
+        {name: '渤海银行', a: null,     h: '9668.HK'}
+    ],
+    city: [
+        // A 股 17 家
+        {name: '北京银行',   a: '601169', h: null},
+        {name: '江苏银行',   a: '600919', h: null},
+        {name: '上海银行',   a: '601229', h: null},
+        {name: '南京银行',   a: '601009', h: null},
+        {name: '宁波银行',   a: '002142', h: null},
+        {name: '杭州银行',   a: '600926', h: null},
+        {name: '成都银行',   a: '601838', h: null},
+        {name: '长沙银行',   a: '601577', h: null},
+        {name: '贵阳银行',   a: '601997', h: null},
+        {name: '重庆银行',   a: '601963', h: '1963.HK'},
+        {name: '郑州银行',   a: '002936', h: '6196.HK'},
+        {name: '青岛银行',   a: '002948', h: '3866.HK'},
+        {name: '苏州银行',   a: '002966', h: null},
+        {name: '齐鲁银行',   a: '601665', h: null},
+        {name: '厦门银行',   a: '601187', h: null},
+        {name: '西安银行',   a: '600928', h: null},
+        {name: '兰州银行',   a: '001227', h: null},
+        // 仅港股 12 家
+        {name: '徽商银行',   a: null, h: '3698.HK'},
+        {name: '中原银行',   a: null, h: '1216.HK'},
+        {name: '哈尔滨银行', a: null, h: '6138.HK'},
+        {name: '盛京银行',   a: null, h: '2066.HK'},
+        {name: '天津银行',   a: null, h: '1578.HK'},
+        {name: '甘肃银行',   a: null, h: '2139.HK'},
+        {name: '江西银行',   a: null, h: '1916.HK'},
+        {name: '九江银行',   a: null, h: '6190.HK'},
+        {name: '泸州银行',   a: null, h: '1983.HK'},
+        {name: '贵州银行',   a: null, h: '6199.HK'},
+        {name: '晋商银行',   a: null, h: '2558.HK'},
+        {name: '威海市商业银行', a: null, h: '9677.HK'}
+    ],
+    rural: [
+        // A 股 10 家
+        {name: '渝农商行',   a: '601077', h: '3618.HK'},
+        {name: '沪农商行',   a: '601825', h: null},
+        {name: '常熟银行',   a: '601128', h: null},
+        {name: '紫金银行',   a: '601860', h: null},
+        {name: '青农商行',   a: '002958', h: null},
+        {name: '瑞丰银行',   a: '601528', h: null},
+        {name: '无锡银行',   a: '600908', h: null},
+        {name: '苏农银行',   a: '603323', h: null},
+        {name: '江阴银行',   a: '002807', h: null},
+        {name: '张家港行',   a: '002839', h: null},
+        // 仅港股
+        {name: '广州农商行', a: null, h: '1551.HK'},
+        {name: '东莞农商行', a: null, h: '9889.HK'},
+        {name: '九台农商行', a: null, h: '6122.HK'}
+    ]
+};
+
+/* 已有专属详情页的银行：代码 → 相对 dashboard/industry/bank/ 的路径
+ * 默认跳到「股东」页（company/shareholder.html），而非业绩页 index.html。 */
+const DETAIL_PAGES = {
+    '601077': '../../company/shareholder.html',
+    '601398': '../../company/shareholder.html?code=601398'
+};
+
+/* 已有 data/tables/bank_<code>_annual.json 原始数据的银行代码：
+ * 覆盖几乎所有 A 股银行 + 天津/江西/哈尔滨三家纯 H 股，其余纯港股银行尚无数据源。
+ * 与 DETAIL_PAGES 是两个概念：有数据 ≠ 已建专属页，标注时分别处理。 */
+const HAS_ANNUAL = new Set([
+    '000001', '001227', '002142', '002807', '002839', '002936', '002948', '002958', '002966',
+    '01578', '01916', '06138', '600000', '600015', '600016', '600036', '600908', '600919',
+    '600926', '600928', '601009', '601077', '601128', '601166', '601169', '601187', '601229',
+    '601288', '601328', '601398', '601528', '601577', '601658', '601665', '601818', '601825',
+    '601838', '601860', '601916', '601939', '601963', '601988', '601997', '601998', '603323'
+]);
+
+function bankCode(bank) {
+    return bank.a || bank.h;
+}
+
+/* annual/charts 文件用的代码：A 股 6 位原样，港股去掉 .HK 后缀并补足 5 位（1578.HK → 01578） */
+function dataCode(bank) {
+    const code = bankCode(bank);
+    if (!code) return '';
+    return bank.a ? code : code.replace(/\.HK$/i, '').padStart(5, '0');
+}
+
+function hasAnnualData(bank) {
+    return HAS_ANNUAL.has(dataCode(bank));
+}
+
+function detailHref(bank) {
+    if (bank.a && DETAIL_PAGES[bank.a]) return DETAIL_PAGES[bank.a];
+    const q = new URLSearchParams();
+    const code = dataCode(bank);
+    if (code) q.set('code', code);
+    return '../../company/shareholder.html?' + q.toString();
+}
+
+function render(grid, banks) {
+    if (!grid) return;
+    for (const b of banks) {
+        const noData = !(b.a && DETAIL_PAGES[b.a]) && !hasAnnualData(b);
+        // 无数据的银行不允许跳转：渲染成 div 而非 a，不设 href
+        const a = document.createElement(noData ? 'div' : 'a');
+        a.className = 'b-card';
+        if (noData) a.classList.add('no-data');
+        if (!noData) a.href = detailHref(b);
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = b.name;
+
+        const codes = document.createElement('span');
+        codes.className = 'codes';
+        if (b.a) {
+            const c = document.createElement('span');
+            c.className = 'code a';
+            c.textContent = b.a;
+            codes.appendChild(c);
+        }
+        if (b.h) {
+            const c = document.createElement('span');
+            c.className = 'code h';
+            c.textContent = b.h;
+            codes.appendChild(c);
+        }
+        if (!b.a && !b.h) {
+            const c = document.createElement('span');
+            c.className = 'code none';
+            c.textContent = '未上市';
+            codes.appendChild(c);
+        }
+
+        a.appendChild(name);
+        a.appendChild(codes);
+        grid.appendChild(a);
+    }
+}
+
+/* 重要变革时间线：与 reform_timeline.html 同一份 EVENTS 数据，两页各自内联维护，
+ * 改动时需同步更新两处（如后续需要单一数据源，可考虑抽到 common/ 下的共享 JS）。
+ * 色彩语义：会计准则/披露口径变更 = 蓝色 #0369a1 · 监管处罚/薪酬类新规 = 紫色 #6c3483 · 长期趋势性变革 = 灰绿 #0f766e */
+const EVENTS = [
+    {
+        time: '2013',
+        name: 'CBRC 新资本监管办法实施',
+        color: '#0369a1',
+        desc: '原银监会自 2013 年起执行新资本监管办法（对标巴塞尔 III），资本充足率 / 核心一级资本充足率计算口径改变，与此前年份不可比，本行「风控」页资本充足率图表统一自 2014 年起可比展示，2010–2013 未纳入。'
+    },
+    {
+        time: '2015.1.1',
+        name: '企业负责人薪酬制度改革（限薪）',
+        color: '#6c3483',
+        desc: '监管部门对国有商业银行董事长、监事长、行长及其他负责人薪酬实施制度改革，本行董事长、行长薪酬自 2015 年起同步大幅下降（董事长税前薪酬合计由 2014 年 130.4 万元降至 2015 年 77.3 万元，约 -41%），A 股年报薪酬表脚注明确援引该项监管规定作为降薪的直接制度原因，详见「简介」页历年董事长/行长薪酬图表。'
+    },
+    {
+        time: '2018',
+        name: 'IFRS9／新金融工具准则切换',
+        color: '#0369a1',
+        desc: '本行 2018 年首次执行新金融工具准则（对标 IFRS9），金融资产分类由「四分类」改为 AC／FVOCI／FVTPL「三分类」，减值计量由「已发生损失法」改为「预期信用损失法（ECL）」。影响多条序列口径：利润表「资产减值损失」改列「信用减值损失」（2018 年该比率跳升至 23.70%）；净资产收益率当年新旧口径并披（新 13.55% vs 旧 15.99%）；非息收入占比因投资收益计入口径变化跳升至 23.37%；其他综合收益（OCI）构成从单一 AFS 公允价值变动扩展为债务工具 FVOCI 公允价值变动、权益工具 FVOCI 公允价值变动、FVOCI 预期信用损失准备三部分，波动幅度显著放大。详见「业绩」「风控」页多处准则切换标注线。'
+    },
+    {
+        time: '2018',
+        name: '资管新规（理财净值化）',
+        color: '#0369a1',
+        desc: '资管新规发布，推动保本理财压降、老产品（摊余成本／面值法）整改回表，回表资产在 IFRS9 下多计入自营 FVOCI 账簿，与同期 OCI 波动放大同源但非直接因果；增量社融结构中「未贴现票据」「信托贷款」「委托贷款」（影子银行三剑客）自此长期收缩。详见「业绩」页备注。'
+    },
+    {
+        time: '2019',
+        name: '贷款迁徙率纳入统一披露体例',
+        color: '#0f766e',
+        desc: '贷款迁徙率并非 2019 年才新增的监管指标（同业如农业银行 2011 年报已披露，同为 1104 报表口径），而是本行「贷款质量分析」章节体例自 2019 年起单列迁徙率表格，此前年份数据缺失系本行自身披露口径问题，非行业统一新规所致。详见「风控」页贷款迁徙率图表备注。'
+    },
+    {
+        time: '2012–2025',
+        name: '利率市场化：净息差长期收窄',
+        color: '#0f766e',
+        desc: '净息差 2012 年 3.50% 见顶后持续收窄，2025 年降至 1.60%，反映利率市场化推进与资产端收益率下行的长期压力，是贯穿本行近十余年经营的结构性变革，而非单一年份事件。详见「业绩」页净息差图表。'
+    },
+    {
+        time: '2025.10',
+        name: '投诉管理体制调整：客服中心统一"首触"',
+        color: '#6c3483',
+        desc: '本行自 2025 年 10 月起，监管渠道转办投诉统一由客服中心"首触"承接，与同期处理消费投诉数同比大幅上升、满意度同步下滑同期发生；具体成因年报未见披露说明，仅作现象记录。详见「简介」页历年投诉数据。'
+    }
+];
+
+function renderTimeline(wrap) {
+    if (!wrap) return;
+    wrap.innerHTML = EVENTS.map(e => `
+        <div class="t-item">
+            <div class="t-year">${e.time}</div>
+            <div class="t-dot" style="color:${e.color}"></div>
+            <div class="t-card" style="border-left-color:${e.color}">
+                <div class="t-name" style="color:${e.color}">${e.name}</div>
+                <div class="t-desc">${e.desc}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+onMounted(() => {
+    render(gridBig.value,   BANKS.big);
+    render(gridJoint.value, BANKS.joint);
+    render(gridCity.value,  BANKS.city);
+    render(gridRural.value, BANKS.rural);
+    renderTimeline(timelineEl.value);
+});
+</script>
+
+<!-- 动态节点样式：卡片(render 的 createElement) 与时间线(renderTimeline 的 innerHTML)
+     生成的元素拿不到 scoped 的 data-v 属性，故整块不加 scoped。取值逐字搬自源页 <style>。 -->
+<style>
+.b-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid #e5e7eb;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.b-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    border-color: #cbd5e1;
+}
+.b-card .name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+}
+.b-card .codes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.code {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 500;
+}
+.code.a { background: #fee2e2; color: #b91c1c; }
+.code.h { background: #dbeafe; color: #1d4ed8; }
+.code.none { background: #f3f4f6; color: #9ca3af; }
+.b-card.no-data { opacity: 0.55; }
+.b-card.no-data .name::after {
+    content: "· 无数据";
+    font-size: 14px;
+    color: #9ca3af;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+/* === 银行业重要变革时间线（与 reform_timeline.html 同款设计） === */
+.timeline {
+    position: relative;
+    margin-top: 12px;
+    padding-left: 108px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 92px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: #e5e7eb;
+}
+.t-item {
+    position: relative;
+    margin-bottom: 28px;
+}
+.t-item:last-child { margin-bottom: 0; }
+.t-year {
+    position: absolute;
+    left: -108px;
+    top: 2px;
+    width: 80px;
+    text-align: right;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #4b5563;
+}
+.t-dot {
+    position: absolute;
+    left: -19.5px;
+    top: 6px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px currentColor;
+}
+.t-card {
+    background: #fff;
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    padding: 14px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.t-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.t-desc {
+    font-size: 18px;
+    color: #374151;
+    line-height: 1.7;
+}
+</style>
+<!-- 静态模板节点样式：加 scoped 限定在本组件，避免 h1/h2 等裸标签选择器泄漏到全站。
+     源页的 body { padding: 0 } 未搬——base.css 的 *{padding:0} 已置零 body 内边距，
+     按「勿重复 base.css 的 reset/body」要求不再重复。取值逐字搬自源页 <style>。 -->
+<style scoped>
+.page { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 32px 20px 48px; }
+h1 { text-align: center; color: #2c3e50; font-size: 29px; margin-bottom: 8px; }
+.lede { text-align: center; color: #6b7280; font-size: 17px; margin-bottom: 28px; }
+h2 {
+    color: #2c3e50;
+    font-size: 23px;
+    border-left: 5px solid #1f2937;
+    padding-left: 12px;
+    margin: 32px 0 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+h2 .count { color: #9ca3af; font-size: 16px; font-weight: 500; }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+.legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    font-size: 14px;
+    color: #6b7280;
+    margin: 4px 0 24px;
+}
+.legend .code { font-size: 14px; }
+.note {
+    font-size: 17px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin-top: 14px;
+}
+</style>

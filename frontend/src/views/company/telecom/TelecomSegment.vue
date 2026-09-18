@@ -1,0 +1,329 @@
+<template>
+  <div class="wrap">
+    <div class="page-head">
+      <h1 ref="pageTitle">收入构成</h1>
+      <div class="meta" ref="pageMeta"></div>
+      <div class="tags"><span>年报附注原文</span><span>分业务收入</span><span>结构占比</span><span>同比增速</span></div>
+    </div>
+
+    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <div v-if="error" id="error-msg" style="display:block">{{ error }}</div>
+
+    <section id="sec-kpi" ref="secKpi" hidden>
+      <h2 ref="kpiTitle">最新年度收入构成</h2>
+      <p class="sub" ref="kpiSub"></p>
+      <div class="kpis" ref="kpis"></div>
+      <div class="entity" ref="caliberWarn"></div>
+    </section>
+
+    <div ref="chartsHost" id="charts"></div>
+
+    <section id="sec-table" ref="secTable" hidden>
+      <h2>分业务收入明细</h2>
+      <p class="sub">单位：亿元（括号内为占营业收入比重）· 逐年取自年报「营业收入和营业成本」附注的本年列</p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr ref="tblHead"></tr></thead>
+          <tbody ref="tblBody"></tbody>
+        </table>
+      </div>
+      <div class="note" ref="tblNote" style="max-width:none"></div>
+    </section>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { apiGet } from '../../../api'
+import {
+  getCode, fmt, mdBold, barSeries, lineSeries,
+  chartCard, AXIS_Y, axisX, marksOn,
+} from './charts'
+
+// 逐字搬自 dashboard/company/telecom/charts/segment.js（公共层 common.js 已抽到 ./charts）：
+// 每个 ECharts option 与 renderHead/buildCharts/renderTable 逻辑原样保留（含分号），仅把
+// document.getElementById 换成组件模板 ref、axios 换成统一 apiGet、echarts 实例收集进 charts。
+const loading = ref(true)
+const error = ref('')
+const pageTitle = ref(null)
+const pageMeta = ref(null)
+const kpiTitle = ref(null)
+const kpiSub = ref(null)
+const kpis = ref(null)
+const caliberWarn = ref(null)
+const chartsHost = ref(null)
+const secKpi = ref(null)
+const tblHead = ref(null)
+const tblBody = ref(null)
+const tblNote = ref(null)
+const secTable = ref(null)
+
+const CODE = getCode()
+let charts = []
+let prevBodyBg = ''
+
+const AGG_KEYS = ['total', 'service_total'];
+const PALETTE = ['#1f6feb', '#0f766e', '#c0392b', '#b45309', '#7c3aed', '#0891b2',
+    '#ca8a04', '#be185d', '#4d7c0f', '#475569', '#f59e0b', '#2563eb'];
+
+/* 联通 2017 年起换过一套科目：2015—2016 是旧科目集（legacy_*），
+ * 两套不能拼成一条线，图上用 markLine 标断点、图例里靠名字区分 */
+const BREAK_MARKS = {'600050': [{year: '2017', text: '收入科目口径切换'}]};
+
+function serviceRev(rec) {
+    if (rec.service_total !== undefined) return rec.service_total;
+    if (rec.total !== undefined && rec.products !== undefined) return +(rec.total - rec.products).toFixed(2);
+    return null;
+}
+function renderHead(d, seg, years) {
+    const last = years[years.length - 1], rec = seg.annual[last];
+    const prev = seg.annual[years[years.length - 2]] || {};
+    document.title = d.name + '（' + d.secucode + '）· 收入构成';
+    pageTitle.value.textContent = d.name + '（' + d.secucode + '）· 收入构成';
+    pageMeta.value.innerHTML =
+        '上交所 A 股年报附注原文 · 单位亿元 · 覆盖 ' + years[0] + '—' + last + ' 年度（共 ' + years.length + ' 份年报）<br>' +
+        '科目体系为该公司自己的披露口径，' + (BREAK_MARKS[CODE] ? '<b>2017 年起换过一套科目，两套不可拼接</b>' : '五年内未变更');
+
+    kpiTitle.value.textContent = last + ' 年度收入构成';
+    kpiSub.value.textContent =
+        '括号内为占营业收入比重；同比为与 ' + years[years.length - 2] + ' 年同口径科目相比';
+    const stack = seg.order.filter(k => AGG_KEYS.indexOf(k) < 0 && rec[k] !== undefined);
+    const total = rec.total;
+    const cards = [
+        '<div class="kpi"><div class="label">营业收入</div><div class="value">' + fmt(total, 0) +
+        ' 亿元</div><div class="delta" style="color:#7f8c8d">服务收入 ' + fmt(serviceRev(rec), 0) +
+        ' 亿元（' + fmt(serviceRev(rec) / total * 100, 1) + '%）</div></div>'
+    ];
+    stack.sort((a, b) => rec[b] - rec[a]).forEach(k => {
+        const yoy = prev[k] !== undefined ? (rec[k] / prev[k] - 1) * 100 : null;
+        cards.push('<div class="kpi"><div class="label">' + seg.labels[k] + '</div>' +
+            '<div class="value">' + fmt(rec[k], 0) + ' 亿元</div>' +
+            '<div class="delta" style="color:#7f8c8d">占 ' + fmt(rec[k] / total * 100, 1) + '%' +
+            (yoy === null ? '' : '　同比 <span class="' + (yoy >= 0 ? 'up' : 'down') + '">' +
+                (yoy >= 0 ? '+' : '') + fmt(yoy, 1) + '%</span>') + '</div></div>');
+    });
+    kpis.value.innerHTML = cards.join('');
+    caliberWarn.value.innerHTML = '<b>口径：</b>' + mdBold(seg.caliber_note);
+    secKpi.value.hidden = false;
+    return stack;
+}
+
+/* 各家自己的构成变化事实，只写年报能核到的因果 */
+const SEG_NOTES = {
+    '600941': {
+        mix: '<b>结构替代已经完成：</b>无线上网业务 2022 年 3,959 亿元见顶后连年回落到 2025 年 3,691 亿元，' +
+            '而应用及信息服务由 2021 年 1,370 亿元升到 2,588 亿元（+89%）—— 流量收入的下滑正好被 DICT／智慧家庭等' +
+            '应用类收入补上，营业收入因此仍能维持微增。语音业务 762→666 亿元、短彩信 311→296 亿元继续萎缩。',
+        share: '销售产品收入及其他（终端销售）占营业收入 11.4%—14.7%，比电信、联通都高 —— ' +
+            '直接比营业收入会高估中国移动的服务体量，看服务收入（合计 − 销售产品）才可比。'
+    },
+    '601728': {
+        mix: '<b>产业数字化是唯一的增量引擎：</b>2021 年 989 亿元 → 2025 年 1,473 亿元（+48.9%），' +
+            '同期移动通信服务 1,842→2,045 亿元、固网及智慧家庭 1,135→1,260 亿元均为个位数增长。' +
+            '但产数增速已由前三年近 20% 降到 2024 年 +5.5%、2025 年 +0.5%，' +
+            '这是全年收入几乎零增长的直接原因。',
+        share: '服务收入占营业收入常年 92%—93%，终端销售占比低于中国移动，' +
+            '因此电信的营业收入与服务收入两条线差距最小。'
+    },
+    '600050': {
+        mix: '<b>数据及其他互联网应用收入是主线：</b>2017 年 201 亿元 → 2025 年 1,036 亿元（5.2 倍），' +
+            '同期宽带及移动数据服务在 1,530—1,560 亿元横盘、语音通话及月租费由 392 亿元腰斩到 196 亿元。' +
+            '收入总量的增长几乎全部来自互联网应用与终端销售。',
+        share: '<b>2015—2016 年是另一套科目</b>（通话及月租费／宽带、数据及互联网／信息与通信技术服务等），' +
+            '与 2017 年起的科目不可对应，图上以断点标出、图例里另起名字，不拼成一条线。'
+    }
+};
+function buildCharts(d, seg, years, stackLatest) {
+    const host = chartsHost.value;
+    const N = SEG_NOTES[CODE];
+    // 堆叠用的科目：order 里去掉合计与小计，且至少有一年有值
+    const keys = seg.order.filter(k => AGG_KEYS.indexOf(k) < 0 &&
+        years.some(y => (seg.annual[y] || {})[k] !== undefined));
+    const color = {};
+    keys.forEach((k, i) => { color[k] = PALETTE[i % PALETTE.length]; });
+    const val = (y, k) => {
+        const v = (seg.annual[y] || {})[k];
+        return v === undefined ? null : v;
+    };
+
+    // ① 分业务收入堆叠柱 + 服务收入占比
+    (function () {
+        const s = keys.map(k => barSeries(seg.labels[k], years.map(y => val(y, k)), color[k], {stack: 'rev', barMaxWidth: 46}));
+        s.push(lineSeries('服务收入占营业收入（右轴）',
+            years.map(y => {
+                const rec = seg.annual[y], sv = rec && serviceRev(rec);
+                return sv === null || !rec.total ? null : +(sv / rec.total * 100).toFixed(2);
+            }), '#111827', {yAxisIndex: 1, width: 2.2}));
+        const c = chartCard(host, {
+            id: 'mix', title: '分业务收入（年报附注口径）',
+            sub: '堆叠柱：各业务收入（亿元）· 柱高即营业收入 · 线：服务收入占比（%，右轴）',
+            note: N.mix,
+            detail: '<b>为什么柱高等于营业收入：</b>本图把附注里的全部收入科目（含销售终端等其他业务收入）都堆进去，' +
+                '合计与利润表的营业收入逐年核对一致（差额均在 ±0.05 亿元内，来自元→亿元的四舍五入）。<br>' +
+                '<b>服务收入的算法：</b>年报披露「小计／服务收入」时直接取，未披露时用合计 − 销售产品收入现算。'
+        }, undefined, charts);
+        c.setOption({
+            tooltip: {
+                trigger: 'axis', axisPointer: {type: 'shadow'},
+                formatter: ps => '<b>' + ps[0].axisValue + ' 年</b><br>' + ps.filter(p => p.value !== null)
+                    .map(p => p.marker + p.seriesName + '　<b>' + fmt(p.value, 1) + '</b>' +
+                        (p.seriesType === 'line' ? ' %' : ' 亿元')).join('<br>')
+            },
+            legend: {top: 0, itemGap: 12, textStyle: {fontSize: 14}},
+            grid: {left: 88, right: 80, top: 88, bottom: 40}, xAxis: axisX(years),
+            yAxis: [Object.assign({}, AXIS_Y, {name: '亿元'}),
+                Object.assign({}, AXIS_Y, {name: '%', scale: true, splitLine: {show: false}})],
+            series: marksOn(s, years, BREAK_MARKS[CODE])
+        });
+    })();
+
+    // ② 结构占比（100% 堆叠）
+    (function () {
+        const s = keys.map(k => barSeries(seg.labels[k], years.map(y => {
+            const rec = seg.annual[y];
+            const v = val(y, k);
+            return v === null || !rec.total ? null : +(v / rec.total * 100).toFixed(2);
+        }), color[k], {stack: 'share', barMaxWidth: 46}));
+        const c = chartCard(host, {
+            id: 'share', title: '收入结构占比', sub: '各业务收入 ÷ 营业收入（%，堆叠满 100%）',
+            note: N.share,
+            detail: '占比的分母统一用营业收入（含终端销售），因此这张图的各段之和为 100%；' +
+                '若改用服务收入作分母，各服务科目的占比会同比例放大。'
+        }, '55vh', charts);
+        c.setOption({
+            tooltip: {
+                trigger: 'axis', axisPointer: {type: 'shadow'},
+                formatter: ps => '<b>' + ps[0].axisValue + ' 年</b><br>' + ps.filter(p => p.value !== null)
+                    .map(p => p.marker + p.seriesName + '　<b>' + fmt(p.value, 1) + '</b> %').join('<br>')
+            },
+            legend: {top: 0, itemGap: 12, textStyle: {fontSize: 14}},
+            grid: {left: 80, right: 40, top: 88, bottom: 40}, xAxis: axisX(years),
+            yAxis: Object.assign({}, AXIS_Y, {name: '%', max: 100}),
+            series: marksOn(s, years, BREAK_MARKS[CODE])
+        });
+    })();
+    // ③ 各科目同比增速：看哪条曲线在换挡
+    (function () {
+        const s = keys.map(k => lineSeries(seg.labels[k], years.map((y, i) => {
+            if (i === 0) return null;
+            const cur = val(y, k), pre = val(years[i - 1], k);
+            return cur === null || pre === null || !pre ? null : +((cur / pre - 1) * 100).toFixed(2);
+        }), color[k])).filter(x => x.data.some(v => v !== null));
+        const c = chartCard(host, {
+            id: 'yoy', title: '各业务收入同比增速', sub: '按上一年同科目现算（%）· 科目口径切换年不给增速',
+            note: '增速图比金额图更早显示拐点：三家的「第二曲线」科目（应用及信息服务／产业数字化／数据及互联网应用）' +
+                '增速都已从两位数降到个位数，而传统语音与短彩信仍在负增长 —— ' +
+                '这决定了营业收入总量能否继续微增。',
+            detail: '首年与科目缺失年不计算增速（不做插值）；' + (BREAK_MARKS[CODE] ?
+                '联通 2017 年换科目，旧科目在 2017 年无对应值，因此 2017 年这几条线断开。' :
+                '各科目在覆盖年份内未变更，增速逐年连续。')
+        }, '55vh', charts);
+        c.setOption({
+            tooltip: {trigger: 'axis', valueFormatter: v => fmt(v, 1) + ' %'},
+            legend: {top: 0, itemGap: 12, textStyle: {fontSize: 14}},
+            grid: {left: 80, right: 40, top: 88, bottom: 40}, xAxis: axisX(years),
+            yAxis: Object.assign({}, AXIS_Y, {name: '%', scale: true}),
+            series: marksOn(s, years, BREAK_MARKS[CODE])
+        });
+    })();
+}
+
+function renderTable(d, seg, years) {
+    const cols = years.slice(-6);
+    tblHead.value.innerHTML = '<th>科目</th>' +
+        cols.map(y => '<th>' + y + '</th>').join('');
+    const rows = seg.order.map(k => {
+        const isAgg = AGG_KEYS.indexOf(k) >= 0;
+        const cells = cols.map(y => {
+            const rec = seg.annual[y] || {}, v = rec[k];
+            if (v === undefined) return '<td>—</td>';
+            const share = rec.total ? '<span style="color:#9ca3af">（' + fmt(v / rec.total * 100, 1) + '%）</span>' : '';
+            return '<td>' + fmt(v, 2) + ' ' + share + '</td>';
+        }).join('');
+        if (cols.every(y => ((seg.annual[y] || {})[k]) === undefined)) return '';
+        return '<tr class="' + (isAgg ? 'row-total' : 'row-sub') + '"><td>' + seg.labels[k] + '</td>' + cells + '</tr>';
+    });
+    tblBody.value.innerHTML = rows.join('');
+    tblNote.value.innerHTML =
+        '<b>自检：</b>每年各服务科目之和 = 小计／服务收入，小计 + 销售产品收入 = 合计，' +
+        '合计 = 利润表营业收入（' + years[years.length - 1] + ' 年 ' +
+        fmt(seg.annual[years[years.length - 1]].total, 2) + ' 亿元），三层已逐年核对。' +
+        '　' + mdBold(seg.unit_note) + '　来源：' + mdBold(seg.source);
+    secTable.value.hidden = false;
+}
+
+function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }); }
+
+onMounted(async () => {
+    prevBodyBg = document.body.style.background;
+    document.body.style.background = '#f5f6f8';
+    try {
+        const d = await apiGet('/api/telecom_annual', { code: CODE });
+        loading.value = false;
+        const seg = d.segments;
+        if (!seg || !Object.keys(seg.annual || {}).length) {
+            error.value = '本公司暂无年报收入构成数据，请先运行 data/extract/extract_telecom_segments.py';
+            return;
+        }
+        const years = Object.keys(seg.annual).sort();
+        const stack = renderHead(d, seg, years);
+        buildCharts(d, seg, years, stack);
+        renderTable(d, seg, years);
+        window.addEventListener('resize', onResize);
+    } catch (e) {
+        console.error('fetch error', e);
+        loading.value = false;
+        error.value = '数据加载失败：' + (e.message || String(e)) + '（请确认 app.py 已启动）';
+    }
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize);
+    charts.forEach(c => { try { c.dispose() } catch (_) {} });
+    charts = [];
+    document.body.style.background = prevBodyBg;
+});
+</script>
+
+<style scoped>
+/* 静态模板节点样式（.wrap/.page-head/section/.kpis/.entity/table 壳）：加 scoped 限定在本组件，
+ * 避免 section/table 等裸标签选择器泄漏到全站。取值逐字搬自 dashboard/company/page.css 与 segment.html 内联 <style>；
+ * base.css 已有的 reset/body/.site-nav/.chart-card/.chart-title/#loading/#error-msg 不重复。 */
+.wrap { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 24px 24px 60px; }
+.page-head { text-align: center; margin-bottom: 8px; }
+.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
+.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
+.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.page-head .tags span { background: #dde8f3; color: #10243e; border-radius: 12px; padding: 3px 12px; font-size: 18px; font-weight: 500; }
+section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
+section > h2 { font-size: 22px; color: #1f2937; margin-bottom: 4px; border-left: 4px solid #10243e; padding-left: 10px; }
+section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
+.entity { margin: 10px 0 0; padding: 12px 16px; background: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 17px; color: #78350f; line-height: 1.7; }
+table { width: 100%; border-collapse: collapse; font-size: 18px; }
+</style>
+
+<style>
+/* 动态节点样式：kpi 卡片、chartCard 生成的 .note/.note-more、以及 innerHTML 注入表格的
+ * th/td/tr（拿不到 scoped 的 data-v 属性）等，故整块不加 scoped；统一挂在 .wrap 下防止通用类泄漏。
+ * 取值逐字搬自 dashboard/company/page.css 与 segment.html 内联 <style>；
+ * .chart-card/.chart-title/.chart-title .sub 来自 base.css，不重复。 */
+.wrap .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
+.wrap .kpi .label { font-size: 18px; color: #7f8c8d; }
+.wrap .kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
+.wrap .kpi .delta { font-size: 18px; margin-top: 2px; }
+.wrap .up { color: #c0392b; }
+.wrap .down { color: #1e8449; }
+.wrap th, .wrap td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
+.wrap th:first-child, .wrap td:first-child { text-align: left; }
+.wrap thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom: 2px solid #c9a24a; }
+.wrap tbody tr:hover { background: #f3f6fa; }
+.wrap .row-total td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #c9a24a; }
+.wrap .row-sub td:first-child { padding-left: 26px; color: #555; font-weight: 400; }
+.wrap .note { font-size: 18px; color: #9ca3af; margin: 10px auto 0; line-height: 1.6; max-width: 900px; }
+.wrap .note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
+.wrap .note summary::-webkit-details-marker { display: none; }
+.wrap .note summary::before { content: '▸ '; color: #9ca3af; }
+.wrap .note[open] summary::before { content: '▾ '; }
+.wrap .note summary:hover { color: #374151; }
+</style>

@@ -247,7 +247,7 @@ MANUAL["tech:09888"] = {
     ],
 }
 
-# ── 历年序列：照 bank/shareholder.html 那套模板补的三层 ─────────────────────────
+# ── 历年序列：照 shareholder.html 那套模板补的三层 ─────────────────────────
 # 数据来自 data/extract/out/holders_hist_<code>.json（逐年年报「股份变动及股东情况」章节的
 # 原文抽取件），这里只做重排与加总，不新增任何数字：
 #   share_capital        [[年, 期末股份总数, 变动原因摘要]]      → 历年总股本变动图
@@ -409,7 +409,7 @@ def attach_tech_history(key="tech:09888", code="09888"):
         "text": "2021-03 股东批准并实施 **1 拆 80 股份拆细**（同步把 ADS 比例改为 1 ADS = 8 股 A 类），"
                 "FY2020 起的 20-F 按拆细后基数列示。原文里 2005–2019 各年是拆细前基数（约 3,500 万股），"
                 "与右侧差 80 倍无法同轴比较，**本图把断点左侧各年 × 80 折算到拆细后口径**"
-                "（浅色柱，tooltip 同时给出年报原文股数）—— 拆股不改变经济份额，折算后才看得出"
+                "（tooltip 同时给出年报原文股数）—— 拆股不改变经济份额，折算后才看得出"
                 "百度这二十年股本几乎没有摊薄。ADS 比例另在 2010-05-12 由 1 ADS = 1 股改为 10 ADS = 1 股。",
     }
     ent["holder_concentration"] = conc or None
@@ -542,12 +542,12 @@ if __name__ == "__main__":
     attach_ring_alt_meta()
     MANUAL["_meta"] = {
         "generated_by": "data/extract/build_holders_manual.py",
-        "consumed_by": "backend_python.py::read_holders → /api/holders → dashboard/company/bank/shareholder.html",
+        "consumed_by": "backend/holders.py::read_holders → /api/holders → dashboard/company/shareholder.html",
         "note": ("按 \"<板块>:<代码>\" 索引。factions 只做分组，不改任何数字；"
                  "food/tech 两家没有 annual 表，holders 整份在这里，口径见各自 caliber_note。"
                  "basis 字段区分「年报披露／20-F 披露」与「同类归并」，页面会原样印出。"
                  "share_capital / holder_num / holder_concentration / dividend_per10 四层"
-                 "照 dashboard/company/bank/shareholder.html 那套标准模板补，"
+                 "照 dashboard/company/shareholder.html 那套标准模板补，"
                  "来自 data/extract/out/holders_hist_<代码>.json 的年报原文抽取件，只重排与加总。"),
     }
     with open(OUT, "w", encoding="utf-8") as f:

@@ -318,7 +318,7 @@ holder_count_hshare_2010_2018.json	HKEXnews 03618 港股历年年报 (docsearch 
 #     2026-08-19 起该行按纯 H 股行管线重建全量数据: 年报手工提取覆盖层 data/tables/bank_01578_ar_manual.json
 #       (2012-2025 共 14 年, 41 个金额字段 + 监管指标 + 股东户数/前十大/分红, 口径说明见文件内 caliber_note/notes)
 #       → fetch_bank_financials.py 01578 (BANKS_HK, 港股 F10 RPT_HKF10_FN_MAININDICATOR 提供现金流/营业利润/每股经营现金流) → bank_01578_annual.json
-#       → gen_company_charts.py → company_charts_01578.json, 已并入 backend_python.py 的 BANK_ORDER, 导航栏可切换.
+#       → gen_company_charts.py → company_charts_01578.json, 已并入 backend/bank.py 的 BANK_ORDER, 导航栏可切换.
 #       股东层图表另有 bank_01578_shareholder_manual.json 覆盖层(标题/派系归类/注释文案).
 # 2026-08-17 提取核对.
 #
@@ -347,7 +347,7 @@ holder_count_hshare_2010_2018.json	HKEXnews 03618 港股历年年报 (docsearch 
 #       data/tables/bank_06138_ar_manual.json      2009-2025(17 年) 61 条 series 年报手工提取覆盖层 + concentrationHist
 #       → fetch_bank_financials.py 06138 (BANKS_HK, 港股 F10 RPT_HKF10_FN_MAININDICATOR 补现金流/营业利润) → bank_06138_annual.json
 #       data/tables/bank_06138_detail_manual.json  详情页 19 个图表键 + _notes(逐键口径说明), 重叠字段以年报原文为准
-#       → gen_company_charts.py → company_charts_06138.json (34 键), 已并入 backend_python.py 的 BANK_ORDER/LISTING_DATES
+#       → gen_company_charts.py → company_charts_06138.json (34 键), 已并入 backend/bank.py 的 BANK_ORDER/LISTING_DATES
 #         与 dashboard/common/bank-header.js, 导航栏可切换; 无 bank_06138_shareholder_manual.json(同 01916, 股东层用通用渲染).
 #     口径要点(详见 detail_manual 的 _notes):
 #       净息差/生息资产收益率表 13 份年报均只有**本行**口径, 无集团口径表, 与首页集团净息差有小幅差异;
@@ -812,9 +812,9 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #   股东数据: holders 只有 holders_end_date 那一期快照(2025-12-31, 前十名), 历史各期未入库; 比例分母是**总股本**(H 股与 A 股混排在一张名册上,
 #     移动前两名 BVI 68.79% 与香港中央结算(代理人) 25.96% 都是 H 股); 接口的 total_share 是当前值被回填到每一年(三家历年值完全相同),
 #     **不可当历史股本用**, 回 A 发行与联通 2017 混改定增的股本台阶在这份数据里看不出来.
-#     股权结构全站只剩一页: dashboard/company/bank/shareholder.html + /api/holders?industry=&code=,
+#     股权结构全站只剩一页: dashboard/company/shareholder.html + /api/holders?code=,
 #     七个板块(银行/险企/开发商/水泥/运营商/百度/食品)正文完全一样, **只有顶部 header 不同**
-#     (industry=bank 走 common/bank-header.js, 其余走 common/site-header.js, 由页面 head 里的小脚本按 ?industry= 选);
+#     (bank 走 common/bank-header.js, 其余走 common/site-header.js; 板块由 /api/nav?code= 判定, 页面据它载 header);
 #     脚本与样式在上一级: dashboard/company/shareholder.js / shareholder.css.
 #     原先的三份页面已删: dashboard/company/shareholder.html(共用页旧址)、company/baidu/shareholder.html(百度专页)、
 #     company/bank/shareholder-noyns.html(A+H 合并视角预览页); 百度专页的 charts/shareholder.js 一并删除.
@@ -843,7 +843,7 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #     所以除控股股东外全是同类归并; 巴比第一组抄的是年报「刘会平和丁仕梅为实际控制人…系夫妻/姐妹/有限合伙人」那段原文.
 #     百度是 SEC beneficial ownership 口径(含 60 日内可行使期权与不可撤销投票代理), 不是 A 股「前十名股东」口径;
 #     贝莱德那行股数数据日是 2023-12-31 的 13G/A, 三份 20-F 沿用未更新, 只换分母 —— caliber_note 里写明.
-#   双层环形图(内圈一名股东/外圈分组, 可互换)已并入唯一那一页: dashboard/company/bank/shareholder.html
+#   双层环形图(内圈一名股东/外圈分组, 可互换)已并入唯一那一页: dashboard/company/shareholder.html
 #     + dashboard/company/shareholder.{js,css},
 #     原型 dashboard/company/bank/_preview_holders_merged.html. 环形图吃的标准数据块由接口下发, 不在前端写死:
 #     /api/holders 的 company.ring = {caliber, holderData:[{name,value,type,chgText}], factions};
@@ -859,8 +859,9 @@ telecom_segment_manual.json	同上(同一批年报 txt)	[确认] 脚本 data/ext
 #     另有测试 test_bank_faction_members_all_resolve 兜底 —— 44 家的派系成员现已全部对上.
 #     「沪股通(A股)」→「香港中央结算有限公司」与「香港代理人(H股)」→「香港中央结算(代理人)有限公司」是两个不同主体, 不可互换;
 #     派系表里的「其他流通股东」是年报口径环形图的残余块, 接口名册本来没有这一行, 不编别名.
-#     页面「前十名股东明细」表因此多一列「所属分组」(后端已剔除对不上的成员, 出现的分组都是核对过的).
-#   历史序列层(照 bank/shareholder.html 那套模板补的, 手工层字段与银行表同名, 所以图不用改代码就出来):
+#     环形图外圈与「股东明细」弹框的「所属分组」列因此有值(后端已剔除对不上的成员, 出现的分组都是核对过的);
+#     页面上原先那张「前十名股东明细」表已撤, 逐个股东只在弹框里看.
+#   历史序列层(照 shareholder.html 那套模板补的, 手工层字段与银行表同名, 所以图不用改代码就出来):
 #     share_capital [[年, 股数, 变动原因]] / holder_num [{date, total, a_share, h_share}] /
 #     holder_concentration [{date, top1, top3, top10, top1_name, ...}] / dividend_per10 [[年, 每 10 股]] (+ dividend_unit),
 #     逐年抽取件落在 data/extract/out/holders_hist_<code>.json 与 ownership_hist_09888.json(抽取方式见各自 _meta):

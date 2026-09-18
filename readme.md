@@ -1,19 +1,32 @@
 # 度阿发 (money_oriented)
 
-石油行业与银行/个股的数据看板：本地抽数落盘成表，前端用 ECharts 画图。
+数据看板 前端用 ECharts 图表库
+
+## 项目定位
+
+行业分析平台，对标百度内部竞品观察室类工具在「可视化功能弱、数据可信度低」上的短板，
+致力于把数据的**高可信**与**高可读**做实：
+
+- **可信**：数据优先采用上市公司财报等经审计的一手数据（交易所披露、公司官网 IR），
+  第三方接口/研报仅作交叉核对或缺口补充，且逐项在页面或 `data/tables/data_sources.txt`
+  中注明出处与口径；缺失、断点、口径变化不遮掩，写清楚而不是拿别的数字顶上。
+- **可读**：拒绝数字堆砌、拒绝多图表/多层次的数据展示——每页聚焦讲清一件事，
+  不用大而全的仪表盘和一堆并列小图去逼用户自己找结论。
 
 ## 目录
 
-- `dashboard/` — 看板页面，由后端托管（银行详情页动态渲染，其余原样下发）
-  - `index.html` 入口；`subject/oil/*.html`、`industry/bank/*.html`、
-    `industry/insurance/*.html`、`industry/realestate/*.html` 行业页
-  - `company/` 个股页，按行业分子目录：`company/bank/*.html`（银行，共用 `charts.js`）、
-    `company/food/*.html`（食品）、`company/oil/*.html`（石油）；
-    `company/page.css` 是各行业个股页共用的样式
-  - `common/base.css` 各页共用样式；导航按分组分开：`common/site-header.js`（石油）、
-    `common/bank-header.js`（`company/bank/`）
-- `backend_python.py` — Flask：`/api/...` 接口 + 托管 `dashboard/`（银行详情页按
-  bank code 动态渲染，`/api/banks` 下发可切换银行清单）
+- `frontend/` — Vue 3 + Vite 前端（前后端分离后唯一的页面来源，取代原 `dashboard/`）
+  - `src/views/` 页面：`Home.vue` 导航首页；`industry/*`（bank/insurance/realestate/
+    cement/telecom 行业页）、`company/*`（个股页，按行业分子目录：`bank/`、`telecom/`、
+    `cmcc/`、`baidu/`、`food/`、`oil/`，以及全站共用的 `Shareholder.vue` 股权结构页）
+  - `src/components/SiteHeader.vue` 按路由分组的导航；`src/assets/base.css` 各页共用样式
+    （逐字沿用原 `dashboard/common/base.css`）；`src/router/index.js` 路由（`beforeEach`
+    会剥掉旧 URL 的 `.html` 后缀兼容老链接）
+  - 银行页共用 3100+ 行原始图表脚本，逐字放在 `src/views/company/bank/legacy/`
+  - `public/data` 软链到仓库 `data/`，dev 下 cmcc 页可直接 `fetch('/data/tables/*.json')`
+  - `dist/` 是 `npm run build` 产物，线上由 nginx 直接发
+- `app.py` — Flask **纯 JSON API**（只有 `/api/...`，不再托管任何页面）；`/api/banks`
+  下发可切换银行清单，`/api/nav?code=` 按代码反查所属板块的导航
 - `data/extract/*.py` — 抽数脚本，从 `data/raw/` 的原始文件生成 `data/tables/`
 - `data/tables/` — 入库的成品表；来源与口径记在 `data/tables/data_sources.txt`
 - `data/raw/` — 原始下载文件，不入库（体积大，可用 `data/extract/` 重新拉取）
@@ -23,30 +36,46 @@
 
 ## 运行
 
+前后端分离，分两块起。
+
+后端（纯 JSON API，监听 5000）：
+
 ```bash
-./venv/bin/python backend_python.py   # 监听 5000
+./venv/bin/python app.py
 ```
 
-必须用 venv 里的 python，系统 python 没装 `flask_cors`。起好后访问后端根路径（本机直连是
-5000 端口，线上走 nginx 转发的域名，会跳到 `/dashboard/index.html`）。页面里的接口地址一律
-写成相对路径 `/api/...`，跟页面同源，换端口/换机器都不用改代码；因此不能再用 `file://`
-直接打开 HTML——那样相对路径无处可指，图会取不到数据。
+必须用 venv 里的 python，系统 python 没装 `flask_cors`。后端只提供 `/api/...`，根路径与
+任何页面路径都返回 404——页面全部由前端负责。
 
-本机测试环境（nginx 反代，页面和接口同源、URL 不带端口）：配置在 `deploy/nginx/`。
-`standalone.conf` 是免 root 的独立实例，监听 `127.0.0.1:8080`，
-`nginx -e ~/.local/share/nginx-money/logs/error.log -c $PWD/deploy/nginx/standalone.conf` 起、
-`-s quit` 停；`money_oriented.conf` 是给系统 nginx（`/usr/local/nginx`）的 vhost，
-软链到 `conf/vhost/` 后 reload 即可用 80 端口的 `http://money.local/` 访问（需 root + hosts 记录）。
+前端开发（Vite dev server，热更新）：
+
+```bash
+cd frontend && npm install && npm run dev   # 监听 5173，/api 代理到 127.0.0.1:5000
+```
+
+本机 `NODE_ENV=production` 会让 npm 跳过 devDependencies，仓库里放了 `frontend/.npmrc`
+（`include=dev`）绕开它。dev server 通过 vite 代理把 `/api` 打到后端，页面和接口同源。
+
+前端构建 + nginx（测试/线上，URL 不带端口、页面和接口同源）：
+
+```bash
+cd frontend && npm run build      # 产物在 frontend/dist
+```
+
+nginx 配置在 `deploy/nginx/`：直接发 `frontend/dist` 静态站，只把 `/api/` 反代给 Flask，
+`/data/` alias 到仓库 `data/`（cmcc 页取数用），SPA 深链用 `try_files ... /index.html` 兜底。
+`standalone.conf` 是免 root 的独立实例（`127.0.0.1:8080`），
+`nginx -c $PWD/deploy/nginx/standalone.conf` 起、`-s quit` 停；
+`money_oriented.conf` 是给系统 nginx（`/usr/local/nginx`）的 vhost，软链到 `conf/vhost/`
+后 `sudo nginx -s reload` 即可用 `http://localhost/` 访问（需 root）。
 两份都只监听 127.0.0.1——服务没有鉴权，别暴露到局域网。
 
-`company/bank/*.html` 是同一份页面按银行代码渲染：`?code=`（A 股 6 位 / H 股 5 位，缺省
-`601077` 渝农商行）决定向 `/api/company_charts?code=` 取哪家的图表数据，页面标题与 H1 由
-返回的 `_bank` 元信息拼出。后端渲染时会把 code 注入 `window.COMPANY_CODE`、把可切换银行
-清单注入 `window.__BANKS`（清单 = 实际存在的 `data/tables/company_charts_<code>.json`，
-加一家行只需放数据文件），导航栏的银行下拉框直接用它，`file://` 下退回解析地址栏 + 前端
-兜底名单。也可以走短地址 `/bank/<code>/<page>`，它 302 到
-`/dashboard/company/bank/<page>?code=<code>`（保持 URL 深度，页内相对路径的 css/js 才不
-会 404）；非法 code 退回默认行，不存在的页面 404。
+`company/bank/*` 是同一套页面按银行代码渲染：路由 `/company/bank/:code`（A 股 6 位 / H 股
+5 位，缺省 `601077` 渝农商行）决定向 `/api/company_charts?code=` 取哪家的图表数据，页面标题
+与 H1 由返回的 `_bank` 元信息拼出。前端把 code 与可切换银行清单（清单 = 实际存在的
+`data/tables/company_charts_<code>.json`，加一家行只需放数据文件）喂给复用的原始图表脚本，
+导航栏的银行下拉框直接用它。旧的 `.html` 链接和 `/bank/<code>/<page>` 短地址由前端路由兼容
+（`beforeEach` 剥 `.html`）。
 
 目前 44 家行有数据文件（41 家 A 股或 A+H 上市银行 + 天津银行 `01578`、江西银行 `01916`、
 哈尔滨银行 `06138` 这三家纯 H 股城商行），但只有
@@ -71,7 +100,7 @@
 
 生成 `data/tables/insurer_<code>_annual.json`（601318 平安 / 601628 国寿 / 601601 太保 /
 601336 新华 / 601319 人保 / 00966.HK 中国太平），后端 `/api/insurer_peers`（六家一次取回）与
-`/api/insurer_annual?code=` 供 `industry/insurance/peers.html` 使用。A 股五家取值为 A 股年报合并口径，
+`/api/insurer_annual?code=` 供 `/industry/insurance/peers` 页使用。A 股五家取值为 A 股年报合并口径，
 2023 年起的 IFRS17／IFRS9 断点、偿二代与二期的偿付能力口径断点见页面备注与
 `data/tables/data_sources.txt`。
 
@@ -93,7 +122,7 @@
 生成 `data/tables/developer_<code>_annual.json`（A 股：600048 保利发展 / 001979 招商蛇口 /
 000069 华侨城A；纯港股：00688 中国海外发展 / 01109 华润置地 / 00817 中国金茂），后端
 `/api/developer_peers`（六家一次取回）与 `/api/developer_annual?code=` 供
-`industry/realestate/peers.html` 使用。三点要注意：三道红线（剔预收资产负债率／净负债率／
+`/industry/realestate/peers` 页使用。三点要注意：三道红线（剔预收资产负债率／净负债率／
 现金短债比）是按公开定义**自算**、不是年报披露值；港股 F10 返回的金额是年报本位币原值、
 不折算（接口字段却一律标 HKD 不可信），但三家近年年报都以**人民币**编制（中海外自 FY2019、
 华润置地自 FY2018、中国金茂自 FY2016），六家金额可直接比大小；港股三家的「已售未结」

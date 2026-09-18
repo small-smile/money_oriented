@@ -1,0 +1,164 @@
+body { min-height: 100vh; overflow-y: auto; }
+.wrap { max-width: var(--content-w, 1200px);   /* 正文列宽由 base.css 的 --content-w 统一管，不随全局 1.125 字号放大同比加宽 */ margin: 0 auto; padding: 24px 24px 60px; }
+.page-head { text-align: center; margin-bottom: 8px; }
+.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
+.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
+.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.page-head .tags span {
+    background: #dde8f3; color: #10243e; border-radius: 12px;
+    padding: 3px 12px; font-size: 18px; font-weight: 500;
+}
+section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+          padding: 20px 22px; margin-top: 22px; }
+section > h2 {
+    font-size: 22px; color: #1f2937; margin-bottom: 4px;
+    border-left: 4px solid #10243e; padding-left: 10px;
+}
+section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
+.chart { width: 100%; height: 428px; }   /* 380 × 1.125 */
+/* 图上方的一排切换按钮（如 ROE 图的快速切换银行）：与石油页 .btn-row 同一视觉，
+ * 选中态用深底白字，和 KPI 卡片的浅蓝底区分开 */
+.chart-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px 14px; }
+.chart-btns .label { font-size: 18px; color: #6b7280; margin-right: 2px; }
+.chart-btns button {
+    font: inherit; font-size: 18px; color: #10243e; background: #f3f6fa;
+    border: 1px solid #dde8f3; border-radius: 14px; padding: 4px 14px; cursor: pointer;
+}
+.chart-btns button:hover { background: #e6eef7; }
+.chart-btns button.active { background: #10243e; border-color: #10243e; color: #fff; font-weight: 600; }
+/* 一键对比：和「换成某一家行」不是同类动作，用白底描边+左侧留空跟单行按钮拉开距离 */
+.chart-btns button.tier { background: #fff; border-color: #10243e; font-weight: 600; }
+.chart-btns button.tier.active { background: #10243e; color: #fff; }
+.chart-btns button.cmp { margin-left: 6px; background: #fff; border-color: #10243e; font-weight: 600; }
+.chart-btns button.cmp:hover { background: #eef3f9; }
+.chart-btns button.cmp.active { background: #10243e; color: #fff; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
+.kpi .label { font-size: 18px; color: #7f8c8d; }
+.kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
+.kpi .delta { font-size: 18px; margin-top: 2px; }
+.up { color: #c0392b; } .down { color: #1e8449; }
+table { width: 100%; border-collapse: collapse; font-size: 18px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom: 2px solid #c9a24a; }
+tbody tr:hover { background: #f3f6fa; }
+.row-total td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #c9a24a; }
+.row-sub td:first-child { padding-left: 26px; color: #555; font-weight: 400; }
+/* 可排序表格：表头可点，箭头提示当前排序列及方向；data-sort="none" 列（如序号）不参与排序，无箭头/手型 */
+table.sortable thead th { cursor: pointer; user-select: none; white-space: nowrap; }
+table.sortable thead th:hover { background: #e3e9f0; }
+table.sortable thead th::after { content: '⇕'; display: inline-block; margin-left: 5px; font-size: 14px; color: #b0bac5; }
+table.sortable thead th[data-sort-dir="asc"]::after { content: '▲'; color: #c9a24a; }
+table.sortable thead th[data-sort-dir="desc"]::after { content: '▼'; color: #c9a24a; }
+table.sortable thead th[data-sort="none"] { cursor: default; }
+table.sortable thead th[data-sort="none"]:hover { background: inherit; }
+table.sortable thead th[data-sort="none"]::after { content: none; }
+.neg { color: #c0392b; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,420px)); gap: 14px; }
+.card2 { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 14px 16px; }
+.card2 h3 { font-size: 18px; color: #10243e; margin-bottom: 6px; }
+.card2 p { font-size: 18px; color: #444; line-height: 1.65; }
+.card2 ul { margin: 4px 0 0 18px; font-size: 18px; color: #444; line-height: 1.7; }
+.opinion-hero { margin: 18px 0 0; background: #f7faf8;
+           border: 1px solid #dde8f3; border-left: 4px solid #1e8449; border-radius: 10px;
+           padding: 10px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.opinion-hero .tick { flex: 0 0 auto; background: #e3f2e8; color: #14663c;
+           font-size: 18px; font-weight: 700; border-radius: 4px; padding: 3px 10px; }
+.opinion-hero .txt { font-size: 18px; color: #37474f; }
+.note { font-size: 18px; color: #9ca3af; margin: 10px auto 0; line-height: 1.6; max-width: 900px; }
+/* 注释默认折叠：<details class="note"><summary>...</summary>正文</details>
+ * 长注释展开后才占地方，避免默认状态就把阅读节奏拉得很长 */
+.note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
+.note summary::-webkit-details-marker { display: none; }
+.note summary::before { content: '▸ '; color: #9ca3af; }
+.note[open] summary::before { content: '▾ '; }
+.note summary:hover { color: #374151; }
+/* 回归结果说明：右对齐，紧贴图表标题下方 */
+.fit-note { font-size: 18px; color: #6b7280; text-align: right; margin-bottom: 2px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+@media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } .three-col { grid-template-columns: 1fr; } }
+section { scroll-margin-top: 116px; }   /* 锚点跳转时让 section 顶部露在吸顶导航（site-nav 50 + 风险子导航 ~52）下方 */
+
+/* ══════ 风险类型分组：大标题 + 吸顶子导航（风控页专用） ══════ */
+/* 子导航吸顶在通用 site-nav（height:50px, top:0）正下方，点击滚到对应风险大类 */
+.risk-subnav {
+    position: sticky;
+    top: 50px;                 /* 紧贴 site-nav 底边 */
+    z-index: 9;                /* 低于 site-nav(10)，高于卡片 */
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.risk-subnav a {
+    color: #10243e;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 500;
+    padding: 5px 15px;
+    border-radius: 16px;
+    background: #eef2f7;
+    transition: background .15s, color .15s;
+}
+.risk-subnav a:hover { background: #dde8f3; }
+/* 风险大类分区标题：金色左边框 + 大字号，与 section 卡片区隔 */
+.grp-head {
+    margin-top: 30px;
+    padding: 6px 0 6px 14px;
+    border-left: 6px solid #c9a24a;
+    font-size: 26px;
+    font-weight: 700;
+    color: #10243e;
+    scroll-margin-top: 116px;  /* 与 section 同步：让分区标题露在吸顶导航下方 */
+}
+.grp-head .grp-sub { display: block; font-size: 18px; font-weight: 400; color: #6b7280; margin-top: 4px; }
+
+/* 对比内容横向平铺、可左右滑动（参考 Apple TV 那种横滑内容带）：
+ * 三张图并排放在一条横向滚动带里，鼠标按住可拖动、触控板/触屏原生横滑，
+ * scroll-snap 让每张图滑到位；每张图右侧留出一小截「探头」提示还能继续滑。
+/* 整条带子撑出 section 卡片、铺满可视宽（铺到格子外面），首/尾图仍用 padding 对齐正文列。
+ * 宽度用 --app-vw（由 charts.js 写入 documentElement.clientWidth，不含竖向滚动条）而非 100vw，
+ * 否则会比真实可视宽多出滚动条那 ~15px、整页底部冒出一条横向滚动条；--app-vw 缺失时回退 100vw。 */
+.compare-slider {
+    /* 左右探头等宽 → 当前那张图正好落在可视区中央。
+     * 之前左侧 padding 跟正文列对齐、右侧却是「剩下多少算多少」，
+     * 两边不等宽，默认停在第一张时整张图看起来偏左、不居中。 */
+    --peek: 60px;
+    display: flex;
+    gap: 32px;
+    width: var(--app-vw, 100vw);
+    margin-left: calc(50% - var(--app-vw, 100vw) / 2);
+    padding: 0 var(--peek) 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    cursor: grab;
+}
+.compare-slider.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
+    scroll-snap-type: none;   /* 拖动时关掉吸附，跟手更顺 */
+}
+.compare-track { display: contents; }   /* 让三张 slide 直接成为滚动带的 flex 项 */
+.compare-slide {
+    /* 100% = 滚动带内容宽 = 可视宽 - 左右探头；配合 snap center，每张图都居中停靠 */
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: center;
+}
+/* 纤细滚动条，明确「可以左右滑」的信号 */
+.compare-slider::-webkit-scrollbar { height: 8px; }
+.compare-slider::-webkit-scrollbar-track { background: transparent; }
+.compare-slider::-webkit-scrollbar-thumb { background: #cbd6e2; border-radius: 4px; }
+.compare-slider::-webkit-scrollbar-thumb:hover { background: #aebfd0; }
+.compare-slider { scrollbar-width: thin; scrollbar-color: #cbd6e2 transparent; }

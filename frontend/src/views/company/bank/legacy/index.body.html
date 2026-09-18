@@ -1,0 +1,367 @@
+
+<div class="wrap">
+
+    <div class="page-head">
+        <h1 data-page="业绩">重庆农村商业银行（渝农商行）2025 年报 · 业绩</h1>
+        <div class="meta">单位：人民币百万元（另标注除外）</div>
+        <div class="tags"><span>业绩</span><span>ROE</span><span>每股指标</span><span>效率</span><span>三张表</span></div>
+    </div>
+
+    <!-- ══════════ 0 审计意见（置顶） ══════════ -->
+    <div class="opinion-hero yns-only">
+        <span class="tick">✓ 标准无保留意见</span>
+        <div class="txt">2025 年度财务报告 · 审计机构 毕马威</div>
+    </div>
+
+    <!-- ══════════ 二、业绩与盈利质量 ══════════ -->
+    <!-- ══════════ 1.1 业绩走势 ══════════ -->
+    <section id="sec-perf">
+        <h2>业绩走势（营收 / 归母净利润）</h2>
+        <p class="sub">口径：本集团合并数 · 2009–2025 年（2008 年 6 月信用社改制为股份公司，2009 年为改制后首个完整年度；2010 年 H 股上市、2019 年 A 股上市）· 单位：亿元</p>
+        <div id="chart-perf" class="chart"></div>
+        <div class="note yns-only">2009–2025 年间营业收入由 57 亿增至 286 亿、归母净利润由 19 亿增至 121 亿，长期稳步增长；2020 年归母净利润受疫情及大额拨备计提影响短暂下滑，其后恢复上行。数据来源：2009 年取自本行 2010 年 12 月 H 股招股章程 Appendix IB 会计师报告（hkexnews.hk 披露易，重组后口径）；2010–2024 年取自本行历年年度报告全文（cqrcb.com 官网 PDF）；2025 年数据来源于港交所 2025 年度业绩公告（IFRS 口径）。2008 年 6 月改制前后为不同会计主体（信用社 vs 股份公司），无连续可比的官方数据，故不早于 2009 年。</div>
+    </section>
+
+    <!-- ══════════ 1.1b 加权平均 ROE ══════════ -->
+    <section id="sec-roe">
+        <h2>净资产收益率 ROE</h2>
+        <p class="sub">口径：本集团合并数 · 单位：% · 三段口径见图例 · 当前显示：<b id="roe-current">渝农商行</b></p>
+        <!-- 筛选：类型行一次勾整组 / 银行行是多选开关；视图行换呈现方式
+             （按钮由 charts/switcher.js 按可切换银行清单生成） -->
+        <div class="chart-btns" id="roe-tiers"><span class="label">按类型</span></div>
+        <div class="chart-btns" id="roe-views"><span class="label">视图</span></div>
+        <div class="chart-btns" id="roe-banks"><span class="label">银行（可多选）</span></div>
+        <div id="chart-roe" class="chart" style="height:400px"></div>
+        <div class="note yns-only" id="note-roe">
+            <b>三段口径说明：</b><br>
+            ① <span style="color:#af7ac5">紫色点线</span> 2009–2013「简单 ROE」= 归母净利润 ÷ 期初期末平均归母权益（年报未单独披露加权 ROE）；2009 年由本行 2010 年 H 股招股章程 Appendix IB 会计师报告计算，2010–2013 由历年年报利润表/资产负债表计算；2010 年 12 月 H 股上市募资致权益年内跳升，简单平均 ROE 偏低（实际经营 ROE 更高）。<br>
+            ② <span style="color:#6c3483">深紫虚线</span> 2014–2018「加权平均股东权益回报率」（旧准则·年报披露值）。<br>
+            ③ <span style="color:#6c3483">深紫实线</span> 2018–2025「加权平均净资产收益率」（新准则·年报披露值），2018 年本集团首次执行新金融工具准则，同期披露新旧两个口径（新 13.55% vs 旧 15.99%），此处以新准则数值衔接后续序列。<br>
+            ROE 长期呈下降趋势：2014 年 17.81% 的高位逐年回落，2020 年疫情及大额拨备计提冲击下骤降至 9.28%，此后维持在 9%–10% 区间震荡，2025 年 9.18%（同比 -0.10pct），降幅持续收窄，与营业收入增速放缓、资本内生增长压力上升相印证。<br>
+            数据来源：2009–2013 由本行 H 股招股章程会计师报告及历年年度报告全文（cqrcb.com 官网 PDF / hkexnews.hk 披露易）「财务摘要」表计算；2014–2025 取自本行历年年度报告全文「财务摘要」表。
+        </div>
+    </section>
+
+    <!-- ══════════ 1.11 每股指标 EPS / BVPS ══════════ -->
+    <section id="sec-pershare">
+        <h2>每股指标（基本每股收益 / 每股净资产）</h2>
+        <p class="sub">口径：本集团合并数 · 基本每股收益（元/股）· 归属普通股股东的每股净资产（元/股）</p>
+        <div class="kpis yns-only">
+            <div class="kpi"><div class="label">2025 基本每股收益 EPS</div><div class="value">1.05 元</div><div class="delta up">▲ 0.06</div></div>
+            <div class="kpi"><div class="label">2025 每股净资产 BVPS</div><div class="value">11.55 元</div><div class="delta up">▲ 0.48</div></div>
+        </div>
+        <div id="chart-pershare" class="chart"></div>
+        <div class="note yns-only">
+            自 2010 年 H 股上市以来，每股净资产由 3.26 元（2010 年为加权口径，H 股 IPO 当年新股按发行天数摊薄）增厚至 2025 年 <b>11.55 元</b>（15 年 +254%），靠留存收益逐年积累；基本每股收益由 0.45 元升至 <b>1.05 元</b>，其中 2020 年受疫情大额拨备计提影响回落至 0.74 元后恢复上行。EPS 增速慢于 BVPS，主要因期间多次配股 / 定增及可转债等摊薄、总股本由约 74 亿股扩至 113.57 亿股。<br>
+            <b>注：</b>EPS 为年报披露「基本每股收益」，已扣除永续债等其他权益工具利息、按加权平均股数计算，故不等于「归母净利润 ÷ 期末总股本」；BVPS 为归属于普通股股东权益 ÷ 期末普通股股数（2010 年因当年 12 月新发 H 股，改用加权平均股数），低于「归母权益 ÷ 总股本」因剔除了其他权益工具。<br>
+            数据来源：港交所 HKEXnews 03618.HK 历年年报（2010–2018 年）与本行 2019–2025 年年度报告「主要财务指标」，取「基本每股收益」与「归属于本行股东的每股净资产」披露值。
+        </div>
+    </section>
+
+    <!-- ══════════ 1.7 盈利质量与效率 ══════════ -->
+    <section id="sec-efficiency">
+        <h2>盈利质量与效率</h2>
+        <p class="sub">口径：本集团合并数 · 净息差/净利差为年报披露值 · 非息收入占比、成本收入比 2018 年前后为不同定义 · 单位：%</p>
+        <div class="kpis yns-only">
+            <div class="kpi"><div class="label">2025 净息差 NIM</div><div class="value">1.60%</div><div class="delta down">▼ 0.01pct</div></div>
+            <div class="kpi"><div class="label">2025 成本收入比</div><div class="value">31.22%</div><div class="delta down">▼ 0.64pct</div></div>
+        </div>
+        <h3 class="chart-title">净息差 NIM / 净利差 NIS（%）</h3>
+        <div id="chart-nim-trend" class="chart" style="height:360px"></div>
+        <h3 class="chart-title" style="margin-top:18px">非息收入占比 / 成本收入比（%）</h3>
+        <div id="chart-costincome" class="chart" style="height:360px"></div>
+        <div class="note yns-only">
+            <b>净息差：</b>2012 年 3.50% 见顶后持续收窄，2025 年降至 1.60%，反映利率市场化与资产端收益率下行的长期压力。<br>
+            <b>成本收入比：</b>2010 年 44.40% 起持续下行，2019 年低点 28.54%，2022 年因营收下滑推高至 31.84%，2025 年回落至 31.22%，处同业合理区间；2018 年前后为不同口径（H 股「成本佔收入比率」vs A 股「成本收入比」），走势连续但定义不完全相同。<br>
+            <b>非息收入占比：</b>2010 年仅 3.14%，2011 年手续费及佣金净收入大增后升至 5.52%，此后逐年上行，2018 年起因新金融工具准则下投资收益计入口径变化而跳升至 23.37%，此后随市场行情波动，2025 年为 15.32%。<br>
+            数据来源：2010–2017 由 H 股 03618 历年年报「財務摘要」净利息收入占比反算非息收入占比、「成本佔收入比率」披露值；2018–2025 取自本行历年年度报告「主要财务指标」披露值。
+        </div>
+    </section>
+
+    <!-- ══════════ 12 净利差与净利息收益率 ══════════ -->
+    <section id="sec-nim">
+        <h2>净利差 · 净利息收益率（NIS/NIM）分解</h2>
+        <p class="sub">口径：本集团合并数 · 剔除租赁负债 · 平均余额按日均计</p>
+        <div id="chart-nim" class="chart" style="height:360px"></div>
+        <div class="yns-only" style="overflow-x:auto;margin-top:14px">
+        <table>
+            <thead><tr><th>项目</th><th>2025 平均余额</th><th>2025 收益率/成本率</th><th>2024 平均余额</th><th>2024 收益率/成本率</th></tr></thead>
+            <tbody>
+                <tr><td>客户贷款和垫款</td><td>755,947.2</td><td>3.64%</td><td>701,222.4</td><td>3.92%</td></tr>
+                <tr><td>金融投资</td><td>548,210.4</td><td>2.73%</td><td>513,199.7</td><td>3.08%</td></tr>
+                <tr><td>存放中央银行款项</td><td>51,897.6</td><td>1.60%</td><td>49,269.7</td><td>1.57%</td></tr>
+                <tr><td>同业及其他金融机构</td><td>164,481.4</td><td>1.93%</td><td>134,729.8</td><td>2.25%</td></tr>
+                <tr class="row-total"><td>生息资产合计</td><td>1,520,536.6</td><td>3.06%</td><td>1,398,421.6</td><td>3.37%</td></tr>
+                <tr><td>客户存款</td><td>1,004,407.7</td><td>1.45%</td><td>922,651.7</td><td>1.73%</td></tr>
+                <tr><td>向中央银行借款</td><td>102,469.1</td><td>1.86%</td><td>103,703.5</td><td>2.20%</td></tr>
+                <tr><td>同业及其他金融机构</td><td>140,874.0</td><td>1.66%</td><td>153,034.5</td><td>2.05%</td></tr>
+                <tr><td>已发行债务证券</td><td>180,388.6</td><td>1.87%</td><td>140,830.6</td><td>2.28%</td></tr>
+                <tr class="row-total"><td>计息负债合计</td><td>1,428,139.4</td><td>1.55%</td><td>1,320,220.3</td><td>1.86%</td></tr>
+                <tr class="row-total"><td>净利差 (NIS)</td><td colspan="3" style="text-align:center">1.51%（2025）</td><td>1.51%（2024）</td></tr>
+                <tr class="row-total"><td>净利息收益率 (NIM)</td><td colspan="3" style="text-align:center">1.60%（2025）</td><td>1.61%（2024）</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="note yns-only">生息资产收益率 3.06%（-31BP），计息负债成本率 1.55%（-31BP），两端等幅下降使净利差持平 1.51%；NIM 微降 1BP 至 1.60%，基本企稳。负债成本压降主要贡献：客户存款 -28BP、同业负债 -39BP、已发行债务证券 -41BP。</div>
+    </section>
+
+
+
+    <!-- ══════════ 1.10 其他综合收益 ══════════ -->
+    <section id="sec-oci">
+        <h2>其他综合收益（OCI）</h2>
+        <p class="sub">口径：本集团合并数 · 其他综合收益（税后净额）为合并综合收益表科目 · 单位：亿元 · 2018 年起执行新金融工具准则（IFRS9），前后构成口径不完全可比</p>
+        <div class="kpis yns-only">
+            <div class="kpi"><div class="label">2025 其他综合收益</div><div class="value">-28.97 亿</div></div>
+            <div class="kpi"><div class="label">2024 其他综合收益</div><div class="value">41.72 亿</div></div>
+        </div>
+        <div id="chart-oci" class="chart"></div>
+        <div class="note yns-only">
+            其他综合收益历年围绕零值上下波动、多数年份绝对值在 5 亿元以内，主要由可供出售/其他债权投资公允价值变动构成；2024 年债市走强推高至 <b>+41.72 亿</b>（近 16 年最大单年正值），2025 年债市回调转为 <b>-28.97 亿</b>，两年振幅近 71 亿元，反映债券公允价值计量对综合收益的显著扰动，但均未计入当期净利润（计入所有者权益、不经利润表）。<br>
+            <b>会计准则变更影响（2018 年起执行 IFRS9／新金融工具准则）：</b>OCI 这条线在 2018 年前后并非同一口径。<b>旧准则（2010–2017）</b>下金融资产按四分类，进入 OCI 的主要是「可供出售金融资产（AFS）公允价值变动准备」，处置时重分类计入损益；<b>新准则（2018 起）</b>改为 AC／FVOCI／FVTPL 三分类，OCI 由三部分构成——① 债务工具（FVOCI）公允价值变动（处置时可重分类进损益）、② 权益工具指定为 FVOCI 的公允价值变动（处置时<b>不可</b>重分类）、③ 新增的 FVOCI 债务工具<b>预期信用损失（ECL）</b>损失准备。三点后果：其一，分类标准变化使部分原 AFS 资产被重分类为 FVTPL（波动改计入当期损益）或 AC（不再经 OCI），故 2018 年前后 OCI 构成不完全可比；其二，ECL 计入 OCI 为新准则新增子项，旧准则下并无；其三，2018 年后 FVOCI 债券持仓大幅扩张（见 1.12 金融投资结构），把原本 ±3 亿以内的 OCI 波动放大到 2024/2025 的 ±30–42 亿量级——图中虚线即标示这一准则切换点。<br>
+            <b>备注（与资管新规／理财净值化的关系）：</b>这轮 FVOCI 债券扩张与同期「理财净值化」同源于 2018 年<b>资管新规</b>，但并非净值化直接所致——传导链是<b>保本理财压降、老产品（摊余成本／面值法）整改推动部分资产回表</b>，回表资产在 IFRS9 下多被计入自营 FVOCI 账簿、随市价重估进 OCI。需注意<b>非保本理财为表外、由理财子公司管理，不进本表 OCI</b>：图中 ±30–42 亿的波动是<b>银行自营 FVOCI 债券的市值重估</b>，而非理财产品净值口径——二者是资管新规「表内 IFRS9 重分类」与「表外理财净值化」的两个并行后果。此段为机制推断，本页未按年拆分回表规模。<br>
+            <b>波动来源（审计报表附注拆分）：</b>2024/2025 两年 OCI 中 95% 以上来自「以公允价值计量且其变动计入其他综合收益的债务工具公允价值变动」这一项——即银行持有的 FVOCI 债券随市场利率下行/上行而重估：2024 年 <b>+40.89 亿</b>（债市走强），2025 年 <b>-35.10 亿</b>（部分回吐）；其他子项（设定受益计划重新计量、其他权益工具投资、信用损失准备）历年均在 1–2 亿元以内波动，不是主因。<br>
+            <b>是否影响资本充足率：</b>会，但影响有限。OCI 计入所有者权益的「其他综合收益」科目，是核心一级资本净额的组成部分，故债券浮盈/浮亏会直接传导到 CET1 分子；但只有未实现的公允价值变动部分可计入监管资本（「设定受益计划重新计量」不计入），且相对核心一级资本净额（千亿量级）而言，单年 30–40 亿元的 OCI 波动对资本充足率的影响约在零点几个百分点量级，方向正确但非决定性因素，不会引发资本充足率的实质性跳变。<br>
+            数据来源：本行历年年度报告「合并综合收益表」；2024/2025 分项数据交叉核对自本行 KPMG 审计的《2024/2025年度财务报表及审计报告》附注五、29。准则变更依据本行 2018 年报「重要会计政策和会计估计变更」（首次执行 IFRS9／企业会计准则第22号）。
+        </div>
+    </section>
+
+
+    <!-- ══════════ 1.13 员工人数与人均效能 ══════════ -->
+    <section id="sec-staff">
+        <h2>员工人数与人均效能</h2>
+        <p class="sub">口径：本集团在职员工人数（年报「员工情况」披露）· 人均营业收入 / 人均归母净利润 = 当年营收 / 归母净利 ÷ 期末员工数 · 单位：人 / 万元每人</p>
+        <div class="kpis yns-only">
+            <div class="kpi"><div class="label">2025 年末员工数</div><div class="value">14,266 人</div><div class="delta down">▼ 276</div></div>
+            <div class="kpi"><div class="label">2025 人均营业收入</div><div class="value">200.8 万</div><div class="delta up">▲ 6.5</div></div>
+            <div class="kpi"><div class="label">2025 人均归母净利</div><div class="value">85.0 万</div><div class="delta up">▲ 5.8</div></div>
+        </div>
+        <div id="chart-staff" class="chart"></div>
+        <div class="note yns-only">
+            员工总数自 2016 年 16,245 人的峰值持续精简至 2025 年 <b>14,266 人</b>（累计 -12%），而同期人均产能显著抬升：人均营业收入由 2011 年 81.5 万元升至 <b>200.8 万元</b>、人均归母净利润由 31.6 万元升至 <b>85.0 万元</b>，反映网点数字化改造与人力结构优化下的效能提升。2020 年人均净利回落至 54.4 万元，系当年疫情大额拨备计提压低利润所致，其后逐年恢复并创新高。<br>
+            <b>注：</b>人均口径以「期末员工数」为分母（非年度平均人数），与部分年报按「平均人数」计算的人效值可能存在小幅差异；2011–2018 员工数为本行口径，2019 年起 A 股年报改披露本集团口径（含子公司），两段不完全可比。<br>
+            数据来源：本行历年年度报告「员工和机构情况」（员工人数）与「合并利润表」（营业收入、归母净利润，用于计算人均效能）；员工数披露自 2011 年起。
+        </div>
+    </section>
+
+    <!-- ══════════ 三、结构与治理 ══════════ -->
+    <!-- ══════════ 5 分部信息 ══════════ -->
+    <section id="sec-segment">
+        <h2>分部信息（业务板块 · 地域结构）</h2>
+        <p class="sub">口径：本集团合并数 · 单位：人民币百万元 / %</p>
+        <div class="two-col">
+            <div>
+                <h3 class="chart-title">营业收入按业务板块（2025 vs 2024）</h3>
+                <div id="chart-seg-rev" class="chart" style="height:340px"></div>
+            </div>
+            <div>
+                <h3 class="chart-title">存贷款地域分布（主城 vs 县域，2025 年末）</h3>
+                <div id="chart-geo" class="chart" style="height:340px"></div>
+            </div>
+        </div>
+        <div class="yns-only" style="overflow-x:auto;margin-top:14px">
+        <table>
+            <thead><tr><th>板块</th><th>2025 收入</th><th>占比</th><th>2024 收入</th><th>占比</th></tr></thead>
+            <tbody>
+                <tr><td>公司金融</td><td>9,351.1</td><td>32.67%</td><td>8,633.8</td><td>30.58%</td></tr>
+                <tr><td>零售金融</td><td>12,138.5</td><td>42.42%</td><td>11,832.4</td><td>41.92%</td></tr>
+                <tr><td>金融市场</td><td>7,027.0</td><td>24.55%</td><td>7,699.2</td><td>27.27%</td></tr>
+                <tr><td>未分配</td><td>103.4</td><td>0.36%</td><td>65.9</td><td>0.23%</td></tr>
+                <tr class="row-total"><td>合计</td><td>28,620.0</td><td>100%</td><td>28,231.3</td><td>100%</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="yns-only" style="overflow-x:auto;margin-top:14px">
+        <table>
+            <thead><tr><th>地域指标（%）</th><th>2025 县域</th><th>2025 主城</th><th>2024 县域</th><th>2024 主城</th></tr></thead>
+            <tbody>
+                <tr><td>存款占比</td><td>73.30</td><td>26.70</td><td>73.53</td><td>26.47</td></tr>
+                <tr><td>贷款占比</td><td>50.78</td><td>49.22</td><td>48.38</td><td>51.62</td></tr>
+                <tr><td>资产占比</td><td>52.60</td><td>47.40</td><td>52.77</td><td>47.23</td></tr>
+                <tr><td>贷存比</td><td>53.68</td><td>142.91</td><td>49.89</td><td>147.87</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="note yns-only">县域 = 重庆市 8 个中心城区以外的地区 + 12 家村镇银行 + 曲靖分行；主城 = 8 个中心城区。零售金融占比最大（42.42%），公司金融同比提升 2.09pct；县域存款超七成，但贷存比远低于主城，反映资金向城区信贷投放的结构性特征。</div>
+    </section>
+
+    <!-- ══════════ 4 三张表 ══════════ -->
+    <section id="sec-statements">
+        <h2>三张财务报表</h2>
+        <p class="sub">合并口径 · 单位：人民币百万元 · 括号内为负值 · 资产负债表明细及历年趋势详见「资产负债表」页</p>
+
+        <h3 style="color:#6c3483;margin:12px 0 8px;font-size:18px">利润表（2025 vs 2024）</h3>
+        <div class="yns-only" style="overflow-x:auto">
+        <table>
+            <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th><th>同比</th></tr></thead>
+            <tbody>
+                <tr><td>利息净收入</td><td>24,260.7</td><td>22,494.5</td><td class="up">+7.85%</td></tr>
+                <tr><td>非利息净收入</td><td>4,359.3</td><td>5,736.8</td><td class="down">-24.01%</td></tr>
+                <tr class="row-sub"><td>其中：手续费及佣金净收入</td><td>1,294.4</td><td>1,612.1</td><td class="down">-19.71%</td></tr>
+                <tr class="row-sub"><td>其中：其他非利息净收入</td><td>3,064.9</td><td>4,124.7</td><td class="down">-25.69%</td></tr>
+                <tr class="row-total"><td>营业收入</td><td>28,620.0</td><td>28,231.3</td><td class="up">+1.38%</td></tr>
+                <tr><td>税金及附加</td><td class="neg">(392.9)</td><td class="neg">(307.8)</td><td class="up">+27.65%</td></tr>
+                <tr><td>业务及管理费</td><td class="neg">(8,943.2)</td><td class="neg">(9,004.5)</td><td class="down">-0.68%</td></tr>
+                <tr><td>信用减值损失</td><td class="neg">(5,444.1)</td><td class="neg">(5,956.9)</td><td class="down">-8.61%</td></tr>
+                <tr><td>其他资产减值损失</td><td class="neg">(41.6)</td><td class="neg">(63.3)</td><td class="down">-34.28%</td></tr>
+                <tr><td>其他业务成本</td><td class="neg">(88.8)</td><td class="neg">(81.4)</td><td class="up">+9.09%</td></tr>
+                <tr class="row-total"><td>营业利润</td><td>13,737.7</td><td>12,847.6</td><td class="up">+6.93%</td></tr>
+                <tr><td>营业外收支净额</td><td class="neg">(28.3)</td><td class="neg">(30.2)</td><td class="down">-6.29%</td></tr>
+                <tr class="row-total"><td>利润总额</td><td>13,709.4</td><td>12,817.4</td><td class="up">+6.96%</td></tr>
+                <tr><td>所得税费用</td><td class="neg">(1,289.4)</td><td class="neg">(1,028.3)</td><td class="up">+25.39%</td></tr>
+                <tr class="row-total"><td>净利润</td><td>12,420.0</td><td>11,789.1</td><td class="up">+5.35%</td></tr>
+                <tr><td>归属于本行股东的净利润</td><td>12,128.4</td><td>11,512.7</td><td class="up">+5.35%</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <h3 style="color:#6c3483;margin:22px 0 8px;font-size:18px">现金流量表（经营活动净额）</h3>
+        <div class="yns-only" style="overflow-x:auto">
+        <table>
+            <thead><tr><th>项目</th><th>2025 年</th><th>2024 年</th><th>2023 年</th></tr></thead>
+            <tbody>
+                <tr class="row-total"><td>经营活动产生的现金流量净额</td><td>372.3</td><td>4,597.5</td><td>39,459.4</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <h3 class="chart-title">2025 年分季度经营活动现金流量净额（百万元）</h3>
+        <div id="chart-cf" class="chart" style="height:300px;margin-top:14px"></div>
+        <div class="note yns-only">年报摘要仅披露经营活动现金流量净额；2025 年四个季度分别为 22,569.6 / (19,134.4) / 15,532.8 / (18,595.7)，全年净额大幅下降主要受资金运用及负债结构调整影响。</div>
+    </section>
+
+    <!-- ══════════ 8 业务经营概览 ══════════ -->
+    <section id="sec-overview">
+        <h2>业务经营概览</h2>
+        <p class="sub">来源：2025 年报「管理层讨论与分析 · 业务综述」各板块经营数据</p>
+        <div class="cards three-col yns-only">
+            <div class="card2">
+                <h3>普惠金融（零售）</h3>
+                <ul>
+                    <li>个人存款 8,803.67 亿（+8.88%）</li>
+                    <li>普惠小微贷款客户 ~21 万户、余额 1,446.44 亿</li>
+                    <li>借记卡发卡量 3,145.47 万张（+97.24 万张）</li>
+                    <li>商户总数突破 200 万户（+101.83 万）</li>
+                    <li>社保卡 775.19 万张、服务养老客户 460 万+</li>
+                    <li>高净值客户 ~11 万户（+6.81%）· AUM 日均 1,384.3 亿</li>
+                </ul>
+            </div>
+            <div class="card2">
+                <h3>公司金融</h3>
+                <ul>
+                    <li>公司贷款 4,349.74 亿（+21.46%）</li>
+                    <li>制造业贷款 783.85 亿（全市第一）</li>
+                    <li>科技型企业贷款 909.06 亿（全市法人第一）</li>
+                    <li>绿色贷款 828.17 亿（+22.2%）</li>
+                    <li>西部陆海新通道融资 711.22 亿（+30.36%）</li>
+                    <li>债务融资工具承销 65 期 169.29 亿（+40.15%）</li>
+                    <li>国际结算 31.53 亿美元</li>
+                </ul>
+            </div>
+            <div class="card2">
+                <h3>金融市场</h3>
+                <ul>
+                    <li>债券投资 5,623.09 亿</li>
+                    <li>理财产品余额 1,727.58 亿（+25.36%）</li>
+                    <li>基金托管获批证券投资基金托管资格</li>
+                    <li>政策性银行债占金融投资最大品种</li>
+                </ul>
+            </div>
+            <div class="card2">
+                <h3>金融科技</h3>
+                <ul>
+                    <li>手机银行用户 1,569.57 万</li>
+                    <li>手机银行年交易额 13,541.11 亿</li>
+                    <li>企业网银客户 18.25 万户</li>
+                    <li>AI 代码生成率 15-20%、代码审查效率 +30%</li>
+                    <li>累计专利申请 120 件（授权 23 件）</li>
+                </ul>
+            </div>
+            <div class="card2">
+                <h3>县域金融</h3>
+                <ul>
+                    <li>涉农贷款 2,655.04 亿</li>
+                    <li>县域个人存款 6,925.93 亿（占全行 78.67%）</li>
+                    <li>乡镇网点 1,254 个 + 村镇银行 12 家</li>
+                    <li>县域借记卡 2,484.10 万张（占全行 78.97%）</li>
+                    <li>县域手机银行 1,243.42 万户（占全行 79.22%）</li>
+                </ul>
+            </div>
+            <div class="card2">
+                <h3>主要子公司</h3>
+                <ul>
+                    <li>渝农商金融租赁：总资产 773.29 亿、净利润 14.36 亿</li>
+                    <li>渝农商理财：管理产品 1,727.58 亿、净利润 3.02 亿</li>
+                    <li>村镇银行（12 家）：总资产 49.24 亿、净利润 2.40 亿</li>
+                    <li>小米消费金融（30%）：总资产 208.07 亿、净利润 1.31 亿</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ 2 前瞻指引 ══════════ -->
+    <section id="sec-outlook">
+        <h2>前瞻指引</h2>
+        <p class="sub">来源：2025 年报董事长致辞、行长致辞及 2026-03-25 董事会决议</p>
+        <div class="cards yns-only">
+            <div class="card2">
+                <h3>愿景目标</h3>
+                <p>朝着“科技型、产业型、生态型”世界一流现代化农商行目标奋勇前进，坚持“农村领跑、城市赶超”。</p>
+            </div>
+            <div class="card2">
+                <h3>“三种新动能”</h3>
+                <ul><li>数字驱动</li><li>产业链动</li><li>场景圈动</li></ul>
+            </div>
+            <div class="card2">
+                <h3>金融“五篇大文章”</h3>
+                <p>科技金融、绿色金融、普惠金融、养老金融、数字金融，全力做实做深。</p>
+            </div>
+            <div class="card2">
+                <h3>2026 重点部署</h3>
+                <p>做好金融支持推进乡村全面振兴；深化改革攻坚与高质量发展；筑牢防范化解风险底线。</p>
+            </div>
+        </div>
+        <div class="note yns-only">前瞻指引为定性战略表述，年报未披露具体量化经营目标。</div>
+    </section>
+
+
+    <!-- ══════════ 10 投资者关注焦点 ══════════ -->
+    <section id="sec-investor">
+        <h2>投资者关注焦点</h2>
+        <p class="sub">来源：2025 年报「管理层讨论与分析 · 投资者重点关注的问题」</p>
+        <div class="cards yns-only">
+            <div class="card2">
+                <h3>净息差（NIM）</h3>
+                <p>2025 年 NIM 1.60%，仅同比下降 1BP（上年下降 12BP），企稳趋势明确。资产端让利实体经济 + 存量重定价；负债端存款付息率下降 28BP 对冲。</p>
+            </div>
+            <div class="card2">
+                <h3>ROE 表现</h3>
+                <p>加权平均 ROE 9.15%（-0.09pct），降幅较上年收窄 22BP。归母净利润增长 5.35% vs 平均净资产增长 6.49%，分母增速略快于分子。</p>
+            </div>
+            <div class="card2">
+                <h3>资产质量"三降一升"</h3>
+                <ul>
+                    <li>不良率 1.08%（-0.10pct，连续 5 年下降）</li>
+                    <li>关注率 1.42%（-0.04pct）</li>
+                    <li>逾期率 1.19%（-0.13pct）</li>
+                    <li>拨覆率 367.26%（+3.82pct）</li>
+                </ul>
+                <p>公司不良率 0.55%（-0.49pct）；零售不良率 2.07%（+0.47pct）是唯一上行方向。零售不良贷款中抵质押覆盖 77.92%、抵质押物估值覆盖率 1.68 倍。</p>
+            </div>
+            <div class="card2">
+                <h3>分红与股东回报</h3>
+                <ul>
+                    <li>2025 中期股息：每 10 股 2.0336 元（含税）</li>
+                    <li>2025 末期拟派：每 10 股 1.1755 元（含税）</li>
+                    <li>全年累计：每 10 股 3.2091 元</li>
+                    <li>近五年累计分红 150 亿元，分红率≥30%</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <div class="note yns-only" style="text-align:center;margin-top:22px">
+        数据来源：重庆农村商业银行 2025 年年度报告（全文 PDF），港交所及上交所公告，披露日 2026-03-25/26。本页仅作数据可视化，不构成投资建议。
+    </div>
+</div>
+
+<!-- charts/*.js 是 charts.js 拆分出来的分区脚本，按此顺序加载；charts.js 必须最后 -->

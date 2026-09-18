@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """把 data/tables/tech_09888_*.json 打包成 dashboard/company/baidu/data.js
 
-百度详情页（dashboard/company/baidu/*.html）不走 backend_python.py 的 /api 接口，
+百度详情页（dashboard/company/baidu/*.html）不走 app.py 的 /api 接口，
 而是 <script src="data.js"> 直接读全局对象——这样 file:// 打开也能画图，不用起服务、
 也不受 fetch 跨域限制。银行页那套 /api/company_charts 是因为一份 HTML 要按 ?code=
 渲染上百家银行，百度只有一家，没必要。
