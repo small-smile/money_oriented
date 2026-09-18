@@ -6,7 +6,7 @@
     <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
     <div v-if="error" id="error-msg" style="display:block">数据加载失败：{{ error }}（请确认后端服务已启动）</div>
 
-    <section id="sec-tsf" v-show="ready">
+    <section id="sec-tsf" v-show="data">
       <h2>社会融资规模（TSF）</h2>
       <p class="sub">
         口径：人民银行调查统计司「社会融资规模」= 实体经济从金融体系获得的资金总额 · 存量单位 万亿元、增量单位 亿元 · 同比 % ·
@@ -14,9 +14,9 @@
         2019.09 起「交易所企业 ABS」纳入企业债券；2023 年起将「三类非存款金融机构」纳入。
       </p>
       <h3 class="chart-title">社融存量与同比增速（月度，万亿元 / %）</h3>
-      <div ref="chartStockEl" id="chart-tsf-stock" class="chart" style="height:420px"></div>
+      <EChart v-if="data" :option="stockOption" height="420px" />
       <h3 class="chart-title" style="margin-top:18px">社融当月新增：分项结构（月度，亿元）</h3>
-      <div ref="chartFlowEl" id="chart-tsf-flow" class="chart" style="height:440px"></div>
+      <EChart v-if="data" :option="flowOption" height="440px" />
       <div class="note">
         读图重点：① 2020 年疫情后存量同比冲上 13.3%，随后单边下行至 2024–2025 年 8% 附近；
         ② 增量结构中「政府债券」自 2020 年后份额显著上升，「未贴现票据」「信托贷款」「委托贷款」（俗称影子银行三剑客）2018 资管新规后长期收缩；
@@ -32,153 +32,121 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import * as echarts from 'echarts'
-import { apiGet } from '../../../api'
+import { computed } from 'vue'
+import EChart from '../../../components/EChart.vue'
+import { useApiData } from '../../../composables/useApiData'
 
-// 逐字搬自 dashboard/industry/bank/tsf.html：两张图的 option 与 render 渲染逻辑原样保留，
-// 仅取数改走统一 apiGet（/api/tsf）、容器改用组件 ref、resize/dispose 归拢到组件生命周期。图与数据一律不变。
-const loading = ref(true)
-const error = ref('')
-const ready = ref(false)
-const chartStockEl = ref(null)
-const chartFlowEl = ref(null)
-let charts = []
+// 取数改用 useApiData（/api/tsf）；两张图的 option 原样保留、只从原 render() 挪进 computed，
+// 图与数据一律不变；容器/resize/dispose 交给 EChart 组件。
+const { data, loading, error } = useApiData('/api/tsf')
 
-function onResize() { charts.forEach(c => c.resize()) }
+/* 只在每年 1 月显示年份（两图共用） */
+const xLabel = {
+  fontSize: 18,
+  color: '#555',
+  formatter: function (v) { return v.slice(-2) === '01' ? v.slice(0, 4) : ''; },
+  interval: 0,
+}
 
-onMounted(async () => {
-  try {
-    const D = await apiGet('/api/tsf')
-    loading.value = false
-    ready.value = true
-    await nextTick()
-    render(D)
-    window.addEventListener('resize', onResize)
-  } catch (e) {
-    loading.value = false
-    error.value = e.message || String(e)
+/* ---------- 图 1：存量 + 同比 ---------- */
+const stockOption = computed(() => {
+  const D = data.value
+  if (!D) return null
+  const { months, stock, yoy } = D
+  return {
+    backgroundColor: '#fff',
+    textStyle: { fontSize: 18 },
+    tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
+        formatter: function (p) {
+            var d = p[0].axisValue;
+            var s = '<b>' + d + '</b>';
+            p.forEach(function (x) {
+                if (x.value == null) return;
+                var unit = x.seriesName === '同比 YoY' ? '%' : ' 万亿';
+                s += '<br>' + x.marker + x.seriesName + '：' + x.value + unit;
+            });
+            return s;
+        } },
+    legend: { data: ['社融存量', '同比 YoY'], top: 4, textStyle: { fontSize: 18 } },
+    grid: { left: 72, right: 64, top: 42, bottom: 40 },
+    xAxis: { type: 'category', data: months, boundaryGap: false,
+        axisLabel: xLabel, axisLine: { lineStyle: { color: '#bbb' } } },
+    yAxis: [
+        { type: 'value', name: '万亿元', min: 0, nameTextStyle: { fontSize: 18, color: '#555' },
+          axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
+        { type: 'value', name: 'YoY %', min: 0, max: 16, nameTextStyle: { fontSize: 18, color: '#c0392b' },
+          axisLabel: { fontSize: 18, color: '#c0392b', formatter: '{value}%' }, splitLine: { show: false } }
+    ],
+    series: [
+        { name: '社融存量', type: 'line', data: stock, connectNulls: true,
+          yAxisIndex: 0, showSymbol: false, smooth: true,
+          lineStyle: { width: 2.5, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
+          areaStyle: { color: 'rgba(108,52,131,0.10)' } },
+        { name: '同比 YoY', type: 'line', data: yoy, connectNulls: true,
+          yAxisIndex: 1, showSymbol: false, smooth: true,
+          lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+          markLine: { silent: true, symbol: 'none', label: { show: false },
+            data: [
+                { xAxis: '2018-07', lineStyle: { color: '#999', type: 'dashed' },
+                  label: { show: true, formatter: '2018.07\nABS+核销', position: 'insideEndTop', fontSize: 14, color: '#666' } },
+                { xAxis: '2018-09', lineStyle: { color: '#999', type: 'dashed' },
+                  label: { show: true, formatter: '2018.09\n政府专项债', position: 'insideEndBottom', fontSize: 14, color: '#666' } },
+                { xAxis: '2020-03', lineStyle: { color: '#999', type: 'dashed' },
+                  label: { show: true, formatter: '2020Q1\n疫情信用扩张', position: 'insideEndTop', fontSize: 14, color: '#666' } },
+                { xAxis: '2023-01', lineStyle: { color: '#999', type: 'dashed' },
+                  label: { show: true, formatter: '2023\n三类非存款金融纳入', position: 'insideEndBottom', fontSize: 14, color: '#666' } }
+            ] } }
+    ]
   }
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
+/* ---------- 图 2：当月新增分项（堆叠柱 + 总量线） ---------- */
+const flowOption = computed(() => {
+  const D = data.value
+  if (!D) return null
+  const { months, flow_total, rmb_loans, gov_bonds, corp_bonds, und_ba, trust_ln, entrust, equity } = D
+  return {
+    backgroundColor: '#fff',
+    textStyle: { fontSize: 18 },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
+        formatter: function (p) {
+            var d = p[0].axisValue;
+            var s = '<b>' + d + '</b>';
+            p.filter(function (x) { return x.value != null && x.value !== 0; })
+             .sort(function (a, b) { return Math.abs(b.value) - Math.abs(a.value); })
+             .forEach(function (x) { s += '<br>' + x.marker + x.seriesName + '：' + Number(x.value).toLocaleString() + ' 亿'; });
+            return s;
+        } },
+    legend: { top: 4, textStyle: { fontSize: 18 },
+        data: ['人民币贷款','政府债券','企业债券','未贴现票据','委托贷款','信托贷款','非金融企业股票','社融合计'] },
+    grid: { left: 80, right: 24, top: 46, bottom: 40 },
+    xAxis: { type: 'category', data: months, axisLabel: xLabel,
+        axisLine: { lineStyle: { color: '#bbb' } } },
+    yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 18, color: '#555' },
+        axisLabel: { fontSize: 18, color: '#555',
+            formatter: function (v) { return Math.abs(v) >= 10000 ? (v / 10000).toFixed(1) + '万' : v; } },
+        splitLine: { lineStyle: { color: '#eee' } } },
+    series: [
+        { name: '人民币贷款',   type: 'bar', stack: 'flow', data: rmb_loans,
+          itemStyle: { color: '#6c3483' } },
+        { name: '政府债券',     type: 'bar', stack: 'flow', data: gov_bonds,
+          itemStyle: { color: '#e67e22' } },
+        { name: '企业债券',     type: 'bar', stack: 'flow', data: corp_bonds,
+          itemStyle: { color: '#2980b9' } },
+        { name: '未贴现票据',   type: 'bar', stack: 'flow', data: und_ba,
+          itemStyle: { color: '#7f8c8d' } },
+        { name: '委托贷款',     type: 'bar', stack: 'flow', data: entrust,
+          itemStyle: { color: '#95a5a6' } },
+        { name: '信托贷款',     type: 'bar', stack: 'flow', data: trust_ln,
+          itemStyle: { color: '#bdc3c7' } },
+        { name: '非金融企业股票', type: 'bar', stack: 'flow', data: equity,
+          itemStyle: { color: '#af7ac5' } },
+        { name: '社融合计',     type: 'line', data: flow_total, showSymbol: false, smooth: false,
+          lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
+          z: 5 }
+    ]
+  }
 })
-
-function render(D) {
-  var months     = D.months;
-  var stock      = D.stock;
-  var yoy        = D.yoy;
-  var flow_total = D.flow_total;
-  var rmb_loans  = D.rmb_loans;
-  var gov_bonds  = D.gov_bonds;
-  var corp_bonds = D.corp_bonds;
-  var und_ba     = D.und_ba;
-  var trust_ln   = D.trust_ln;
-  var entrust    = D.entrust;
-  var equity     = D.equity;
-
-  /* 只在每年 1 月显示年份 */
-  var xLabel = { fontSize: 18, color: '#555',
-      formatter: function (v) { return v.slice(-2) === '01' ? v.slice(0, 4) : ''; },
-      interval: 0 };
-
-  /* ---------- 图 1：存量 + 同比 ---------- */
-  var stockChart = echarts.init(chartStockEl.value);
-  stockChart.setOption({
-      backgroundColor: '#fff',
-      textStyle: { fontSize: 18 },
-      tooltip: { trigger: 'axis', textStyle: { fontSize: 18 },
-          formatter: function (p) {
-              var d = p[0].axisValue;
-              var s = '<b>' + d + '</b>';
-              p.forEach(function (x) {
-                  if (x.value == null) return;
-                  var unit = x.seriesName === '同比 YoY' ? '%' : ' 万亿';
-                  s += '<br>' + x.marker + x.seriesName + '：' + x.value + unit;
-              });
-              return s;
-          } },
-      legend: { data: ['社融存量', '同比 YoY'], top: 4, textStyle: { fontSize: 18 } },
-      grid: { left: 72, right: 64, top: 42, bottom: 40 },
-      xAxis: { type: 'category', data: months, boundaryGap: false,
-          axisLabel: xLabel, axisLine: { lineStyle: { color: '#bbb' } } },
-      yAxis: [
-          { type: 'value', name: '万亿元', min: 0, nameTextStyle: { fontSize: 18, color: '#555' },
-            axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
-          { type: 'value', name: 'YoY %', min: 0, max: 16, nameTextStyle: { fontSize: 18, color: '#c0392b' },
-            axisLabel: { fontSize: 18, color: '#c0392b', formatter: '{value}%' }, splitLine: { show: false } }
-      ],
-      series: [
-          { name: '社融存量', type: 'line', data: stock, connectNulls: true,
-            yAxisIndex: 0, showSymbol: false, smooth: true,
-            lineStyle: { width: 2.5, color: '#6c3483' }, itemStyle: { color: '#6c3483' },
-            areaStyle: { color: 'rgba(108,52,131,0.10)' } },
-          { name: '同比 YoY', type: 'line', data: yoy, connectNulls: true,
-            yAxisIndex: 1, showSymbol: false, smooth: true,
-            lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-            markLine: { silent: true, symbol: 'none', label: { show: false },
-              data: [
-                  { xAxis: '2018-07', lineStyle: { color: '#999', type: 'dashed' },
-                    label: { show: true, formatter: '2018.07\nABS+核销', position: 'insideEndTop', fontSize: 14, color: '#666' } },
-                  { xAxis: '2018-09', lineStyle: { color: '#999', type: 'dashed' },
-                    label: { show: true, formatter: '2018.09\n政府专项债', position: 'insideEndBottom', fontSize: 14, color: '#666' } },
-                  { xAxis: '2020-03', lineStyle: { color: '#999', type: 'dashed' },
-                    label: { show: true, formatter: '2020Q1\n疫情信用扩张', position: 'insideEndTop', fontSize: 14, color: '#666' } },
-                  { xAxis: '2023-01', lineStyle: { color: '#999', type: 'dashed' },
-                    label: { show: true, formatter: '2023\n三类非存款金融纳入', position: 'insideEndBottom', fontSize: 14, color: '#666' } }
-              ] } }
-      ]
-  });
-  charts.push(stockChart);
-
-  /* ---------- 图 2：当月新增分项（堆叠柱 + 总量线） ---------- */
-  var flowChart = echarts.init(chartFlowEl.value);
-  flowChart.setOption({
-      backgroundColor: '#fff',
-      textStyle: { fontSize: 18 },
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
-          formatter: function (p) {
-              var d = p[0].axisValue;
-              var s = '<b>' + d + '</b>';
-              p.filter(function (x) { return x.value != null && x.value !== 0; })
-               .sort(function (a, b) { return Math.abs(b.value) - Math.abs(a.value); })
-               .forEach(function (x) { s += '<br>' + x.marker + x.seriesName + '：' + Number(x.value).toLocaleString() + ' 亿'; });
-              return s;
-          } },
-      legend: { top: 4, textStyle: { fontSize: 18 },
-          data: ['人民币贷款','政府债券','企业债券','未贴现票据','委托贷款','信托贷款','非金融企业股票','社融合计'] },
-      grid: { left: 80, right: 24, top: 46, bottom: 40 },
-      xAxis: { type: 'category', data: months, axisLabel: xLabel,
-          axisLine: { lineStyle: { color: '#bbb' } } },
-      yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 18, color: '#555' },
-          axisLabel: { fontSize: 18, color: '#555',
-              formatter: function (v) { return Math.abs(v) >= 10000 ? (v / 10000).toFixed(1) + '万' : v; } },
-          splitLine: { lineStyle: { color: '#eee' } } },
-      series: [
-          { name: '人民币贷款',   type: 'bar', stack: 'flow', data: rmb_loans,
-            itemStyle: { color: '#6c3483' } },
-          { name: '政府债券',     type: 'bar', stack: 'flow', data: gov_bonds,
-            itemStyle: { color: '#e67e22' } },
-          { name: '企业债券',     type: 'bar', stack: 'flow', data: corp_bonds,
-            itemStyle: { color: '#2980b9' } },
-          { name: '未贴现票据',   type: 'bar', stack: 'flow', data: und_ba,
-            itemStyle: { color: '#7f8c8d' } },
-          { name: '委托贷款',     type: 'bar', stack: 'flow', data: entrust,
-            itemStyle: { color: '#95a5a6' } },
-          { name: '信托贷款',     type: 'bar', stack: 'flow', data: trust_ln,
-            itemStyle: { color: '#bdc3c7' } },
-          { name: '非金融企业股票', type: 'bar', stack: 'flow', data: equity,
-            itemStyle: { color: '#af7ac5' } },
-          { name: '社融合计',     type: 'line', data: flow_total, showSymbol: false, smooth: false,
-            lineStyle: { width: 2, color: '#c0392b' }, itemStyle: { color: '#c0392b' },
-            z: 5 }
-      ]
-  });
-  charts.push(flowChart);
-}
 </script>
 
 <style scoped>
