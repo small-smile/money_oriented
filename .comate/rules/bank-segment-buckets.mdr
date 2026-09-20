@@ -1,0 +1,27 @@
+---
+description: 银行营业收入分部按业务性质归并为「公司/零售/同业/其他」四类的映射规则与落地位置
+globs: **/*.py
+alwaysApply: false
+---
+
+# 银行分部收入归类：公司 / 零售 / 同业 / 其他
+
+各行年报分部（seg-rev）命名五花八门，统一按业务性质归并为四桶：
+
+- **公司** ← 含「公司 / 对公 / 批发 / 小企业」
+- **零售** ← 含「个人 / 零售」
+- **同业** ← 含「资金 / 金融市场 / 同业」
+- **其他** ← 含「其他 / 未分配 / 投行 / 保险」
+- 都不匹配（兴业/成都/贵阳按**地域**披露）→ 不归类、不生成 std。
+
+## 落地位置
+
+映射只写一处：`data/extract/gen_company_charts.py` 的 `seg_bucket()` + `std_seg_rev()`，
+生成时预拆进 `seg-rev.std = {segs, rev25, rev24}`（单位仍百万）。
+**读取方（`BankIncomeWaterfall.vue` 等）直接读 `seg-rev.std`，不要各自再实现名称映射。**
+
+## 维护
+
+- 改映射后 `python data/extract/gen_company_charts.py` 全量重生成。
+- `601077` 手工精编、gen 跳过它，改分部时要手动补 `seg-rev.std`（可复用 `std_seg_rev`）。
+- 单位一律**百万元**（招行曾误存亿元、已修），前端 `/100` 转亿。

@@ -7,7 +7,7 @@
 数据来源一律本地（不联网）：
   · 银行：data/tables/company_charts_<code>.json 的 _bank 块（aCode / hCode / fullName /
     shortName / tier）—— 44 家生成件 + 601077 手工精编件都有这一块；
-  · 其余板块：dashboard/industry/<行业>/overview.html 的「A/H 股概览」表、
+  · 其余板块：frontend/src/views/industry/<行业>/*Overview.vue 的「A/H 股概览」表、
     data/tables/<板块>_<code>_annual.json 的 name / secucode / source。
 
 关键约定：
@@ -69,7 +69,7 @@ def main():
         "_meta": {
             "generated_by": "data/extract/build_company_codes.py",
             "consumed_by": "backend/shared.py::_resolve_company_code → /api/holders → "
-                           "dashboard/company/shareholder.html",
+                           "frontend/src/views/company/Shareholder.vue",
             "note": "key 为实体唯一键（有 A 股用 A 股代码，纯 H 股用 H 股代码）；"
                     "a_code / h_code / us_code 是同一家公司在三地的代码，"
                     "same_entity=false 表示两地主体不是同一法人（中国联通 A 股 vs 红筹），"

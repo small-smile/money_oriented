@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """校验 data/tables/telecom_00941_*.json 三份表，并打印字段覆盖与口径自检结果。
 
-中国移动详情页（dashboard/company/cmcc/*.html）直接 fetch 这三份表，没有构建步骤，
+中国移动详情页（frontend/src/views/company/cmcc/*.vue）直接 fetch 这三份表，没有构建步骤，
 所以「表对不对」是唯一需要把关的地方。本脚本做四件事：
 
 1. JSON 能不能解析、年份键是否连续；

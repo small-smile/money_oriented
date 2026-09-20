@@ -1,0 +1,38 @@
+---
+description: 图表视图/口径切换统一用「胶囊分段控件 + 滑块」样式（参考油价页第一幅图），如加百分比切换
+globs: **/*.vue
+alwaysApply: false
+---
+
+# 图表切换：胶囊分段控件 + 滑块
+
+视图/口径切换（绝对值 ↔ 百分比、名义 ↔ 实际、多套数据）统一复用这套控件，不要各处另造样式。
+基准是 `frontend/src/views/oil/OilPriceHistory.vue` 第一幅图的 `.stack-tabs`。
+
+## 结构与样式
+
+- 外壳 `.stack-tabs`：`display:flex; width:fit-content; padding:5px; border-radius:999px;`
+  浅灰底 `#eceff3` + `inset` 阴影；相对定位承载滑块；靠右放用 `margin:0 0 16px auto`。
+- 滑块 `.tab-slider`：`position:absolute; top:5px; bottom:5px;` 白胶囊 + 投影，
+  过渡 `transform .32s cubic-bezier(.4,0,.2,1), width .32s`。
+- 每项 `.stack-tab`：透明按钮、`border-radius:999px`、`#6b7280`、`padding:10px 24px`；
+  可选前置 `.tab-dot`（`currentColor; opacity:.4`）。`.active`：`#0f172a` + `font-weight:600`，
+  圆点 `opacity:1; transform:scale(1.2)`。
+
+## 交互
+
+```js
+function moveSlider(tab) {                 // 滑块贴选中项：量宽与左偏移
+  slider.style.width = tab.offsetWidth + 'px'
+  slider.style.transform = 'translateX(' + tab.offsetLeft + 'px)'
+}
+function activate(i) {
+  tabs.forEach((t, k) => t.classList.toggle('active', k === i))
+  moveSlider(tabs[i])
+  chart.setOption(optionFor(i))
+}
+// 字体加载完 / resize 后要再 moveSlider(当前 active)，否则滑块宽度位置对不上
+```
+
+加「绝对值 / 百分比」这组 tab 时：切百分比就把各系列按基准归一，y 轴 `name` 改 `%`、
+`axisLabel.formatter='{value}%'`，其余 option 不动。

@@ -542,12 +542,13 @@ if __name__ == "__main__":
     attach_ring_alt_meta()
     MANUAL["_meta"] = {
         "generated_by": "data/extract/build_holders_manual.py",
-        "consumed_by": "backend/holders.py::read_holders → /api/holders → dashboard/company/shareholder.html",
+        "consumed_by": "backend/holders.py::read_holders → /api/holders → "
+                       "frontend/src/views/company/Shareholder.vue",
         "note": ("按 \"<板块>:<代码>\" 索引。factions 只做分组，不改任何数字；"
                  "food/tech 两家没有 annual 表，holders 整份在这里，口径见各自 caliber_note。"
                  "basis 字段区分「年报披露／20-F 披露」与「同类归并」，页面会原样印出。"
                  "share_capital / holder_num / holder_concentration / dividend_per10 四层"
-                 "照 dashboard/company/shareholder.html 那套标准模板补，"
+                 "照股权结构页那套标准模板补，"
                  "来自 data/extract/out/holders_hist_<代码>.json 的年报原文抽取件，只重排与加总。"),
     }
     with open(OUT, "w", encoding="utf-8") as f:

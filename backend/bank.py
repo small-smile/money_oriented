@@ -114,7 +114,7 @@ DEFAULT_BANK_CODE = "601077"
 # 601077 排最前：它是手工精编（42 个数据键），其余由 gen_company_charts.py 批量生成
 # （15~16 个键），缺的图由 charts.js 的 __stub() 贴占位说明。名单外的代码只影响排序。
 # 顺序按机构类型分组：国有大行→股份行→城商行→农商行→纯 H 股。list_banks() 只用这个顺序排序，
-# bank-header.js 的分组面板（GROUPS）另按 tier 分组展示，两处顺序不必一致但代码集合要对齐。
+# 前端 BankLayout.vue 的切换面板另按 tier 分列，两处顺序不必一致但代码集合要对齐。
 BANK_ORDER = (
     DEFAULT_BANK_CODE,
     # 国有大行
@@ -135,8 +135,8 @@ BANK_ORDER = (
 
 
 # 上市日期：A+H 两地上市的分别给 A 股（上交所/深交所首日）与 H 股（港交所首日）；
-# 仅 A 股的只有 "a"，纯 H 股（01578/01916/06138）只有 "h"。
-# 与 bank-header.js 的 BANKS 兜底名单里的 aListDate/hListDate 保持一致（两处都要改）。
+# 仅 A 股的只有 "a"，纯 H 股（01578/01916/06138）只有 "h"。这里是唯一一份，
+# 前端（BankLayout.vue / BankIntro.vue）用 /api/banks 下发的 aListDate/hListDate。
 LISTING_DATES = {
     # 国有大行（均 A+H）
     "601398": {"a": "2006-10-27", "h": "2006-10-27"},

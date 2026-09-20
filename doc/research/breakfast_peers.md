@@ -1,6 +1,6 @@
 # A 股早餐赛道候选公司清单（待扩容 peer-comparison）
 
-整理日期 2026-08-21。用途：给 `dashboard/company/food/peer-comparison.html` 扩容备选。
+整理日期 2026-08-21。用途：给 `frontend/src/views/company/food/FoodPeerComparison.vue` 扩容备选。
 
 **数据可信度**：除西麦食品 2025 年数据已核实（来源：公司 2025 年年报，2026-04-14 披露，
 深交所/巨潮），其余公司只做了定性关联与量级判断，**财务数字未逐家核对年报**，

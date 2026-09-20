@@ -36,7 +36,7 @@ from backend.industry import (        # noqa: F401
     _read_industry_table, read_industry_annual, read_industry_peers,
 )
 from backend.holders import (         # noqa: F401
-    HOLDER_INDUSTRIES, NAV_HEADERS, DEFAULT_HOLDER_INDUSTRY,
+    HOLDER_INDUSTRIES, DEFAULT_HOLDER_INDUSTRY,
     _industry_of_code, industry_default_code, read_nav,
     _company_charts_block, _company_charts_holders, _bank_history_from_charts,
     _bank_factions, _holder_table, _norm_holder_name, _resolve_factions,

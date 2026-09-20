@@ -563,18 +563,14 @@ class TestHolders:
 
 
 class TestNav:
-    """股权结构页的导航判定：代码 → 板块 → 该载哪个 header 脚本（页面上只有这一条导航）"""
+    """股权结构页的导航判定：代码 → 板块 + 该板块的默认公司代码"""
     pytestmark = pytest.mark.integration
 
     @pytest.mark.parametrize("industry", sorted(bk.HOLDER_INDUSTRIES))
     def test_every_industry_has_a_nav(self, industry):
-        """每个板块都要有导航配置；有 header 的必须能落到真实脚本文件上"""
+        """每个板块都判得出自己，且带上板块中文名"""
         d = bk.read_nav(None, industry)["data"]
         assert d["industry"] == industry and d["label"]
-        assert industry in bk.NAV_HEADERS
-        # 前后端分离后 dashboard/ 已删除，header 字段是前端忽略的遗留元数据，不再校验其文件存在。
-        if d["group"]:
-            assert d["header"] == "common/site-header.js"
 
     def test_code_decides_industry(self):
         """板块按代码判定：A 股／H 股／美股代码都认得，industry 参数对不上时以代码为准"""
@@ -591,7 +587,6 @@ class TestNav:
         assert bk.read_nav("999999", "telecom")["data"]["note"]
         # code 都没给时落到银行板块，并把该板块的默认公司代码给页面（页面照它去 /api/holders）
         assert bk.read_nav()["data"] == {"industry": "bank", "label": "银行", "note": None,
-                                         "header": "common/bank-header.js", "group": None,
                                          "code": "601077"}
         # 只给老链接那种 ?industry=：也换成该板块的默认公司代码
         assert bk.read_nav(None, "cement")["data"]["code"] == "600585"

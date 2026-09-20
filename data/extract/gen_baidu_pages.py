@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
-"""把 data/tables/tech_09888_*.json 打包成 dashboard/company/baidu/data.js
+"""把 data/tables/tech_09888_*.json 打包成 frontend/src/views/company/baidu/data.js
 
-百度详情页（dashboard/company/baidu/*.html）不走 app.py 的 /api 接口，
-而是 <script src="data.js"> 直接读全局对象——这样 file:// 打开也能画图，不用起服务、
-也不受 fetch 跨域限制。银行页那套 /api/company_charts 是因为一份 HTML 要按 ?code=
-渲染上百家银行，百度只有一家，没必要。
-
-四份表原样打包，页面里不手抄任何数字（比例一律在 JS 里由股数算），
-改数只需重跑本脚本。
+百度只有一家公司，没必要像银行页那样按 ?code= 走 /api 接口：四份表原样打包成一个
+`window.BAIDU` 全局对象 + 模块导出，Vue 各页与 charts.js 直接 import，
+页面里不手抄任何数字（比例一律在 JS 里由股数算），改数只需重跑本脚本。
 """
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TABLES = ROOT / "data" / "tables"
-OUT = ROOT / "dashboard" / "company" / "baidu" / "data.js"
+OUT = ROOT / "frontend" / "src" / "views" / "company" / "baidu" / "data.js"
 
 PARTS = {
     "annual": "tech_09888_annual.json",       # SEC XBRL 派生的年度财务序列
@@ -36,6 +32,10 @@ def main() -> None:
         f.write("/* 本文件由 data/extract/gen_baidu_pages.py 生成，请勿手改。\n")
         f.write(" * 源表：" + "、".join(PARTS.values()) + " */\n")
         f.write("window.BAIDU = " + body + ";\n")
+        f.write("\n/* 供 Vue 各页与 charts.js import：window.BAIDU 已在上方逐字设置，"
+                "此处仅追加模块导出，数据本体一字未改。 */\n")
+        f.write("export default window.BAIDU;\n")
+        f.write("export const BAIDU = window.BAIDU;\n")
 
     print(f"写出 {OUT.relative_to(ROOT)}  {OUT.stat().st_size / 1024:.1f} KB")
     ann = payload["annual"]["annual"]

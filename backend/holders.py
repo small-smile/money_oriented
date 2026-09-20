@@ -18,9 +18,9 @@ holders_bp = Blueprint("holders", __name__)
 
 # ── 股权结构：银行/险企/开发商/水泥/运营商共用一套 ─────────────────────────────
 # 五个板块的 <板块>_<code>_annual.json 里 holders（接口前十名股东快照）字段结构完全相同，
-# 所以股权结构不按板块各写一页，统一由 dashboard/company/shareholder.html 一页读这份 payload（各板块只有 header 不同），
-# 靠 ?industry=&code= 切换。银行表另有 holder_num（逐期股东户数）与 holder_concentration
-# （集中度序列）两层，有就下发、页面多画两张图，其余板块自然缺省。
+# 所以股权结构全站只有一页（frontend/src/views/company/Shareholder.vue），靠 ?code= 切公司。
+# 银行表另有 holder_num（逐期股东户数）与 holder_concentration（集中度序列）两层，
+# 有就下发、页面多画两张图，其余板块自然缺省。
 HOLDER_INDUSTRIES = {
     "bank": {"label": "银行", "codes": list(BANK_ORDER)},
     "insurer": {"label": "险企", "codes": INSURER_PEERS},
@@ -32,22 +32,8 @@ HOLDER_INDUSTRIES = {
     "food": {"label": "食品", "codes": ["605338"]},
 }
 
-# 顶部导航：股权结构页只有一份（dashboard/company/shareholder.html 一页服务七个板块），
-# 它躺在 company/bank/ 目录下，site-header.js 那套「按目录判板块」的办法判不出来，所以由本接口
-# 按 ?code= 判定板块，再告诉页面该载哪个 header 脚本、用哪一组链接 —— 页面上只保留这一条全局导航。
-# header 路径相对 dashboard/ 根；group 是 site-header.js 里 GROUPS[].dir，页面据它设 __HEADER_GROUP。
-NAV_HEADERS = {
-    "bank": {"header": "common/bank-header.js", "group": None},
-    "insurer": {"header": "common/site-header.js", "group": "industry/insurance/"},
-    "developer": {"header": "common/site-header.js", "group": "industry/realestate/"},
-    "cement": {"header": "common/site-header.js", "group": "industry/cement/"},
-    "telecom": {"header": "common/site-header.js", "group": "industry/telecom/"},
-    "tech": {"header": "common/site-header.js", "group": "company/baidu/"},
-    # 食品板块没有行业页分组，页面自己画一条只有品牌与公司切换的导航
-    "food": {"header": None, "group": None},
-}
-
-
+# 顶部导航：股权结构页一页服务七个板块，没有固定的路由分组，所以由本接口按 ?code= 判定板块，
+# 前端（SiteHeader.vue）拿 industry + code 自己挑该挂哪一组导航链接。
 DEFAULT_HOLDER_INDUSTRY = "bank"
 
 
@@ -80,9 +66,9 @@ def industry_default_code(industry):
 
 
 def read_nav(code=None, industry=None):
-    """按公司代码判定所属板块，并给出页面该渲染哪一条全局导航 + 该板块的默认公司代码。
+    """按公司代码判定所属板块 + 给出该板块的默认公司代码。
     代码优先于 industry 参数：?code=600941 一个参数就够；industry 只是老链接
-    （site-header 里那种 ?industry=cement）的兜底，页面拿到 data.code 后一律按代码取数。
+    （?industry=cement）的兜底，页面拿到 data.code 后一律按代码取数。
     两个参数都没给（或都认不出）时落到 bank，与页面原先的默认一致。"""
     ind = industry if industry in HOLDER_INDUSTRIES else None
     note = None
@@ -96,12 +82,9 @@ def read_nav(code=None, industry=None):
         note = f"{code} 不在任何板块的名单里，导航按 industry={ind or 'bank'} 渲染"
     if not ind:
         ind = DEFAULT_HOLDER_INDUSTRY
-    nav = NAV_HEADERS[ind]
     return success({
         "industry": ind,
         "label": HOLDER_INDUSTRIES[ind]["label"],
-        "header": nav["header"],
-        "group": nav["group"],
         # 页面拿这个代码去 /api/holders：给了 ?code= 就用它，只给 ?industry= 的老链接用默认公司
         "code": code if hit else industry_default_code(ind),
         "note": note,
@@ -709,8 +692,8 @@ def read_holders(code=None):
             "caliber_note": d.get("caliber_note"),
             # 环形图里「名册外那一块」的叫法：前十名口径叫「前十名之外」，20-F 口径不是名册前十名
             "residual_label": d.get("residual_label") or "其他股东（前十名之外）",
-            # 股权结构只剩 dashboard/company/shareholder.html 一页（各板块靠 ?industry= 切换、
-            # 只有顶部 header 不同），银行原先那套独立的年报口径股东页已并入本页 —— 不再有外链入口
+            # 股权结构全站只剩 Shareholder.vue 一页（靠 ?code= 切公司），
+            # 银行原先那套独立的年报口径股东页已并入本页 —— 不再有外链入口
             "detail_page": None,
             # 同一家公司的三地代码：页面把两地代码印在页头，?code= 给哪个都落到这一家
             "codes": {"a": ent.get("a_code"), "h": ent.get("h_code"), "us": ent.get("us_code"),
@@ -740,5 +723,5 @@ def api_holders():
 @holders_bp.route("/nav")
 def api_nav():
     """参数: code（任意一地的公司代码，可省）、industry（认不出代码时的兜底，可省）
-    股权结构页的导航判定：代码 → 所属板块 → 该载哪个 header 脚本、用哪一组链接"""
+    股权结构页的导航判定：代码 → 所属板块 + 该板块的默认公司代码"""
     return jsonify(read_nav(request.args.get("code"), request.args.get("industry")))
