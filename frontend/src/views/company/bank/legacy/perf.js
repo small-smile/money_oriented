@@ -141,7 +141,7 @@ __section(function (D, SELF, notes) {
               ` · 线性回归 y=a+b·t：<b>${lin.rate}</b>（R²=${lin.r2.toFixed(3)}）`;
     }
     makeScaleChart('chart-scale-dep',  '客户存款',      deposit, 'dep',  '#6c3483', 'rgba(108,52,131,0.08)', true);
-    makeScaleChart('chart-scale-loan', '客户贷款及垫款', loan,    'loan', '#e67e22', 'rgba(230,126,34,0.08)');
+    makeScaleChart('chart-scale-loan', '客户贷款及垫款', loan,    'loan', '#e67e22', 'rgba(230,126,34,0.08)', true);
 
     // 同业四行里本行那条实线名字随 ?code= 变；同业线若本行自己就是该行会重复，live() 只滤空线，重名无害
     const serNpl = live([

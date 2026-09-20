@@ -7,26 +7,29 @@
         <span class="l-empty"><i></i>待开发（仅占位）</span>
     </div>
 
-    <template v-for="sec in hubSections" :key="sec.title">
-      <h2>{{ sec.title }}<span v-if="sec.hint" class="hint">{{ sec.hint }}</span></h2>
-      <div v-if="sec.flow" class="flow" v-html="sec.flow"></div>
-      <div class="grid">
-        <template v-for="c in sec.cards" :key="c.name">
-          <router-link v-if="c.to" class="card" :class="'card-' + c.status" :to="c.to">
-            <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
-            <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
-            <span v-if="c.desc" class="desc">{{ c.desc }}</span>
-          </router-link>
-          <div v-else class="card" :class="'card-' + c.status">
-            <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
-            <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
-            <span v-if="c.desc" class="desc">{{ c.desc }}</span>
-          </div>
-        </template>
-      </div>
-    </template>
+    <div class="sections">
+      <section class="hub-sec" v-for="sec in hubSections" :key="sec.title">
+        <h2>{{ sec.title }}<span v-if="sec.hint" class="hint">{{ sec.hint }}</span></h2>
+        <div v-if="sec.flow" class="flow" v-html="sec.flow"></div>
+        <div class="grid">
+          <template v-for="c in sec.cards" :key="c.name">
+            <router-link v-if="c.to" class="card" :class="'card-' + c.status" :to="c.to">
+              <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
+              <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
+              <span v-if="c.desc" class="desc">{{ c.desc }}</span>
+            </router-link>
+            <div v-else class="card" :class="'card-' + c.status">
+              <span class="tag" :class="c.tagClass">{{ c.tag }}</span>
+              <span class="title">{{ c.name }}<span v-if="c.pos" class="pos">{{ c.pos }}</span></span>
+              <span v-if="c.desc" class="desc">{{ c.desc }}</span>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 // 首页卡片数据抽到 src/site.config.js（与 router / SiteHeader 同源）；本页只负责按数据渲染 + 保留原样式。
@@ -50,7 +53,7 @@ h1 {
 }
 h2 {
     max-width: var(--content-w, 1200px);
-    margin: 44px auto 6px;
+    margin: 26px auto 6px;
     color: #2c3e50;
     font-size: 25px;
     border-left: 5px solid #1f2937;
@@ -108,6 +111,24 @@ h3 .sub {
     max-width: var(--content-w, 1200px);
     margin: 0 auto;
 }
+/* 板块「堆叠」：把各板块块流入多列瀑布布局，用满右侧空白、显著降低整页高度与向下滚动。
+   列数随容器宽度自适应（宽屏 3 列 / 中屏 2 列 / 窄屏 1 列），无需媒体查询。 */
+.sections {
+    max-width: var(--content-w, 1200px);
+    margin: 0 auto;
+    column-width: 340px;
+    column-gap: 26px;
+}
+/* 一个板块（h2 + flow + 卡片）作为整体，不被拆到两列 */
+.hub-sec {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 22px;
+}
+/* 板块内 h2 自带的顶部间距去掉，改由 .hub-sec 的 margin-bottom 统一控制，
+   这样每列顶部的板块都从同一基线开始，不会参差 */
+.hub-sec > h2:first-child { margin-top: 0; }
 .card {
     background: #fff;
     border-radius: 10px;

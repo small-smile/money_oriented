@@ -1029,15 +1029,6 @@ function initPinnedRatio(scrollerId, stageId, pairs) {
     border-radius: 999px;
     box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.07);
 }
-.tab-slider {
-    position: absolute;
-    top: 5px; bottom: 5px; left: 0;
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
-    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 .stack-tab {
     position: relative;
@@ -1057,19 +1048,7 @@ function initPinnedRatio(scrollerId, stageId, pairs) {
     cursor: pointer;
     transition: color 0.25s ease;
 }
-.stack-tab .tab-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.4;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.stack-tab:hover { color: #374151; }
-.stack-tab.active { color: #0f172a; font-weight: 600; cursor: default; }
-.stack-tab.active .tab-dot { opacity: 1; transform: scale(1.2); }
 
-/* === 卡片堆叠：前卡在上，后卡向下露出一条 === */
-.card-stack { position: relative; margin-bottom: 70px; }
 .stack-card {
     background: #fff;
     border: 1px solid #e5e7eb;
@@ -1080,31 +1059,6 @@ function initPinnedRatio(scrollerId, stageId, pairs) {
     /* 与原 .card 一致：底部详情条靠 flex 才能拿到 200px 高度 */
     display: flex;
     flex-direction: column;
-}
-/* 前卡留在文档流里，由它决定 .card-stack 的高度 */
-.stack-card.front { position: relative; z-index: 2; }
-
-.stack-card.back {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    z-index: 1;
-    transform: translateY(16px) scale(0.985);
-    cursor: pointer;
-}
-.stack-card.back:hover {
-    transform: translateY(24px) scale(0.99);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-}
-/* 露出的那条只在后卡显示，用来标明这是哪张图 */
-.card-peek { display: none; }
-.stack-card.back .card-peek {
-    display: block;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid #f3f4f6;
-    font-size: 18px;
-    color: #6b7280;
-    text-align: center;
 }
 
 /* Card 2 & 3: stack main + detail bottom (200px) */

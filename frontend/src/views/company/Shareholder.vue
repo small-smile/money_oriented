@@ -70,16 +70,17 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 静态模板节点依赖的 page.css 结构规则（源页 <head> link 了 common/base.css + page.css + shareholder.css；
-   base.css 已全局引入不重复）。仅静态节点用 scoped，防止 .wrap / section 等通用选择器泄漏到别的视图。 */
-.wrap { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 24px 24px 60px; }
-.page-head { text-align: center; margin-bottom: 8px; }
-.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
-.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
+.note[open] summary::before { content: '▾ '; }
+
 section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; }
 </style>
 
 <style>
+.note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
+.note summary::-webkit-details-marker { display: none; }
+.note summary::before { content: '▸ '; color: #9ca3af; }
+.note[open] summary::before { content: '▾ '; }
+.note summary:hover { color: #374151; }
 /* 动态节点（chartCard / attachSourceTag / detailTableHTML / showFull / 环形口径按钮 由 JS
    createElement/innerHTML 生成，拿不到 scoped 的 data-v）依赖的规则必须放非 scoped 块。
    ① 源页 page.css 里本页动态节点用到的部分：.note（含 details 折叠标记）与表格规则——全站只有
@@ -90,11 +91,7 @@ section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0
 
 /* —— 源页 page.css 中本页动态节点用到的部分 —— */
 .note { font-size: 18px; color: #9ca3af; margin: 10px auto 0; line-height: 1.6; max-width: 900px; }
-.note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
-.note summary::-webkit-details-marker { display: none; }
-.note summary::before { content: '▸ '; color: #9ca3af; }
-.note[open] summary::before { content: '▾ '; }
-.note summary:hover { color: #374151; }
+
 .modal table { width: 100%; border-collapse: collapse; font-size: 18px; }
 .modal th, .modal td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
 .modal th:first-child, .modal td:first-child { text-align: left; }

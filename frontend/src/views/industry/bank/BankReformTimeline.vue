@@ -103,59 +103,6 @@ const EVENTS = [
 h1 { text-align: center; color: #2c3e50; font-size: 29px; margin-bottom: 8px; }
 .lede { text-align: center; color: #6b7280; font-size: 17px; margin-bottom: 28px; }
 
-/* === 竖向时间线：左侧年份+轴线，右侧事件卡 === */
-.timeline {
-    position: relative;
-    margin-top: 12px;
-    padding-left: 108px;
-}
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 92px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: #e5e7eb;
-}
-.t-item {
-    position: relative;
-    margin-bottom: 28px;
-}
-.t-item:last-child { margin-bottom: 0; }
-.t-year {
-    position: absolute;
-    left: -108px;
-    top: 2px;
-    width: 80px;
-    text-align: right;
-    font-family: "SF Mono", Consolas, monospace;
-    font-size: 18px;
-    font-weight: 700;
-    color: #4b5563;
-}
-.t-dot {
-    position: absolute;
-    left: -19.5px;
-    top: 6px;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px currentColor;
-}
-.t-card {
-    background: #fff;
-    border-radius: 8px;
-    border-left: 4px solid transparent;
-    padding: 14px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.t-name {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
 .t-desc {
     font-size: 18px;
     color: #374151;

@@ -328,6 +328,19 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+section > h2 {
+    font-size: 22px; color: #1f2937; margin-bottom: 4px;
+    border-left: 4px solid #10243e; padding-left: 10px;
+}
+/* 注释默认折叠：<details class="note"><summary>...</summary>正文</details>
+ * 长注释展开后才占地方，避免默认状态就把阅读节奏拉得很长 */
+.note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
+.note summary::-webkit-details-marker { display: none; }
+.note summary::before { content: '▸ '; color: #9ca3af; }
+.note[open] summary::before { content: '▾ '; }
+.note summary:hover { color: #374151; }
+.note[open] summary::before { content: '▾ '; }
+
 /* 迁移 dashboard/company/page.css（该表未随 base.css 全局引入，需内联本页才能复现）。
    本页全部为静态模板节点（图容器亦为静态 div，排序表的 tr/th 也是静态节点，脚本只重排既有节点、
    不 createElement/innerHTML），故整体用 scoped 收敛、不外泄到其它路由。base.css 已全局引入，
@@ -336,21 +349,10 @@ onBeforeUnmount(() => {
    min-height 无可见影响、overflow-y:auto 为默认值，且全局 body 规则不宜由单页组件注入。
    末尾另附原页 head 内联的 .mini-nav 顶栏样式。 */
 .wrap { max-width: var(--content-w, 1200px);   /* 正文列宽由 base.css 的 --content-w 统一管，不随全局 1.125 字号放大同比加宽 */ margin: 0 auto; padding: 24px 24px 60px; }
-.page-head { text-align: center; margin-bottom: 8px; }
-.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
-.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
-.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.page-head .tags span {
-    background: #dde8f3; color: #10243e; border-radius: 12px;
-    padding: 3px 12px; font-size: 18px; font-weight: 500;
-}
+
 section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
           padding: 20px 22px; margin-top: 22px; }
-section > h2 {
-    font-size: 22px; color: #1f2937; margin-bottom: 4px;
-    border-left: 4px solid #10243e; padding-left: 10px;
-}
-section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
+
 .chart { width: 100%; height: 428px; }   /* 380 × 1.125 */
 /* 图上方的一排切换按钮（如 ROE 图的快速切换银行）：与石油页 .btn-row 同一视觉，
  * 选中态用深底白字，和 KPI 卡片的浅蓝底区分开 */
@@ -368,13 +370,13 @@ section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
 .chart-btns button.cmp { margin-left: 6px; background: #fff; border-color: #10243e; font-weight: 600; }
 .chart-btns button.cmp:hover { background: #eef3f9; }
 .chart-btns button.cmp.active { background: #10243e; color: #fff; }
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
+
 .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
 .kpi .label { font-size: 18px; color: #7f8c8d; }
 .kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
 .kpi .delta { font-size: 18px; margin-top: 2px; }
 .up { color: #c0392b; } .down { color: #1e8449; }
-table { width: 100%; border-collapse: collapse; font-size: 18px; }
+
 th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
 th:first-child, td:first-child { text-align: left; }
 thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom: 2px solid #c9a24a; }
@@ -391,7 +393,7 @@ table.sortable thead th[data-sort="none"] { cursor: default; }
 table.sortable thead th[data-sort="none"]:hover { background: inherit; }
 table.sortable thead th[data-sort="none"]::after { content: none; }
 .neg { color: #c0392b; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,420px)); gap: 14px; }
+
 .card2 { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 14px 16px; }
 .card2 h3 { font-size: 18px; color: #10243e; margin-bottom: 6px; }
 .card2 p { font-size: 18px; color: #444; line-height: 1.65; }
@@ -403,16 +405,10 @@ table.sortable thead th[data-sort="none"]::after { content: none; }
            font-size: 18px; font-weight: 700; border-radius: 4px; padding: 3px 10px; }
 .opinion-hero .txt { font-size: 18px; color: #37474f; }
 .note { font-size: 18px; color: #9ca3af; margin: 10px auto 0; line-height: 1.6; max-width: 900px; }
-/* 注释默认折叠：<details class="note"><summary>...</summary>正文</details>
- * 长注释展开后才占地方，避免默认状态就把阅读节奏拉得很长 */
-.note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
-.note summary::-webkit-details-marker { display: none; }
-.note summary::before { content: '▸ '; color: #9ca3af; }
-.note[open] summary::before { content: '▾ '; }
-.note summary:hover { color: #374151; }
+
 /* 回归结果说明：右对齐，紧贴图表标题下方 */
 .fit-note { font-size: 18px; color: #6b7280; text-align: right; margin-bottom: 2px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
 .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
 @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } .three-col { grid-template-columns: 1fr; } }
 section { scroll-margin-top: 116px; }   /* 锚点跳转时让 section 顶部露在吸顶导航（site-nav 50 + 风险子导航 ~52）下方 */

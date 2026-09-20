@@ -234,7 +234,7 @@ h2 {
     align-items: baseline;
     gap: 10px;
 }
-h2 .count { color: #9ca3af; font-size: 16px; font-weight: 500; }
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -249,16 +249,7 @@ h2 .count { color: #9ca3af; font-size: 16px; font-weight: 500; }
     margin: 4px 0 24px;
     flex-wrap: wrap;
 }
-.timeline { position: relative; margin-top: 12px; padding-left: 108px; }
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 92px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: #e5e7eb;
-}
+
 .note { font-size: 17px; color: #6b7280; line-height: 1.7; margin-top: 14px; }
 .note b { color: #4b5563; }
 </style>
@@ -279,65 +270,11 @@ h2 .count { color: #9ca3af; font-size: 16px; font-weight: 500; }
     border: 1px solid #e5e7eb;
     transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
-.b-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
-    border-color: #cbd5e1;
-}
-.b-card.static { pointer-events: none; }
-.b-card .name { font-size: 18px; font-weight: 600; color: #1f2937; }
+
 .b-card .group { font-size: 15px; color: #6b7280; }
 .b-card .codes { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.code {
-    display: inline-block;
-    padding: 1px 8px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-weight: 500;
-}
-.code.a { background: #fee2e2; color: #b91c1c; }
-.code.h { background: #dbeafe; color: #1d4ed8; }
+
 .cur { font-size: 14px; color: #9ca3af; }
-.b-card.has-data { border-color: #d97706; box-shadow: 0 1px 4px rgba(217,119,6,0.15); }
-.b-card.has-data .name::after {
-    content: "· 数据页";
-    font-size: 14px;
-    color: #d97706;
-    font-weight: 500;
-    margin-left: 4px;
-}
-.legend .code { font-size: 14px; }
-.t-item { position: relative; margin-bottom: 28px; }
-.t-item:last-child { margin-bottom: 0; }
-.t-year {
-    position: absolute;
-    left: -108px;
-    top: 2px;
-    width: 80px;
-    text-align: right;
-    font-family: "SF Mono", Consolas, monospace;
-    font-size: 18px;
-    font-weight: 700;
-    color: #4b5563;
-}
-.t-dot {
-    position: absolute;
-    left: -19.5px;
-    top: 6px;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px currentColor;
-}
-.t-card {
-    background: #fff;
-    border-radius: 8px;
-    border-left: 4px solid transparent;
-    padding: 14px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.t-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+
 .t-desc { font-size: 18px; color: #374151; line-height: 1.7; }
 </style>

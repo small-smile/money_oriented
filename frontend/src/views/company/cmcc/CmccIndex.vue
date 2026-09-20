@@ -406,34 +406,17 @@ function render(C) {
 <!-- 静态骨架（模板里带 data-v 的容器/标题/说明框）逐字取自 company/page.css 与源页 <head> 内联
      .note-generic/.gap-list；base.css 已全局引入（reset/body/.chart-title/#loading 等），此处不重复。 -->
 <style scoped>
-.cmcc-fail {
-    max-width: 900px; margin: 80px auto; padding: 20px 24px;
-    background: #fff5f5; border-left: 4px solid #c0392b; border-radius: 8px;
-    font: 18px/1.8 -apple-system, "Microsoft YaHei", sans-serif; color: #7b241c;
-}
-.wrap { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 24px 24px 60px; }
-.page-head { text-align: center; margin-bottom: 8px; }
-.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
-.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
-.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.page-head .tags span {
-    background: #dde8f3; color: #10243e; border-radius: 12px;
-    padding: 3px 12px; font-size: 18px; font-weight: 500;
-}
-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-          padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
 section > h2 {
     font-size: 22px; color: #1f2937; margin-bottom: 4px;
     border-left: 4px solid #10243e; padding-left: 10px;
 }
-section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
+section > h2 { font-size: 22px; color: #1f2937; margin-bottom: 4px; border-left: 4px solid #10243e; padding-left: 10px; }
+
+section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+          padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
+
 .chart { width: 100%; height: 428px; }   /* 380 × 1.125；各图容器内联 height 覆盖此默认值 */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
-.note-generic {
-    margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9;
-    border-left: 4px solid #b7b1c4; border-radius: 6px;
-    font-size: 18px; color: #555; line-height: 1.75;
-}
+
 .gap-list { margin: 6px 0 0 18px; font-size: 18px; color: #555; line-height: 1.8; }
 </style>
 
@@ -441,18 +424,6 @@ section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
      必须非 scoped 才能命中。用 .wrap 作前缀把作用域收在本页容器内，避免 th/td/.kpi 等通用选择器
      泄漏到全站；取值逐字取自 company/page.css 与源页内联 .gap-list b。 -->
 <style>
-.wrap .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
-.wrap .kpi .label { font-size: 18px; color: #7f8c8d; }
-.wrap .kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
-.wrap .kpi .delta { font-size: 18px; margin-top: 2px; }
-.wrap table { width: 100%; border-collapse: collapse; font-size: 18px; }
-.wrap th, .wrap td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
-.wrap th:first-child, .wrap td:first-child { text-align: left; }
-.wrap thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom: 2px solid #c9a24a; }
-.wrap tbody tr:hover { background: #f3f6fa; }
-.wrap .row-total td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #c9a24a; }
-.wrap .row-sub td:first-child { padding-left: 26px; color: #555; font-weight: 400; }
-.wrap .gap-list b { color: #10243e; }
-</style>
 
+</style>
 

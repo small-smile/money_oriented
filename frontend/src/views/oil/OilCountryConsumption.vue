@@ -1047,8 +1047,6 @@ onBeforeUnmount(() => {
     box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.07);
 }
 
-/* 卡片堆叠：前卡在上，后卡向下露出一条 */
-.card-stack { position: relative; margin-bottom: 70px; }
 .stack-card {
     background: #fff;
     border: 1px solid #e5e7eb;
@@ -1059,28 +1057,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
 }
-.stack-card.front { position: relative; z-index: 2; }
-.stack-card.back {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    z-index: 1;
-    transform: translateY(16px) scale(0.985);
-    cursor: pointer;
-}
-.stack-card.back:hover {
-    transform: translateY(24px) scale(0.99);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-}
-.card-peek { display: none; }
-.stack-card.back .card-peek {
-    display: block;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid #f3f4f6;
-    font-size: 18px;
-    color: #6b7280;
-    text-align: center;
-}
+
 .stack-detail-wrap {
     width: 100%;
     flex: 0 0 200px;
@@ -1147,16 +1124,6 @@ onBeforeUnmount(() => {
 }
 .btn-row .spacer { flex: 1; }
 
-/* 页签：白色滑块随选中项平移（JS 注入 .tab-slider / .stack-tab） */
-.tab-slider {
-    position: absolute;
-    top: 5px; bottom: 5px; left: 0;
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
-    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
 .stack-tab {
     position: relative;
     z-index: 1;
@@ -1175,16 +1142,6 @@ onBeforeUnmount(() => {
     cursor: pointer;
     transition: color 0.25s ease;
 }
-.stack-tab .tab-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.4;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.stack-tab:hover { color: #374151; }
-.stack-tab.active { color: #0f172a; font-weight: 600; cursor: default; }
-.stack-tab.active .tab-dot { opacity: 1; transform: scale(1.2); }
 
 /* 各国图 HTML 横向长条图例（buildStackLegend 动态生成），可伸出卡片右侧、横向滚轮滚动、悬浮/点击切独立走势 */
 .stack-legend {
@@ -1236,29 +1193,4 @@ onBeforeUnmount(() => {
 /* 切到占比卡时，产量卡的图例别再浮在前卡上被遮挡 */
 .stack-card.back .stack-legend { display: none; }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

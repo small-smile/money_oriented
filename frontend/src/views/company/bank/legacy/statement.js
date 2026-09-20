@@ -80,32 +80,45 @@ __section(function (D, SELF, notes) {
     });
 })();
 
-/* ────── 5-② 资产负债表结构 (2025) ────── */
+/* ────── 5-② 资产负债表结构 (2025)：拆成两个瀑布 —— 资产结构 / 负债+权益结构 ──────
+ * 各科目按百万元逐段累加（此处 ÷100 换成亿元）成瀑布：资产各类 → 总资产；负债各类(红)+权益(绿) → 总负债+权益，
+ * 两侧合计相等（＝总资产）。透明底柱 + 可见柱实现瀑布（底柱 silent、不触发 tooltip/高亮）。 */
 (function () {
     const assets = D['bs'].assets;
     const claims = D['bs'].claims;
-    const CAT = ['资产', '负债 + 权益'];
-    const total = assets.reduce((s, it) => s + it.value, 0);
-    const mk = (items, col) => items.map(it => ({
-        name: it.name, type: 'bar', stack: 'bs', barMaxWidth: 160,
-        emphasis: { focus: 'series' },
-        label: { show: true, position: 'inside', color: '#fff', fontSize: 18,
-                 formatter: p => (p.value/total*100) < 4 ? '' : it.name },
-        data: CAT.map((_, i) => i === col ? it.value : '-')
-    }));
-    initChart('chart-bs')?.setOption({
-        backgroundColor: '#fff',
-        textStyle: { fontSize: 18 },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 18 },
-            valueFormatter: v => (v === '-' || v == null) ? '' : Number(v).toLocaleString() },
-        legend: { type: 'scroll', bottom: 2, textStyle: { fontSize: 18 }, itemWidth: 14, itemHeight: 12 },
-        grid: { left: 76, right: 30, top: 26, bottom: 54 },
-        xAxis: { type: 'category', data: CAT, axisLabel: { fontSize: 18, fontWeight: 600, color: '#333' } },
-        yAxis: { type: 'value', axisLabel: { fontSize: 18, formatter: v => (v/10000).toFixed(0) + '万', color: '#555' },
-                 splitLine: { lineStyle: { color: '#eee' } } },
-        color: ['#8e44ad','#9b59b6','#af7ac5','#c39bd3','#d7bde2','#ebdef0','#e74c3c','#ec7063','#27ae60','#7dcea0'],
-        series: [...mk(assets, 0), ...mk(claims, 1)]
-    });
+    const fmt = vy => Math.round(vy).toLocaleString('zh-CN');
+    function drawWF(id, items, totalName, colorOf) {
+        const cats = [], base = [], vals = [], labels = [], colors = [];
+        let acc = 0;
+        items.forEach(it => {
+            const v = it.value / 100;               // 百万元 → 亿元
+            cats.push(it.name); base.push(acc); vals.push(v);
+            labels.push(fmt(v)); colors.push(colorOf(it)); acc += v;
+        });
+        cats.push(totalName); base.push(0); vals.push(acc); labels.push(fmt(acc)); colors.push('#2c3e50');
+        const many = cats.length > 5;
+        initChart(id)?.setOption({
+            backgroundColor: '#fff', textStyle: { fontSize: 18 },
+            tooltip: { trigger: 'item', textStyle: { fontSize: 18 },
+                formatter: p => `${p.name}<br/>${labels[p.dataIndex]} 亿元` },
+            grid: { left: 76, right: 30, top: 24, bottom: many ? 92 : 54 },
+            xAxis: { type: 'category', data: cats,
+                     axisLabel: { fontSize: 14, color: '#555', interval: 0, rotate: many ? 24 : 0 } },
+            yAxis: { type: 'value', name: '亿元', nameTextStyle: { fontSize: 14, color: '#555' },
+                     axisLabel: { fontSize: 14, color: '#555', formatter: v => Number(v).toLocaleString() },
+                     splitLine: { lineStyle: { color: '#eee' } } },
+            series: [
+                { type: 'bar', stack: 'wf', silent: true, itemStyle: { color: 'transparent' },
+                  emphasis: { disabled: true }, data: base },
+                { type: 'bar', stack: 'wf', barMaxWidth: 70,
+                  data: vals.map((v, k) => ({ value: v, itemStyle: { color: colors[k] } })),
+                  label: { show: true, position: 'top', color: '#333', fontSize: 14,
+                           formatter: p => labels[p.dataIndex] } }
+            ]
+        });
+    }
+    drawWF('chart-bs', assets, '总资产', () => '#1f4e79');
+    drawWF('chart-bs-claims', claims, '总负债 + 权益', it => /权益/.test(it.name) ? '#1e8449' : '#c0392b');
 })();
 
 /* ────── 5-③ 现金流量（2025 分季度经营净额） ────── */

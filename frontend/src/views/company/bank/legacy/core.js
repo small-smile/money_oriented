@@ -41,8 +41,10 @@ window.__applyBankIdentity = function (D) {
     var h1 = document.querySelector('.page-head h1[data-page]');
     var tail = b.reportYear + ' 年报 · ' + (h1 ? h1.getAttribute('data-page') : '');
     // 纯 H 股行没有 A 股代码，只列 H 股代码，别留下「（ / 01578）」；
-    // fullName 与 shortName 相同时不要写成「哈尔滨银行（哈尔滨银行）」
-    var codes = [b.aCode, b.hCode].filter(function (c) { return c; }).join(' / ');
+    // fullName 与 shortName 相同时不要写成「哈尔滨银行（哈尔滨银行）」。
+    // 天津/江西/哈尔滨等纯 H 股行后端把唯一上市代码放在 _bank.code、aCode/hCode 均空，
+    // 回退取 code，否则 paren 落空、H1 会写成「天津银行2025 年报」（名字直接顶着年份、且丢了代码）。
+    var codes = [b.aCode, b.hCode].filter(function (c) { return c; }).join(' / ') || (b.code || '');
     if (h1) {
         var paren = (b.shortName && b.shortName !== b.fullName) ? b.shortName : codes;
         h1.textContent = paren ? (b.fullName + '（' + paren + '）' + tail) : (b.fullName + tail);

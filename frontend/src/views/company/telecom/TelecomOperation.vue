@@ -326,35 +326,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 静态模板节点样式（.wrap/.page-head/section/.kpis/.entity/.gap-list）：加 scoped 限定在本组件，
- * 避免 section 等裸标签选择器泄漏到全站。取值逐字搬自 dashboard/company/page.css 与 operation.html 内联 <style>；
- * base.css 已有的 reset/body/.site-nav/.chart-card/.chart-title/#loading/#error-msg 不重复。 */
-.wrap { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 24px 24px 60px; }
-.page-head { text-align: center; margin-bottom: 8px; }
-.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
-.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
-.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.page-head .tags span { background: #dde8f3; color: #10243e; border-radius: 12px; padding: 3px 12px; font-size: 18px; font-weight: 500; }
-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
 section > h2 { font-size: 22px; color: #1f2937; margin-bottom: 4px; border-left: 4px solid #10243e; padding-left: 10px; }
-section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
+.wrap .note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
+
+section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
+
 .entity { margin: 10px 0 0; padding: 12px 16px; background: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 17px; color: #78350f; line-height: 1.7; }
 .gap-list { margin: 6px 0 0 18px; font-size: 17px; color: #555; line-height: 1.8; }
 </style>
 
 <style>
-/* 动态节点样式：kpi 卡片、chartCard 用 innerHTML 生成的 .note/.note-more、缺口清单 <li> 等节点
- * 拿不到 scoped 的 data-v 属性，故整块不加 scoped；统一挂在 .wrap 下防止通用类泄漏。
- * 取值逐字搬自 dashboard/company/page.css；.chart-card/.chart-title/.chart-title .sub 来自 base.css，不重复。 */
-.wrap .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
-.wrap .kpi .label { font-size: 18px; color: #7f8c8d; }
-.wrap .kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
-.wrap .kpi .delta { font-size: 18px; margin-top: 2px; }
-.wrap .note { font-size: 18px; color: #9ca3af; margin: 10px auto 0; line-height: 1.6; max-width: 900px; }
 .wrap .note summary { cursor: pointer; color: #6b7280; font-weight: 500; list-style: none; }
 .wrap .note summary::-webkit-details-marker { display: none; }
 .wrap .note summary::before { content: '▸ '; color: #9ca3af; }
 .wrap .note[open] summary::before { content: '▾ '; }
 .wrap .note summary:hover { color: #374151; }
+
 </style>

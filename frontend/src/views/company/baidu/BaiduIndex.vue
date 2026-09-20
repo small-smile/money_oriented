@@ -397,19 +397,13 @@ onBeforeUnmount(() => {
 <!-- 静态节点（容器 / 标题 / section / 图容器 / 表格骨架）在模板里带 data-v，用 scoped 收敛，
      取自 dashboard/company/page.css。base.css 已全局引入，不重复其规则（.chart-title 等来自 base.css）。 -->
 <style scoped>
-.wrap { max-width: var(--content-w, 1200px); margin: 0 auto; padding: 24px 24px 60px; }
-.page-head { text-align: center; margin-bottom: 8px; }
-.page-head h1 { font-size: 29px; color: #1f2937; margin-bottom: 6px; }
-.page-head .meta { color: #6b7280; font-size: 18px; line-height: 1.7; }
-.page-head .tags { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.page-head .tags span { background: #dde8f3; color: #10243e; border-radius: 12px; padding: 3px 12px; font-size: 18px; font-weight: 500; }
-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
 section > h2 { font-size: 22px; color: #1f2937; margin-bottom: 4px; border-left: 4px solid #10243e; padding-left: 10px; }
-section > .sub { color: #6b7280; font-size: 18px; margin: 0 0 14px 14px; }
+section > h2 { font-size: 22px; color: #1f2937; margin-bottom: 4px; border-left: 4px solid #10243e; padding-left: 10px; }
+
+section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 20px 22px; margin-top: 22px; scroll-margin-top: 116px; }
+
 .chart { width: 100%; height: 428px; }
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 16px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,420px)); gap: 14px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
 @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
 table { width: 100%; border-collapse: collapse; font-size: 18px; }
 </style>
@@ -417,24 +411,7 @@ table { width: 100%; border-collapse: collapse; font-size: 18px; }
 <!-- 动态节点（KPI / 表格行 / 说明 / 缺口）由脚本 innerHTML 注入，不带 data-v，样式必须非 scoped；
      通用元素选择器统一以 .wrap 前缀限定在本公司页内，避免泄漏到其它页面（等价于原页各自独立文档的作用域）。 -->
 <style>
-/* —— index.html <head> 内联样式，逐字搬入 —— */
-.note-generic { margin: 10px 0 0; padding: 12px 16px; background: #f6f7f9; border-left: 4px solid #b7b1c4; border-radius: 6px; font-size: 18px; color: #555; line-height: 1.75; }
+
 .gap-list { margin: 6px 0 0 18px; font-size: 18px; color: #555; line-height: 1.8; }
-.gap-list b { color: #10243e; }
-/* —— company/page.css 中作用于动态节点的规则，加 .wrap 前缀限定 —— */
-.wrap .kpi { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 12px 14px; }
-.wrap .kpi .label { font-size: 18px; color: #7f8c8d; }
-.wrap .kpi .value { font-size: 25px; font-weight: 700; color: #10243e; margin-top: 4px; }
-.wrap .kpi .delta { font-size: 18px; margin-top: 2px; }
-.wrap th, .wrap td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eee; }
-.wrap th:first-child, .wrap td:first-child { text-align: left; }
-.wrap thead th { background: #eef2f7; color: #10243e; font-weight: 600; border-bottom: 2px solid #c9a24a; }
-.wrap tbody tr:hover { background: #f3f6fa; }
-.wrap .row-total td { font-weight: 700; background: #f6f8fb; border-top: 2px solid #c9a24a; }
-.wrap .row-sub td:first-child { padding-left: 26px; color: #555; font-weight: 400; }
-.wrap .neg { color: #c0392b; }
-.wrap .card2 { background: #f3f6fa; border: 1px solid #dde8f3; border-radius: 8px; padding: 14px 16px; }
-.wrap .card2 h3 { font-size: 18px; color: #10243e; margin-bottom: 6px; }
-.wrap .card2 p { font-size: 18px; color: #444; line-height: 1.65; }
-.wrap .card2 ul { margin: 4px 0 0 18px; font-size: 18px; color: #444; line-height: 1.7; }
+
 </style>
