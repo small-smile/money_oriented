@@ -6,7 +6,7 @@
       <div class="tags"><span>年报附注原文</span><span>分业务收入</span><span>结构占比</span><span>同比增速</span></div>
     </div>
 
-    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">{{ error }}</div>
 
     <section id="sec-kpi" ref="secKpi" hidden>
@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { apiGet } from '../../../api'
 import {

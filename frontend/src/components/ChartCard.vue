@@ -12,6 +12,8 @@
 </template>
 
 <script setup>
+import { LOADING_TEXT } from '../site.config'
+
 defineProps({
   title: String,
   sub: String,
@@ -19,7 +21,7 @@ defineProps({
   loading: Boolean,
   error: String,
   empty: Boolean,
-  loadingText: { type: String, default: '数据加载中…' },
+  loadingText: { type: String, default: LOADING_TEXT },
   emptyText: { type: String, default: '该项暂无数据' },
 })
 </script>

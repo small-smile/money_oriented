@@ -6,7 +6,7 @@
       <div class="tags"><span>用户数</span><span>ARPU</span><span>5G</span><span>宽带</span><span>云与第二曲线</span><span>资本开支</span></div>
     </div>
 
-    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">{{ error }}</div>
 
     <section id="sec-kpi" ref="secKpi" hidden>
@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { apiGet } from '../../../api'
 import {

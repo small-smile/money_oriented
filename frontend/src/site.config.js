@@ -214,3 +214,8 @@ export const hubSections = [
     ],
   },
 ]
+
+// ── 全站共用文案 ──────────────────────────────────────────────────────
+// 取数占位只写这一处：LoadingNote.vue（老页面的 #loading 占位）与 ChartCard.vue
+// （图表卡片三态）都取它，改一次全站生效。
+export const LOADING_TEXT = '数据加载中…'

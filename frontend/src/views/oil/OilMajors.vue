@@ -1,6 +1,6 @@
 <template>
   <div class="oil-majors">
-    <div v-if="loading" id="loading">数据加载中...</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">加载失败：{{ error }}（请确保 Flask 后端已启动）</div>
     <section class="chart-card" id="card-ptr" v-show="ready">
       <h2 class="chart-title">中石油证实原油储量瀑布图<span class="sub">深色 = 保留　浅色 = 增加　灰色斜线 = 减少 | 单位：百万桶</span></h2>
@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'

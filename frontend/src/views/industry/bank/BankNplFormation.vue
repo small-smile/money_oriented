@@ -9,7 +9,7 @@
     <div class="toolbar metricbar" ref="metricbarEl"></div>
     <div class="toolbar" ref="toolbarEl"></div>
 
-    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">数据加载失败：{{ error }}（请确认后端服务已启动）</div>
     <div class="chart-card" v-show="ready">
       <div class="chart-box" ref="chartEl"></div>
@@ -19,6 +19,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'

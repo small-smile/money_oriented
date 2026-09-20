@@ -1,12 +1,13 @@
 <template>
   <div>
-    <div v-if="loading" id="loading">数据加载中...</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">加载失败：{{ error }}（请确保后端已启动）</div>
     <div ref="containerEl" id="container"></div>
   </div>
 </template>
 
 <script setup>
+import LoadingNote from '../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'

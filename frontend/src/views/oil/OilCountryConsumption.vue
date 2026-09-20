@@ -1,6 +1,6 @@
 <template>
   <div ref="rootEl">
-    <div id="loading">数据加载中...</div>
+    <LoadingNote />
     <div id="error-msg"></div>
     <div id="content">
       <div id="compare-card" class="chart-card" style="display:none">
@@ -72,6 +72,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import * as echarts from 'echarts';
 import { apiGet } from '../../api';

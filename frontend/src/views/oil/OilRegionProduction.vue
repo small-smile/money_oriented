@@ -1,6 +1,6 @@
 <template>
   <div ref="rootEl">
-    <div v-if="loading" id="loading">数据加载中...</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">加载失败：{{ error }}（请确保 Flask 后端已启动）</div>
 
     <div id="cards" style="display:none">
@@ -72,6 +72,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'

@@ -3,7 +3,7 @@
     <h1>社会融资规模（TSF）· 宏观背景</h1>
     <div class="lede">2015–2026.7 · 人民银行调查统计司月度数据</div>
 
-    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">数据加载失败：{{ error }}（请确认后端服务已启动）</div>
 
     <section id="sec-tsf" v-show="data">
@@ -32,6 +32,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../../components/LoadingNote.vue'
 import { computed } from 'vue'
 import EChart from '../../../components/EChart.vue'
 import { useApiData } from '../../../composables/useApiData'

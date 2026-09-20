@@ -6,7 +6,7 @@
         <div class="meta" id="page-meta"></div>
       </div>
 
-      <div id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+      <LoadingNote />
       <div id="error-msg"></div>
 
       <!-- 双层环形图：内圈一名股东一块、外圈按分组归并（圈序固定）。版面（行高、字号、列宽、
@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import LoadingNote from '../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'

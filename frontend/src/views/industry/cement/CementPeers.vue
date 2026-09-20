@@ -15,13 +15,14 @@
       看行业格局时请把它们当作「同一集团的子公司口径 / 集团口径」两条线来读。
     </div>
 
-    <div v-if="loading" id="loading">加载中…（需先启动 app.py，端口 5000）</div>
+    <LoadingNote v-if="loading" />
     <div v-if="error" id="error-msg" style="display:block">数据加载失败：{{ error }}（请确认后端服务已启动）</div>
     <div ref="chartsEl" id="charts"></div>
   </div>
 </template>
 
 <script setup>
+import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
