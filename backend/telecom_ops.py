@@ -1,7 +1,7 @@
 import json
 import os
 
-from backend.shared import TABLES_DIR
+from backend.shared import TABLES_DIR, read_json
 
 # 三大运营商（通信）
 TELECOM_PEERS = ["600941", "601728", "600050"]
@@ -11,20 +11,14 @@ def _telecom_ops_manual():
     """经营口径手工层 data/tables/telecom_ops_manual.json：逐份年报原文读出的
     移动/5G/宽带用户数、ARPU、年报口径资本开支、云与产业数字化收入。财务接口没有这些字段。"""
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tables", "telecom_ops_manual.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return read_json(path)
 
 
 def _telecom_segment_manual():
     """收入构成层 data/tables/telecom_segment_manual.json：年报「营业收入和营业成本」附注里的
     收入分解表，由 data/extract/extract_telecom_segments.py 解析。三家科目体系不同，不可横比同名科目。"""
     path = os.path.join(TABLES_DIR, "telecom_segment_manual.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return read_json(path)
 
 
 def _telecom_segment_labels(comp):

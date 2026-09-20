@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, jsonify, request
 
 from backend.shared import (
-    TABLES_DIR, _holders_manual, _company_codes, _company_entity,
+    TABLES_DIR, read_json, _holders_manual, _company_codes, _company_entity,
     _resolve_company_code, _cross_industry_redirect,
     success, error,
 )
@@ -94,10 +94,7 @@ def read_nav(code=None, industry=None):
 def _company_charts_block(code, key):
     """company_charts_<code>.json 里的任意一块（银行年报口径页的数据源）。"""
     path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f).get(key) or None
+    return (read_json(path) or {}).get(key) or None
 
 
 def _company_charts_holders(code):
@@ -152,10 +149,7 @@ def _bank_factions(code):
 def _holder_table(industry, code):
     """只读 annual 表里股权结构要用的那几块，不做手工层合并（股东数据与经营口径无关）。"""
     path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return read_json(path)
 
 
 def _norm_holder_name(s):
@@ -594,10 +588,7 @@ def _stitch_rec(industry, code, man):
 def _load_shareholder_table(industry, code):
     """读合并表 data/tables/<板块>_<code>_shareholder.json，没有就返回 None。"""
     path = os.path.join(TABLES_DIR, SHAREHOLDER_TABLE.format(industry=industry, code=code))
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return read_json(path)
 
 
 def _get_rec(industry, code, man):

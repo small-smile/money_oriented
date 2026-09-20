@@ -36,21 +36,37 @@ HOLDERS_MANUAL_FILE = os.path.join(TABLES_DIR, "holders_manual.json")
 COMPANY_CODES_FILE = os.path.join(TABLES_DIR, "company_codes.json")
 
 
+def table_path(name):
+    """data/tables 下某张表的绝对路径。"""
+    return os.path.join(TABLES_DIR, name)
+
+
+def read_json(path, default=None, tolerant=False):
+    """读 JSON 文件：文件不存在返回 default。
+    tolerant=True 时连解析失败也当缺失（半截/损坏的数据文件不该让整页 500），
+    否则解析错误照常抛出——批量扫目录的地方用 tolerant，单文件取数的地方不用。"""
+    if not os.path.exists(path):
+        return default
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        if tolerant:
+            return default
+        raise
+
+
 def _holders_manual():
-    if not os.path.exists(HOLDERS_MANUAL_FILE):
-        return {}
-    with open(HOLDERS_MANUAL_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return read_json(HOLDERS_MANUAL_FILE, {})
 
 
 def _company_codes():
     """返回 (entities, index)：entities 按实体唯一键索引，index 是「任意代码 → 实体」的反查表。
     same_entity=false 的两地主体（中国联通 A 股 600050 与红筹 00762 不是同一法人）照样进 index，
     但标着 same_entity=false —— 解析时按这个标记拒绝互换，只把原因说清楚，不静默换成另一家。"""
-    if not os.path.exists(COMPANY_CODES_FILE):
+    raw = read_json(COMPANY_CODES_FILE)
+    if raw is None:
         return {}, {}
-    with open(COMPANY_CODES_FILE, "r", encoding="utf-8") as f:
-        raw = json.load(f)
     entities = {e["key"]: e for e in raw.get("entities") or []}
     index = {}
     for e in entities.values():

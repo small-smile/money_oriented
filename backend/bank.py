@@ -5,7 +5,7 @@ import re
 from flask import Blueprint, jsonify, request
 
 from backend.shared import (
-    TABLES_DIR, _resolve_company_code, _cross_industry_redirect,
+    TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect,
     success, error,
 )
 
@@ -69,19 +69,18 @@ def read_company_charts(code):
     银行的数据文件按 A 股代码存（纯 H 股行按 H 股代码存），两地代码都要能取到同一份。"""
     if not re.fullmatch(r"[0-9]{5,6}", code):
         return error(f"非法银行代码 {code}", 400)
-    path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
-    if not os.path.exists(path):
+    d = read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"))
+    if d is None:
         alt, why, ent = _resolve_company_code(code, set(BANK_ORDER))
-        if alt and os.path.exists(os.path.join(TABLES_DIR, f"company_charts_{alt}.json")):
-            with open(os.path.join(TABLES_DIR, f"company_charts_{alt}.json"), "r", encoding="utf-8") as f:
-                return success(json.load(f), why)
+        alt_d = read_json(os.path.join(TABLES_DIR, f"company_charts_{alt}.json")) if alt else None
+        if alt_d is not None:
+            return success(alt_d, why)
         red = _cross_industry_redirect(code, ent, {"bank"})
         return error(
             f"银行 {code} 尚无 company_charts 数据文件"
             + (f"：{why}" if why else (f"：{red['msg']}" if red else "")),
             404, {"redirect": red} if red else None)
-    with open(path, "r", encoding="utf-8") as f:
-        return success(json.load(f))
+    return success(d)
 
 
 @bank_bp.route("/company_charts")
@@ -93,11 +92,9 @@ def api_company_charts():
 def read_tsf():
     """社会融资规模（TSF）宏观数据，独立于任一银行 —— 直接沿用 601077 精编文件里
     已规整好的 tsf-stock 块（months/stock/yoy/flow_total/分项），供行业页 tsf.html 使用。"""
-    path = os.path.join(TABLES_DIR, f"company_charts_{DEFAULT_BANK_CODE}.json")
-    if not os.path.exists(path):
+    d = read_json(os.path.join(TABLES_DIR, f"company_charts_{DEFAULT_BANK_CODE}.json"))
+    if d is None:
         return error("社融数据文件不存在", 404)
-    with open(path, "r", encoding="utf-8") as f:
-        d = json.load(f)
     tsf = d.get("tsf-stock")
     if not tsf:
         return error("社融数据缺失 tsf-stock 键", 404)
@@ -198,11 +195,10 @@ def list_banks():
         m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
         if not m:
             continue
-        try:
-            with open(os.path.join(TABLES_DIR, name), "r", encoding="utf-8") as f:
-                b = (json.load(f) or {}).get("_bank") or {}
-        except (OSError, ValueError):
-            continue          # 半截/损坏的数据文件不该让整页 500
+        d = read_json(os.path.join(TABLES_DIR, name), tolerant=True)
+        if d is None:
+            continue          # 半截/损坏的数据文件不该让整页 500，跳过这一行
+        b = (d or {}).get("_bank") or {}
         code = m.group(1)
         ld = LISTING_DATES.get(code, {})
         found[code] = {
@@ -244,11 +240,7 @@ def read_bank_npl_formation():
         path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
         if not os.path.exists(path):
             return
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                d = json.load(f) or {}
-        except (OSError, ValueError):
-            return
+        d = read_json(path, tolerant=True) or {}
         sd = d.get("scale-dep") or {}
         nt = d.get("nim-trend") or {}
         fm = sd.get("formation")

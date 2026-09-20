@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, jsonify, request
 
 from backend.shared import (
-    TABLES_DIR, _resolve_company_code, _cross_industry_redirect, _company_entity,
+    TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect, _company_entity,
     success, error,
 )
 from backend.cement_ops import CEMENT_PEERS, _merge_cement_ops
@@ -64,10 +64,9 @@ def _read_industry_table(industry, code):
     """读 data/tables/<industry>_<code>_annual.json 并按行业规则合并手工层；文件不存在返回 None。"""
     spec = INDUSTRIES[industry]
     path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
-    if not os.path.exists(path):
+    d = read_json(path)
+    if d is None:
         return None
-    with open(path, "r", encoding="utf-8") as f:
-        d = json.load(f)
     return spec["merge"](code, d) if spec["merge"] else d
 
 
