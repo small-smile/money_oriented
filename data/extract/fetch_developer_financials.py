@@ -60,18 +60,10 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from _common import (
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, pick, request_json, ssum,
+)
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-RAW_DIR = ROOT / "data" / "raw"
-OUT_DIR = ROOT / "data" / "tables"
-
-API = "https://datacenter-web.eastmoney.com/api/data/v1/get"
-API_HK = "https://datacenter.eastmoney.com/securities/api/data/v1/get"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-    "Referer": "https://data.eastmoney.com/",
-    "Accept-Encoding": "identity",
-}
 
 # A 股上市的央企开发商：代码 -> (交易所后缀, 简称, 控股集团)
 DEVELOPERS = {
@@ -281,61 +273,6 @@ HK_PRESALE_THOUSANDS = {
         "2025": 64197801 + 2233323,  # FY2025 公告附注 33
     },
 }
-
-
-def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
-                 page_size: int = 200, retries: int = 3, timeout: int = 60,
-                 api: str = API) -> dict:
-    url = "%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1&pageSize=%d" % (
-        api, report_name, urllib.parse.quote(filt), sort_col, page_size)
-    last_err: Exception | None = None
-    for attempt in range(1, retries + 1):
-        try:
-            req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            if not payload.get("success", True) and payload.get("result") is None:
-                raise RuntimeError(payload.get("message") or "empty result")
-            return payload
-        except Exception as e:                      # noqa: BLE001 - 统一重试
-            last_err = e
-            wait = 2 ** attempt
-            print(f"    [retry {attempt}/{retries}] {e}; sleep {wait}s", file=sys.stderr)
-            time.sleep(wait)
-    raise RuntimeError(f"{report_name} failed after {retries} attempts: {last_err}")
-
-
-def cached(report_name: str, code: str, filt: str, refresh: bool, **kw) -> dict:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    path = RAW_DIR / f"em_{report_name}_{code}.json"
-    if path.exists() and not refresh:
-        return json.loads(path.read_text(encoding="utf-8"))
-    print(f"    [http] {report_name}")
-    payload = request_json(report_name, filt, **kw)
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-    return payload
-
-
-def annual_rows(payload: dict) -> dict[str, dict]:
-    """按年份聚合年报期（REPORT_DATE 为 12-31）的行。"""
-    out: dict[str, dict] = {}
-    for row in (payload.get("result") or {}).get("data") or []:
-        rd = (row.get("REPORT_DATE") or "")[:10]
-        if not rd.endswith("-12-31"):
-            continue
-        out.setdefault(rd[:4], row)     # 接口按日期降序，首条为最新修订版
-    return out
-
-
-def pick(row: dict, mapping: dict[str, str]) -> dict:
-    return {k: row.get(v) for k, v in mapping.items()}
-
-
-def ssum(rec: dict, keys: tuple[str, ...]) -> float | None:
-    """按 keys 求和；全为空则返回 None（区分「科目本年未披露」与「真的是 0」）。"""
-    vals = [rec.get(k) for k in keys]
-    got = [v for v in vals if v is not None]
-    return sum(got) if got else None
 
 
 def build_developer(code: str, refresh: bool) -> dict:

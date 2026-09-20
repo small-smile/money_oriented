@@ -47,18 +47,16 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from _common import (
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, pick, request_json, request_page,
+)
+from _common import cached as _cached
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-RAW_DIR = ROOT / "data" / "raw"
-OUT_DIR = ROOT / "data" / "tables"
 
-API = "https://datacenter-web.eastmoney.com/api/data/v1/get"
-API_HK = "https://datacenter.eastmoney.com/securities/api/data/v1/get"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-    "Referer": "https://data.eastmoney.com/",
-    "Accept-Encoding": "identity",
-}
+def cached(report_name, code, filt, refresh, **kw):
+    """银行这几张表结果常超 200 行（如 RPT_F10_EH_HOLDERS count=315），一律整包重取。"""
+    return _cached(report_name, code, filt, refresh, full=True, **kw)
+
 
 # 代码 -> (交易所后缀, 简称, 机构类型)
 # 机构类型按监管口径分组，供同业对比按组取色/分屏：国有大行 / 股份行 / 城商行 / 农商行
@@ -230,74 +228,6 @@ MAIN_FIELDS = {
     "staff_num": "STAFF_NUM",                   # 员工人数
     "total_share": "TOTAL_SHARE",               # 总股本
 }
-
-
-def request_page(report_name: str, filt: str, sort_col: str, page_size: int,
-                 page_number: int, retries: int, timeout: int, api: str) -> dict:
-    url = ("%s?reportName=%s&columns=ALL&filter=%s&sortColumns=%s&sortTypes=-1"
-           "&pageSize=%d&pageNumber=%d") % (
-        api, report_name, urllib.parse.quote(filt), sort_col, page_size, page_number)
-    last_err: Exception | None = None
-    for attempt in range(1, retries + 1):
-        try:
-            req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            if not payload.get("success", True) and payload.get("result") is None:
-                raise RuntimeError(payload.get("message") or "empty result")
-            return payload
-        except Exception as e:                      # noqa: BLE001 - 统一重试
-            last_err = e
-            wait = 2 ** attempt
-            print(f"    [retry {attempt}/{retries}] {e}; sleep {wait}s", file=sys.stderr)
-            time.sleep(wait)
-    raise RuntimeError(f"{report_name} failed after {retries} attempts: {last_err}")
-
-
-def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
-                 page_size: int = 200, retries: int = 3, timeout: int = 60,
-                 api: str = API) -> dict:
-    """取全量结果：count > pageSize 时整包重取，不要翻页。
-
-    只取首页会把最旧的报告期静默丢掉 —— 601077 的 RPT_F10_EH_HOLDERS count=315，
-    首页 200 行只覆盖 2021-06 起 21 期，2008—2021Q1 共 11 期被吞掉，
-    历年持股集中度图因此从 2021 年才开始。
-    而 pageNumber 翻页也不可靠：排序键只有 END_DATE，同一报告期内 10 行次序不稳定，
-    跨页边界会重复几行、漏掉几行（2021-06-30 曾出现 rank 3/4/5 各两遍、8/9/10 缺失）。
-    因此发现 count 超出时改为一次性 pageSize=count 重取。
-    """
-    payload = request_page(report_name, filt, sort_col, page_size, 1, retries, timeout, api)
-    result = payload.get("result") or {}
-    count = result.get("count") or 0
-    if count > len(result.get("data") or []):
-        payload = request_page(report_name, filt, sort_col, count, 1, retries, timeout, api)
-    return payload
-
-
-def cached(report_name: str, code: str, filt: str, refresh: bool, **kw) -> dict:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    path = RAW_DIR / f"em_{report_name}_{code}.json"
-    if path.exists() and not refresh:
-        return json.loads(path.read_text(encoding="utf-8"))
-    print(f"    [http] {report_name}")
-    payload = request_json(report_name, filt, **kw)
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-    return payload
-
-
-def annual_rows(payload: dict) -> dict[str, dict]:
-    """按年份聚合年报期（REPORT_DATE 为 12-31 且 REPORT_TYPE 含「年报」）的行。"""
-    out: dict[str, dict] = {}
-    for row in (payload.get("result") or {}).get("data") or []:
-        rd = (row.get("REPORT_DATE") or "")[:10]
-        if not rd.endswith("-12-31"):
-            continue
-        out.setdefault(rd[:4], row)     # 接口按日期降序，首条为最新修订版
-    return out
-
-
-def pick(row: dict, mapping: dict[str, str]) -> dict:
-    return {k: row.get(v) for k, v in mapping.items()}
 
 
 def build_holder_num(rows: list[dict]) -> list[list]:
