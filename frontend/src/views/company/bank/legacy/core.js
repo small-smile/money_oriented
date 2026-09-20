@@ -169,7 +169,7 @@ const KEY_DOM = {
 
 /* 缺失 key 的判定：renderAll 的占位门控与「逾期分档」块共用，故放在公共底座里 */
 // 缺失的 key：先把对应图位改成占位说明，再塞 EMPTY_D 让后面的解构不抛异常
-// 「缺」不只是 key 不存在——gen 对没数据的行常给出空数组/全空对象（如 migrate.yrsMigrate=[]），
+// 「缺」不只是 key 不存在——gen 对没数据的行常给出空数组/全空对象（如 migrate.years=[]），
 // 这类「有 key 但没内容」也要当缺处理，否则会画出一张只有坐标轴、没有线的空图（⑥ 整改 H3）。
 function __emptyPayload(v) {
     if (v == null) return true;

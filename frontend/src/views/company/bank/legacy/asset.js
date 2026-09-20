@@ -4,7 +4,7 @@
 __section(function (D, SELF, notes) {
 /* ────── 1k. 金融投资分类结构 AC / FVOCI / FVTPL ────── */
 (function () {
-    const years8 = D['invest'].years8;
+    const years = D['invest'].years;
     const ac        = D['invest'].ac;
     const fvociDebt = D['invest'].fvociDebt;
     const fvociEq   = D['invest'].fvociEq;
@@ -18,7 +18,7 @@ __section(function (D, SELF, notes) {
         legend: { data: ['债权投资(AC/摊余成本)', '其他债权投资(FVOCI债)', '其他权益工具(FVOCI股)', '交易性金融资产(FVTPL)'],
                   bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 68, right: 30, top: 40, bottom: 56 },
-        xAxis: { type: 'category', data: years8, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
                  axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
@@ -97,7 +97,7 @@ __section(function (D, SELF, notes) {
 __section(function (D, SELF, notes) {
 /* ────── 1c. 公司/个人 存贷款结构与利率 ────── */
 (function () {
-    const loanYears = D['loanmix-bal'].loanYears;
+    const years = D['loanmix-bal'].years;
     // 公司贷款 / 零售贷款 / 票据贴现 / 合计 平均余额（亿元），取自各年年报「利息收入分析」表
     const balCorp = D['loanmix-bal'].balCorp;
     const balRetail = D['loanmix-bal'].balRetail;
@@ -123,7 +123,7 @@ __section(function (D, SELF, notes) {
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 亿' },
         legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 76, right: 128, top: 36, bottom: 56 },
-        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '亿元', min: 0, nameTextStyle: { fontSize: 18 },
                  axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [balCorp, balRetail, balBill, balTotal].map(
@@ -136,7 +136,7 @@ __section(function (D, SELF, notes) {
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + '%' },
         legend: { data: loanMixNames, bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 76, right: 128, top: 36, bottom: 56 },
-        xAxis: { type: 'category', data: loanYears, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '平均收益率%', min: 0, max: 6, nameTextStyle: { fontSize: 18 },
                  axisLabel: { fontSize: 18, color: '#555' }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [yldCorp, yldRetail, yldBill, yldTotal].map(

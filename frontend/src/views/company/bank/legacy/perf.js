@@ -344,7 +344,7 @@ __section(function (D, SELF, notes) {
 __section(function (D, SELF, notes) {
 /* ────── 1i. 其他综合收益（OCI）与净利润 ────── */
 (function () {
-    const years16  = D['oci'].years16;
+    const years  = D['oci'].years;
     const oci      = D['oci'].oci;
     initChart('chart-oci')?.setOption({
         backgroundColor: '#fff',
@@ -352,7 +352,7 @@ __section(function (D, SELF, notes) {
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v == null ? '缺口' : v + ' 亿' },
         legend: { data: ['其他综合收益'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 64, right: 64, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: { type: 'value', name: '其他综合收益(亿元)', nameTextStyle: { color: '#c0392b', fontSize: 18 },
               axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
         series: [
@@ -387,7 +387,7 @@ __section(function (D, SELF, notes) {
 
 /* ────── 1j. 每股指标 EPS / BVPS ────── */
 (function () {
-    const years16 = D['pershare'].years16;
+    const years = D['pershare'].years;
     const eps  = D['pershare'].eps;
     // BVPS：港交所 03618 历年年报「歸屬於本行股東的每股淨資產」披露值（2010 年为加权口径，2011 起为期末口径）
     const bvps = D['pershare'].bvps;
@@ -398,7 +398,7 @@ __section(function (D, SELF, notes) {
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 }, valueFormatter: v => v + ' 元' },
         legend: { data: ['基本每股收益(EPS)', '每股净资产(BVPS)'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 60, right: 60, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years16, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
             { type: 'value', name: 'EPS(元)', min: 0, nameTextStyle: { color: '#6c3483', fontSize: 18 },
               axisLabel: { color: '#6c3483', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },

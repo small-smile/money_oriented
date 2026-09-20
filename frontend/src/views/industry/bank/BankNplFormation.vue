@@ -65,7 +65,7 @@ const METRICS = {
             `</div></details>`
     },
     nim: {
-        label: '净息差 NIM', axisName: '净息差%', yearsKey: 'years10', valKey: 'nim',
+        label: '净息差 NIM', axisName: '净息差%', yearsKey: 'nimYears', valKey: 'nim',
         desc: false,  // 悬停时升序排名（越低越承压）
         note: () =>
             `<b>口径：</b>净息差 NIM = 净利息收入 ÷ 生息资产平均余额，本集团合并数、年报披露值，单位 %。` +
@@ -77,7 +77,7 @@ const METRICS = {
             `</div></details>`
     },
     nis: {
-        label: '净利差 NIS', axisName: '净利差%', yearsKey: 'years10', valKey: 'nis',
+        label: '净利差 NIS', axisName: '净利差%', yearsKey: 'nimYears', valKey: 'nis',
         desc: false,
         note: () =>
             `<b>口径：</b>净利差 NIS = 生息资产平均收益率 − 计息负债平均成本率，本集团合并数、年报披露值，单位 %。` +
@@ -103,7 +103,7 @@ function fmt(v) {
     return (v === null || v === undefined) ? '—' : v.toFixed(2) + '%';
 }
 
-let BANKS = [];       // [{code,name,tier,years,formation,years10,nim,nis}]
+let BANKS = [];       // [{code,name,tier,years,formation,nimYears,nim,nis}]
 let YEARS = [];       // 当前指标下的年份并集（升序，仅保留有任一行披露的年份）
 let METRIC = 'formation';
 let TIER = 'all';

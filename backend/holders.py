@@ -110,7 +110,7 @@ def _bank_history_from_charts(code, annual_div=None):
     数据在 company_charts_<code>.json 的 share-capital / dividend-per10 两块。
     股权结构合成一页后这两张图也由接口下发，字段名与手工层保持一致：
       share_capital  [[年, 股数(股), 变动原因, 类型]]  ← share-capital.years / shares(亿股) / events
-      dividend_per10 [[年, 每 10 股(元)]]        ← dividend-per10.years9 / per10
+      dividend_per10 [[年, 每 10 股(元)]]        ← dividend-per10.years / per10
                                                  ∪ bank 表的 dividend_per10（年→值的字典）
     events 给的是当年资本运作的原文摘要，没有 events 的年份写「未变动」（与手工层同约定，
     前端按这个字段给柱子上色）。分红取两源并集：company_charts 那份是逐年抄年报的，
@@ -136,7 +136,7 @@ def _bank_history_from_charts(code, annual_div=None):
     if isinstance(annual_div, dict):
         dp.update({str(y): v for y, v in annual_div.items() if v is not None})
     # 年报口径后写，重叠年份就覆盖掉接口那份
-    dp.update({str(y): v for y, v in zip(div.get("years9") or [], div.get("per10") or [])
+    dp.update({str(y): v for y, v in zip(div.get("years") or [], div.get("per10") or [])
                if v is not None})
     return (sc or None), ([[y, dp[y]] for y in sorted(dp)] or None)
 

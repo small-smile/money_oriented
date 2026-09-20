@@ -29,6 +29,44 @@ TABLES = ROOT / "data" / "tables"
 YI = 1e8        # 元 -> 亿元
 MN = 1e6        # 元 -> 百万元
 
+# ── 营业收入分部归类：各行年报分部命名五花八门，按业务性质归并为四类标准桶 ──
+#   对公·批发·小企业 → 公司；个人·零售 → 零售；资金·金融市场·同业 → 同业；未分配·投行·保险等 → 其他。
+# gen 在这里把 seg-rev 预拆成 seg-rev.std（四类，单位仍百万），读取方（前端/分析）直接用四类、
+# 不必各自再实现映射。任一分部无法归类（如兴业/成都/贵阳按地域披露）→ 不生成 std，读取方据此留空。
+SEG_BUCKET_ORDER = ["公司", "零售", "同业", "其他"]
+
+
+def seg_bucket(name: str) -> str | None:
+    s = str(name or "")
+    if any(k in s for k in ("公司", "对公", "批发", "小企业")):
+        return "公司"
+    if any(k in s for k in ("个人", "零售")):
+        return "零售"
+    if any(k in s for k in ("资金", "金融市场", "同业")):
+        return "同业"
+    if any(k in s for k in ("其他", "未分配", "投行", "保险")):
+        return "其他"
+    return None
+
+
+def std_seg_rev(seg: dict) -> dict | None:
+    """把 seg-rev 各年数据归并为 公司/零售/同业/其他 四类；任一分部无法归类则返回 None。"""
+    segs = (seg or {}).get("segs")
+    if not isinstance(segs, list) or not segs:
+        return None
+    buckets = [seg_bucket(n) for n in segs]
+    if any(b is None for b in buckets):
+        return None
+    present = [b for b in SEG_BUCKET_ORDER if b in buckets]
+    out = {"segs": present}
+    for yk, vals in seg.items():
+        if yk.startswith("rev") and isinstance(vals, list) and len(vals) == len(segs):
+            agg = {b: 0.0 for b in SEG_BUCKET_ORDER}
+            for b, v in zip(buckets, vals):
+                agg[b] += v or 0
+            out[yk] = [round(agg[b], 2) for b in present]
+    return out
+
 # 生成范围：全部 42 家 A 股上市银行 + 2 家纯 H 股行。601077（渝农商行）为手工精编，
 # 不在此列、不要覆盖（main() 里也硬跳过）。缺 annual.json 的代码由 main() 优雅跳过。
 CODES = [
@@ -421,7 +459,7 @@ def build_invest(annual: dict, years: list[str]) -> dict | None:
               else annual.get(y, {}).get("trade_finasset"), YI, 1) for y in ys]
     if len([v for v in ac if v is not None]) < 3:
         return None
-    return {"years8": ys, "ac": ac, "fvociDebt": fvociDebt, "fvociEq": fvociEq, "fvtpl": fvtpl}
+    return {"years": ys, "ac": ac, "fvociDebt": fvociDebt, "fvociEq": fvociEq, "fvtpl": fvtpl}
 
 
 
@@ -433,7 +471,7 @@ def dividend_cards(name: str, annual: dict, div: dict) -> str | None:
     现金分红 = 每 10 股派现 ÷ 10 × 当年末总股本；分红率 = 现金分红 ÷ 归母净利润。
     注意口径：总股本用当年末数，若当年有增发/转股，与实际派现基数会有出入，故文案里写"约"。
     """
-    years, per10 = div.get("years9") or [], div.get("per10") or []
+    years, per10 = div.get("years") or [], div.get("per10") or []
     pairs = [(y, p) for y, p in zip(years, per10) if p]
     if not pairs:
         return None
@@ -646,18 +684,17 @@ def build(code: str) -> dict:
     }
     equity_asset = {"years": years, "yrcb": ser(annual, years, "equity_asset_ratio")}
     nim = {
-        "years10": years,
+        "years": years,
         "nim": ser(annual, years, "nim"),
         "nis": ser(annual, years, "nis"),
         "nonInt": [ratio(None if annual[y].get("operate_income") is None or annual[y].get("interest_ni") is None
                          else annual[y]["operate_income"] - annual[y]["interest_ni"],
                          annual[y].get("operate_income")) for y in years],
         "costIncome": ser_cost_income(annual, years),
-        "yearsCC": years,
         "impOld": ser_imp(annual, years, new=False),
         "impNew": ser_imp(annual, years, new=True),
-        "years13": y_prov,
-        "provCov13": ser(annual, y_prov, "provision_coverage"),
+        "provYears": y_prov,
+        "provCov": ser(annual, y_prov, "provision_coverage"),
         "provRatio": ser(annual, y_prov, "loan_provision_ratio"),
     }
 
@@ -694,14 +731,14 @@ def build(code: str) -> dict:
             "roeNew": [annual[y].get("roe_weighted") if y >= NEW_STD else None for y in y_perf],
         },
         "pershare": {
-            "years16": years,
+            "years": years,
             "eps": ser(annual, years, "eps"),
             "bvps": ser(annual, years, "bps"),
         },
         "scale-dep": scale,
         "nim-trend": nim,
         "creditamount": {
-            "years16": years,
+            "years": years,
             "impAmt": [r(annual[y].get("credit_impairment") if annual[y].get("credit_impairment") is not None
                          else annual[y].get("asset_impairment"), MN, 1) for y in years],
             "totalAssetsY": ser(annual, years, "total_assets", MN, 1),
@@ -714,7 +751,7 @@ def build(code: str) -> dict:
         },
         "bs": build_bs(annual[latest]),
         "staff": {
-            "years15": y_staff,
+            "years": y_staff,
             "staff": [annual[y]["staff_num"] for y in y_staff],
             "perOI": [r(annual[y].get("operate_income"), annual[y]["staff_num"] * 1e4, 1) for y in y_staff],
             "perNP": [r(annual[y].get("parent_netprofit"), annual[y]["staff_num"] * 1e4, 1) for y in y_staff],
@@ -725,7 +762,7 @@ def build(code: str) -> dict:
     # 其他综合收益（亿元）：income 表 OTHER_COMPRE_INCOME，2010 起（早年披露稀疏，全空则不出）
     oci = ser(annual, years, "oci", YI, 2)
     if len([v for v in oci if v is not None]) >= 3:
-        out["oci"] = {"years16": years, "oci": oci}
+        out["oci"] = {"years": years, "oci": oci}
 
     # 金融投资 IFRS9 三分类（亿元，2018 起）：摊余成本/FVOCI债/FVOCI股/FVTPL
     inv = build_invest(annual, years)
@@ -738,7 +775,7 @@ def build(code: str) -> dict:
     else:
         dy = sorted(src.get("dividend_per10") or {})
         if dy:
-            out["dividend-per10"] = {"years9": dy, "per10": [src["dividend_per10"][y] for y in dy]}
+            out["dividend-per10"] = {"years": dy, "per10": [src["dividend_per10"][y] for y in dy]}
 
     # 股东户数：手工年报覆盖层优先（A 股年报口径），否则用 F10 的历年股东户数
     if manual and manual.get("holderCount"):
@@ -882,6 +919,12 @@ def build(code: str) -> dict:
                 out[k] = v
         if dnotes:
             out.setdefault("_notes", {}).update(dnotes)
+
+    # 营收分部预拆四类（公司/零售/同业/其他）写进 seg-rev.std，读取方直接用（见 seg_bucket 归类规则）
+    if isinstance(out.get("seg-rev"), dict):
+        std = std_seg_rev(out["seg-rev"])
+        if std:
+            out["seg-rev"] = {**out["seg-rev"], "std": std}
 
     # 社融为宏观口径，各行共用同一份（直接沿用 601077 精编文件里的那份）
     ref = json.loads((TABLES / "company_charts_601077.json").read_text(encoding="utf-8"))

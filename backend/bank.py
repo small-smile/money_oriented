@@ -228,7 +228,7 @@ def read_bank_npl_formation():
     """全部已有数据行的风控横向对比序列，一次返回，供行业页 npl-formation.html 使用。
     每家 company_charts_<code>.json 取三条可跨行横比的序列：
       · 不良生成率 formation —— scale-dep.formation（配 scale-dep.years，2018 起可比）
-      · 净息差 nim / 净利差 nis —— nim-trend.nim / nim-trend.nis（配 nim-trend.years10）
+      · 净息差 nim / 净利差 nis —— nim-trend.nim / nim-trend.nis（配 nim-trend.years）
     连同 _bank 元信息按 BANK_ORDER 排序（国有→股份→城商→农商→纯 H）返回。
     各行 years 取自同一提取管线本应一致，仍逐行随数据带出，前端按并集对齐、容忍缺口。
     只要三条序列里任一条有值即纳入（个别行可能只披露息差或只倒推出不良生成）。"""
@@ -264,7 +264,7 @@ def read_bank_npl_formation():
             "tier": b.get("tier") or "",
             "years": sd.get("years") or [],
             "formation": fm if isinstance(fm, list) else [],
-            "years10": nt.get("years10") or [],
+            "nimYears": nt.get("years") or [],
             "nim": nim if isinstance(nim, list) else [],
             "nis": nis if isinstance(nis, list) else [],
         })

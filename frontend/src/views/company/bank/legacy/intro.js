@@ -5,7 +5,7 @@ __section(function (D, SELF, notes) {
 /* ────── 1j4. 历年处理消费投诉数（件）与客户满意度（%） ────── */
 (function () {
     if (!document.getElementById('chart-complaint')) return;   // 仅简介页
-    const years3 = D['complaint'].years3;
+    const years = D['complaint'].years;
     const complaints   = D['complaint'].complaints;
     const satisfaction = D['complaint'].satisfaction;
 
@@ -15,7 +15,7 @@ __section(function (D, SELF, notes) {
         tooltip: { trigger: 'axis', textStyle: { fontSize: 18 } },
         legend: { data: ['处理消费投诉数', '消费投诉处理客户满意度'], bottom: 2, textStyle: { fontSize: 18 } },
         grid: { left: 60, right: 60, top: 40, bottom: 56 },
-        xAxis: { type: 'category', data: years3, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
             { type: 'value', name: '投诉数(件)', min: 0, nameTextStyle: { color: '#c0392b', fontSize: 18 },
               axisLabel: { color: '#c0392b', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },
@@ -39,7 +39,7 @@ __section(function (D, SELF, notes) {
 __section(function (D, SELF, notes) {
 /* ────── 1l. 员工人数与人均效能 ────── */
 (function () {
-    const years15 = D['staff'].years15;
+    const years = D['staff'].years;
     // 员工数：2011–2018 为本行口径「在岗员工」（H 股年报「員工及人力資源管理」）；2019–2025 为本集团口径「在岗员工」（A 股年报「员工和机构情况」，含子公司），2018→2019 口径切换处不连续
     const staff = D['staff'].staff;
     // 人均营业收入/人均归母净利润 = 营业收入/归母净利润(本行历年年度报告「合并利润表」披露值) ÷ 对应口径员工数
@@ -57,7 +57,7 @@ __section(function (D, SELF, notes) {
                    } },
         legend: { data: ['年末员工数', '人均营业收入', '人均归母净利润'], top: 4, textStyle: { fontSize: 18 } },
         grid: { left: 72, right: 66, top: 46, bottom: 40 },
-        xAxis: { type: 'category', data: years15, axisLabel: { fontSize: 18, color: '#555' } },
+        xAxis: { type: 'category', data: years, axisLabel: { fontSize: 18, color: '#555' } },
         yAxis: [
             { type: 'value', name: '员工数(人)', min: 0, nameTextStyle: { color: '#95a5a6', fontSize: 18 },
               axisLabel: { color: '#95a5a6', fontSize: 18 }, splitLine: { lineStyle: { color: '#eee' } } },

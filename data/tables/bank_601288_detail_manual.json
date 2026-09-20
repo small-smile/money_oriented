@@ -1,6 +1,6 @@
 {
   "loanmix-bal": {
-    "loanYears": [
+    "years": [
       2010,
       2011,
       2012,
@@ -164,7 +164,7 @@
     ]
   },
   "writeoff": {
-    "yearsWO": [
+    "years": [
       2010,
       2011,
       2012,
@@ -591,7 +591,7 @@
     ]
   },
   "complaint": {
-    "years3": [
+    "years": [
       2023,
       2024,
       2025
@@ -608,7 +608,7 @@
     ]
   },
   "migrate": {
-    "yrsMigrate": [
+    "years": [
       2023,
       2024,
       2025
@@ -628,7 +628,7 @@
       22.98,
       65.62
     ],
-    "yrsNormal": [
+    "normalYears": [
       2023,
       2024,
       2025
