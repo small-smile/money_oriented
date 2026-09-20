@@ -18,17 +18,18 @@
 
 <script setup>
 import LoadingNote from '../../../components/LoadingNote.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
 import { fmt } from '../../../utils/format'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/industry/telecom/peers.html：CHARTS 配置、buildChart 渲染逻辑与
 // 每个 ECharts option 原样保留，仅把取数改走统一 apiGet、容器改用组件 ref。图与数据一律不变。
 const loading = ref(true)
 const error = ref('')
 const chartsEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 const API = '/api/telecom_peers'
 const ORDER = ['600941', '601728', '600050']
@@ -244,8 +245,6 @@ const CHARTS = [
 
 ]
 
-function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
-
 onMounted(async () => {
   const container = chartsEl.value
   try {
@@ -274,18 +273,11 @@ onMounted(async () => {
             后端接口 <code>/api/telecom_peers</code>。</div>`
       container.appendChild(d)
     }
-    window.addEventListener('resize', onResize)
   } catch (e) {
     console.error('fetch error', e)
     loading.value = false
     error.value = e.message || String(e)
   }
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
 })
 
 function buildChart(cfg, peers, focus, container) {

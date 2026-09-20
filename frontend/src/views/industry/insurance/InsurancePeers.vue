@@ -18,10 +18,11 @@
 
 <script setup>
 import LoadingNote from '../../../components/LoadingNote.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
 import { fmt } from '../../../utils/format'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/industry/insurance/peers.html：CHARTS 配置、fmt、buildChart 渲染逻辑与
 // 每个 ECharts option 原样保留，仅把取数改走统一 apiGet（返回已解包 data、非 200 抛错）、
@@ -29,7 +30,7 @@ import { fmt } from '../../../utils/format'
 const loading = ref(true)
 const error = ref('')
 const chartsEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 const API = '/api/insurer_peers';
 const ORDER = ['601318', '601628', '601601', '601336', '601319', '00966'];
@@ -368,8 +369,6 @@ function buildChart(cfg, peers, focus) {
     charts.push(chart);
 }
 
-function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
-
 onMounted(async () => {
   try {
     const peers = await apiGet(API)
@@ -451,7 +450,6 @@ onMounted(async () => {
         chartsEl.value.appendChild(d);
     }
 
-    window.addEventListener('resize', onResize)
   } catch (e) {
     console.error('fetch error', e)
     loading.value = false
@@ -459,11 +457,6 @@ onMounted(async () => {
   }
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
-})
 </script>
 
 <style scoped>

@@ -23,10 +23,11 @@
 
 <script setup>
 import LoadingNote from '../../../components/LoadingNote.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
 import { fmt } from '../../../utils/format'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/industry/cement/peers.html：CHARTS/ORDER/COLORS/HK_CODES、fmt、buildChart 与
 // onMounted 渲染逻辑（含三块口径说明 + 缺口说明）原样保留，仅取数改走统一 apiGet（解包后返回 peers），
@@ -35,9 +36,7 @@ import { fmt } from '../../../utils/format'
 const loading = ref(true)
 const error = ref('')
 const chartsEl = ref(null)
-let charts = []
-
-function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
+const { charts } = useChartPool()
 
 const API = '/api/cement_peers';
 const ORDER = ['600585', '000877', '600801', '000401', '002233', '03323', '01313', '00743'];
@@ -677,18 +676,12 @@ onMounted(async () => {
         与销量不同口径，未纳入；本页用总资产周转率作为利用率的代理。</div>`;
     chartsEl.value.appendChild(gap);
 
-    window.addEventListener('resize', onResize)
   } catch (e) {
     loading.value = false
     error.value = e.message || String(e)
   }
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
-})
 </script>
 
 <style scoped>

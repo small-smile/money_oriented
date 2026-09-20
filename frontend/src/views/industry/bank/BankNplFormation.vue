@@ -23,6 +23,7 @@ import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/industry/bank/npl-formation.js：数据（TIERS / METRICS）、序列构建、
 // tooltip / legend / grid / xAxis / yAxis 与 note 文案原样保留；仅把取数改走统一 apiGet、
@@ -36,7 +37,7 @@ const metricbarEl = ref(null)
 const toolbarEl = ref(null)
 const chartEl = ref(null)
 const noteEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 // 机构类型展示顺序与基准色（全部视图按类型着色，看聚簇）
 const TIERS = [
@@ -255,8 +256,6 @@ function buildTierBar() {
     });
 }
 
-function onResize() { charts.forEach(c => c.resize()) }
-
 onMounted(async () => {
     try {
         // 源页 axios.get(API) → 统一 apiGet：非 200 抛错，成功直接拿解包后的 data（银行数组）
@@ -273,7 +272,6 @@ onMounted(async () => {
         buildMetricBar();
         buildTierBar();
         render();
-        window.addEventListener('resize', onResize);
     } catch (e) {
         console.error('fetch error', e);
         loading.value = false;
@@ -282,7 +280,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('resize', onResize);
     charts.forEach(c => { try { c.dispose() } catch (_) {} });
     charts = [];
 });

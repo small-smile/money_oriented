@@ -17,10 +17,11 @@
 
 <script setup>
 import LoadingNote from '../../../components/LoadingNote.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
 import { fmt } from '../../../utils/format'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/industry/realestate/peers.html：CHARTS/ORDER/COLORS/HK_CODES、fmt、buildChart
 // 与 onMounted 渲染逻辑原样保留，仅取数改走统一 apiGet（解包后返回 peers），容器改用组件 ref、
@@ -28,7 +29,7 @@ import { fmt } from '../../../utils/format'
 const loading = ref(true)
 const error = ref('')
 const chartsEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 const API = '/api/developer_peers'
 const ORDER = ['600048', '001979', '000069', '00688', '01109', '00817']
@@ -357,7 +358,6 @@ function buildChart(cfg, peers, focus, container) {
     });
     charts.push(chart);
 }
-function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
 
 onMounted(async () => {
   try {
@@ -415,18 +415,12 @@ onMounted(async () => {
         chartsEl.value.appendChild(d);
     }
 
-    window.addEventListener('resize', onResize)
   } catch (e) {
     loading.value = false
     error.value = e.message || String(e)
   }
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
-})
 </script>
 
 <style scoped>

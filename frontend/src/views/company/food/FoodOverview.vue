@@ -461,8 +461,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/company/food/overview.html 底部内联 <script>：13 个 ECharts option 与其
 // 内联数据（years/catering/retail/nature/product/panels 等）原样保留。数据来源为内联（无 /api、
@@ -470,7 +471,7 @@ import * as echarts from 'echarts'
 // document.getElementById 改为组件根 ref 内 querySelector；window.resize / 卸载 dispose 改为
 // 遍历收集到的实例（与原页 resize 里按 id 数组 resize 等价）。
 const rootEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 function initChart(id) {
   const el = rootEl.value ? rootEl.value.querySelector('#' + id) : null
@@ -481,8 +482,6 @@ function initChart(id) {
 }
 const RED = '#c0392b', PURPLE = '#6c3483', ORANGE = '#d35400', BLUE = '#2471a3', GREEN = '#1e8449', GOLD = '#c9a24a';
 const AX = { fontSize: 18 };
-
-function onResize() { charts.forEach(c => c.resize()) }
 
 onMounted(() => {
     // 0.5 行业背景：全国餐饮收入及其占社零比重
@@ -752,14 +751,8 @@ onMounted(() => {
         });
     })();
 
-    window.addEventListener('resize', onResize)
 })
 
-onBeforeUnmount(() => {
-    window.removeEventListener('resize', onResize)
-    charts.forEach(c => { try { c.dispose() } catch (_) {} })
-    charts = []
-})
 </script>
 
 <style scoped>

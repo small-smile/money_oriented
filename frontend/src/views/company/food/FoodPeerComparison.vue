@@ -196,8 +196,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
+import { useChartPool } from '../../../composables/useCharts'
 
 // 逐字搬自 dashboard/company/food/peer-comparison.html 底部内联脚本：4 个 ECharts option
 // （营收/毛利净利/ROE/分红率）与综合对比表的点击排序逻辑原样保留——series/颜色/轴/formatter/
@@ -206,7 +207,7 @@ import * as echarts from 'echarts'
 // 组件根 ref 内 querySelector（表格排序的 #tbl-summary 同样改走 rootEl.querySelector）；
 // window.resize 改为遍历收集到的实例（与原页 resize 里按 .chart 反查实例 resize 等价），卸载时 dispose。
 const rootEl = ref(null)
-let charts = []
+const { charts } = useChartPool()
 
 function initChart(id) {
   const el = rootEl.value ? rootEl.value.querySelector('#' + id) : null
@@ -219,8 +220,6 @@ function initChart(id) {
 const RED = '#c0392b', PURPLE = '#6c3483', ORANGE = '#d35400', BLUE = '#2471a3', GREEN = '#1e8449', GOLD = '#c9a24a';
 const AX = { fontSize: 18 };
 const NAMES = ['巴比食品', '千味央厨', '桃李面包', '三全食品'];
-
-function onResize() { charts.forEach(c => c.resize()) }
 
 onMounted(() => {
     // 1 营收规模与增速（柱=营收，折线=增速，双轴）
@@ -317,14 +316,8 @@ onMounted(() => {
     })();
 
     // 自适应重绘
-    window.addEventListener('resize', onResize)
 })
 
-onBeforeUnmount(() => {
-    window.removeEventListener('resize', onResize)
-    charts.forEach(c => { try { c.dispose() } catch (_) {} })
-    charts = []
-})
 </script>
 
 <style scoped>

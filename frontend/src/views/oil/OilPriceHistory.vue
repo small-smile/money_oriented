@@ -52,6 +52,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'
+import { useChartPool } from '../../composables/useCharts'
 
 // 逐字搬自 dashboard/subject/oil/price_history.html：EVENTS / SERIES_UNIT / axisTooltip、
 // 两张图（原油 K 线蜡烛图 + 黄金/原油/金油比折线）的 option 与全部渲染/交互逻辑原样保留，
@@ -64,11 +65,10 @@ const cardStackEl = ref(null)
 const annotationTableEl = ref(null)
 const modalEl = ref(null)
 
-let charts = []
+const { charts } = useChartPool()
 const cleanups = []
 function onWin(type, fn) { window.addEventListener(type, fn); cleanups.push(() => window.removeEventListener(type, fn)) }
 function onDoc(type, fn) { document.addEventListener(type, fn); cleanups.push(() => document.removeEventListener(type, fn)) }
-function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
 
 // === 事件配置 ===
 // 色彩语义: 涨=红色 (#be123c) / 控价管制=蓝色 (#0369a1)
@@ -649,8 +649,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   cleanups.forEach(fn => { try { fn() } catch (_) {} })
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
 })
 </script>
 

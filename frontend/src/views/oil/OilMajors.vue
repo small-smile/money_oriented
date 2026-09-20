@@ -23,9 +23,10 @@
 
 <script setup>
 import LoadingNote from '../../components/LoadingNote.vue'
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../api'
+import { useChartPool } from '../../composables/useCharts'
 
 // 逐字搬自 dashboard/subject/oil/china_oil_majors.html：4 张图的 option 与渲染逻辑原样保留，
 // 仅取数改走统一 apiGet、容器改用组件 ref、resize/dispose 归拢到组件生命周期。图与数据一律不变。
@@ -36,9 +37,7 @@ const chartPtrEl = ref(null)
 const chartCncEl = ref(null)
 const chartCompareEl = ref(null)
 const chartProdEl = ref(null)
-let charts = []
-
-function onResize() { charts.forEach(c => c.resize()) }
+const { charts } = useChartPool()
 
 onMounted(async () => {
   try {
@@ -56,17 +55,10 @@ onMounted(async () => {
     charts.push(renderWaterfall(chartCncEl.value, '中海油', cnc, { base: '#2a7ab5', gain: '#4fc3f7', label: '#1565c0' }))
     charts.push(renderCompare(chartCompareEl.value, ptr, cnc))
     charts.push(renderProduction(chartProdEl.value, ptrProd, cncProd))
-    window.addEventListener('resize', onResize)
   } catch (e) {
     loading.value = false
     error.value = e.message || String(e)
   }
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.dispose() } catch (_) {} })
-  charts = []
 })
 
 /* ────── 通用瀑布图 ────── */
