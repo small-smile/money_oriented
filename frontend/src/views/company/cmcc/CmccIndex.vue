@@ -86,6 +86,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
+import { useCharts } from '../../../composables/useCharts'
 import {
   years, pick, firstYear, yoy, toYi, yiTxt, yoyTxt, fx, pct, thou,
   setText, setHTML, renderKpis, renderList, renderRows,
@@ -101,20 +102,7 @@ const chartProfitEl = ref(null)
 const chartCostEl = ref(null)
 const chartCapexEl = ref(null)
 const chartDividendEl = ref(null)
-let charts = []
-
-/* 与原 common.js 的 mount/CHARTS/resize 等价：init + setOption(true)，实例收集入 charts，
-   resize 时 resize + 重跑 build（与原页 window.resize 行为一致）。 */
-function mount(el, buildOption) {
-  if (!el) return null
-  const ins = echarts.init(el)
-  ins.setOption(buildOption(ins), true)
-  charts.push({ ins, build: buildOption })
-  return ins
-}
-function onResize() {
-  charts.forEach(c => { c.ins.resize(); c.ins.setOption(c.build(c.ins), true) })
-}
+const { mount, onResize, disposeAll } = useCharts()
 
 onMounted(async () => {
   try {
@@ -127,8 +115,7 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.ins.dispose() } catch (_) {} })
-  charts = []
+  disposeAll()
 })
 
 function render(C) {

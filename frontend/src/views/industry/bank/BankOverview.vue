@@ -33,6 +33,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { renderTimeline } from '../../../utils/format'
 
 // 逐字搬自 dashboard/industry/bank/overview.html 的内联脚本：数据（BANKS/DETAIL_PAGES/
 // HAS_ANNUAL/EVENTS）与渲染逻辑原样保留，仅把 document.getElementById 换成组件模板 ref。
@@ -247,26 +248,12 @@ const EVENTS = [
     }
 ];
 
-function renderTimeline(wrap) {
-    if (!wrap) return;
-    wrap.innerHTML = EVENTS.map(e => `
-        <div class="t-item">
-            <div class="t-year">${e.time}</div>
-            <div class="t-dot" style="color:${e.color}"></div>
-            <div class="t-card" style="border-left-color:${e.color}">
-                <div class="t-name" style="color:${e.color}">${e.name}</div>
-                <div class="t-desc">${e.desc}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
 onMounted(() => {
     render(gridBig.value,   BANKS.big);
     render(gridJoint.value, BANKS.joint);
     render(gridCity.value,  BANKS.city);
     render(gridRural.value, BANKS.rural);
-    renderTimeline(timelineEl.value);
+    renderTimeline(timelineEl.value, EVENTS);
 });
 </script>
 

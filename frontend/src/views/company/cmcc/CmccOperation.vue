@@ -84,6 +84,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
+import { useCharts } from '../../../composables/useCharts'
 import {
   years, pick, fx, pct, thou, yoyTxt,
   setText, setHTML, renderKpis, renderList, renderRows,
@@ -99,18 +100,7 @@ const chartTechEl = ref(null)
 const chartBroadbandEl = ref(null)
 const chartIotEl = ref(null)
 const chartNetworkEl = ref(null)
-let charts = []
-
-function mount(el, buildOption) {
-  if (!el) return null
-  const ins = echarts.init(el)
-  ins.setOption(buildOption(ins), true)
-  charts.push({ ins, build: buildOption })
-  return ins
-}
-function onResize() {
-  charts.forEach(c => { c.ins.resize(); c.ins.setOption(c.build(c.ins), true) })
-}
+const { mount, onResize, disposeAll } = useCharts()
 
 onMounted(async () => {
   try {
@@ -123,8 +113,7 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
-  charts.forEach(c => { try { c.ins.dispose() } catch (_) {} })
-  charts = []
+  disposeAll()
 })
 
 function render(C) {

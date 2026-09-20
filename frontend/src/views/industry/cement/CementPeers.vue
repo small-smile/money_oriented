@@ -26,6 +26,7 @@ import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
+import { fmt } from '../../../utils/format'
 
 // 逐字搬自 dashboard/industry/cement/peers.html：CHARTS/ORDER/COLORS/HK_CODES、fmt、buildChart 与
 // onMounted 渲染逻辑（含三块口径说明 + 缺口说明）原样保留，仅取数改走统一 apiGet（解包后返回 peers），
@@ -429,11 +430,6 @@ const CHARTS = [
                 '在数据文件里逐年可查，未画成图。'
     }
 ];
-
-function fmt(v, decimals) {
-    if (v === null || v === undefined) return '—';
-    return v.toLocaleString('zh-CN', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
-}
 
 function buildChart(cfg, peers, focus) {
     // 全部公司的年份并集，升序；1993—1999 年只有华新/冀东/天山的零散点，统一从 2000 年起画（完整历史仍在 JSON 里）

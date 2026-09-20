@@ -21,6 +21,7 @@ import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
+import { fmt } from '../../../utils/format'
 
 // 逐字搬自 dashboard/industry/insurance/peers.html：CHARTS 配置、fmt、buildChart 渲染逻辑与
 // 每个 ECharts option 原样保留，仅把取数改走统一 apiGet（返回已解包 data、非 200 抛错）、
@@ -243,11 +244,6 @@ const CHARTS = [
                 '本图仍用 F10 重列金额自算以保持与 total_assets 自洽。'
     }
 ];
-
-function fmt(v, decimals) {
-    if (v === null || v === undefined) return '—';
-    return v.toLocaleString('zh-CN', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
-}
 
 function buildChart(cfg, peers, focus) {
     // 全部险企的年份并集，升序

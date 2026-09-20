@@ -20,6 +20,7 @@ import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
+import { fmt } from '../../../utils/format'
 
 // 逐字搬自 dashboard/industry/realestate/peers.html：CHARTS/ORDER/COLORS/HK_CODES、fmt、buildChart
 // 与 onMounted 渲染逻辑原样保留，仅取数改走统一 apiGet（解包后返回 peers），容器改用组件 ref、
@@ -248,11 +249,6 @@ const CHARTS = [
                 '不宜直接读成「加大回报」。'
     }
 ];
-
-function fmt(v, decimals) {
-    if (v === null || v === undefined) return '—';
-    return v.toLocaleString('zh-CN', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
-}
 
 function buildChart(cfg, peers, focus, container) {
     // 全部公司的年份并集，升序；2005 年以前只有华侨城有零散数据，统一从 2005 年起画

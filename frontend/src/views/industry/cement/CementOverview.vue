@@ -52,6 +52,7 @@
 // 组件内不重复。名录卡片与政策时间线原页由页内脚本动态渲染，这里在 onMounted 里用模板 ref 原样复现，
 // 内联数据（CEMENTS / DETAIL_PAGES / EVENTS）逐字照搬，文案、代码、口径、内联样式一律不改。
 import { ref, onMounted } from 'vue'
+import { renderTimeline } from '../../../utils/format'
 
 const gridA = ref(null)
 const gridHk = ref(null)
@@ -212,25 +213,11 @@ const EVENTS = [
     }
 ];
 
-function renderTimeline(wrap) {
-    if (!wrap) return;
-    wrap.innerHTML = EVENTS.map(e => `
-        <div class="t-item">
-            <div class="t-year">${e.time}</div>
-            <div class="t-dot" style="color:${e.color}"></div>
-            <div class="t-card" style="border-left-color:${e.color}">
-                <div class="t-name" style="color:${e.color}">${e.name}</div>
-                <div class="t-desc">${e.desc}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
 onMounted(() => {
     render(gridA.value, CEMENTS.a);
     render(gridHk.value, CEMENTS.hk);
     render(gridOther.value, CEMENTS.other);
-    renderTimeline(timeline.value);
+    renderTimeline(timeline.value, EVENTS);
 });
 </script>
 

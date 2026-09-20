@@ -21,6 +21,7 @@ import LoadingNote from '../../../components/LoadingNote.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../api'
+import { fmt } from '../../../utils/format'
 
 // 逐字搬自 dashboard/industry/telecom/peers.html：CHARTS 配置、buildChart 渲染逻辑与
 // 每个 ECharts option 原样保留，仅把取数改走统一 apiGet、容器改用组件 ref。图与数据一律不变。
@@ -242,11 +243,6 @@ const CHARTS = [
     }
 
 ]
-
-function fmt(v, decimals) {
-    if (v === null || v === undefined) return '—';
-    return v.toLocaleString('zh-CN', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
-}
 
 function onResize() { charts.forEach(c => { try { c.resize() } catch (_) {} }) }
 
