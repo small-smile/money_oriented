@@ -39,7 +39,7 @@ class TestReadProduction:
     def test_normal(self, tmp_path, monkeypatch):
         """正常多行数据"""
         content = PRODUCTION_HEADER + "2020\t100\n2021\t200\n2022\t300\n"
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -60,7 +60,7 @@ class TestReadProduction:
     def test_empty_file_only_header(self, tmp_path, monkeypatch):
         """只有表头，无数据行"""
         content = PRODUCTION_HEADER
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -71,7 +71,7 @@ class TestReadProduction:
     def test_blank_lines_skipped(self, tmp_path, monkeypatch):
         """空行被跳过"""
         content = PRODUCTION_HEADER + "2020\t100\n\n2021\t200\n"
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -81,7 +81,7 @@ class TestReadProduction:
     def test_line_with_too_few_columns_skipped(self, tmp_path, monkeypatch):
         """列数不足的行被跳过"""
         content = PRODUCTION_HEADER + "2020\t100\nonlyone\n2021\t200\n"
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -90,7 +90,7 @@ class TestReadProduction:
     def test_invalid_int_raises_500(self, tmp_path, monkeypatch):
         """产量字段非整数时返回 500"""
         content = PRODUCTION_HEADER + "2020\tNOT_AN_INT\n"
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -100,7 +100,7 @@ class TestReadProduction:
     def test_single_row(self, tmp_path, monkeypatch):
         """仅一条数据行"""
         content = PRODUCTION_HEADER + "1990\t999\n"
-        write_tmp_file(tmp_path, "data/tables/oil.production.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.production.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
         result = bk.read_production()
@@ -116,7 +116,7 @@ class TestReadProduction:
 class TestReadPrice:
 
     def _write(self, tmp_path, monkeypatch, content):
-        write_tmp_file(tmp_path, "data/tables/oil.price.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.price.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
     def test_normal_multiple_rows(self, tmp_path, monkeypatch):
@@ -195,7 +195,7 @@ class TestReadPrice:
 class TestReadAdjPrice:
 
     def _write(self, tmp_path, monkeypatch, content):
-        write_tmp_file(tmp_path, "data/tables/oil.price.txt", content)
+        write_tmp_file(tmp_path, "../data/tables/oil.price.txt", content)
         monkeypatch.setattr(bk.oil, "TABLES_DIR", str(tmp_path / "data" / "tables"))
 
     def test_uses_adj_column(self, tmp_path, monkeypatch):
