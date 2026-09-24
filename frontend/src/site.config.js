@@ -18,7 +18,7 @@ export const routes = [
 
   // 行业
   { path: '/industry/bank/overview', component: () => import('./views/industry/bank/BankOverview.vue'), meta: { title: '银行 A/H 股概览' } },
-  { path: '/industry/bank/tsf', component: () => import('./views/industry/bank/BankTsf.vue'), meta: { title: '社会融资规模' } },
+  { path: '/industry/bank/social-financing', component: () => import('./views/industry/bank/BankSocialFinancing.vue'), meta: { title: '社会融资规模' } },
   { path: '/industry/bank/npl-formation', component: () => import('./views/industry/bank/BankNplFormation.vue'), meta: { title: '息差与不良生成对比' } },
   { path: '/industry/bank/reform-timeline', component: () => import('./views/industry/bank/BankReformTimeline.vue'), meta: { title: '银行业重要变革时间线' } },
   { path: '/industry/insurance/overview', component: () => import('./views/industry/insurance/InsuranceOverview.vue'), meta: { title: '保险 A/H 股概览' } },
@@ -87,7 +87,7 @@ export const navGroups = [
   ] },
   { prefix: '/industry/bank/', pages: [
     { to: '/industry/bank/overview', title: 'A/H 股概览' },
-    { to: '/industry/bank/tsf', title: '社会融资规模' },
+    { to: '/industry/bank/social-financing', title: '社会融资规模' },
     { to: '/industry/bank/npl-formation', title: '息差与不良生成对比' },
     { to: '/industry/bank/reform-timeline', title: '重要变革时间线' },
     { to: '/company/shareholder?code=601077', title: '股权结构' },

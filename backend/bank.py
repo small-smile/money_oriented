@@ -89,21 +89,21 @@ def api_company_charts():
     return jsonify(read_company_charts(request.args.get("code", DEFAULT_BANK_CODE)))
 
 
-def read_tsf():
+def read_social_financing():
     """社会融资规模（TSF）宏观数据，独立于任一银行 —— 直接沿用 601077 精编文件里
-    已规整好的 tsf-stock 块（months/stock/yoy/flow_total/分项），供行业页 tsf.html 使用。"""
+    已规整好的 social-financing-stock 块（months/stock/yoy/flow_total/分项），供行业页社融页使用。"""
     d = read_json(os.path.join(TABLES_DIR, f"company_charts_{DEFAULT_BANK_CODE}.json"))
     if d is None:
         return error("社融数据文件不存在", 404)
-    tsf = d.get("tsf-stock")
-    if not tsf:
-        return error("社融数据缺失 tsf-stock 键", 404)
-    return success(tsf)
+    sf = d.get("social-financing-stock")
+    if not sf:
+        return error("社融数据缺失 social-financing-stock 键", 404)
+    return success(sf)
 
 
-@bank_bp.route("/tsf")
-def api_tsf():
-    return jsonify(read_tsf())
+@bank_bp.route("/social-financing")
+def api_social_financing():
+    return jsonify(read_social_financing())
 
 
 # ── 银行清单与元信息 ─────────────────────────────────────────────────────

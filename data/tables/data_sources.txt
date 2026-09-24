@@ -207,8 +207,8 @@ meta.txt	本目录旧版来源记录 (仅 gold)	[确认]
 fred_oil_meta.txt	FRED 抓取元数据 (由 fetch_fred_oil.py 生成)	[确认]
 
 # --- 社会融资规模 TSF (人民银行, 2015-2026, 用于 company/bank/index.html 宏观背景) ---
-tsf_pboc_stock.json	中国人民银行调查统计司 · 社会融资规模存量统计表 (月度, 万亿元 + 同比%)	[确认] data/extract/fetch_pboc_tsf.py 抓取 pbc.gov.cn/diaochatongjisi/116219/116319/ 各年度归档; 2015 存量原始为季度频率(2016起月度), 2015-2021 只提供 HTM(用正则解析), 2022+ 提供 XLSX. 覆盖 2015-03 到 2026-07, 共 131 期. 2026-08-14 抽取
-tsf_pboc_flow.json	中国人民银行调查统计司 · 社会融资规模增量统计表 (月度分项, 亿元)	[确认] 同 fetch_pboc_tsf.py; 分项字段 total/rmb_loans/fx_loans/entrusted_loans/trust_loans/undiscounted_ba/corp_bonds/equity(+gov_bonds/abs/loan_writeoff 从2018.07/2018.09起). 口径变更: 2018.07 起纳入存款类金融机构ABS+贷款核销; 2018.09 起地方政府专项债并入政府债券; 2019.09 起交易所企业ABS 纳入企业债券; 2023 起将三类非存款金融机构纳入. 覆盖 2015-01 到 2026-07, 共 139 月. 2026-08-14 抽取
+social_financing_pboc_stock.json	中国人民银行调查统计司 · 社会融资规模存量统计表 (月度, 万亿元 + 同比%)	[确认] data/extract/fetch_pboc_social_financing.py 抓取 pbc.gov.cn/diaochatongjisi/116219/116319/ 各年度归档; 2015 存量原始为季度频率(2016起月度), 2015-2021 只提供 HTM(用正则解析), 2022+ 提供 XLSX. 覆盖 2015-03 到 2026-07, 共 131 期. 2026-08-14 抽取
+social_financing_pboc_flow.json	中国人民银行调查统计司 · 社会融资规模增量统计表 (月度分项, 亿元)	[确认] 同 fetch_pboc_social_financing.py; 分项字段 total/rmb_loans/fx_loans/entrusted_loans/trust_loans/undiscounted_ba/corp_bonds/equity(+gov_bonds/abs/loan_writeoff 从2018.07/2018.09起). 口径变更: 2018.07 起纳入存款类金融机构ABS+贷款核销; 2018.09 起地方政府专项债并入政府债券; 2019.09 起交易所企业ABS 纳入企业债券; 2023 起将三类非存款金融机构纳入. 覆盖 2015-01 到 2026-07, 共 139 月. 2026-08-14 抽取
 # 上述两文件的关键序列(months/stock/yoy/flow_total/rmb_loans/gov_bonds/corp_bonds/und_ba/trust_ln/entrust/equity)已内联至
 #   dashboard/company/bank/charts.js 「0. 宏观背景 TSF」 IIFE 中, 供 chart-tsf-stock / chart-tsf-flow 使用.
 

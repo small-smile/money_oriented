@@ -22,8 +22,8 @@
         ② 增量结构中「政府债券」自 2020 年后份额显著上升，「未贴现票据」「信托贷款」「委托贷款」（俗称影子银行三剑客）2018 资管新规后长期收缩；
         ③ 每年 1 月为季节性天量（企业早投放、政府专项债前置）。<br>
         数据来源：中国人民银行「社会融资规模统计数据」调查统计司年度归档 (pbc.gov.cn/diaochatongjisi/116219/116319/)，
-        由 <code>data/extract/fetch_pboc_tsf.py</code> 抓取 2015–2026 年 XLSX / HTM 汇总为 <code>tsf_pboc_stock.json</code> / <code>tsf_pboc_flow.json</code>，
-        经 <code>data/extract/gen_company_charts.py</code> 规整为本页所用结构，后端接口 <code>/api/tsf</code>。<br>
+        由 <code>data/extract/fetch_pboc_social_financing.py</code> 抓取 2015–2026 年 XLSX / HTM 汇总为 <code>social_financing_pboc_stock.json</code> / <code>social_financing_pboc_flow.json</code>，
+        经 <code>data/extract/gen_company_charts.py</code> 规整为本页所用结构，后端接口 <code>/api/social-financing</code>。<br>
         本图原置于各银行数据页首（如<a href="../../company/bank/index.html">渝农商行「业绩」页</a>），因社融是各行共用的宏观口径，非某一行专属数据，故拆分为独立页面；
         与各行经营指标的关联解读仍保留在对应银行页图表说明中。
       </div>
@@ -37,9 +37,9 @@ import { computed } from 'vue'
 import EChart from '../../../components/EChart.vue'
 import { useApiData } from '../../../composables/useApiData'
 
-// 取数改用 useApiData（/api/tsf）；两张图的 option 原样保留、只从原 render() 挪进 computed，
+// 取数改用 useApiData（/api/social-financing）；两张图的 option 原样保留、只从原 render() 挪进 computed，
 // 图与数据一律不变；容器/resize/dispose 交给 EChart 组件。
-const { data, loading, error } = useApiData('/api/tsf')
+const { data, loading, error } = useApiData('/api/social-financing')
 
 /* 只在每年 1 月显示年份（两图共用） */
 const xLabel = {

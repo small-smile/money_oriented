@@ -11,3 +11,6 @@ alwaysApply: true
 
 **How to apply:** 提取财务指标、久期、机构数、股东户数前先确认该年份两地是否都有；
 无论取哪份都按 `financial-report-semantic-reading` 语义通读章节，不 grep 关键词。
+
+【不许做】
+- 给图加 dataZoom

@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-"""把 data/tables 下的 JSON 成品表载入 data/sql/schema.sql 定义的 MySQL 表。
+"""把 data/tables 下的 JSON 成品表载入 data/sql/tables/*.sql 定义的 MySQL 表。
 
 用法：
   # 只解析并打印各表将写入的行数，不连接数据库（无需任何驱动）：
   ./venv/bin/python data/extract/load_to_mysql.py --dry-run
 
-  # 真实入库（需先 pip install pymysql；--init 先执行 schema.sql 建表）：
+  # 真实入库（需先 pip install pymysql；--init 先按序执行 data/sql/tables/*.sql 建表）：
   ./venv/bin/python data/extract/load_to_mysql.py \
       --host 127.0.0.1 --port 3306 --user root --password *** --db money --init
 
-财务走混合模型：跨行业公共列进 financial_common，其余指标进 financial_metric 长表 + metric 维度。
+财务走混合模型：跨行业公共列（损益/资产负债/现金流/现金分红）四表合一并入 financials 宽表（含审计机构/审计意见），其余指标进 financial_metric 长表 + metric 维度。
 本轮只收 JSON 派生表（oil/宏观 CSV 未纳入）。*_shareholder*.json 原始手工件较异构，
 股权数据统一从 holders_manual.json 取。
 """
@@ -21,15 +21,60 @@ import argparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TABLES = os.path.join(ROOT, "data", "tables")
-SCHEMA = os.path.join(ROOT, "data", "sql", "schema.sql")
+SCHEMA_DIR = os.path.join(ROOT, "data", "sql", "tables")   # 每表一个 NN_<表>.sql，按文件名序建表
 
 INDUSTRIES = ["bank", "insurer", "developer", "cement", "telecom", "tech", "food"]
 
-# financial_common 宽表的列（与 schema.sql 一致）；其余 annual 指标进 financial_metric 长表
-COMMON_COLS = ["operate_income", "operate_profit", "total_profit", "netprofit", "parent_netprofit",
-               "total_assets", "total_liabilities", "total_equity", "parent_equity", "share_capital",
-               "eps", "bps", "roe_weighted", "net_margin", "op_cf_per_share"]
-CONSUMED = set(COMMON_COLS) | {"basic_eps"}   # basic_eps 作为 eps 的回退，一并视为已消费
+# 跨行业公共列四表合一并入 financials 宽表（与 data/sql/tables/financials.sql 一致）；其余 annual 指标进 financial_metric 长表。
+# 每项 (SQL 列名, JSON 源字段名)：成品表 JSON 沿用数据源(东方财富接口)字段名，落库时映射成标准英文财报列名，把厂商命名挡在数据层边界外。
+REVENUE_COLS = [("operating_revenue", "operate_income"), ("operating_profit", "operate_profit"),
+                ("profit_before_tax", "total_profit"), ("net_profit", "netprofit"),
+                ("net_profit_attr_parent", "parent_netprofit"), ("net_margin", "net_margin"),
+                ("roe_weighted", "roe_weighted"), ("eps", "eps")]
+ASSET_COLS = [("total_assets", "total_assets"), ("total_liabilities", "total_liabilities"),
+              ("total_equity", "total_equity"), ("equity_attr_parent", "parent_equity"),
+              ("share_capital", "share_capital"), ("bps", "bps")]
+CASHFLOW_COLS = [("net_cash_operating", "netcash_operate"), ("net_cash_investing", "netcash_invest"),
+                 ("net_cash_financing", "netcash_finance"), ("operating_cf_per_share", "op_cf_per_share")]
+# 审计信息（文本列，非数值）：JSON 暂未提供，缺省 NULL，不臆造；后续 annual JSON 补 auditor/audit_opinion 字段即自动入库。
+AUDIT_COLS = [("auditor", "auditor"), ("audit_opinion", "audit_opinion")]
+FIN_NUM_COLS = (*REVENUE_COLS, *ASSET_COLS, *CASHFLOW_COLS)   # financials 表的数值列（损益+资产负债+现金流）
+# 现金分红列：dividend_per_share / dividend_payout_ratio 是 STORED 生成列，不插入。
+DIVIDEND_COLS = ("dividend_per_10_shares", "dividend_unit", "dividend_total")
+# 银行专属列进 bank_financials（与 data/sql/tables/bank_financials.sql 一致）；只对 industry == "bank" 生效。
+BANK_COLS = [("net_interest_income", "interest_ni"), ("net_fee_commission_income", "fee_ni"),
+             ("net_interest_margin", "nim"), ("net_interest_spread", "nis"),
+             ("general_admin_expenses", "manage_expense"), ("cost_income_ratio", "cost_income_ratio"),
+             ("return_on_assets", "roa"), ("credit_impairment_loss", "credit_impairment"),
+             ("asset_impairment_loss", "asset_impairment"),
+             ("gross_loans", "gross_loans"), ("net_loans", "loan_advance"),
+             ("loan_loss_allowance", "loan_loss_allowance"), ("customer_deposits", "total_deposits"),
+             ("customer_deposits_balance_sheet", "accept_deposit"), ("loan_to_deposit_ratio", "ltd_ratio"),
+             ("non_performing_loans", "npl_amount"), ("non_performing_loan_ratio", "npl_ratio"),
+             ("non_performing_loan_formation", "npl_formation"),
+             ("non_performing_loan_formation_rate", "npl_formation_rate"),
+             ("overdue_loans", "overdue_loans"), ("net_charge_off", "net_charge_off"),
+             ("provision_coverage_ratio", "provision_coverage"), ("loan_allowance_ratio", "loan_provision_ratio"),
+             ("capital_adequacy_ratio", "car"), ("tier1_capital_ratio", "tier1"),
+             ("core_tier1_capital_ratio", "cet1"), ("leverage_ratio", "leverage_ratio"),
+             ("liquidity_coverage_ratio", "lcr"), ("net_stable_funding_ratio", "nsfr"),
+             ("equity_asset_ratio", "equity_asset_ratio"),
+             ("cash_and_central_bank_deposits", "cash_deposit_pbc"), ("due_from_banks", "deposit_interbank"),
+             ("placements_with_banks", "lend_fund"), ("reverse_repurchase_assets", "buy_resale"),
+             ("trading_financial_assets", "trade_finasset"), ("fvtpl_financial_assets", "fvtpl_finasset"),
+             ("fvtoci_financial_assets", "fvtoci_finasset"),
+             ("amortized_cost_financial_assets", "amortize_cost_finasset"),
+             ("debt_investments", "creditor_invest"), ("other_debt_investments", "other_creditor_invest"),
+             ("other_equity_investments", "other_equity_invest"),
+             ("borrowings_from_central_bank", "loan_pbc"), ("due_to_banks", "iofi_deposit"),
+             ("placements_from_banks", "borrow_fund"), ("repurchase_agreements", "sell_repo"),
+             ("bonds_payable", "bond_payable"), ("employee_count", "staff_num")]
+CONSUMED = {j for _, j in (*FIN_NUM_COLS, *AUDIT_COLS)} | {"basic_eps"}   # 用 JSON 源字段名；basic_eps 作为 eps 回退，一并视为已消费
+BANK_CONSUMED = CONSUMED | {j for _, j in BANK_COLS}   # 同名字段在非银行行业仍进 financial_metric
+# 公司/零售贷款结构列取自 bank_<code>_detail_manual.json 的 loantrend（按 years 对齐的数组，亿元）。
+LOAN_STRUCTURE_COLS = [("corporate_loans", "corp"), ("retail_loans", "retail"),
+                       ("corporate_non_performing_loans", "nplBalanceCorp"),
+                       ("retail_non_performing_loans", "nplBalanceRetail")]
 
 YEAR = re.compile(r"^(19|20)\d{2}$")
 
@@ -58,30 +103,33 @@ def _txt(v):
 
 # 每张表的插入列（顺序即 add() 时元组的顺序）；带 AUTO_INCREMENT id 的表这里不列 id。
 COLUMNS = {
-    "company": ("code", "short_name", "full_name", "industry", "a_code", "h_code",
-                "us_code", "tier", "same_entity", "note"),
+    "company": ("company_code", "short_name", "full_name", "industry", "a_code", "h_code",
+                "same_entity"),
     "company_source": ("company_code", "source_line"),
     "data_gap": ("company_code", "item", "why"),
     "metric": ("metric_code", "domain", "label", "unit", "note"),
     "financial_meta": ("company_code", "secucode", "currency", "group_name", "source",
                        "unit_note", "caliber_note", "fetched_at"),
-    "financial_common": ("company_code", "fiscal_year", *COMMON_COLS),
+    "financials": ("company_code", "fiscal_year",
+                   *[c for c, _ in FIN_NUM_COLS], *DIVIDEND_COLS, *[c for c, _ in AUDIT_COLS], "source"),
+    "bank_financials": ("company_code", "fiscal_year", *[c for c, _ in BANK_COLS],
+                        *[c for c, _ in LOAN_STRUCTURE_COLS], "source"),
     "financial_metric": ("company_code", "fiscal_year", "metric_code", "value"),
-    "dividend_per10": ("company_code", "fiscal_year", "per10", "unit"),
     "segment_annual": ("company_code", "fiscal_year", "segment", "metric_code", "value"),
     "shareholder_top10": ("company_code", "as_of_date", "rank", "holder_name", "hold_num",
                           "ratio", "chg", "state", "shares_type", "total_shares", "pledged"),
-    "holder_count": ("company_code", "as_of_date", "holder_num", "avg_hold"),
+    "holder_count": ("company_code", "as_of_date", "total_holders", "a_share_holders",
+                     "h_share_holders", "source"),
     "holder_concentration": ("company_code", "as_of_date", "top1", "top3", "top10",
                              "top1_ex", "top3_ex", "top1_name", "top1_ex_name"),
     "share_capital_history": ("company_code", "fiscal_year", "shares", "change_reason"),
-    "tsf_pboc": ("kind", "period_month", "series_key", "value"),
+    "social_financing_pboc": ("kind", "period_month", "series_key", "value"),
 }
 # 插入顺序：company 先建（外键父表），factions 在 shareholder 之后单独插（要拿 AUTO_INCREMENT id）
 INSERT_ORDER = ["company", "company_source", "data_gap", "metric", "financial_meta",
-                "financial_common", "financial_metric", "dividend_per10", "segment_annual",
+                "financials", "bank_financials", "financial_metric", "segment_annual",
                 "shareholder_top10", "holder_count", "holder_concentration",
-                "share_capital_history", "tsf_pboc"]
+                "share_capital_history", "social_financing_pboc"]
 
 
 class Loader:
@@ -90,21 +138,40 @@ class Loader:
         self.companies = {}       # code -> company 行元组（去重）
         self.metric_seen = set()
         self.factions = []        # {company_code,title,color,basis,members:[str]}
+        self.dividends = {}       # (code, year) -> (per10, unit, total)；最后并入 financials 行
 
     def add(self, table, row):
         self.rows[table].append(row)
 
+    def add_dividend(self, code, year, per10, unit, total, override=False):
+        """override=True 用于年报原文手工件：盖过东财接口值（接口把港元宣派折成了人民币）。"""
+        if override or (code, year) not in self.dividends:
+            self.dividends[(code, year)] = (per10, unit, total)
+
+    def merge_dividends(self):
+        """把分红并进 financials 同 (公司,年) 行；只有分红没有财务数的年份单独补一行。"""
+        cols = COLUMNS["financials"]
+        lo, hi = cols.index(DIVIDEND_COLS[0]), cols.index(DIVIDEND_COLS[-1]) + 1
+        merged = []
+        for row in self.rows["financials"]:
+            div = self.dividends.pop((row[0], row[1]), None)
+            merged.append(row[:lo] + div + row[hi:] if div else row)
+        for (code, yr), div in self.dividends.items():
+            blank = [None] * len(cols)
+            blank[0], blank[1], blank[lo:hi] = code, yr, div
+            merged.append(tuple(blank))
+        self.rows["financials"] = merged
+        self.dividends = {}
+
     def ensure_company(self, code, industry="", name=None):
         if code and code not in self.companies:
-            self.companies[code] = (code, name or code, None, industry,
-                                    None, None, None, None, 1, None)
+            self.companies[code] = (code, name or code, None, industry, None, None, 1)
         return code
 
     def set_company(self, e):     # 权威公司行来自 company_codes.json
         self.companies[e["key"]] = (
             e["key"], e.get("short") or e["key"], e.get("full"), e.get("industry") or "",
-            e.get("a_code"), e.get("h_code"), e.get("us_code"), e.get("tier"),
-            1 if e.get("same_entity", True) else 0, e.get("note"))
+            e.get("a_code"), e.get("h_code"), 1 if e.get("same_entity", True) else 0)
 
     def add_metric(self, code, domain):
         if (code, domain) not in self.metric_seen:
@@ -135,11 +202,29 @@ def load_company(L):
         L.add("data_gap", (None, _txt(g.get("item")) or "", _txt(g.get("why"))))
 
 
-def _common_values(row):
-    vals = [_num(row.get(c)) for c in COMMON_COLS]
-    if vals[COMMON_COLS.index("eps")] is None:      # eps 缺则回退 basic_eps
-        vals[COMMON_COLS.index("eps")] = _num(row.get("basic_eps"))
+def _cols_values(row, cols):
+    keys = [j for _, j in cols]                              # JSON 源字段名
+    vals = [_num(row.get(j)) for j in keys]
+    if "eps" in keys and vals[keys.index("eps")] is None:    # eps 缺则回退 basic_eps
+        vals[keys.index("eps")] = _num(row.get("basic_eps"))
     return vals
+
+
+def _loan_structure(code):
+    """{年: (公司余额, 零售余额, 公司不良, 零售不良)}，亿元换算为元；无 detail_manual 返回空。"""
+    path = os.path.join(TABLES, "bank_%s_detail_manual.json" % code)
+    if not os.path.exists(path):
+        return {}
+    lt = json.load(open(path, encoding="utf-8")).get("loantrend") or {}
+    out = {}
+    for i, year in enumerate(lt.get("years") or []):
+        vals = []
+        for _, j in LOAN_STRUCTURE_COLS:
+            v = _num(((lt.get(j) or [])[i:i + 1] or [None])[0])
+            vals.append(None if v is None else round(v * 1e8, 2))
+        if any(v is not None for v in vals):
+            out[int(year)] = tuple(vals)
+    return out
 
 
 def load_annual(L):
@@ -148,34 +233,55 @@ def load_annual(L):
             d = json.load(open(path, encoding="utf-8"))
             code = _txt(d.get("code")) or re.search(r"_(\w+)_annual", os.path.basename(path)).group(1)
             L.ensure_company(code, industry, _txt(d.get("name")))
+            src = _txt(d.get("source"))
             L.add("financial_meta", (code, _txt(d.get("secucode")), _txt(d.get("currency")),
-                  _txt(d.get("group")), _txt(d.get("source")), _txt(d.get("unit_note")),
+                  _txt(d.get("group")), src, _txt(d.get("unit_note")),
                   _txt(d.get("caliber_note")), _txt(d.get("fetched_at"))))
+            loans = _loan_structure(code) if industry == "bank" else {}
+            no_loans = (None,) * len(LOAN_STRUCTURE_COLS)
             for year, row in (d.get("annual") or {}).items():
                 if not (YEAR.match(str(year)) and isinstance(row, dict)):
                     continue
                 yr = int(year)
-                cv = _common_values(row)
-                if any(v is not None for v in cv):
-                    L.add("financial_common", (code, yr, *cv))
+                rv = _cols_values(row, REVENUE_COLS)
+                av = _cols_values(row, ASSET_COLS)
+                cf = _cols_values(row, CASHFLOW_COLS)
+                au = [_txt(row.get(j)) for _, j in AUDIT_COLS]   # 审计机构/审计意见：文本，缺则 NULL
+                if any(v is not None for v in (*rv, *av, *cf, *au)):
+                    L.add("financials", (code, yr, *rv, *av, *cf, None, None, None, *au, src))
+                if industry == "bank":
+                    bv = [*_cols_values(row, BANK_COLS), *loans.pop(yr, no_loans)]
+                    if any(v is not None for v in bv):
+                        L.add("bank_financials", (code, yr, *bv, src))
+                consumed = BANK_CONSUMED if industry == "bank" else CONSUMED
                 for k, v in row.items():
-                    if k in CONSUMED:
+                    if k in consumed:
                         continue
                     val = _num(v)
                     if val is not None:
                         L.add("financial_metric", (code, yr, k, val))
                         L.add_metric(k, industry)
+            dtot = d.get("dividend_total") if isinstance(d.get("dividend_total"), dict) else {}   # {年:亿元}，年报原文，禁反算
             for year, val in (d.get("dividend_per10") or {}).items():
                 v = _num(val)
                 if YEAR.match(str(year)) and v is not None:
-                    L.add("dividend_per10", (code, int(year), v, "元"))
+                    L.add_dividend(code, int(year), v, "元", _num(dtot.get(year)))
             end = _txt(d.get("holders_end_date"))
             for h in d.get("holders") or []:
                 L.add("shareholder_top10", (code, end, h.get("rank"), _txt(h.get("name")),
                       _num(h.get("hold_num")), _num(h.get("ratio")), _txt(h.get("change")),
                       _txt(h.get("state")), _txt(h.get("shares_type")),
                       _num(h.get("total_shares")), _num(h.get("pledged"))))
+            _load_holder_count(L, code, d.get("holder_num"), os.path.basename(path))
             _load_segments(L, code, d.get("segments"))
+
+
+def _load_holder_count(L, code, rows, source):
+    """holder_num = [[日期, 合计, A股, H股], ...]；缺列记 NULL。"""
+    for r in rows or []:
+        if isinstance(r, list) and r and _txt(r[0]):
+            cell = [_num(r[i]) if len(r) > i else None for i in (1, 2, 3)]
+            L.add("holder_count", (code, r[0], *cell, source))
 
 
 def _load_segments(L, code, seg):
@@ -210,10 +316,7 @@ def load_holders_manual(L):
             L.factions.append({"company_code": code, "title": _txt(fac.get("title")) or "",
                                "color": _txt(fac.get("color")), "basis": _txt(fac.get("basis")),
                                "members": [str(n) for n in (fac.get("names") or [])]})
-        for r in e.get("holder_num") or []:
-            if isinstance(r, list) and r and _txt(r[0]):
-                L.add("holder_count", (code, r[0], _num(r[1]) if len(r) > 1 else None,
-                                       _num(r[2]) if len(r) > 2 else None))
+        _load_holder_count(L, code, e.get("holder_num"), "holders_manual.json")
         for r in e.get("holder_concentration") or []:
             if isinstance(r, dict) and _txt(r.get("date")):
                 L.add("holder_concentration", (code, r["date"], _num(r.get("top1")),
@@ -224,14 +327,18 @@ def load_holders_manual(L):
                 L.add("share_capital_history", (code, int(r[0]), _num(r[1]) if len(r) > 1 else None,
                                                 _txt(r[2]) if len(r) > 2 else None))
         unit = _txt(e.get("dividend_unit")) or "元"
+        dtot = e.get("dividend_total") or {}   # {年:亿元} 或 [[年,亿元]]，年报原文，禁反算
+        if isinstance(dtot, list):
+            dtot = {str(x[0]): x[1] for x in dtot if isinstance(x, list) and len(x) >= 2}
         for r in e.get("dividend_per10") or []:
             if isinstance(r, list) and len(r) >= 2 and YEAR.match(str(r[0])) and _num(r[1]) is not None:
-                L.add("dividend_per10", (code, int(r[0]), _num(r[1]), unit))
+                tv = _num(dtot.get(str(r[0]))) if isinstance(dtot, dict) else None
+                L.add_dividend(code, int(r[0]), _num(r[1]), unit, tv, override=True)
 
 
 def load_telecom_segments(L):
     """telecom_segment_manual.json：companies[code].annual[year].canon = {分部:值}，
-    用 canon 的规范键；剔除 total/合计（那是营业收入，另在 financial_common 里）。"""
+    用 canon 的规范键；剔除 total/合计（那是营业收入，另在 revenue 里）。"""
     path = os.path.join(TABLES, "telecom_segment_manual.json")
     if not os.path.exists(path):
         return
@@ -248,8 +355,8 @@ def load_telecom_segments(L):
                     L.add("segment_annual", (code, int(year), str(seg)[:64], "revenue", val))
 
 
-def load_tsf(L):
-    for kind, name in (("stock", "tsf_pboc_stock.json"), ("flow", "tsf_pboc_flow.json")):
+def load_social_financing(L):
+    for kind, name in (("stock", "social_financing_pboc_stock.json"), ("flow", "social_financing_pboc_flow.json")):
         path = os.path.join(TABLES, name)
         if not os.path.exists(path):
             continue
@@ -267,7 +374,7 @@ def load_tsf(L):
                         continue
                     val = _num(v)
                     if val is not None:
-                        L.add("tsf_pboc", (kind, m[:7], str(k)[:32], val))
+                        L.add("social_financing_pboc", (kind, m[:7], str(k)[:32], val))
         elif isinstance(d, dict) and isinstance(d.get("months"), list):
             months = d["months"]
             for k, arr in d.items():
@@ -276,29 +383,29 @@ def load_tsf(L):
                 for m, v in zip(months, arr):
                     val = _num(v)
                     if _txt(m) and val is not None:
-                        L.add("tsf_pboc", (kind, str(m)[:7], str(k)[:32], val))
+                        L.add("social_financing_pboc", (kind, str(m)[:7], str(k)[:32], val))
         elif isinstance(d, dict):
             for m, sub in d.items():
                 if isinstance(sub, dict):
                     for k, v in sub.items():
                         val = _num(v)
                         if val is not None:
-                            L.add("tsf_pboc", (kind, str(m)[:7], str(k)[:32], val))
+                            L.add("social_financing_pboc", (kind, str(m)[:7], str(k)[:32], val))
 
 
 # 有自然主键/唯一键的表，入库前按键去重（多来源可能给出同一行），保留首次出现。
 KEY_COLS = {
     "company_source": ("company_code", "source_line"),
     "financial_meta": ("company_code",),
-    "financial_common": ("company_code", "fiscal_year"),
+    "financials": ("company_code", "fiscal_year"),
+    "bank_financials": ("company_code", "fiscal_year"),
     "financial_metric": ("company_code", "fiscal_year", "metric_code"),
-    "dividend_per10": ("company_code", "fiscal_year"),
     "segment_annual": ("company_code", "fiscal_year", "segment", "metric_code"),
     "shareholder_top10": ("company_code", "as_of_date", "shares_type", "rank"),
     "holder_count": ("company_code", "as_of_date"),
     "holder_concentration": ("company_code", "as_of_date"),
     "share_capital_history": ("company_code", "fiscal_year"),
-    "tsf_pboc": ("kind", "period_month", "series_key"),
+    "social_financing_pboc": ("kind", "period_month", "series_key"),
 }
 
 
@@ -316,11 +423,12 @@ def dedupe(L):
 
 def _run_schema(cur):
     cur.execute("SET FOREIGN_KEY_CHECKS=0")
-    for stmt in open(SCHEMA, encoding="utf-8").read().split(";"):
-        code_lines = [ln for ln in stmt.splitlines()
-                      if ln.strip() and not ln.strip().startswith("--")]
-        if code_lines:
-            cur.execute(stmt)
+    for path in sorted(glob.glob(os.path.join(SCHEMA_DIR, "*.sql"))):   # 建表时 FK 检查已关，文件名序即可
+        for stmt in open(path, encoding="utf-8").read().split(";"):
+            code_lines = [ln for ln in stmt.splitlines()
+                          if ln.strip() and not ln.strip().startswith("--")]
+            if code_lines:
+                cur.execute(stmt)
     cur.execute("SET FOREIGN_KEY_CHECKS=1")
 
 
@@ -332,17 +440,18 @@ def main():
     ap.add_argument("--user", default="root")
     ap.add_argument("--password", default=os.environ.get("MYSQL_PWD", ""))
     ap.add_argument("--db", default="money")
-    ap.add_argument("--init", action="store_true", help="入库前先执行 schema.sql 建表")
+    ap.add_argument("--init", action="store_true", help="入库前先按序执行 data/sql/tables/*.sql 建表")
     a = ap.parse_args()
 
     L = Loader()
     load_company(L)
     load_annual(L)
     load_holders_manual(L)
-    load_tsf(L)
+    load_social_financing(L)
     load_telecom_segments(L)
     L.rows["company"] = list(L.companies.values())
     dedupe(L)
+    L.merge_dividends()
 
     counts = L.counts()
     order = INSERT_ORDER + ["holder_faction", "holder_faction_member"]

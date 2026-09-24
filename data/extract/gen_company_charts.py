@@ -928,8 +928,8 @@ def build(code: str) -> dict:
 
     # 社融为宏观口径，各行共用同一份（直接沿用 601077 精编文件里的那份）
     ref = json.loads((TABLES / "company_charts_601077.json").read_text(encoding="utf-8"))
-    if "tsf-stock" in ref:
-        out["tsf-stock"] = ref["tsf-stock"]
+    if "social-financing-stock" in ref:
+        out["social-financing-stock"] = ref["social-financing-stock"]
     return out
 
 

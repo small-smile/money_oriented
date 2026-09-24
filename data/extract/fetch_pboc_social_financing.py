@@ -5,12 +5,12 @@ Fetch 社会融资规模（TSF / Aggregate Financing to the Real Economy）月�
     http://www.pbc.gov.cn/diaochatongjisi/116219/index.html
        └─ 20xx 年统计数据 → 社会融资规模 → 存量统计表.xlsx / 增量统计表.xlsx
 
-每年一份 XLSX，各含当年 12 个月。分别缓存到 data/raw/pboc_tsf/YYYY_{stock,flow}.xlsx，
-最终汇总到 data/tables/tsf_pboc_stock.json 与 tsf_pboc_flow.json。
+每年一份 XLSX，各含当年 12 个月。分别缓存到 data/raw/pboc_social_financing/YYYY_{stock,flow}.xlsx，
+最终汇总到 data/tables/social_financing_pboc_stock.json 与 social_financing_pboc_flow.json。
 
 用法:
-    python data/extract/fetch_pboc_tsf.py         # 缺失年份才下载
-    python data/extract/fetch_pboc_tsf.py --refresh  # 全部重新下载
+    python data/extract/fetch_pboc_social_financing.py         # 缺失年份才下载
+    python data/extract/fetch_pboc_social_financing.py --refresh  # 全部重新下载
 
 注意:
     - PBoC 每年 XLSX 均为"当年 as-of 该年报送口径"，历年间口径不完全一致
@@ -31,7 +31,7 @@ except ImportError:
     sys.exit("请先在 venv 中 `pip install openpyxl`")
 
 ROOT = Path(__file__).resolve().parents[2]
-RAW_DIR = ROOT / "data" / "raw" / "pboc_tsf"
+RAW_DIR = ROOT / "data" / "raw" / "pboc_social_financing"
 TABLES_DIR = ROOT / "data" / "tables"
 BASE = "https://www.pbc.gov.cn"
 
@@ -64,14 +64,14 @@ def http_get(url: str, timeout: int = 30) -> bytes:
         return r.read()
 
 
-def find_tsf_section_url(year_index_url: str) -> str | None:
+def find_social_financing_section_url(year_index_url: str) -> str | None:
     """在年度索引页里找到「社会融资规模」子栏目 URL。"""
     html = http_get(year_index_url).decode("utf-8", "ignore")
     m = re.search(r'href="([^"]+)"[^>]*>\s*社会融资规模', html)
     return BASE + m.group(1) if m else None
 
 
-def find_attachment_pair(tsf_section_url: str) -> tuple[
+def find_attachment_pair(sf_section_url: str) -> tuple[
     tuple[str | None, str | None], tuple[str | None, str | None]
 ]:
     """在「社会融资规模」子页定位存量/增量附件。
@@ -80,7 +80,7 @@ def find_attachment_pair(tsf_section_url: str) -> tuple[
         ((stock_url, stock_ext), (flow_url, flow_ext))
     ext ∈ {"xlsx", "htm"}
     """
-    html = http_get(tsf_section_url).decode("utf-8", "ignore")
+    html = http_get(sf_section_url).decode("utf-8", "ignore")
     html_flat = re.sub(r"\s+", " ", html)
 
     def pick(kind: str) -> tuple[str | None, str | None]:
@@ -105,7 +105,7 @@ def find_attachment_pair(tsf_section_url: str) -> tuple[
 
 
 def cache_attachment(year: int, kind: str, url: str, ext: str, refresh: bool = False) -> Path:
-    """缓存附件到 data/raw/pboc_tsf/YYYY_{kind}.{ext}。"""
+    """缓存附件到 data/raw/pboc_social_financing/YYYY_{kind}.{ext}。"""
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     dst = RAW_DIR / f"{year}_{kind}.{ext}"
     if dst.exists() and not refresh:
@@ -385,7 +385,7 @@ def main() -> None:
     for year in years:
         print(f"[{year}]")
         try:
-            sect = find_tsf_section_url(BASE + YEAR_INDEX[year])
+            sect = find_social_financing_section_url(BASE + YEAR_INDEX[year])
         except Exception as e:
             print(f"    !! index fetch failed: {e}")
             continue
@@ -426,7 +426,7 @@ def main() -> None:
     all_flow.sort(key=lambda r: r["month"])
 
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
-    (TABLES_DIR / "tsf_pboc_stock.json").write_text(
+    (TABLES_DIR / "social_financing_pboc_stock.json").write_text(
         json.dumps(
             {
                 "source": "PBoC 调查统计司 · 社会融资规模存量统计表 (各年度 XLSX 聚合)",
@@ -439,7 +439,7 @@ def main() -> None:
         ),
         encoding="utf-8",
     )
-    (TABLES_DIR / "tsf_pboc_flow.json").write_text(
+    (TABLES_DIR / "social_financing_pboc_flow.json").write_text(
         json.dumps(
             {
                 "source": "PBoC 调查统计司 · 社会融资规模增量统计表 (各年度 XLSX 聚合)",
