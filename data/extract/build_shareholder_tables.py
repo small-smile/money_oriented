@@ -9,18 +9,19 @@
 
 合并逻辑复用 backend.holders._stitch_rec（接口 read_holders 现拼时用的同一份函数），
 所以「读合并表」与「现拼」给出的数据完全一致 —— 接口有这份表就直接读，没有就退回现拼。
+上游与产出的 JSON 都不落盘，原文在 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写。
 
 用法（本地跑，venv）：
   venv/bin/python data/extract/build_shareholder_tables.py               # 全量（所有板块所有公司）
   venv/bin/python data/extract/build_shareholder_tables.py 601398 09888  # 只跑指定代码
 """
-import json
 import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
+from backend import jsonstore                                                  # noqa: E402
 from backend.holders import HOLDER_INDUSTRIES, SHAREHOLDER_TABLE, _stitch_rec  # noqa: E402
 from backend.shared import TABLES_DIR, _holders_manual                         # noqa: E402
 
@@ -45,8 +46,7 @@ def build(only=None):
             rec["_generated"] = {"code": code, "industry": industry,
                                  "generated_by": "data/extract/build_shareholder_tables.py", "note": META_NOTE}
             name = SHAREHOLDER_TABLE.format(industry=industry, code=code)
-            with open(os.path.join(TABLES_DIR, name), "w", encoding="utf-8") as f:
-                json.dump(rec, f, ensure_ascii=False, indent=2)
+            jsonstore.write(os.path.join(TABLES_DIR, name), rec, ensure_ascii=False, indent=2)
             written.append(name)
     return written, skipped
 

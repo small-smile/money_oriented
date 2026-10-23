@@ -11,22 +11,24 @@
 电信与联通为元，脚本按量级归一成**亿元**。
 
 输入：data/raw/annual_<code>_<year>.txt（由 fetch_telecom_reports.py 落盘）
-输出：data/tables/telecom_segment_manual.json
+输出：data/tables/telecom_segment_manual.json（不落盘，原文存 MySQL json_file 表，经 backend/jsonstore.py 写）
 
 用法：
-    python data/extract/extract_telecom_segments.py            # 全部
-    python data/extract/extract_telecom_segments.py 600941     # 只跑一家
+    ./venv/bin/python data/extract/extract_telecom_segments.py            # 全部
+    ./venv/bin/python data/extract/extract_telecom_segments.py 600941     # 只跑一家
 """
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT))
+from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径写
+
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "tables" / "telecom_segment_manual.json"
 
@@ -177,7 +179,7 @@ def main() -> None:
                   f"科目 {len([k for k in norm if k not in ('小计', '合计')])} 项"
                   + (f" 未归一 {unknown}" if unknown else "") + flag)
         out["companies"][code] = comp
-    OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    jsonstore.write(OUT, out, ensure_ascii=False, indent=1)
     print(f"-> {OUT.relative_to(ROOT)}")
 
 

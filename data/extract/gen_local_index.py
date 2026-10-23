@@ -3,16 +3,16 @@
 
 本地已抽取的年报文本 (data/raw/annual_<code>_<year>.txt) 与成品表 (data/tables/*.json)
 都是可信一手来源, 取数应先查本地。但两个目录合计上千个文件, 靠 ls 很难看出
-「哪家、哪些年、有哪些指标」。本脚本扫描这两个目录, 输出一份按公司组织的索引,
-供人和子代理直接检索。
+「哪家、哪些年、有哪些指标」。本脚本扫描这两处, 输出一份按公司组织的索引,
+供人和子代理直接检索。成品表 *.json 已不落盘 (原文存 MySQL json_file 表), 经 backend/jsonstore.py
+列举与读取; 年报文本照旧扫磁盘。
 
 口径与来源说明仍以 data/tables/data_sources.txt 为准, 本文件只回答「有没有、在哪、覆盖哪些年」。
 
 用法:
-    python3 data/extract/gen_local_index.py          # 写 data/local_index.md
-    python3 data/extract/gen_local_index.py --stdout  # 只打印不落盘
+    ./venv/bin/python data/extract/gen_local_index.py          # 写 data/local_index.md
+    ./venv/bin/python data/extract/gen_local_index.py --stdout  # 只打印不落盘
 """
-import json
 import os
 import re
 import sys
@@ -20,6 +20,9 @@ from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.dirname(HERE)
+sys.path.insert(0, os.path.dirname(DATA))
+from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表, 按原文件路径列举/读取
+
 RAW = os.path.join(DATA, 'raw')
 TABLES = os.path.join(DATA, 'tables')
 OUT = os.path.join(DATA, 'local_index.md')
@@ -76,8 +79,7 @@ def scan_raw():
 
 def load(path):
     try:
-        with open(path, encoding='utf-8') as f:
-            return json.load(f)
+        return jsonstore.read(path)
     except Exception:
         return None
 
@@ -85,7 +87,7 @@ def load(path):
 def scan_tables():
     """按 <sector>_<code>_<kind>.json 归并成 {(sector, code): {kind: data}}。"""
     recs = defaultdict(dict)
-    for fn in sorted(os.listdir(TABLES)):
+    for fn in jsonstore.listdir(TABLES):
         m = re.match(r'^(bank|insurer|cement|developer|telecom)_([0-9]{5,6})_(\w+)\.json$', fn)
         if m:
             sector, code, kind = m.groups()
@@ -214,7 +216,7 @@ def sector_manual_lines(sector):
     """板块级手工层（不按公司分文件的 <板块>_*_manual.json，如 telecom_ops_manual.json、
     telecom_segment_manual.json）：列出文件名与每家覆盖的年份，否则这两层在索引里查不到。"""
     out = []
-    for fn in sorted(os.listdir(TABLES)):
+    for fn in jsonstore.listdir(TABLES):
         if not re.fullmatch(rf'{sector}_[a-z_]+_manual\.json', fn):
             continue                      # 按公司分的手工表（含 6 位代码）已在公司行里列出
         d = load(os.path.join(TABLES, fn)) or {}

@@ -21,13 +21,13 @@
       实际为 4,678,776,901 股，须用年报值覆盖；DPS_HKD 是快照字段（2015—2024 各行同为 0.0807219），
       不能当逐年股息序列。
       港股 F10 主要指标完全不含银行监管指标（不良率/拨备覆盖率/拨贷比/资本充足率/NIM/NIS/
-      贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层：
+      贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层（同在 json_file 表，键如下）：
     - data/tables/bank_01916_ar_manual.json   逐年年报手工提取值（列式，一行 = 年报表格一行）
     - data/tables/bank_01578_ar_manual.json   同上（天津银行 2012—2025）
     - data/tables/bank_06138_ar_manual.json   同上（哈尔滨银行 2009—2025，源自 13 份 H 股年报；
       2018 年起 IFRS 9 且未重述比较期，永续债计入其他权益工具、100 亿转股协议存款在客户存款附注内）
 
-输出：
+输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
     data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
@@ -40,7 +40,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 import urllib.parse
@@ -48,7 +47,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from _common import (
-    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, pick, request_json, request_page,
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, jsonstore, pick, request_json, request_page,
 )
 from _common import cached as _cached
 
@@ -466,7 +465,9 @@ def build_bank(code: str, refresh: bool) -> dict:
 def load_ar_manual(code: str) -> dict:
     """读取年报手工提取覆盖层，把列式 series 摊平成 {年份: {字段: 值}}，金额由百万元换成元。"""
     path = OUT_DIR / f"bank_{code}_ar_manual.json"
-    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc = jsonstore.read(path)
+    if doc is None:
+        raise FileNotFoundError(f"json_file 表里没有 {jsonstore.key(path)}")
     years, series = doc["years"], doc["series"]
     amount = set(doc["amount_fields"])
     annual: dict[str, dict] = {y: {} for y in years}
@@ -573,12 +574,11 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"未知代码：{unknown}；已支持 {list(BANKS) + list(BANKS_HK)}")
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
         data = build_bank_hk(code, args.refresh) if code in BANKS_HK \
             else build_bank(code, args.refresh)
         out = OUT_DIR / f"bank_{code}_annual.json"
-        out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        jsonstore.write(out, data, ensure_ascii=False, indent=1)
         yrs = sorted(data["annual"])
         print(f"    -> {out.relative_to(ROOT)}  ({len(yrs)} 年，{yrs[0]}~{yrs[-1]}，"
               f"股东 {len(data['holders'])} 名 @ {data['holders_end_date']})")

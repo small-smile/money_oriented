@@ -6,7 +6,7 @@
  *
  * 与原 common.js 的唯一差异：图表实例的 init / 收集 / resize / dispose 交给各页组件
  * 生命周期管理（见各页的 mount / charts / onBeforeUnmount），本文件不再持有全局 CHARTS 单例；
- * 取数由各页用绝对路径 fetch('/data/tables/telecom_00941_*.json') 合成 C 对象后在页内使用，
+ * 取数由各页 fetch('/api/tables/telecom_00941_*.json')（成品表原文，JSON 已进 MySQL）合成 C 对象后在页内使用，
  * 字段与合并方式与原 boot.js 完全一致。DOM 工具（$ / setHTML / renderKpis 等）沿用按 id 注入。
  */
 
@@ -40,13 +40,13 @@ export const RESIDUAL_PATTERN = (function () {
 export const RESIDUAL_SWATCH_CSS = 'repeating-linear-gradient(45deg,#999 0 1.5px,#f0f0f0 1.5px 7.1px)';
 
 /* ==== 数据引导：逐字对应原 boot.js —— 三份表并行 fetch，合成与 window.CMCC 同构的 C 对象 ====
- * 原 boot.js 相对 charts/ 目录取 ../../../data/tables/telecom_00941_*.json；dev server 已把仓库
- * data 软链到 /data，故改用绝对路径 /data/tables/telecom_00941_*.json，键序与合并方式与原页一致：
- * C = { annual: <annual.json>, operating: <operating.json>, profile: <profile.json> }。不改数据文件。 */
+ * 原 boot.js 相对 charts/ 目录取 ../../../data/tables/telecom_00941_*.json；JSON 进 MySQL 后磁盘上
+ * 不再有这些文件，改由后端 /api/tables/<表名> 按原文下发（不套 {code, data}），键序与合并方式与原页一致：
+ * C = { annual: <annual.json>, operating: <operating.json>, profile: <profile.json> }。不改数据。 */
 export const CMCC_TABLES = {
-    annual: '/data/tables/telecom_00941_annual.json',
-    operating: '/data/tables/telecom_00941_operating.json',
-    profile: '/data/tables/telecom_00941_profile.json'
+    annual: '/api/tables/telecom_00941_annual.json',
+    operating: '/api/tables/telecom_00941_operating.json',
+    profile: '/api/tables/telecom_00941_profile.json'
 };
 export function loadCmcc() {
     var keys = Object.keys(CMCC_TABLES);

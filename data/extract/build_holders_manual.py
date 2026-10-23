@@ -14,10 +14,17 @@
 全部是同类归并 —— 这一点写进 caliber_note。
 
 用法：venv/bin/python data/extract/build_holders_manual.py
+读写的 JSON（抽取件 data/extract/out/*.json、data/tables/*.json 与本表）都不落盘，
+原文在 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写。
 """
-import json
 import os
 import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
+
+from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
 
 TABLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tables")
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
@@ -303,11 +310,10 @@ def attach_history(key, code):
     """把抽取件折成上面四层塞进 MANUAL[key]；抽取件还没生成就跳过（页面自然少那几张图）。
     最新一年的前十名股东表同时覆盖 holders —— 名册也用年报原文那份，跟标准模板同口径。"""
     path = os.path.join(OUT_DIR, f"holders_hist_{code}.json")
-    if not os.path.exists(path):
+    if not jsonstore.exists(path):
         print(f"  [skip] {key}: 缺 {os.path.relpath(path, os.path.dirname(TABLES))}")
         return
-    with open(path, "r", encoding="utf-8") as f:
-        hist = json.load(f)
+    hist = jsonstore.read(path)
     years = hist.get("years") or {}
     ent = MANUAL.setdefault(key, {})
     cap, hnum, conc, div = [], [], [], []
@@ -373,11 +379,10 @@ def attach_tech_history(key="tech:09888", code="09888"):
       holder_concentration 各年实益拥有权表里排前的几行累计（top1 = 李彦宏），另给一条投票权%
     没有股东户数（开曼公司 + ADS，不存在 A 股那种登记户数），也没有分红（百度从未派息）。"""
     path = os.path.join(OUT_DIR, f"ownership_hist_{code}.json")
-    if not os.path.exists(path):
+    if not jsonstore.exists(path):
         print(f"  [skip] {key}: 缺 {os.path.relpath(path, os.path.dirname(TABLES))}")
         return
-    with open(path, "r", encoding="utf-8") as f:
-        hist = json.load(f)
+    hist = jsonstore.read(path)
     years, cap, conc = hist.get("years") or {}, [], []
     for y in sorted(years):
         r = years[y] or {}
@@ -478,8 +483,7 @@ def attach_bank_aliases():
     """把别名表写进手工层，并核对目标名字确实在该行当期接口名册里。"""
     for code, amap in BANK_FACTION_ALIASES.items():
         path = os.path.join(TABLES, f"bank_{code}_annual.json")
-        with open(path, encoding="utf-8") as f:
-            roster = [h.get("name") for h in (json.load(f).get("holders") or [])]
+        roster = [h.get("name") for h in (jsonstore.read(path).get("holders") or [])]
         missing = [v for v in amap.values() if v not in roster]
         assert not missing, f"bank:{code} 别名目标不在接口名册里：{missing}\n名册：{roster}"
         MANUAL.setdefault(f"bank:{code}", {})["faction_aliases"] = amap
@@ -525,8 +529,7 @@ def attach_ring_alt_meta():
     """把第二/第三口径环形图的标签与口径说明写进手工层，并核对 company_charts 里确有那两块数据。"""
     for code, meta in BANK_RING_ALT_META.items():
         path = os.path.join(TABLES, f"company_charts_{code}.json")
-        with open(path, encoding="utf-8") as f:
-            chart = json.load(f)
+        chart = jsonstore.read(path)
         keys = [k for k in meta if k != "main_label"]
         missing = [k for k in keys if not (chart.get(k) or {}).get("holderData")]
         assert not missing, f"company_charts_{code}.json 缺 {missing}，别给它写口径说明"
@@ -551,8 +554,7 @@ if __name__ == "__main__":
                  "照股权结构页那套标准模板补，"
                  "来自 data/extract/out/holders_hist_<代码>.json 的年报原文抽取件，只重排与加总。"),
     }
-    with open(OUT, "w", encoding="utf-8") as f:
-        json.dump(MANUAL, f, ensure_ascii=False, indent=1)
+    jsonstore.write(OUT, MANUAL, ensure_ascii=False, indent=1)
     print("written", OUT)
     for k, v in MANUAL.items():
         if k == "_meta":

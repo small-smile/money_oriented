@@ -4,6 +4,7 @@ import re
 
 from flask import Blueprint, jsonify, request
 
+from backend import jsonstore
 from backend.shared import (
     TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect,
     success, error,
@@ -191,7 +192,7 @@ LISTING_DATES = {
 def list_banks():
     """可切换银行清单：扫 company_charts_<code>.json，行名取文件里的 _bank 元信息。"""
     found = {}
-    for name in sorted(os.listdir(TABLES_DIR)):
+    for name in jsonstore.listdir(TABLES_DIR):
         m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
         if not m:
             continue
@@ -237,10 +238,9 @@ def read_bank_npl_formation():
     def _push(code):
         if code in seen:
             return
-        path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
-        if not os.path.exists(path):
+        d = read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"), tolerant=True)
+        if d is None:
             return
-        d = read_json(path, tolerant=True) or {}
         sd = d.get("scale-dep") or {}
         nt = d.get("nim-trend") or {}
         fm = sd.get("formation")
@@ -263,7 +263,7 @@ def read_bank_npl_formation():
 
     for code in BANK_ORDER:
         _push(code)
-    for name in sorted(os.listdir(TABLES_DIR)):     # BANK_ORDER 之外的行兜底
+    for name in jsonstore.listdir(TABLES_DIR):      # BANK_ORDER 之外的行兜底
         m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
         if m:
             _push(m.group(1))

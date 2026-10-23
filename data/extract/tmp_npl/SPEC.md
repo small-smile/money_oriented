@@ -1,6 +1,6 @@
 # 任务：从年报原文抽取「公司贷款 / 零售(个人)贷款 不良贷款余额」
 
-仓库根：/home/zhu/Desktop/real_home/code/python/money_oriented
+仓库根：/home/zhu/Desktop/real_home/code/python/industry_research
 
 ## 每家银行要做的事
 1. 读 `data/tables/bank_<code>_detail_manual.json` 的 `loantrend`（years / corp / retail / nplCorp / nplRetail，余额单位亿元，不良率 %）

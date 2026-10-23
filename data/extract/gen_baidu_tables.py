@@ -9,14 +9,20 @@
 （us-gaap:NetIncomeLoss，US GAAP 下即 attributable to parent），`netIncomeIncNci`
 含少数股东（ProfitLoss）。同一年份在多份 20-F 里可能有重述值，取**最新提交件**的值。
 
-用法：python3 data/extract/gen_baidu_tables.py
+输入 data/raw/sec_companyfacts_09888.json 与输出表都已不落盘：原文存 MySQL json_file 表，
+经 backend/jsonstore.py 按原文件路径读写。
+
+用法：./venv/bin/python data/extract/gen_baidu_tables.py
 """
 from __future__ import annotations
 
-import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+
 FACTS = ROOT / "data" / "raw" / "sec_companyfacts_09888.json"
 OUT = ROOT / "data" / "tables" / "tech_09888_annual.json"
 
@@ -66,7 +72,7 @@ INSTANT = {
 
 
 def load() -> dict:
-    return json.load(FACTS.open(encoding="utf-8"))["facts"]["us-gaap"]
+    return jsonstore.read(FACTS)["facts"]["us-gaap"]
 
 
 def pick(us: dict, tags: list[str], instant: bool) -> dict[int, float]:
@@ -156,7 +162,7 @@ def main() -> int:
         },
         "annual": annual,
     }
-    OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    jsonstore.write(OUT, out, ensure_ascii=False, indent=1)
 
     print(f"写入 {OUT.relative_to(ROOT)}  年份 {years[0]}–{years[-1]}（{len(years)}）")
     for k in list(DURATION) + list(INSTANT):

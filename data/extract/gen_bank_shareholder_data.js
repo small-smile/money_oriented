@@ -10,13 +10,19 @@
  * 「银行切换器上移到导航栏」一并删除（切换改为 bank-header.js 的下拉框 + ?code= 重载），
  * 其中的 `var BANKS = {};` 数据块更早就已清空。现在执行只会在 readFileSync/切片处报错。
  * 需要看原始字面量请查 git 历史（该文件在 main 分支的提交里）。
- * 迁移后的权威来源就是 data/tables/company_charts_<code>.json 本身。
+ * 迁移后的权威来源就是 data/tables/company_charts_<code>.json 本身（原文现存 MySQL json_file 表）。
  */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '../..');
+/* data/ 下的 JSON 原文已进 MySQL json_file 表，经 backend/jsonstore.py 的命令行读写（键为相对 data/ 的路径） */
+function jsonstore(args, input) {
+    return execFileSync(path.join(ROOT, 'venv/bin/python'), [path.join(ROOT, 'backend/jsonstore.py')].concat(args),
+        { cwd: ROOT, input: input, encoding: 'utf8', maxBuffer: 64 << 20 });
+}
 const SRC = path.join(ROOT, 'dashboard/company/bank/shareholder-switch.js');
 const OUTDIR = path.join(ROOT, 'data/tables');
 const CODES = ['601288', '600036', '600016', '01578'];
@@ -46,6 +52,6 @@ CODES.forEach(function (code) {
     const b = BANKS[code];
     if (!b) throw new Error('BANKS 中缺少银行 ' + code);
     const out = path.join(OUTDIR, 'company_charts_' + code + '.json');
-    fs.writeFileSync(out, JSON.stringify(b, null, 2) + '\n', 'utf8');
+    jsonstore(['put', path.relative(path.join(ROOT, 'data'), out)], JSON.stringify(b, null, 2) + '\n');
     console.log('wrote', path.relative(ROOT, out));
 });

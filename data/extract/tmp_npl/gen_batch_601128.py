@@ -1,7 +1,9 @@
-import json, os
+import os, sys
 
-ROOT = '/home/zhu/Desktop/real_home/code/python/money_oriented'
+ROOT = '/home/zhu/Desktop/real_home/code/python/industry_research'
 OUT = f'{ROOT}/data/extract/tmp_npl'
+sys.path.insert(0, ROOT)
+from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径读写
 
 N = None
 data = {
@@ -60,7 +62,7 @@ data = {
 }
 
 for code, d in data.items():
-    lt = json.load(open(f'{ROOT}/data/tables/bank_{code}_detail_manual.json'))['loantrend']
+    lt = jsonstore.read(f'{ROOT}/data/tables/bank_{code}_detail_manual.json')['loantrend']
     years = lt['years']
     assert len(d['corp']) == len(years) == len(d['retail']), code
     for key, bal, rate in (('corp', d['corp'], lt.get('nplCorp')), ('retail', d['retail'], lt.get('nplRetail'))):
@@ -74,5 +76,4 @@ for code, d in data.items():
             print(code, key, y, v, f'{calc:.3f}', r, flag)
     out = dict(code=code, years=years, nplBalanceCorp=d['corp'], nplBalanceRetail=d['retail'],
                note=d['note'], gaps=d['gaps'])
-    with open(f'{OUT}/{code}.json', 'w', encoding='utf-8') as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
+    jsonstore.write(f'{OUT}/{code}.json', out, ensure_ascii=False, indent=2)

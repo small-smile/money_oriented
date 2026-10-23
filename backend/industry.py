@@ -2,8 +2,9 @@ import os
 import re
 import json
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
+from backend import jsonstore
 from backend.shared import (
     TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect, _company_entity,
     success, error,
@@ -143,3 +144,14 @@ for _ind, _spec in INDUSTRIES.items():
                              view_func=_make_annual_view(_ind, _spec["default"]))
     industry_bp.add_url_rule(f"/{_ind}_peers", endpoint=f"api_{_ind}_peers",
                              view_func=_make_peers_view(_ind))
+
+
+@industry_bp.route("/tables/<name>")
+def api_table(name):
+    """成品表原文（中国移动页原先直接 fetch('/data/tables/telecom_00941_*.json')，JSON 进库后改走这里）。
+    按原文下发、不套 {code, data}，键序与原文件一致；只开放 tables/ 下的 *.json。"""
+    text = jsonstore.read_text(os.path.join(TABLES_DIR, name)) \
+        if re.fullmatch(r"[A-Za-z0-9_.\-]+\.json", name) else None
+    if text is None:
+        return jsonify(error(f"数据表 {name} 不存在", 404)), 404
+    return Response(text, mimetype="application/json")

@@ -1,4 +1,4 @@
-# 度阿发 (money_oriented)
+# 度阿发 (industry_research)
 
 行业财务数据看板：Vue 3 + ECharts 前端 + Flask 纯 JSON API。
 
@@ -14,9 +14,17 @@
   - `src/components/SiteHeader.vue` 按路由分组的导航；`src/assets/base.css` 全站样式；
     `src/router/index.js` 路由（`beforeEach` 剥掉旧链接的 `.html` 后缀）
   - `src/views/company/bank/legacy/` 银行页 3100+ 行原始图表脚本，逐字沿用
-  - `public/data` → 仓库 `data/` 软链（cmcc 页直接 `fetch('/data/tables/*.json')`）
+  - `public/data` → 仓库 `data/` 软链（只剩 txt/csv 等非 JSON 文件；cmcc 页的 JSON 走 `/api/tables/<表名>`）
 - `app.py` + `backend/` — Flask 纯 JSON API，只有 `/api/...`，页面路径一律 404
 - `data/extract/*.py` — 抽数脚本：`data/raw/`（原始文件，不入库）→ `data/tables/`（成品表，入库）
+- **JSON 不落盘**：原 `data/` 下的全部 `*.json`（`tables/` 成品表、`raw/` 接口缓存、`extract/` 中间件）原文存 MySQL
+  `json_file` 表（`data/sql/tables/json_file.sql`），键仍是相对 `data/` 的原路径；后端与抽数脚本一律经
+  `backend/jsonstore.py` 读写，连接配置读 `.env` 的 `MYSQL_*`。下文提到的 `data/tables/*.json` 都指这张表里的键。
+  导回文件对照：`./venv/bin/python backend/jsonstore.py export /tmp/json_export`
+- 结构化表（同库，`data/sql/tables/*.sql` 一表一文件）由 `./venv/bin/python data/extract/load_to_mysql.py --init --reload`
+  从 json_file 全量派生，可反复跑；后端目前仍读 json_file，JSON 更新后要重跑一次结构化表才跟上。
+  实体键带交易所前缀（`sh.601077` / `hk.01578`）；行业专属列的字段映射在 `data/extract/industry_columns.py`；
+  没登记映射的字段、同义字段两边不一致，载入时记进 `data_anomaly`，不静默丢弃
 - `data/local_index.md` — 本地数据索引（`gen_local_index.py` 生成）。取数先查它，本地没有才去交易所/官网抓
 
 ## 运行
@@ -29,10 +37,12 @@ cd frontend && npm run build                 # 产物 frontend/dist，给 nginx 
 ```
 
 - 后端必须用 venv 的 python，系统 python 没装 `flask_cors`。
+- 后端与抽数脚本都依赖本机 MySQL（`.env` 的 `MYSQL_*`，库里 `json_file` 表）；服务端 `max_allowed_packet`
+  要大于最大一份 JSON（约 2.2MB），本机已 `SET PERSIST max_allowed_packet = 64M`。
 - 本机 `NODE_ENV=production` 会让 npm 跳过 devDependencies，靠仓库里的 `frontend/.npmrc`（`include=dev`）绕开。
 - nginx 配置在 `deploy/nginx/`：发 `dist` 静态站、`/api/` 反代 Flask、`/data/` alias 到仓库 `data/`、
   SPA 深链 `try_files … /index.html`。`standalone.conf` 免 root（`127.0.0.1:8080`，
-  `nginx -c $PWD/deploy/nginx/standalone.conf` 起、`-s quit` 停）；`money_oriented.conf` 是系统 nginx
+  `nginx -c $PWD/deploy/nginx/standalone.conf` 起、`-s quit` 停）；`industry_research.conf` 是系统 nginx
   （`/usr/local/nginx`）的 vhost，软链到 `conf/vhost/` 后 `sudo nginx -s reload`，即 `http://localhost/`。
   两份都只听 127.0.0.1——**服务没有鉴权，别暴露到局域网**。
 - 测试：`./venv/bin/python -m pytest test_backend.py`

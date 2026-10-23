@@ -22,7 +22,7 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
     红筹在上、A 股在下的多层持股结构，00762 的合并报表包含 600050 及其少数股东权益，
     两条线不可当作同一公司的 A/H 口径混用，也不可相加。本脚本一律只用 600050。
 
-输出：
+输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
     data/raw/em_<reportName>_<code>.json      原始响应（缓存；--refresh 重新拉取）
     data/tables/telecom_<code>_annual.json    整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
@@ -35,7 +35,6 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 import urllib.parse
@@ -43,7 +42,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from _common import (
-    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, fetch_dividend, fetch_holders, pick, request_json, ssum,
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, fetch_dividend, fetch_holders, jsonstore, pick, request_json, ssum,
 )
 
 
@@ -275,14 +274,13 @@ def fetch_hk_crosscheck(h_code: str, code: str, refresh: bool) -> dict[str, dict
     这里抓到的数含 A 股少数股东权益，两条线不可混用，见模块 docstring。"""
     filt = f'(SECUCODE="{h_code}")'
     hk = h_code.split(".")[0]
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
     path = RAW_DIR / f"em_RPT_HKF10_FN_MAININDICATOR_{hk}.json"
-    if path.exists() and not refresh:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+    if jsonstore.exists(path) and not refresh:
+        payload = jsonstore.read(path)
     else:
         print(f"    [http] RPT_HKF10_FN_MAININDICATOR {h_code}")
         payload = request_json("RPT_HKF10_FN_MAININDICATOR", filt, page_size=200, api=API_HK)
-        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        jsonstore.write(path, payload, ensure_ascii=False)
     return {y: pick(row, HK_MAIN_FIELDS) for y, row in annual_rows(payload).items()}
 
 
@@ -376,11 +374,10 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"未知代码：{unknown}；已支持 {list(TELECOM)}")
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
         data = build(code, args.refresh)
         out = OUT_DIR / f"telecom_{code}_annual.json"
-        out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        jsonstore.write(out, data, ensure_ascii=False, indent=1)
         yrs = sorted(data["annual"])
         print(f"    -> {out.relative_to(ROOT)}  ({len(yrs)} 年，{yrs[0]}~{yrs[-1]}，"
               f"股东 {len(data['holders'])} 名 @ {data['holders_end_date']}，"

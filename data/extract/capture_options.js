@@ -4,10 +4,19 @@
  * and produce a ground-truth snapshot for later render-diff verification.
  *
  * Usage: node capture_options.js <path-to-charts.js> <out.json>
+ * <out.json> 落在仓库 data/ 下（如 data/extract/original_options.json）时写进 MySQL json_file 表，其余路径照常写文件。
  */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
+
+const ROOT = path.resolve(__dirname, '../..');
+/* data/ 下的 JSON 原文已进 MySQL json_file 表，经 backend/jsonstore.py 的命令行读写（键为相对 data/ 的路径） */
+function jsonstore(args, input) {
+    return execFileSync(path.join(ROOT, 'venv/bin/python'), [path.join(ROOT, 'backend/jsonstore.py')].concat(args),
+        { cwd: ROOT, input: input, encoding: 'utf8', maxBuffer: 64 << 20 });
+}
 
 /* 与 verify_refactor.js 一致：charts.js 拆成 charts/*.js 后，沙箱里要按页面的加载顺序
  * 先拼分区脚本再拼入口；指向拆分前的单文件备份时照原样读。 */
@@ -105,7 +114,9 @@ sandbox.self = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(src, sandbox, { filename: path.basename(chartsPath) });
 
-fs.writeFileSync(outPath, JSON.stringify(results, null, 2));
+const outKey = path.relative(path.join(ROOT, 'data'), path.resolve(outPath));
+if (outKey.startsWith('..') || path.isAbsolute(outKey)) fs.writeFileSync(outPath, JSON.stringify(results, null, 2));
+else jsonstore(['put', outKey], JSON.stringify(results, null, 2));
 const ids = Object.keys(results).sort();
 console.log('captured charts:', ids.length);
 console.log(ids.join('\n'));

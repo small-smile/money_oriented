@@ -1,5 +1,6 @@
 """把 data/tables/bank_<code>_annual.json（+ 可选的 bank_<code>_shareholder_manual.json 手工年报覆盖层）
 整理成银行详情页 7 个页面直接消费的 data/tables/company_charts_<code>.json。
+（*.json 已不落盘：原文存 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写。）
 
 背景：详情页（dashboard/company/bank/*.html）统一从 /api/company_charts?code=<code> 取一份大 JSON，
 charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，含大量只有年报正文才有的明细），
@@ -13,18 +14,19 @@ charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，
     - A+H 两地上市优先采用 A 股年报口径（手工覆盖层里的股东户数/前十大/分红即 A 股年报）
 
 用法：
-    python data/extract/gen_company_charts.py            # 生成 CODES 全部
-    python data/extract/gen_company_charts.py 600036     # 只生成指定行
+    ./venv/bin/python data/extract/gen_company_charts.py            # 生成 CODES 全部
+    ./venv/bin/python data/extract/gen_company_charts.py 600036     # 只生成指定行
 """
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 TABLES = ROOT / "data" / "tables"
+sys.path.insert(0, str(ROOT))
+from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径取
 
 YI = 1e8        # 元 -> 亿元
 MN = 1e6        # 元 -> 百万元
@@ -163,22 +165,23 @@ _CACHE: dict[str, dict] = {}
 def load_annual(code: str) -> dict:
     """读 bank_<code>_annual.json（带缓存，对标行会被反复用到）。"""
     if code not in _CACHE:
-        _CACHE[code] = json.loads((TABLES / f"bank_{code}_annual.json").read_text(encoding="utf-8"))
+        d = jsonstore.read(TABLES / f"bank_{code}_annual.json")
+        if d is None:
+            raise FileNotFoundError(f"json_file 表里没有 tables/bank_{code}_annual.json")
+        _CACHE[code] = d
     return _CACHE[code]
 
 
 def load_manual(code: str) -> dict | None:
     """读手工年报覆盖层（股东户数/前十大/分红/文案），没有就返回 None。"""
-    p = TABLES / f"bank_{code}_shareholder_manual.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+    return jsonstore.read(TABLES / f"bank_{code}_shareholder_manual.json")
 
 
 def load_ar_manual(code: str) -> dict | None:
     """读逐年年报手工提取层 bank_<code>_ar_manual.json（纯 H 股行的数据底稿，
     港交所 H 股年报逐年读出来的值）。这里只取它的港交所口径集中度序列——
     该文件的财务序列本来是 fetch_bank_financials.py 的输入，不在本脚本里消费。"""
-    p = TABLES / f"bank_{code}_ar_manual.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+    return jsonstore.read(TABLES / f"bank_{code}_ar_manual.json")
 
 
 def load_detail(code: str) -> dict | None:
@@ -186,8 +189,7 @@ def load_detail(code: str) -> dict | None:
     高管薪酬/分部/行业投向/存款成本/贷款结构/公允价值层级/现金流等，均需语义读年报 PDF）。
     顶层键即 charts.js 消费的图表数据键（migrate/repricing/maturity/nim/5tier/cf/... ），
     另可带 `_notes`（DOM id -> 文案）在页面上补充本行专属说明。没有该文件就返回 None。"""
-    p = TABLES / f"bank_{code}_detail_manual.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+    return jsonstore.read(TABLES / f"bank_{code}_detail_manual.json")
 
 
 def ser(annual: dict, years: list[str], key: str, div=None, nd=2) -> list:
@@ -927,7 +929,7 @@ def build(code: str) -> dict:
             out["seg-rev"] = {**out["seg-rev"], "std": std}
 
     # 社融为宏观口径，各行共用同一份（直接沿用 601077 精编文件里的那份）
-    ref = json.loads((TABLES / "company_charts_601077.json").read_text(encoding="utf-8"))
+    ref = jsonstore.read(TABLES / "company_charts_601077.json")
     if "social-financing-stock" in ref:
         out["social-financing-stock"] = ref["social-financing-stock"]
     return out
@@ -939,16 +941,16 @@ def main(argv: list[str]) -> None:
         if code == "601077":
             print("[skip] 601077 为手工精编文件，不由本脚本生成")
             continue
-        if not (TABLES / f"bank_{code}_annual.json").exists():
+        if not jsonstore.exists(TABLES / f"bank_{code}_annual.json"):
             print(f"[skip] {code}: 缺 bank_{code}_annual.json（fetch 未成功或未拉取），跳过")
             continue
         data = build(code)
         path = TABLES / f"company_charts_{code}.json"
-        path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        text = jsonstore.write(path, data, ensure_ascii=False, separators=(",", ":"))
         keys = [k for k in data if not k.startswith("_")]
         print(f"[gen] {data['_bank']['shortName']} {code}: {len(keys)} key, "
               f"{data['perf']['years'][0]}~{data['_bank']['reportYear']}, "
-              f"{path.stat().st_size / 1024:.1f} KB -> {path.relative_to(ROOT)}")
+              f"{len(text.encode('utf-8')) / 1024:.1f} KB -> {path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

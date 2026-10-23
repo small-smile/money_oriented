@@ -1,11 +1,11 @@
-import json, os
+import os
 
-BASE = os.path.join("data", "tables")
+from backend import jsonstore  # JSON 原文在 MySQL json_file 表；仓库根目录下跑
+
+BASE = "tables"
 
 def load(code, sector):
-    p = os.path.join(BASE, f"{sector}_{code}_annual.json")
-    with open(p, encoding="utf-8") as f:
-        return json.load(f)
+    return jsonstore.read(os.path.join(BASE, f"{sector}_{code}_annual.json"))
 
 def show(code, sector, name, fields):
     d = load(code, sector)

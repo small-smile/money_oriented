@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """临时脚本：向 bank_002142_detail_manual.json 插入 bondpay 与 _notes（宁波银行）。"""
-import json, collections, io, os, re
+import json, collections, os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
+from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表
 
 P = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bank_002142_detail_manual.json')
 
-with io.open(P, encoding='utf-8') as f:
-    d = json.load(f, object_pairs_hook=collections.OrderedDict)
+d = json.loads(jsonstore.read_text(P), object_pairs_hook=collections.OrderedDict)
 
 years = ["2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"]
 N = [None] * 8
@@ -117,11 +120,9 @@ blk = re.sub(r'\{\s*\n\s*("name".*?)\n\s*\}',
              blk, flags=re.S)
 txt = head + blk + tail
 
-with io.open(P, 'w', encoding='utf-8') as f:
-    f.write(txt + '\n')
+jsonstore.write_text(P, txt + '\n')
 
-with io.open(P, encoding='utf-8') as f:
-    chk = json.load(f)
+chk = jsonstore.read(P)
 b = chk['bondpay']
 assert list(b['years']) == years
 for k in ('balNcd', 'balBond', 'balTotal', 'avgNcd', 'avgBond', 'avgTotal',

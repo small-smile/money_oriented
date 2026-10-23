@@ -35,7 +35,7 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
     - 港股三家的 CURRENCY 字段一律写 HKD、IS_CNY_CODE=0，这个标记**不可信**
       （与开发商脚本同一个坑）：三家近年年报均以人民币编制，接口金额即人民币原值。
 
-输出：
+输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
     data/raw/em_<reportName>_<code>.json     原始响应（缓存；--refresh 重新拉取）
     data/tables/cement_<code>_annual.json    整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
@@ -48,7 +48,6 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 import urllib.parse
@@ -56,7 +55,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from _common import (
-    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, fetch_dividend, fetch_holders, pick, request_json, ssum,
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, fetch_dividend, fetch_holders, jsonstore, pick, request_json, ssum,
 )
 
 
@@ -345,14 +344,13 @@ def build_cement_hk(code: str, refresh: bool) -> dict:
     filt = f'(SECUCODE="{secucode}")'
     print(f"[fetch] {name} {secucode}（港股 F10，本位币 {currency}）")
 
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
     raw_path = RAW_DIR / f"em_RPT_HKF10_FN_MAININDICATOR_{code}.json"
-    if raw_path.exists() and not refresh:
-        payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    if jsonstore.exists(raw_path) and not refresh:
+        payload = jsonstore.read(raw_path)
     else:
         print("    [http] RPT_HKF10_FN_MAININDICATOR")
         payload = request_json("RPT_HKF10_FN_MAININDICATOR", filt, page_size=200, api=API_HK)
-        raw_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        jsonstore.write(raw_path, payload, ensure_ascii=False)
 
     annual = {y: pick(row, HK_MAIN_FIELDS) for y, row in annual_rows(payload).items()}
 
@@ -422,12 +420,11 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"未知代码：{unknown}；已支持 {list(CEMENT) + list(CEMENT_HK)}")
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
         data = build_cement_hk(code, args.refresh) if code in CEMENT_HK \
             else build_cement(code, args.refresh)
         out = OUT_DIR / f"cement_{code}_annual.json"
-        out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        jsonstore.write(out, data, ensure_ascii=False, indent=1)
         yrs = sorted(data["annual"])
         print(f"    -> {out.relative_to(ROOT)}  ({len(yrs)} 年，{yrs[0]}~{yrs[-1]}，"
               f"股东 {len(data['holders'])} 名 @ {data['holders_end_date']})")

@@ -78,7 +78,7 @@
     附注 73(2)(d) 双源确认；三年均低于 100% 监管线，2011-03-30 保监会批复的 140 亿元增资后
     当年末回升至 155.95%。2005—2007 年公司未披露偿付能力，留空。
 
-输出：
+输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
     data/raw/em_<reportName>_<code>.json       原始响应（缓存；--refresh 重新拉取）
     data/tables/insurer_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
@@ -91,7 +91,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 import urllib.parse
@@ -99,7 +98,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from _common import (
-    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, pick, request_json,
+    API, API_HK, HEADERS, OUT_DIR, RAW_DIR, ROOT, annual_rows, cached, jsonstore, pick, request_json,
 )
 
 
@@ -637,14 +636,13 @@ def build_insurer_hk(code: str, refresh: bool) -> dict:
     filt = f'(SECUCODE="{secucode}")'
     print(f"[fetch] {name} {secucode}（港股 F10，金额已按年末汇率折人民币）")
 
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
     raw_path = RAW_DIR / f"em_RPT_HKF10_FN_MAININDICATOR_{code}.json"
-    if raw_path.exists() and not refresh:
-        payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    if jsonstore.exists(raw_path) and not refresh:
+        payload = jsonstore.read(raw_path)
     else:
         print("    [http] RPT_HKF10_FN_MAININDICATOR")
         payload = request_json("RPT_HKF10_FN_MAININDICATOR", filt, page_size=200, api=API_HK)
-        raw_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        jsonstore.write(raw_path, payload, ensure_ascii=False)
 
     # 接口把中期与年报混在一起返回（DATE_TYPE_CODE 作为查询参数无效），只保留 12-31 行
     rows = annual_rows(payload)
@@ -770,12 +768,11 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"未知代码：{unknown}；已支持 {list(INSURERS) + list(INSURERS_HK)}")
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
     for code in codes:
         data = build_insurer_hk(code, args.refresh) if code in INSURERS_HK \
             else build_insurer(code, args.refresh)
         out = OUT_DIR / f"insurer_{code}_annual.json"
-        out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        jsonstore.write(out, data, ensure_ascii=False, indent=1)
         yrs = sorted(data["annual"])
         print(f"    -> {out.relative_to(ROOT)}  ({len(yrs)} 年，{yrs[0]}~{yrs[-1]}，"
               f"股东 {len(data['holders'])} 名 @ {data['holders_end_date']})")

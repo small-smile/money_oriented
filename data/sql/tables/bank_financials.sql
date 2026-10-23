@@ -1,7 +1,3 @@
--- bank_financials  · 段 B. 银行业专属年度指标（bank_*_annual.json annual 里 financials 公共列以外的银行字段，每行每年一行）
--- 公司/零售贷款余额与不良余额 4 列来自 bank_*_detail_manual.json 的 loantrend（亿元，入库换算为元）。
--- 与 financials 同主键 (company_code, fiscal_year)，按需 JOIN；公共列（营收/净利/总资产等）只放 financials，不在此重复。
--- 单位：金额为元；比率为 %；loan_to_deposit_ratio 例外为小数（与 JSON 源一致，不换算）。
 -- 约定：本表由 load_to_mysql.py --init 一次性建表（init 只跑一次）；用 CREATE ... IF NOT EXISTS，勿加回 DROP TABLE（会清空真实库数据）。
 CREATE TABLE IF NOT EXISTS bank_financials
 (
@@ -17,6 +13,12 @@ CREATE TABLE IF NOT EXISTS bank_financials
     return_on_assets                 DECIMAL(12, 4) NULL COMMENT '总资产收益率ROA%',
     credit_impairment_loss           DECIMAL(28, 4) NULL COMMENT '信用减值损失',
     asset_impairment_loss            DECIMAL(28, 4) NULL COMMENT '资产减值损失(旧准则口径)',
+    operating_expenses               DECIMAL(28, 4) NULL COMMENT '营业支出(元；三家 H 股行为年报手工摘录「營業支出」,含税金及附加、不含信用/资产减值损失)',
+    other_business_costs             DECIMAL(28, 4) NULL COMMENT '其他业务成本(元)',
+    taxes_and_surcharges             DECIMAL(28, 4) NULL COMMENT '税金及附加(元；2016 营改增前为营业税金及附加,跨年有口径断点)',
+    income_tax_expense               DECIMAL(28, 4) NULL COMMENT '所得税费用(元)',
+    net_profit_attr_non_controlling_interests DECIMAL(28, 4) NULL COMMENT '少数股东损益(元)',
+    other_comprehensive_income       DECIMAL(28, 4) NULL COMMENT '其他综合收益的税后净额(元,当期流量,含少数股东部分)',
     -- 贷款与存款
     gross_loans                      DECIMAL(28, 4) NULL COMMENT '发放贷款和垫款总额(减值准备前)',
     net_loans                        DECIMAL(28, 4) NULL COMMENT '发放贷款和垫款(资产负债表净额)',
@@ -29,11 +31,17 @@ CREATE TABLE IF NOT EXISTS bank_financials
     -- 资产质量
     non_performing_loans             DECIMAL(28, 4) NULL COMMENT '不良贷款余额',
     non_performing_loan_ratio        DECIMAL(12, 4) NULL COMMENT '不良贷款率%',
-    corporate_non_performing_loans   DECIMAL(28, 4) NULL COMMENT '公司贷款不良余额(与 corporate_loans 同口径;年报未单列则 NULL,不反算)',
+    corporate_non_performing_loans   DECIMAL(28, 4) NULL COMMENT '公司贷款不良余额(与 corporate_loans 同口径；年报未单列则 NULL,不反算)',
     retail_non_performing_loans      DECIMAL(28, 4) NULL COMMENT '零售(个人)贷款不良余额(同上)',
     non_performing_loan_formation    DECIMAL(28, 4) NULL COMMENT '不良贷款生成额',
     non_performing_loan_formation_rate DECIMAL(12, 4) NULL COMMENT '不良贷款生成率%',
     overdue_loans                    DECIMAL(28, 4) NULL COMMENT '逾期贷款',
+    overdue_loans_over_90_days       DECIMAL(28, 4) NULL COMMENT '逾期 90 天以上贷款(元；仅三家 H 股行)',
+    loan_impairment_charge           DECIMAL(28, 4) NULL COMMENT '发放贷款和垫款减值损失当期计提(元；仅三家 H 股行,三行取数口径不一)',
+    loan_write_offs                  DECIMAL(28, 4) NULL COMMENT '贷款核销(元；01578 全期与 06138 2017 起为核销及转出合计,01916 为单纯核销)',
+    loan_loss_allowance_transferred_out DECIMAL(28, 4) NULL COMMENT '贷款减值准备转出(元；仅 01916 2017—2022)',
+    recoveries_of_loans_written_off  DECIMAL(28, 4) NULL COMMENT '收回已核销贷款(元)',
+    loan_loss_allowance_amortized_cost DECIMAL(28, 4) NULL COMMENT '以摊余成本计量贷款的减值准备(元；IFRS 9 起,为 loan_loss_allowance 的摊余成本部分)',
     net_charge_off                   DECIMAL(28, 4) NULL COMMENT '核销及转出净额',
     provision_coverage_ratio         DECIMAL(12, 4) NULL COMMENT '拨备覆盖率%',
     loan_allowance_ratio             DECIMAL(12, 4) NULL COMMENT '拨贷比%',
@@ -44,6 +52,7 @@ CREATE TABLE IF NOT EXISTS bank_financials
     leverage_ratio                   DECIMAL(12, 4) NULL COMMENT '杠杆率%',
     liquidity_coverage_ratio         DECIMAL(12, 4) NULL COMMENT '流动性覆盖率%',
     net_stable_funding_ratio         DECIMAL(12, 4) NULL COMMENT '净稳定资金比例%',
+    liquidity_ratio                  DECIMAL(12, 4) NULL COMMENT '流动性比例%(监管指标；仅三家 H 股行)',
     equity_asset_ratio               DECIMAL(12, 4) NULL COMMENT '权益资产比%',
     -- 银行特有资产负债科目
     cash_and_central_bank_deposits   DECIMAL(28, 4) NULL COMMENT '现金及存放中央银行款项',
@@ -61,10 +70,12 @@ CREATE TABLE IF NOT EXISTS bank_financials
     due_to_banks                     DECIMAL(28, 4) NULL COMMENT '同业和其他金融机构存放款项',
     placements_from_banks            DECIMAL(28, 4) NULL COMMENT '拆入资金',
     repurchase_agreements            DECIMAL(28, 4) NULL COMMENT '卖出回购金融资产款',
-    bonds_payable                    DECIMAL(28, 4) NULL COMMENT '应付债券(应计利息并入;永续债不入)',
+    bonds_payable                    DECIMAL(28, 4) NULL COMMENT '应付债券(应计利息并入；永续债不入)',
+    equity_attr_non_controlling_interests DECIMAL(28, 4) NULL COMMENT '少数股东权益(元)',
     -- 规模
     employee_count                   INT            NULL COMMENT '员工人数(人)',
-    source                           VARCHAR(255)   NULL COMMENT '数据来源',
+    total_shares                     BIGINT         NULL COMMENT '总股本(股；接口当前股本快照逐年回填,上市前年份多由年报覆盖层纠正)',
+    source                           TEXT           NULL COMMENT '数据来源(annual JSON 的 source 原文,最长已超 255 字)',
     PRIMARY KEY (company_code, fiscal_year),
     CONSTRAINT fk_bank_financials_company FOREIGN KEY (company_code) REFERENCES company (company_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='银行业专属年度指标（bank_*_annual.json annual 里 financials 公共列以外的银行字段）：与 financials 同主键按需 JOIN，公共列不在此重复；公司/零售贷款余额与不良余额 4 列来自 bank_*_detail_manual.json 的 loantrend（亿元，入库换算为元）；单位：金额为元，比率为 %，loan_to_deposit_ratio 例外为小数（与 JSON 源一致，不换算）';

@@ -20,16 +20,22 @@
 用法：venv/bin/python data/extract/build_company_codes.py [来源草稿.json]
 默认读 data/extract/out/company_codes_draft.json（逐条带 sources 的调查底稿，逐家在本地
 数据表与页面里核对过），校验后写入 data/tables/company_codes.json。
+两份 JSON 都不落盘，原文在 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写；
+命令行给的草稿路径照旧按当前目录解析，但必须落在 data/ 之内。
 """
-import json
 import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(HERE))
+sys.path.insert(0, ROOT)
+
+from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+
 TABLES = os.path.join(os.path.dirname(HERE), "tables")
 OUT = os.path.join(TABLES, "company_codes.json")
-DRAFT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "out",
-                                                           "company_codes_draft.json")
+DRAFT = (os.path.abspath(sys.argv[1]) if len(sys.argv) > 1
+         else os.path.join(HERE, "out", "company_codes_draft.json"))
 
 FIELDS = ("key", "short", "full", "industry", "a_code", "h_code", "us_code",
           "tier", "same_entity", "note", "sources")
@@ -44,8 +50,7 @@ def norm_code(c):
 
 
 def main():
-    with open(DRAFT, encoding="utf-8") as f:
-        draft = json.load(f)
+    draft = jsonstore.read(DRAFT)
     ents, seen = [], {}
     for e in draft["entities"]:
         rec = {k: e.get(k) for k in FIELDS}
@@ -78,8 +83,7 @@ def main():
         "entities": ents,
         "gaps": draft.get("gaps") or [],
     }
-    with open(OUT, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=1)
+    jsonstore.write(OUT, out, ensure_ascii=False, indent=1)
     ah = [e for e in ents if e["a_code"] and e["h_code"]]
     print("written", OUT)
     print(f"  实体 {len(ents)} 家；A+H 双代码 {len(ah)} 家；"

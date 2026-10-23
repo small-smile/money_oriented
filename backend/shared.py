@@ -1,6 +1,8 @@
 import os
 import json
 
+from backend import jsonstore
+
 
 # ── 统一接口响应 ──────────────────────────────────────────────────────────
 # 所有 read_* 一律经这两个方法出参，形状固定为 {"code", "data"(, "msg")}，
@@ -22,8 +24,8 @@ def error(msg, code=500, data=None):
 # ── 通用路径常量 ──────────────────────────────────────────────────────────
 # 基准目录取自本文件的绝对位置，与进程启动时的工作目录（CWD）无关 —— gunicorn/systemd/
 # docker 等不在仓库根启动的场景也能定位到数据；需换数据根目录时设环境变量 MONEY_DATA_DIR。
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.abspath(os.environ.get("MONEY_DATA_DIR") or os.path.join(_BASE_DIR, "data"))
+# *.json 已不落盘（原文存 MySQL json_file 表），路径照旧按这里拼，作为 jsonstore 的键；txt/csv 仍读文件。
+DATA_DIR = jsonstore.DATA_DIR
 TABLES_DIR = os.path.join(DATA_DIR, "tables")
 
 # 两种用法都在这里：① 只补 factions（telecom 这类 annual 表已有接口股东快照的板块）；
@@ -42,15 +44,15 @@ def table_path(name):
 
 
 def read_json(path, default=None, tolerant=False):
-    """读 JSON 文件：文件不存在返回 default。
-    tolerant=True 时连解析失败也当缺失（半截/损坏的数据文件不该让整页 500），
+    """读 JSON 表（原文在 MySQL json_file 表，按原文件路径取，见 backend/jsonstore.py）：不存在返回 default。
+    tolerant=True 时连解析失败也当缺失（半截/损坏的数据不该让整页 500），
     否则解析错误照常抛出——批量扫目录的地方用 tolerant，单文件取数的地方不用。"""
-    if not os.path.exists(path):
+    text = jsonstore.read_text(path)
+    if text is None:
         return default
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
+        return json.loads(text)
+    except ValueError:
         if tolerant:
             return default
         raise

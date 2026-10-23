@@ -6,11 +6,12 @@ Fetch 社会融资规模（TSF / Aggregate Financing to the Real Economy）月�
        └─ 20xx 年统计数据 → 社会融资规模 → 存量统计表.xlsx / 增量统计表.xlsx
 
 每年一份 XLSX，各含当年 12 个月。分别缓存到 data/raw/pboc_social_financing/YYYY_{stock,flow}.xlsx，
-最终汇总到 data/tables/social_financing_pboc_stock.json 与 social_financing_pboc_flow.json。
+最终汇总到 data/tables/social_financing_pboc_stock.json 与 social_financing_pboc_flow.json
+（这两份不落盘：原文存 MySQL json_file 表，经 backend/jsonstore.py 写；XLSX/HTM 缓存照旧落盘）。
 
 用法:
-    python data/extract/fetch_pboc_social_financing.py         # 缺失年份才下载
-    python data/extract/fetch_pboc_social_financing.py --refresh  # 全部重新下载
+    ./venv/bin/python data/extract/fetch_pboc_social_financing.py         # 缺失年份才下载
+    ./venv/bin/python data/extract/fetch_pboc_social_financing.py --refresh  # 全部重新下载
 
 注意:
     - PBoC 每年 XLSX 均为"当年 as-of 该年报送口径"，历年间口径不完全一致
@@ -19,7 +20,6 @@ Fetch 社会融资规模（TSF / Aggregate Financing to the Real Economy）月�
 """
 
 import argparse
-import json
 import re
 import sys
 import urllib.request
@@ -31,6 +31,9 @@ except ImportError:
     sys.exit("请先在 venv 中 `pip install openpyxl`")
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径写
+
 RAW_DIR = ROOT / "data" / "raw" / "pboc_social_financing"
 TABLES_DIR = ROOT / "data" / "tables"
 BASE = "https://www.pbc.gov.cn"
@@ -425,32 +428,27 @@ def main() -> None:
     all_stock.sort(key=lambda r: r["month"])
     all_flow.sort(key=lambda r: r["month"])
 
-    TABLES_DIR.mkdir(parents=True, exist_ok=True)
-    (TABLES_DIR / "social_financing_pboc_stock.json").write_text(
-        json.dumps(
-            {
-                "source": "PBoC 调查统计司 · 社会融资规模存量统计表 (各年度 XLSX 聚合)",
-                "unit": "万亿元人民币",
-                "yoy_unit": "%",
-                "data": all_stock,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
+    jsonstore.write(
+        TABLES_DIR / "social_financing_pboc_stock.json",
+        {
+            "source": "PBoC 调查统计司 · 社会融资规模存量统计表 (各年度 XLSX 聚合)",
+            "unit": "万亿元人民币",
+            "yoy_unit": "%",
+            "data": all_stock,
+        },
+        ensure_ascii=False,
+        indent=2,
     )
-    (TABLES_DIR / "social_financing_pboc_flow.json").write_text(
-        json.dumps(
-            {
-                "source": "PBoC 调查统计司 · 社会融资规模增量统计表 (各年度 XLSX 聚合)",
-                "unit": "亿元人民币",
-                "columns": FLOW_COL_MAP,
-                "data": all_flow,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
+    jsonstore.write(
+        TABLES_DIR / "social_financing_pboc_flow.json",
+        {
+            "source": "PBoC 调查统计司 · 社会融资规模增量统计表 (各年度 XLSX 聚合)",
+            "unit": "亿元人民币",
+            "columns": FLOW_COL_MAP,
+            "data": all_flow,
+        },
+        ensure_ascii=False,
+        indent=2,
     )
     print(f"\n→ stock: {len(all_stock)} 月")
     print(f"→ flow:  {len(all_flow)} 月")

@@ -93,6 +93,12 @@ function __roeYears(items) {
     return Array.from(new Set(items.reduce(
         (acc, it) => acc.concat((it.roe && it.roe.years) || []), []))).sort();
 }
+/* 下面五个多行视图（叠线 / 类型聚合 / 本行位次 / 分类型小图 / 最新年份榜）也给风控页拨贷比对比用：
+ * opt.id 是图容器 id，opt.metric 是 tooltip 里写的指标名；不传即业绩页 ROE 图。
+ * 别的指标借用 roe 字段，只填 { years, roeNew } 一段口径即可（__roeAt 先取 roeNew）。 */
+function __cmpOpt(opt) {
+    return Object.assign({ id: 'chart-roe', metric: 'ROE' }, opt || {});
+}
 /* tooltip 共用样式：必须盖掉 ECharts 默认 white-space:nowrap，否则 grid / 分栏都会被挤成一行 */
 function __roeTipCss() {
     return 'white-space:normal;max-width:720px;max-height:70vh;overflow:auto;padding:10px 12px';
@@ -122,7 +128,8 @@ function __roeTierTooltip(axisValue, rows) {
            `<div style="display:grid;grid-template-columns:repeat(${nCol},minmax(168px,1fr));` +
            `gap:10px 18px;align-items:start">${cards}</div>`;
 }
-window.__renderRoeCompare = function (items) {
+window.__renderRoeCompare = function (items, opt) {
+    opt = __cmpOpt(opt);
     const years = __roeYears(items);
     // 按类型排序：图例里同类型连成一段，色系一眼分块（原来按清单顺序会红蓝青橙交错）
     const sorted = items.slice().sort(function (a, b) {
@@ -155,7 +162,7 @@ window.__renderRoeCompare = function (items) {
     const tierOfName = {};
     series.forEach(function (s) { tierOfName[s.name] = s.tier; });
     const selfName = (sorted.filter(it => it.code === window.COMPANY_CODE)[0] || {}).name || '';
-    initChart('chart-roe')?.setOption({
+    initChart(opt.id)?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 16 },
@@ -193,7 +200,8 @@ function __quantile(sortedVals, q) {
     const pos = (n - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos);
     return +(sortedVals[lo] + (sortedVals[hi] - sortedVals[lo]) * (pos - lo)).toFixed(2);
 }
-window.__renderRoeTierAgg = function (items) {
+window.__renderRoeTierAgg = function (items, opt) {
+    opt = __cmpOpt(opt);
     const years = __roeYears(items);
     const byTier = {};
     items.forEach(function (it) { (byTier[__tierOf(it)] = byTier[__tierOf(it)] || []).push(it); });
@@ -243,7 +251,7 @@ window.__renderRoeTierAgg = function (items) {
             labelLayout: { moveOverlap: 'shiftY' },
             emphasis: { focus: 'series', lineStyle: { width: 5.5 } } });
     }
-    initChart('chart-roe')?.setOption({
+    initChart(opt.id)?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 16 }, confine: true, extraCssText: __roeTipCss(),
@@ -282,10 +290,11 @@ window.__renderRoeTierAgg = function (items) {
 /* ────── 1.1e ROE 本行位次：本行在所选样本里排第几（不看绝对值，只看座次） ──────
  * 两条线：在全部所选行中的位次、在同类型内的位次。纵轴反向（1 名在上），
  * 分母逐年变（当年有披露的行才计入），故 tooltip 里带出「第 a / n 名」。 */
-window.__renderRoeRank = function (items) {
+window.__renderRoeRank = function (items, opt) {
+    opt = __cmpOpt(opt);
     const years = __roeYears(items);
     const self = items.filter(it => it.code === window.COMPANY_CODE)[0];
-    if (!self) { window.__renderRoeCompare(items); return; }   // 本行不在样本里就退回叠线
+    if (!self) { window.__renderRoeCompare(items, opt); return; }   // 本行不在样本里就退回叠线
     const tier = __tierOf(self);
     const peers = items.filter(it => __tierOf(it) === tier);
     // 位次 = 比本行高的家数 + 1（并列取靠前的名次）；本行当年没披露则整点留空
@@ -299,7 +308,7 @@ window.__renderRoeRank = function (items) {
     const own = years.map(y => rankIn(peers, y));
     const tierColor = window.__TIER_COLORS[tier][0];
     const maxN = Math.max.apply(null, all.map(r => r[1]).concat([2]));
-    initChart('chart-roe')?.setOption({
+    initChart(opt.id)?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 18 },
         tooltip: { trigger: 'axis', textStyle: { fontSize: 17 }, confine: true,
@@ -307,7 +316,7 @@ window.__renderRoeRank = function (items) {
                 const i = p[0].dataIndex, v = __roeAt(self.roe || {}, years[i]);
                 if (v == null) return `<b>${years[i]} 年</b><br>本行未披露`;
                 return `<div style="font-weight:700;margin-bottom:4px">${years[i]} 年　` +
-                       `${self.name} ROE ${v}%</div>` +
+                       `${self.name} ${opt.metric} ${v}%</div>` +
                        `<div style="line-height:1.6">全部样本：第 <b>${all[i][0]}</b> / ${all[i][1]} 名</div>` +
                        `<div style="line-height:1.6">${tier}内：第 <b>${own[i][0]}</b> / ${own[i][1]} 名</div>`;
             } },
@@ -337,7 +346,8 @@ window.__renderRoeRank = function (items) {
 /* ────── 1.1f ROE 分类型小图：一个类型一格，2×2 四格共用纵轴范围 ──────
  * 同一张 ECharts 实例里放 4 个 grid（小倍数）。每格只画该类型的行，家数落到十家以内，
  * 线就分得开了；本行不属于该类型时也叠一条深色细线做参照，四格之间才能横比。 */
-window.__renderRoeFacet = function (items) {
+window.__renderRoeFacet = function (items, opt) {
+    opt = __cmpOpt(opt);
     const years = __roeYears(items);
     const self = items.filter(it => it.code === window.COMPANY_CODE)[0];
     const byTier = {};
@@ -385,7 +395,7 @@ window.__renderRoeFacet = function (items) {
                 blur: { lineStyle: { opacity: 0.12 } } });
         }
     });
-    initChart('chart-roe')?.setOption({
+    initChart(opt.id)?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
         title: titles,
@@ -409,7 +419,8 @@ window.__renderRoeFacet = function (items) {
 /* ────── 1.1g ROE 最新年份榜：所选行按最新披露年份的 ROE 排条形榜 ──────
  * 时间序列看不出「今年到底谁高谁低」，这个模式把最新一年拉平成横条、按类型着色、本行加深。
  * 取「有披露值的最后一个年份」，个别行当年年报未出时以其自身最新年份补位并在标签上标年份。 */
-window.__renderRoeBar = function (items) {
+window.__renderRoeBar = function (items, opt) {
+    opt = __cmpOpt(opt);
     const years = __roeYears(items);
     const rows = items.map(function (it) {
         // 从最新年份往前找该行第一个有值的年份，避免年报未出的行整条缺失
@@ -421,13 +432,13 @@ window.__renderRoeBar = function (items) {
         return null;
     }).filter(Boolean).sort((a, b) => a.value - b.value);   // 条形图纵轴自下而上，升序才是「高的在上」
     const latest = years[years.length - 1];
-    initChart('chart-roe')?.setOption({
+    initChart(opt.id)?.setOption({
         backgroundColor: '#fff',
         textStyle: { fontSize: 16 },
         tooltip: { trigger: 'item', textStyle: { fontSize: 17 }, confine: true,
             formatter: function (p) {
                 const r = rows[p.dataIndex];
-                return `<b>${r.name}</b>　${r.tier}<br>${r.year} 年 ROE <b>${r.value}%</b>` +
+                return `<b>${r.name}</b>　${r.tier}<br>${r.year} 年 ${opt.metric} <b>${r.value}%</b>` +
                        (r.year === latest ? '' : '　<span style="color:#c0392b">（最新披露年份非 ' + latest + '）</span>');
             } },
         grid: { left: 100, right: 96, top: 16, bottom: 40 },
