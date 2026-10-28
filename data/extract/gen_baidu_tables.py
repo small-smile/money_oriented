@@ -9,8 +9,7 @@
 （us-gaap:NetIncomeLoss，US GAAP 下即 attributable to parent），`netIncomeIncNci`
 含少数股东（ProfitLoss）。同一年份在多份 20-F 里可能有重述值，取**最新提交件**的值。
 
-输入 data/raw/sec_companyfacts_09888.json 与输出表都已不落盘：原文存 MySQL json_file 表，
-经 backend/jsonstore.py 按原文件路径读写。
+输入 data/raw/sec_companyfacts_09888.json 与输出表都经 backend/jsonstore.py 读写。
 
 用法：./venv/bin/python data/extract/gen_baidu_tables.py
 """
@@ -21,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 FACTS = ROOT / "data" / "raw" / "sec_companyfacts_09888.json"
 OUT = ROOT / "data" / "tables" / "tech_09888_annual.json"

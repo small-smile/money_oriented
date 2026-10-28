@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS bank_financials
     customer_deposits                DECIMAL(28, 4) NULL COMMENT '客户存款总额(本金口径)',
     customer_deposits_balance_sheet  DECIMAL(28, 4) NULL COMMENT '吸收存款(资产负债表列报,可含应计利息)',
     loan_to_deposit_ratio            DECIMAL(12, 6) NULL COMMENT '存贷比(小数,非%)',
-    corporate_loans                  DECIMAL(28, 4) NULL COMMENT '公司贷款期末余额(是否含票据贴现按各行 detail_manual 的 _notes.loantrend)',
+    corporate_loans                  DECIMAL(28, 4) NULL COMMENT '公司贷款期末余额(是否含票据贴现按各行 detail_manual 的 _notes.loantrend,渝农商行取 company_charts_601077.json)',
     retail_loans                     DECIMAL(28, 4) NULL COMMENT '零售(个人)贷款期末余额',
     -- 资产质量
     non_performing_loans             DECIMAL(28, 4) NULL COMMENT '不良贷款余额',

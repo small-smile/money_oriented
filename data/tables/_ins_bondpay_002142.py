@@ -5,7 +5,7 @@ import json, collections, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 P = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bank_002142_detail_manual.json')
 

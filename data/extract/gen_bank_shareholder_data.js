@@ -10,7 +10,7 @@
  * 「银行切换器上移到导航栏」一并删除（切换改为 bank-header.js 的下拉框 + ?code= 重载），
  * 其中的 `var BANKS = {};` 数据块更早就已清空。现在执行只会在 readFileSync/切片处报错。
  * 需要看原始字面量请查 git 历史（该文件在 main 分支的提交里）。
- * 迁移后的权威来源就是 data/tables/company_charts_<code>.json 本身（原文现存 MySQL json_file 表）。
+ * 迁移后的权威来源就是 data/tables/company_charts_<code>.json 本身。
  */
 const fs = require('fs');
 const path = require('path');
@@ -18,7 +18,7 @@ const vm = require('vm');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '../..');
-/* data/ 下的 JSON 原文已进 MySQL json_file 表，经 backend/jsonstore.py 的命令行读写（键为相对 data/ 的路径） */
+/* data/ 下的 JSON 经 backend/jsonstore.py 的命令行读写（路径相对 data/） */
 function jsonstore(args, input) {
     return execFileSync(path.join(ROOT, 'venv/bin/python'), [path.join(ROOT, 'backend/jsonstore.py')].concat(args),
         { cwd: ROOT, input: input, encoding: 'utf8', maxBuffer: 64 << 20 });

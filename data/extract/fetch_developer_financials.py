@@ -40,7 +40,7 @@ A 股（通用行业模板，datacenter-web.eastmoney.com/api/data/v1/get）：
     - 华侨城 A 含文旅（主题公园）业务，招商蛇口含物业（招商积余）与园区/邮轮，
       毛利率与周转与纯住宅开发商不同质。
 
-输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
+输出：
     data/raw/em_<reportName>_<code>.json         原始响应（缓存；--refresh 重新拉取）
     data/tables/developer_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 

@@ -11,7 +11,7 @@
 电信与联通为元，脚本按量级归一成**亿元**。
 
 输入：data/raw/annual_<code>_<year>.txt（由 fetch_telecom_reports.py 落盘）
-输出：data/tables/telecom_segment_manual.json（不落盘，原文存 MySQL json_file 表，经 backend/jsonstore.py 写）
+输出：data/tables/telecom_segment_manual.json（经 backend/jsonstore.py 写）
 
 用法：
     ./venv/bin/python data/extract/extract_telecom_segments.py            # 全部
@@ -27,7 +27,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径写
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "tables" / "telecom_segment_manual.json"

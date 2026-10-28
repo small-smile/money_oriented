@@ -4,7 +4,7 @@
 百度只有一家公司，没必要像银行页那样按 ?code= 走 /api 接口：四份表原样打包成一个
 `window.BAIDU` 全局对象 + 模块导出，Vue 各页与 charts.js 直接 import，
 页面里不手抄任何数字（比例一律在 JS 里由股数算），改数只需重跑本脚本。
-源表原文存 MySQL json_file 表（经 backend/jsonstore.py 按原文件路径读），data.js 照旧写盘。
+源表经 backend/jsonstore.py 读，data.js 直接写盘。
 """
 import json
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 TABLES = ROOT / "data" / "tables"
 OUT = ROOT / "frontend" / "src" / "views" / "company" / "baidu" / "data.js"

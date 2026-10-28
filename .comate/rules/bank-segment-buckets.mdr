@@ -22,6 +22,7 @@ alwaysApply: false
 
 ## 维护
 
-- 改映射后 `python data/extract/gen_company_charts.py` 全量重生成。
+- 改映射后不用重生成：后端请求时按库现算（`backend/bank_charts_db.py` 调 `build()`），重启后端即生效；
+  `python data/extract/gen_company_charts.py` 只按 JSON 跑一遍自检，不落文件。
 - `601077` 手工精编、gen 跳过它，改分部时要手动补 `seg-rev.std`（可复用 `std_seg_rev`）。
 - 单位一律**百万元**（招行曾误存亿元、已修），前端 `/100` 转亿。

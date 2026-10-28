@@ -78,7 +78,7 @@
     附注 73(2)(d) 双源确认；三年均低于 100% 监管线，2011-03-30 保监会批复的 140 亿元增资后
     当年末回升至 155.95%。2005—2007 年公司未披露偿付能力，留空。
 
-输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
+输出：
     data/raw/em_<reportName>_<code>.json       原始响应（缓存；--refresh 重新拉取）
     data/tables/insurer_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 

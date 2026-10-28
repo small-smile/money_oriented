@@ -4,7 +4,7 @@ import re
 
 from flask import Blueprint, jsonify, request
 
-from backend import jsonstore
+from backend import bank_charts_db, db
 from backend.shared import (
     TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect,
     success, error,
@@ -63,22 +63,33 @@ def api_bank_financials():
     return jsonify(success(data))
 
 
+# 渝农商行那份是手工精编件（42 个键，H 股时代的年报值、环形图配色与文案都是手工定的），不由 build() 现算，仍读文件
+HAND_CHART_CODES = ("601077",)
+
+
+def company_charts_doc(code, cache=None, skip=()):
+    """某行详情页的整份图表载荷（同 company_charts_<code>.json 的形状）：库里拼回输入、gen_company_charts.build() 现算，
+    见 backend/bank_charts_db.py（cache / skip 同 bank_charts_db.charts）；渝农商行读手工精编件。没有这家银行返回 None。"""
+    if code in HAND_CHART_CODES:
+        return read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"))
+    return bank_charts_db.charts(code, cache, skip)
+
+
 def read_company_charts(code):
-    """公司详情页全部图表数据，按银行代码取 data/tables/company_charts_<code>.json。
-    数据由 data/extract/ 提取管线从 charts.js 原值程序化抽取，未经手工重录。
+    """公司详情页全部图表数据（company_charts_doc）。
     给 H 股代码（03618 / 01398）时按 company_codes.json 换成同一家公司的 A 股代码 ——
-    银行的数据文件按 A 股代码存（纯 H 股行按 H 股代码存），两地代码都要能取到同一份。"""
+    银行按 A 股代码取数（纯 H 股行按 H 股代码），两地代码都要能取到同一份。"""
     if not re.fullmatch(r"[0-9]{5,6}", code):
         return error(f"非法银行代码 {code}", 400)
-    d = read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"))
+    d = company_charts_doc(code)
     if d is None:
         alt, why, ent = _resolve_company_code(code, set(BANK_ORDER))
-        alt_d = read_json(os.path.join(TABLES_DIR, f"company_charts_{alt}.json")) if alt else None
+        alt_d = company_charts_doc(alt) if alt else None
         if alt_d is not None:
             return success(alt_d, why)
         red = _cross_industry_redirect(code, ent, {"bank"})
         return error(
-            f"银行 {code} 尚无 company_charts 数据文件"
+            f"银行 {code} 尚无详情页图表数据"
             + (f"：{why}" if why else (f"：{red['msg']}" if red else "")),
             404, {"redirect": red} if red else None)
     return success(d)
@@ -91,14 +102,22 @@ def api_company_charts():
 
 
 def read_social_financing():
-    """社会融资规模（TSF）宏观数据，独立于任一银行 —— 直接沿用 601077 精编文件里
-    已规整好的 social-financing-stock 块（months/stock/yoy/flow_total/分项），供行业页社融页使用。"""
-    d = read_json(os.path.join(TABLES_DIR, f"company_charts_{DEFAULT_BANK_CODE}.json"))
-    if d is None:
-        return error("社融数据文件不存在", 404)
-    sf = d.get("social-financing-stock")
-    if not sf:
-        return error("社融数据缺失 social-financing-stock 键", 404)
+    """社会融资规模（TSF）宏观数据，独立于任一银行：MySQL social_financing_flow（增量）按月对齐
+    social_financing_stock（存量与同比），拼成行业页社融页用的 months/stock/yoy/flow_total/分项结构。"""
+    rows = db.query(
+        "SELECT f.period_month, s.amount, s.year_on_year_growth, f.total, f.renminbi_loans, f.government_bonds,"
+        " f.corporate_bonds, f.undiscounted_bankers_acceptances, f.trust_loans, f.entrusted_loans,"
+        " f.domestic_equity_financing"
+        " FROM social_financing_flow f LEFT JOIN social_financing_stock s ON s.period_month = f.period_month"
+        " ORDER BY f.period_month")
+    if not rows:
+        return error("社融数据表为空（先跑 data/extract/load_to_mysql.py）", 404)
+    cols = {"stock": "amount", "yoy": "year_on_year_growth", "flow_total": "total", "rmb_loans": "renminbi_loans",
+            "gov_bonds": "government_bonds", "corp_bonds": "corporate_bonds",
+            "und_ba": "undiscounted_bankers_acceptances", "trust_ln": "trust_loans", "entrust": "entrusted_loans",
+            "equity": "domestic_equity_financing"}
+    sf = {"months": [r["period_month"] for r in rows]}
+    sf.update({k: [db.number(r[c]) for r in rows] for k, c in cols.items()})
     return success(sf)
 
 
@@ -190,24 +209,22 @@ LISTING_DATES = {
 
 
 def list_banks():
-    """可切换银行清单：扫 company_charts_<code>.json，行名取文件里的 _bank 元信息。"""
+    """可切换银行清单：MySQL company 表里有年度财务序列的银行；简称、全称、类型取 company，
+    reportYear 取 financials 最近一年，上市日期取 LISTING_DATES。"""
+    rows = db.query(
+        "SELECT c.a_code, c.h_code, c.short_name, c.full_name, c.tier, MAX(f.fiscal_year) AS report_year"
+        " FROM company c JOIN financials f ON f.company_code = c.company_code WHERE c.industry = 'bank'"
+        " GROUP BY c.company_code, c.a_code, c.h_code, c.short_name, c.full_name, c.tier")
     found = {}
-    for name in jsonstore.listdir(TABLES_DIR):
-        m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
-        if not m:
-            continue
-        d = read_json(os.path.join(TABLES_DIR, name), tolerant=True)
-        if d is None:
-            continue          # 半截/损坏的数据文件不该让整页 500，跳过这一行
-        b = (d or {}).get("_bank") or {}
-        code = m.group(1)
+    for r in rows:
+        code = r["a_code"] or r["h_code"]          # 页面与 company_charts 文件名用的裸代码：A 股代码，纯 H 股用 H 股代码
         ld = LISTING_DATES.get(code, {})
         found[code] = {
             "code": code,
-            "name": b.get("shortName") or code,
-            "fullName": b.get("fullName") or "",
-            "reportYear": b.get("reportYear") or "",
-            "tier": b.get("tier") or "",
+            "name": r["short_name"] or code,
+            "fullName": r["full_name"] or "",
+            "reportYear": str(r["report_year"]) if r["report_year"] else "",
+            "tier": r["tier"] or "",
             "aListDate": ld.get("a", ""),
             "hListDate": ld.get("h", ""),
         }
@@ -217,13 +234,13 @@ def list_banks():
 
 @bank_bp.route("/banks")
 def api_banks():
-    """导航栏银行下拉框的数据源；有 company_charts 数据文件的行才列出"""
+    """导航栏银行下拉框的数据源；MySQL 里有该行年度财务序列才列出"""
     return jsonify(success(list_banks()))
 
 
 def read_bank_npl_formation():
     """全部已有数据行的风控横向对比序列，一次返回，供行业页 npl-formation.html 使用。
-    每家 company_charts_<code>.json 取三条可跨行横比的序列：
+    每家的详情页图表载荷（company_charts_doc）取三条可跨行横比的序列：
       · 不良生成率 formation —— scale-dep.formation（配 scale-dep.years，2018 起可比）
       · 净息差 nim / 净利差 nis —— nim-trend.nim / nim-trend.nis（配 nim-trend.years）
     连同 _bank 元信息按 BANK_ORDER 排序（国有→股份→城商→农商→纯 H）返回。
@@ -231,6 +248,7 @@ def read_bank_npl_formation():
     只要三条序列里任一条有值即纳入（个别行可能只披露息差或只倒推出不良生成）。"""
     banks = []
     seen = set()
+    annual_cache = {}                 # 各行图表都要拼对标行的年度序列，整次请求共用一份
 
     def _has(v):
         return isinstance(v, list) and any(x is not None for x in v)
@@ -238,7 +256,10 @@ def read_bank_npl_formation():
     def _push(code):
         if code in seen:
             return
-        d = read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"), tolerant=True)
+        try:
+            d = company_charts_doc(code, annual_cache, ("manual", "ar_manual", "detail", "social_financing"))
+        except (ValueError, KeyError, TypeError, FileNotFoundError):
+            d = None                  # 半截/缺层的数据不该让整页 500，这一行不进对比图
         if d is None:
             return
         sd = d.get("scale-dep") or {}
@@ -263,12 +284,13 @@ def read_bank_npl_formation():
 
     for code in BANK_ORDER:
         _push(code)
-    for name in jsonstore.listdir(TABLES_DIR):      # BANK_ORDER 之外的行兜底
-        m = re.fullmatch(r"company_charts_([0-9]{5,6})\.json", name)
+    for r in db.query("SELECT source_file FROM financials_meta WHERE source_file LIKE 'bank\\_%%\\_annual.json'"
+                      " ORDER BY source_file"):          # BANK_ORDER 之外、库里有年度序列的行兜底
+        m = re.fullmatch(r"bank_([0-9]{5,6})_annual\.json", r["source_file"])
         if m:
             _push(m.group(1))
     if not banks:
-        return error("尚无 company_charts 数据文件", 404, [])
+        return error("尚无银行年度数据（先跑 data/extract/load_to_mysql.py）", 404, [])
     return success(banks)
 
 

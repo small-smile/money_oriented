@@ -4,8 +4,7 @@
 本地已抽取的年报文本 (data/raw/annual_<code>_<year>.txt) 与成品表 (data/tables/*.json)
 都是可信一手来源, 取数应先查本地。但两个目录合计上千个文件, 靠 ls 很难看出
 「哪家、哪些年、有哪些指标」。本脚本扫描这两处, 输出一份按公司组织的索引,
-供人和子代理直接检索。成品表 *.json 已不落盘 (原文存 MySQL json_file 表), 经 backend/jsonstore.py
-列举与读取; 年报文本照旧扫磁盘。
+供人和子代理直接检索。成品表 *.json 经 backend/jsonstore.py 列举与读取, 年报文本直接扫磁盘。
 
 口径与来源说明仍以 data/tables/data_sources.txt 为准, 本文件只回答「有没有、在哪、覆盖哪些年」。
 
@@ -21,7 +20,7 @@ from collections import defaultdict
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.dirname(HERE)
 sys.path.insert(0, os.path.dirname(DATA))
-from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表, 按原文件路径列举/读取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 RAW = os.path.join(DATA, 'raw')
 TABLES = os.path.join(DATA, 'tables')

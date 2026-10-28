@@ -3,7 +3,7 @@ import os, sys
 ROOT = '/home/zhu/Desktop/real_home/code/python/industry_research'
 OUT = f'{ROOT}/data/extract/tmp_npl'
 sys.path.insert(0, ROOT)
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径读写
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 N = None
 data = {

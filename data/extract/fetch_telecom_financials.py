@@ -22,7 +22,7 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
     红筹在上、A 股在下的多层持股结构，00762 的合并报表包含 600050 及其少数股东权益，
     两条线不可当作同一公司的 A/H 口径混用，也不可相加。本脚本一律只用 600050。
 
-输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
+输出：
     data/raw/em_<reportName>_<code>.json      原始响应（缓存；--refresh 重新拉取）
     data/tables/telecom_<code>_annual.json    整理后的逐年序列 + 前十股东 + 分红 + 元信息
 

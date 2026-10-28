@@ -20,7 +20,7 @@
 用法：venv/bin/python data/extract/build_company_codes.py [来源草稿.json]
 默认读 data/extract/out/company_codes_draft.json（逐条带 sources 的调查底稿，逐家在本地
 数据表与页面里核对过），校验后写入 data/tables/company_codes.json。
-两份 JSON 都不落盘，原文在 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写；
+两份 JSON 都经 backend/jsonstore.py 读写；
 命令行给的草稿路径照旧按当前目录解析，但必须落在 data/ 之内。
 """
 import os
@@ -30,7 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, ROOT)
 
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 TABLES = os.path.join(os.path.dirname(HERE), "tables")
 OUT = os.path.join(TABLES, "company_codes.json")

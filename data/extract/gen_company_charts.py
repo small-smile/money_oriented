@@ -1,10 +1,9 @@
 """把 data/tables/bank_<code>_annual.json（+ 可选的 bank_<code>_shareholder_manual.json 手工年报覆盖层）
 整理成银行详情页 7 个页面直接消费的 data/tables/company_charts_<code>.json。
-（*.json 已不落盘：原文存 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写。）
 
 背景：详情页（dashboard/company/bank/*.html）统一从 /api/company_charts?code=<code> 取一份大 JSON，
 charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，含大量只有年报正文才有的明细），
-本脚本只负责生成「能从 F10 年度数据推导出来的」那部分 key，其余 key 缺失时页面显示
+本脚本只负责生成「能从公司数据接口的年度数据推导出来的」那部分 key，其余 key 缺失时页面显示
 「该行暂无此项数据」占位（charts.js 的 stub 逻辑）。
 
 约定：
@@ -13,20 +12,22 @@ charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，
     - 不良生成率统一自 2018 年起（早年口径不可比，见 MEMORY 中的 2018 基准）
     - A+H 两地上市优先采用 A 股年报口径（手工覆盖层里的股东户数/前十大/分红即 A 股年报）
 
-用法：
-    ./venv/bin/python data/extract/gen_company_charts.py            # 生成 CODES 全部
-    ./venv/bin/python data/extract/gen_company_charts.py 600036     # 只生成指定行
+页面不读本脚本落的文件：后端把 build() 的输入从 MySQL 拼回、请求时现算（backend/bank_charts_db.py），
+所以改了这里的映射或文案，重启后端即生效。命令行只按 data/tables 的 JSON 跑一遍 build() 做离线自检，不再写文件：
+    ./venv/bin/python data/extract/gen_company_charts.py            # 自检 CODES 全部
+    ./venv/bin/python data/extract/gen_company_charts.py 600036     # 只自检指定行
 """
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 TABLES = ROOT / "data" / "tables"
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 YI = 1e8        # 元 -> 亿元
 MN = 1e6        # 元 -> 百万元
@@ -167,7 +168,7 @@ def load_annual(code: str) -> dict:
     if code not in _CACHE:
         d = jsonstore.read(TABLES / f"bank_{code}_annual.json")
         if d is None:
-            raise FileNotFoundError(f"json_file 表里没有 tables/bank_{code}_annual.json")
+            raise FileNotFoundError(f"没有 data/tables/bank_{code}_annual.json")
         _CACHE[code] = d
     return _CACHE[code]
 
@@ -343,7 +344,7 @@ def build_holders(top10: list, top10_sum: float) -> dict:
 
 
 def top10_from_annual(src: dict) -> tuple[list, float]:
-    """没有手工覆盖层时，用 F10 的十大股东（annual.holders）拼一份，性质按名称关键词推导。"""
+    """没有手工覆盖层时，用接口的十大股东（annual.holders）拼一份，性质按名称关键词推导。"""
     rows = []
     for h in sorted(src.get("holders") or [], key=lambda x: x.get("rank") or 99):
         name, pct = h.get("name"), h.get("ratio")
@@ -355,7 +356,7 @@ def top10_from_annual(src: dict) -> tuple[list, float]:
     return rows, round(sum(x[1] for x in rows), 2)
 
 
-# 第一大股东名称在图例/tooltip 里要短。F10 里同一个股东跨年有多种写法
+# 第一大股东名称在图例/tooltip 里要短。接口里同一个股东跨年有多种写法
 # （汇金公司 / 中央汇金投资有限责任公司、财政部 / 中华人民共和国财政部(财政部)），一并归一。
 HOLDER_ALIAS = [
     ("香港中央结算(代理人)", "香港中央结算（代理人）"),
@@ -506,7 +507,7 @@ def share_capital_note(name: str, sc: dict) -> str:
     body = ("%s %s 年总股本由 <b>%.2f 亿股</b>增至 <b>%.2f 亿股</b>，其间 <b>%d 个年份</b>发生变动："
             % (name, span, sc["shares"][0], sc["shares"][-1], len(chg)))
     body += "、".join("%s 年 %+.2f 亿股" % (y, d) for y, d in chg) + "。"
-    body += ("数据来源：东方财富 F10 银行业资产负债表「股本」科目（面值 1 元，元金额即股数），"
+    body += ("数据来源：各年度报告资产负债表「股本」科目（取自公开披露记录；面值 1 元，元金额即股数），"
              "取各年度年报期。<b>本图只给出股本数量的变动，未区分 IPO / 定向增发 / 配股 / "
              "转增股本等成因</b>——成因需读当年年报「股本变动及股东情况」章节，尚未逐年录入。")
     if sc.get("gaps"):
@@ -517,7 +518,7 @@ def share_capital_note(name: str, sc: dict) -> str:
 def concentration_note(name: str, conc: dict | None, hist: dict | None = None) -> str:
     """集中度三张柱图的脚注。
 
-    conc = A 股定期报告口径（F10 按报告期汇总），hist = 港交所 H 股年报口径（手工逐年读年报）。
+    conc = A 股定期报告口径（接口按报告期汇总），hist = 港交所 H 股年报口径（手工逐年读年报）。
     两者在页面上是两个 series 单独披露，脚注也分段写清各自的来源与口径处理。
     """
     h_rows = (hist or {}).get("raw") or []
@@ -540,7 +541,7 @@ def concentration_note(name: str, conc: dict | None, hist: dict | None = None) -
             "股东的重复值，全画只会更密而不更有信息），三个口径（第一大/前三大/前十大）各占一张图，"
             "纵轴按各自数据取整、不从 0 起，绝对水平看柱顶数值。"
             "「其他流通股东」= 100%% − 前十大合计，与前十大严格镜像，只在 tooltip 里给出。"
-            "数据来源：东方财富 F10「前十名股东」接口，按各报告期（年报/中报/季报）披露的"
+            "数据来源：各报告期定期报告「前十名股东」（取自公开披露记录），按各报告期（年报/中报/季报）披露的"
             "前十大股东持股比例汇总计算（占总股本）。口径处理："
             "① 事件型快照（过户日等非报告期，只列受影响的几名股东）整期剔除；"
             "② 同一股东被按股份类型拆成多行时先按名称合并再排序，不按接口名次；"
@@ -593,7 +594,7 @@ def holder_count_note(name: str, hc: dict) -> str:
         tot = [v for r in raw for v in r[2:] if v is not None] or [0]
     return ("%s 共 <b>%d 个披露期</b>（%s ~ %s）的股东户数：由 %s 户到 %s 户，"
             "区间最高 %s 户、最低 %s 户。A 股 / H 股拆分仅部分期次披露，未拆分的期次留空断线。"
-            "数据来源：东方财富 F10「股东户数」接口（取值源自各期定期报告「股东情况」章节）；"
+            "数据来源：各期定期报告「股东情况」章节的股东户数（取自公开披露记录）；"
             "非报告期的快照（如 A 股上市首日）一并保留——那正是打新账户尚未离场的峰值。"
             % (name, len(raw), raw[0][0], raw[-1][0],
                f"{tot[0]:,}", f"{tot[-1]:,}", f"{max(tot):,}", f"{min(tot):,}"))
@@ -602,7 +603,7 @@ def holder_count_note(name: str, hc: dict) -> str:
 def page_meta(code: str, hcode: str, assets: float | None, latest: str) -> str:
     """页头副标题：页面写死的是渝农商行的代码/董监高，各行至少要换成自己的代码与规模。
 
-    董事长/行长不在 F10 财务接口里（要读年报「公司治理」章节），故生成版只给可核对的三项：
+    董事长/行长不在财务接口里（要读年报「公司治理」章节），故生成版只给可核对的三项：
     两地代码、最新年末总资产、金额单位。手工覆盖层给了 meta 的行仍以覆盖层为准。
     """
     bits = []
@@ -640,19 +641,30 @@ def holders_sub(hc: dict | None, top10_sum: float | None, latest: str) -> str | 
 
 def dividend_sub(div: dict | None) -> str | None:
     """「分红与股东回报」小节副标题：把渝农商行的上市日/年份区间换成本行的实际披露区间。"""
-    years = (div or {}).get("years9") or []
+    years = (div or {}).get("years") or []      # ad26386 把 years9 等轴键统一成 years 后这里漏改，副标题一直没生成
     if not years:
         return None
-    return ("来源：东方财富 F10「分红送配」逐年度利润分配方案 · %s–%s 年度每 10 股派现（含税）"
+    return ("来源：逐年度利润分配方案（取自公开披露记录）· %s–%s 年度每 10 股派现（含税）"
             "，同一年度多次派发（中期 + 末期）按年度合计" % (years[0], years[-1]))
 
 
 # ────────────────────────── 主体 ──────────────────────────
 
-def build(code: str) -> dict:
-    src = load_annual(code)
+def _social_financing_from_file() -> dict | None:
+    """社融为宏观口径，各行共用同一份（直接沿用 601077 精编文件里的那份）。"""
+    return (jsonstore.read(TABLES / "company_charts_601077.json") or {}).get("social-financing-stock")
+
+
+# build() 的五份输入：默认读 data/tables 下的文件；后端从 MySQL 拼回同形状后按同名键传进来（见 backend/bank_charts_db.py）
+FILE_SOURCES = {"annual": load_annual, "manual": load_manual, "ar_manual": load_ar_manual, "detail": load_detail,
+                "social_financing": _social_financing_from_file}
+
+
+def build(code: str, sources: dict | None = None) -> dict:
+    inputs = {**FILE_SOURCES, **(sources or {})}
+    src = inputs["annual"](code)
     annual = src["annual"]
-    manual = load_manual(code)
+    manual = inputs["manual"](code)
     all_years = sorted(annual)
     latest = all_years[-1]
     y_perf = [y for y in all_years if y >= START_PERF]
@@ -704,7 +716,7 @@ def build(code: str) -> dict:
     for suf, pcode in PEERS:
         if pcode == code:
             continue
-        pa = load_annual(pcode)["annual"]
+        pa = inputs["annual"](pcode)["annual"]
         scale["npl" + suf] = ser(pa, years, "npl_ratio")
         scale["overdue" + suf] = ser_ratio(pa, years, "overdue_loans", "gross_loans")
         scale["writeoffRate" + suf] = ser_ratio(pa, years, "net_charge_off", "gross_loans")
@@ -771,7 +783,7 @@ def build(code: str) -> dict:
     if inv:
         out["invest"] = inv
 
-    # 分红：优先用手工覆盖层（A 股年报「利润分配方案」全历史），否则用 F10 的 dividend_per10
+    # 分红：优先用手工覆盖层（A 股年报「利润分配方案」全历史），否则用接口的 dividend_per10
     if manual and manual.get("dividend"):
         out["dividend-per10"] = manual["dividend"]
     else:
@@ -779,7 +791,7 @@ def build(code: str) -> dict:
         if dy:
             out["dividend-per10"] = {"years": dy, "per10": [src["dividend_per10"][y] for y in dy]}
 
-    # 股东户数：手工年报覆盖层优先（A 股年报口径），否则用 F10 的历年股东户数
+    # 股东户数：手工年报覆盖层优先（A 股年报口径），否则用接口的历年股东户数
     if manual and manual.get("holderCount"):
         out["holder-count"] = {
             "raw": [[row[0], None, row[1], row[2]] for row in manual["holderCount"]],
@@ -789,18 +801,19 @@ def build(code: str) -> dict:
         raw = src["holder_num"]
         out["holder-count"] = {
             "raw": raw,
-            "unit": "wan" if max(r[1] for r in raw) >= 1e5 else "hu",
+            # 纯 H 股行有的期次只披露 H 股户数、合计为空，量级按披露了的户数定
+            "unit": "wan" if max((v for r in raw for v in r[1:] if v is not None), default=0) >= 1e5 else "hu",
         }
 
-    # 历年持股集中度 / 总股本变动：全部由 F10 年度数据推导，各行都有
+    # 历年持股集中度 / 总股本变动：全部由接口年度数据推导，各行都有
     conc = build_concentration(src, bool(meta.get("hCode")))
     if conc:
         out["holder-concentration"] = conc
     # 港交所（H 股年报）口径的集中度单独一份载荷、页面上单独一个 series 披露：
-    # F10「前十名股东」只覆盖 A 股定期报告期，纯 H 股行（天津/江西银行）与 A+H 行上市前的年份
+    # 接口的「前十名股东」只覆盖 A 股定期报告期，纯 H 股行（天津/江西银行）与 A+H 行上市前的年份
     # 只能从港股年报「股本变动及股东情况」逐年读出，口径与 A 股披露不同，不能并成一条序列。
     # 纯 H 股行没有 shareholder_manual 覆盖层，这份序列写在 ar_manual 年报底稿里。
-    hsrc = manual if (manual and manual.get("concentrationHist")) else (load_ar_manual(code) or {})
+    hsrc = manual if (manual and manual.get("concentrationHist")) else (inputs["ar_manual"](code) or {})
     if hsrc.get("concentrationHist"):
         out["holder-concentration-hist"] = {
             "raw": hsrc["concentrationHist"],
@@ -810,7 +823,7 @@ def build(code: str) -> dict:
     if sc:
         out["share-capital"] = sc
 
-    # 十大股东：手工覆盖层优先（A 股年报口径 + 人工派系归类），否则退回 F10 十大股东
+    # 十大股东：手工覆盖层优先（A 股年报口径 + 人工派系归类），否则退回接口十大股东
     top10_sum = None
     if manual and manual.get("top10"):
         out["holders"] = build_holders(manual["top10"], manual["top10Sum"])
@@ -829,7 +842,7 @@ def build(code: str) -> dict:
             if manual.get(key):
                 notes[dom] = manual[key]
     elif out.get("holders"):
-        notes["note-holders-g"] = ("十大股东取自东方财富 F10「%s 十大股东」（源自 %s 年年度报告），"
+        notes["note-holders-g"] = ("十大股东取自%s %s 年年度报告「前十名股东」（取自公开披露记录），"
                                   "派系配色按股东名称关键词自动归类，仅供示意。"
                                   % (src["name"], latest))
 
@@ -860,7 +873,7 @@ def build(code: str) -> dict:
         elif h_rows:                        # 纯 H 股行：只有一个来源，不用浅深色对比的说法
             srcs.append("全部取自 <b>港交所披露</b>的 H 股年报「股本变动及股东情况」（口径见下方说明）")
         else:
-            srcs.append("取自 <b>A 股定期报告</b>披露的「前十名股东」（东方财富 F10 按报告期汇总）")
+            srcs.append("取自 <b>A 股定期报告</b>披露的「前十名股东」（按报告期汇总）")
         last_d = (a_rows or h_rows)[-1][0]
         tail = "" if str(last_d)[5:] == "12-31" else f"（最新一根为 {last_d} 当期）"
         head = "每年一根柱（年末口径，最新年份取最近报告期）" if tail else "每年一根柱（年末口径）"
@@ -913,7 +926,7 @@ def build(code: str) -> dict:
     # 专属明细键覆盖层：语义读年报得到的迁徙率/重定价/期限/五级分类/分部/行业投向/员工构成/
     # 高管薪酬/存款成本/贷款结构/公允价值层级/现金流等，直接并入 out（顶层键即图表数据键）。
     # charts.js 里这些图位默认按 .yns-only 隐藏，只有 out 里出现对应键（及标题 _notes）才显示。
-    detail = load_detail(code)
+    detail = inputs["detail"](code)
     if detail:
         dnotes = detail.pop("_notes", None)
         for k, v in detail.items():
@@ -928,10 +941,10 @@ def build(code: str) -> dict:
         if std:
             out["seg-rev"] = {**out["seg-rev"], "std": std}
 
-    # 社融为宏观口径，各行共用同一份（直接沿用 601077 精编文件里的那份）
-    ref = jsonstore.read(TABLES / "company_charts_601077.json")
-    if "social-financing-stock" in ref:
-        out["social-financing-stock"] = ref["social-financing-stock"]
+    # 社融为宏观口径，各行共用同一份
+    sf = inputs["social_financing"]()
+    if sf:
+        out["social-financing-stock"] = sf
     return out
 
 
@@ -945,12 +958,10 @@ def main(argv: list[str]) -> None:
             print(f"[skip] {code}: 缺 bank_{code}_annual.json（fetch 未成功或未拉取），跳过")
             continue
         data = build(code)
-        path = TABLES / f"company_charts_{code}.json"
-        text = jsonstore.write(path, data, ensure_ascii=False, separators=(",", ":"))
+        text = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
         keys = [k for k in data if not k.startswith("_")]
-        print(f"[gen] {data['_bank']['shortName']} {code}: {len(keys)} key, "
-              f"{data['perf']['years'][0]}~{data['_bank']['reportYear']}, "
-              f"{len(text.encode('utf-8')) / 1024:.1f} KB -> {path.relative_to(ROOT)}")
+        print(f"[ok] {data['_bank']['shortName']} {code}: {len(keys)} key, "
+              f"{data['perf']['years'][0]}~{data['_bank']['reportYear']}, {len(text.encode('utf-8')) / 1024:.1f} KB")
 
 
 if __name__ == "__main__":

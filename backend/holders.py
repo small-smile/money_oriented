@@ -1,15 +1,15 @@
-import os
 import re
-import json
+import threading
 
 from flask import Blueprint, jsonify, request
 
+from backend import holders_db
 from backend.shared import (
-    TABLES_DIR, read_json, _holders_manual, _company_codes, _company_entity,
+    _holders_manual, _company_codes, _company_entity,
     _resolve_company_code, _cross_industry_redirect,
     success, error,
 )
-from backend.bank import BANK_ORDER
+from backend.bank import BANK_ORDER, company_charts_doc
 from backend.industry import INSURER_PEERS, DEVELOPER_PEERS
 from backend.cement_ops import CEMENT_PEERS
 from backend.telecom_ops import TELECOM_PEERS
@@ -91,10 +91,24 @@ def read_nav(code=None, industry=None):
     })
 
 
+_charts_memo = threading.local()      # read_holders 一次请求里每家银行的图表载荷只拼一次（各块都从同一份里取）
+
+
+def _company_charts(code):
+    """某行详情页的整份图表载荷（同 company_charts_<code>.json，库里现算，见 bank.company_charts_doc）。"""
+    memo = getattr(_charts_memo, "docs", None)
+    if memo is None:
+        return company_charts_doc(code)
+    if code not in memo:
+        # 股权页只取环形图 / 股本 / 分红几块，年报正文明细、港股集中度、社融不用拼
+        memo[code] = company_charts_doc(code, memo.setdefault("_annual", {}),
+                                        ("ar_manual", "detail", "social_financing"))
+    return memo[code]
+
+
 def _company_charts_block(code, key):
-    """company_charts_<code>.json 里的任意一块（银行年报口径页的数据源）。"""
-    path = os.path.join(TABLES_DIR, f"company_charts_{code}.json")
-    return (read_json(path) or {}).get(key) or None
+    """银行详情页图表载荷里的任意一块（银行年报口径页的数据源）。"""
+    return (_company_charts(code) or {}).get(key) or None
 
 
 def _company_charts_holders(code):
@@ -147,9 +161,16 @@ def _bank_factions(code):
 
 
 def _holder_table(industry, code):
-    """只读 annual 表里股权结构要用的那几块，不做手工层合并（股东数据与经营口径无关）。"""
-    path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
-    return read_json(path)
+    """只读 annual 表里股权结构要用的那几块，不做手工层合并（股东数据与经营口径无关）：
+    读 MySQL，形状同 <industry>_<code>_annual.json，见 backend/holders_db.py；
+    银行这份与图表载荷用的是同一份 annual，一次请求里共用。"""
+    memo = getattr(_charts_memo, "docs", None)
+    if memo is None or industry != "bank":
+        return holders_db.holder_table(industry, code)
+    cache = memo.setdefault("_annual", {})
+    if code not in cache:
+        cache[code] = holders_db.holder_table(industry, code)
+    return cache[code]
 
 
 def _norm_holder_name(s):
@@ -459,13 +480,10 @@ def _as_year_pairs(v):
 
 
 # ── 合并后的每公司股东表 ────────────────────────────────────────────────────────
-# 「新建 shareholder 表」：原先每次请求都现拼三处来源 —— <板块>_<code>_annual.json（东财接口
-# 前十名快照）、company_charts_<code>.json（银行年报口径环形图/股本/分红）、holders_manual.json
-# （手工层）。现在把它们按公司合并落地成一份 data/tables/<板块>_<code>_shareholder.json，另带
-# 一个 sources 块逐层记下出处（tier 同前端 SRC_TIER：annual 年报 / api 第三方接口 / manual 手工层，
-# 认不出的按 prompt 约定降到 api）。生成脚本 data/extract/build_shareholder_tables.py；接口有这份表
-# 就直接读，没有就退回 _stitch_rec 现拼 —— 落地的正是 _stitch_rec 的结果，两条路给出的 rec 一致。
-SHAREHOLDER_TABLE = "{industry}_{code}_shareholder.json"
+# 每次请求现拼三处来源 —— <板块>_<code>_annual.json（接口前十名快照）、company_charts_<code>.json
+# （银行年报口径环形图/股本/分红）、holders_manual.json（手工层），三处都从 MySQL 读（文件名只作出处标签），
+# 另带一个 sources 块逐层记下出处（tier 同前端 SRC_TIER：annual 年报 / api 第三方接口 / manual 手工层，
+# 认不出的按 prompt 约定降到 api）。
 _HOLDERS_MANUAL_BASENAME = "holders_manual.json"
 
 
@@ -585,16 +603,9 @@ def _stitch_rec(industry, code, man):
     return rec
 
 
-def _load_shareholder_table(industry, code):
-    """读合并表 data/tables/<板块>_<code>_shareholder.json，没有就返回 None。"""
-    path = os.path.join(TABLES_DIR, SHAREHOLDER_TABLE.format(industry=industry, code=code))
-    return read_json(path)
-
-
 def _get_rec(industry, code, man):
-    """合并表在就读表、不在就现拼（build_shareholder_tables.py 落地的正是 _stitch_rec 的结果，
-    所以两条路给出的数据一致）。"""
-    return _load_shareholder_table(industry, code) or _stitch_rec(industry, code, man)
+    """每公司的股东表一律按 _stitch_rec 现拼，三处来源都从 MySQL 读。"""
+    return _stitch_rec(industry, code, man)
 
 
 def read_holders(code=None):
@@ -605,6 +616,14 @@ def read_holders(code=None):
     在本板块名单里的代码（同一法人才换，中国联通 A 股与红筹不换，只说明原因）。
     纯 H 股公司（如中国海外发展 00688）接口不返回前十名股东，名单里保留但标 has_holders=false，
     页面把它画成不可点，避免看着像取数遗漏。"""
+    _charts_memo.docs = {}
+    try:
+        return _read_holders(code)
+    finally:
+        _charts_memo.docs = None
+
+
+def _read_holders(code):
     if not code:
         code = industry_default_code(DEFAULT_HOLDER_INDUSTRY)
     industry = _industry_of_code(code)

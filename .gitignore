@@ -46,9 +46,6 @@ draft.json
 # 原始抓取数据，可由 extract/ 脚本重新拉取
 data/raw/
 
-# JSON 原文已进 MySQL json_file 表（经 backend/jsonstore.py 读写），data/ 下不再放 *.json
-data/**/*.json
-
 # 本地起 Flask 服务时 nohup 出来的运行日志，不入库
 visit.log
 

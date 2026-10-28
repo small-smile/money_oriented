@@ -3,8 +3,8 @@
 各行业脚本只保留自己的口径差异（成员名单、字段映射、派生指标），取数管道走这里一份。
 直接 `python data/extract/fetch_xxx_financials.py` 运行时，脚本所在目录就在 sys.path 上，
 `from _common import ...` 即可。
-data/ 下的 *.json（raw/ 缓存、tables/ 成品表）已不落盘，原文存 MySQL json_file 表，
-按原文件路径经 backend/jsonstore.py 读写；这里把仓库根加进 sys.path 并导出 jsonstore 给各脚本用。
+data/ 下的 *.json（raw/ 缓存、tables/ 成品表）经 backend/jsonstore.py 读写；
+这里把仓库根加进 sys.path 并导出 jsonstore 给各脚本用。
 """
 import json
 import sys
@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "tables"
@@ -72,7 +72,7 @@ def request_json(report_name: str, filt: str, sort_col: str = "REPORT_DATE",
 
 
 def cached(report_name: str, code: str, filt: str, refresh: bool, **kw) -> dict:
-    """缓存存 MySQL json_file 表，键照旧是 data/raw/em_<报表>_<代码>.json；没有 --refresh 就只读缓存、不联网。"""
+    """缓存在 data/raw/em_<报表>_<代码>.json；没有 --refresh 就只读缓存、不联网。"""
     path = RAW_DIR / f"em_{report_name}_{code}.json"
     if jsonstore.exists(path) and not refresh:
         return jsonstore.read(path)

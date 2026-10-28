@@ -1,65 +1,28 @@
-"""data/ 下的 JSON（成品表 tables/、抓取缓存 raw/、抽数中间件 extract/）统一存在 MySQL 的 json_file 表，
-一份文件一行、原文照存（键序、缩进都不动），磁盘上不再留 *.json。表结构见 data/sql/tables/json_file.sql。
+"""data/ 下的 JSON（成品表 tables/、抓取缓存 raw/、抽数中间件 extract/）就是磁盘上的 *.json 文件，读写一律走这里。
+MySQL 里不存 JSON 原文，只放 data/extract/load_to_mysql.py 从这些文件拆出来的结构化表（data/sql/tables/*.sql）。
 
-读写一律走这里。路径照旧按原来的文件路径给：绝对路径（os.path.join(TABLES_DIR, ...) 拼出来的）
-或相对 data/ 的路径（"tables/company_codes.json"）都行，库里的键统一是相对 data/ 的 POSIX 路径，
-调用方不用改路径拼法，只把 open/json.load/os.listdir 换成这里的同名动作。
-
-连接配置读环境变量 MYSQL_HOST / MYSQL_PORT / MYSQL_USER / MYSQL_PWD / MYSQL_DB，缺的从仓库根 .env 补。
+路径照旧按原来的文件路径给：绝对路径（os.path.join(TABLES_DIR, ...) 拼出来的）
+或相对 data/ 的路径（"tables/company_codes.json"）都行，内部统一换成相对 data/ 的 POSIX 路径（键）。
+列目录、glob 只看 *.json。
 
 命令行（仓库根目录下跑；按脚本路径跑，不用 -m，免得先导入整个 backend 包）：
-  ./venv/bin/python backend/jsonstore.py import [文件或目录...]   # 磁盘上的 *.json 写进库，缺省整个 data/
-  ./venv/bin/python backend/jsonstore.py export <目标目录> [前缀]  # 从库里导回文件（恢复/对照用）
   ./venv/bin/python backend/jsonstore.py ls [前缀]
   ./venv/bin/python backend/jsonstore.py get <路径>               # 原文打到 stdout（node 脚本经它读）
-  ./venv/bin/python backend/jsonstore.py put <路径> < 原文        # stdin 原文写进库（node 脚本经它写）
+  ./venv/bin/python backend/jsonstore.py put <路径> < 原文        # stdin 原文校验后落盘（node 脚本经它写）
 """
 import fnmatch
 import json
 import os
 import sys
-import threading
 
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 需换数据根目录时设环境变量 MONEY_DATA_DIR（与 backend/shared.py 同一口径）
 DATA_DIR = os.path.abspath(os.environ.get("MONEY_DATA_DIR") or os.path.join(_BASE_DIR, "data"))
-TABLE = "json_file"
-
-_local = threading.local()      # 每线程一条连接：Flask 多线程处理请求，pymysql 连接不能跨线程共用
-
-
-def _config():
-    env = {}
-    path = os.path.join(_BASE_DIR, ".env")
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, v = line.split("=", 1)
-                    env[k.strip()] = v.strip().strip("'\"")
-
-    def get(k, default):
-        return os.environ.get(k) or env.get(k) or default
-
-    return {"host": get("MYSQL_HOST", "127.0.0.1"), "port": int(get("MYSQL_PORT", "3306")),
-            "user": get("MYSQL_USER", "root"), "password": get("MYSQL_PWD", ""),
-            "database": get("MYSQL_DB", "money")}
-
-
-def _cursor():
-    conn = getattr(_local, "conn", None)
-    if conn is None:
-        import pymysql
-        conn = pymysql.connect(charset="utf8mb4", autocommit=True, **_config())
-        _local.conn = conn
-    else:
-        conn.ping(reconnect=True)
-    return conn.cursor()
+_SKIP_DIRS = ("node_modules", "__pycache__")
 
 
 def key(path):
-    """文件路径 → 库里的键（相对 data/ 的 POSIX 路径）。绝对路径必须落在 data/ 之内。"""
+    """文件路径 → 键（相对 data/ 的 POSIX 路径）。绝对路径必须落在 data/ 之内。"""
     p = os.fspath(path)
     if os.path.isabs(p):
         rel = os.path.relpath(os.path.abspath(p), DATA_DIR)
@@ -70,20 +33,17 @@ def key(path):
 
 
 def path_of(k):
-    """库里的键 → 原文件的绝对路径（列目录、glob 返回这种形态，调用方照旧 basename/正则）。"""
+    """键 → 文件的绝对路径（列目录、glob 返回这种形态，调用方照旧 basename/正则）。"""
     return os.path.join(DATA_DIR, *k.split("/"))
-
-
-def _like_prefix(prefix):
-    return prefix.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
 
 
 def read_text(path):
     """原文；不存在返回 None。"""
-    with _cursor() as cur:
-        cur.execute(f"SELECT content FROM {TABLE} WHERE path=%s", (key(path),))
-        row = cur.fetchone()
-    return row[0] if row else None
+    try:
+        with open(path_of(key(path)), encoding="utf-8", newline="") as f:
+            return f.read()
+    except FileNotFoundError:
+        return None
 
 
 def read(path, default=None):
@@ -93,44 +53,51 @@ def read(path, default=None):
 
 
 def exists(path):
-    with _cursor() as cur:
-        cur.execute(f"SELECT 1 FROM {TABLE} WHERE path=%s", (key(path),))
-        return cur.fetchone() is not None
+    return os.path.isfile(path_of(key(path)))
 
 
 def write_text(path, text):
-    """原文写进库（同键覆盖）。先在本地校验一遍是合法 JSON，坏数据不进库。"""
+    """原文落盘（同名覆盖）。先校验一遍是合法 JSON，坏数据不落盘；写临时文件再改名，读的一方不会读到半截。"""
     json.loads(text)
-    with _cursor() as cur:
-        cur.execute(f"INSERT INTO {TABLE} (path, content) VALUES (%s, %s) AS new "
-                    f"ON DUPLICATE KEY UPDATE content = new.content", (key(path), text))
+    target = path_of(key(path))
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    tmp = target + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
+    os.replace(tmp, target)
 
 
 def write(path, obj, **dumps_kw):
-    """json.dumps(obj, **dumps_kw) 后写进库；dumps_kw 照搬原来写文件时的参数（indent/ensure_ascii…）。"""
+    """json.dumps(obj, **dumps_kw) 后落盘；dumps_kw 照搬原来写文件时的参数（indent/ensure_ascii…）。"""
     text = json.dumps(obj, **dumps_kw)
     write_text(path, text)
     return text
 
 
 def delete(path):
-    with _cursor() as cur:
-        cur.execute(f"DELETE FROM {TABLE} WHERE path=%s", (key(path),))
+    try:
+        os.remove(path_of(key(path)))
+    except FileNotFoundError:
+        pass
 
 
 def keys(prefix=""):
-    """前缀下的全部键（含子目录），按键排序。"""
-    with _cursor() as cur:
-        cur.execute(f"SELECT path FROM {TABLE} WHERE path LIKE %s ORDER BY path",
-                    (_like_prefix(prefix),))
-        return [r[0] for r in cur.fetchall()]
+    """前缀下的全部 *.json 键（含子目录），按键排序。"""
+    out = []
+    for root, dirs, names in os.walk(DATA_DIR):
+        dirs[:] = [d for d in dirs if d not in _SKIP_DIRS]
+        rel = os.path.relpath(root, DATA_DIR)
+        base = "" if rel == "." else rel.replace(os.sep, "/") + "/"
+        out += [base + n for n in names if n.endswith(".json") and (base + n).startswith(prefix)]
+    return sorted(out)
 
 
 def listdir(directory):
-    """代替 os.listdir：目录下（不含子目录）的文件名，已排序。"""
-    d = key(directory).rstrip("/")
-    prefix = "" if d == "." else d + "/"
-    return [k[len(prefix):] for k in keys(prefix) if "/" not in k[len(prefix):]]
+    """代替 os.listdir：目录下（不含子目录）的 *.json 文件名，已排序。"""
+    d = path_of(key(directory))
+    if not os.path.isdir(d):
+        return []
+    return sorted(n for n in os.listdir(d) if n.endswith(".json") and os.path.isfile(os.path.join(d, n)))
 
 
 def glob(pattern):
@@ -140,39 +107,9 @@ def glob(pattern):
             for n in listdir(d or ".") if fnmatch.fnmatchcase(n, name)]
 
 
-def _import(targets):
-    files = []
-    for t in targets:
-        t = os.path.abspath(t)
-        if os.path.isdir(t):
-            for root, dirs, names in os.walk(t):
-                dirs[:] = sorted(x for x in dirs if x not in ("node_modules", "__pycache__"))
-                files += [os.path.join(root, n) for n in sorted(names) if n.endswith(".json")]
-        elif t.endswith(".json"):
-            files.append(t)
-    for p in files:
-        with open(p, encoding="utf-8") as f:
-            write_text(p, f.read())
-    print(f"写入 {len(files)} 份 JSON → {TABLE}")
-
-
-def _export(target, prefix=""):
-    ks = keys(prefix)
-    for k in ks:
-        out = os.path.join(target, *k.split("/"))
-        os.makedirs(os.path.dirname(out), exist_ok=True)
-        with open(out, "w", encoding="utf-8") as f:
-            f.write(read_text(k))
-    print(f"导出 {len(ks)} 份 JSON → {target}")
-
-
 def main(argv):
     cmd, args = (argv[0], argv[1:]) if argv else ("", [])
-    if cmd == "import":
-        _import(args or [DATA_DIR])
-    elif cmd == "export" and args:
-        _export(args[0], args[1] if len(args) > 1 else "")
-    elif cmd == "ls":
+    if cmd == "ls":
         print("\n".join(keys(args[0] if args else "")))
     elif cmd == "get" and args:
         text = read_text(args[0])

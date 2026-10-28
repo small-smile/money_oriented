@@ -1,0 +1,185 @@
+{
+ "source": "三家 A 股年度报告原文（上交所披露，落盘 data/raw/annual_<code>_<year>.pdf/.txt，pdftotext -layout 抽取后按章节语义通读录入）。财务接口不提供用户数、ARPU、年报口径资本开支与云业务收入，这一层全部来自年报正文。",
+ "unit_note": "用户数单位为百万户（年报以万户/亿户披露的已换算，换算只做单位缩放不改数值）；ARPU 为人民币元/户/月；capex_yr、capex_guide_next、cloud_rev、dx_rev、service_rev、depreciation 单位为亿元；penetration_5g 为 %。",
+ "caliber_note": "跨公司横比前先看口径：（1）5G 用户三家写法不同——中国移动 2021—2023 年披露「5G 套餐客户数」、2024 年起改披露「5G 网络客户数」（2023 年重述为 465 百万），两者不是同一指标，本表分成 users_5g_pkg_mn 与 users_5g_net_mn 两个字段，不拼成一条序列；中国电信 2021—2022 年披露 5G 套餐用户绝对数，2023 年起只披露渗透率（penetration_5g）；中国联通 2020—2022 年披露 5G 套餐用户，2023 年起只给渗透率。（2）宽带 ARPU：中国移动的 bb_arpu 是「有线宽带 ARPU」（2024 年起停止披露），home_arpu 是「家庭客户综合 ARPU」（含智慧家庭增值）；中国电信 bb_arpu 为「宽带综合 ARPU」（含天翼高清与智家应用）；中国联通 bb_arpu 为「宽带用户接入 ARPU」（仅接入，口径最窄，故数值最低）——三家不可直接比高低，只可比各自趋势。（3）dx_rev 是三家各自的第二曲线口径：中国移动为「数字化转型收入」、中国电信为「产业数字化（产数）收入」、中国联通为「算网数智收入」，覆盖范围不同，dx_name 记该年年报用的名称。（4）cloud_rev 亦分别为移动云／天翼云／联通云，其中联通云 2024 年起口径优化为「融合创新解决方案产生的云 IDC、云资源、云平台…」，与 2023 年及以前不完全可比。（5）capex_yr 是年报披露的当年资本开支（按发生额），与财务接口 capex_ratio 用的「购建长期资产支付的现金」不是同一口径，两者都保留。（6）approx 列出的字段是年报以「约／超过」表述的近似值，不是精确披露数，不做推算补齐。",
+ "companies": {
+  "600941": {
+   "name": "中国移动",
+   "years": "2021-2025",
+   "report_source": "上交所 A 股年度报告原文（2021—2025 年共 5 份，A 股 2022-01-05 上市，故 A 股年报自 2021 年度起）",
+   "breaks": [
+    "2024 年起「5G 套餐客户数」改为「5G 网络客户数」（2023 年同时披露 795 与 465 百万户两个口径）",
+    "2024 年起不再披露有线宽带 ARPU，2025 年起不再披露有线宽带客户数（改披露千兆宽带客户数）",
+    "2024 年起不再披露移动云收入绝对值（2021—2023 年为 242／503／833 亿元）"
+   ],
+   "annual": {
+    "2021": {
+     "mobile_users_mn": 957, "users_5g_pkg_mn": 387,
+     "broadband_users_mn": 240, "home_bb_users_mn": 218,
+     "mobile_arpu": 48.8, "bb_arpu": 34.7, "home_arpu": 39.8,
+     "capex_yr": 1836, "cloud_rev": 242, "cloud_name": "移动云",
+     "src": "annual_600941_2021.txt 主要运营数据表 / 资本开支及现金流"
+    },
+    "2022": {
+     "mobile_users_mn": 975, "users_5g_pkg_mn": 614,
+     "broadband_users_mn": 272, "home_bb_users_mn": 244,
+     "mobile_arpu": 49.0, "bb_arpu": 34.1, "home_arpu": 42.1,
+     "capex_yr": 1852, "cloud_rev": 503, "cloud_name": "移动云",
+     "dx_rev": 2076, "dx_name": "数字化转型收入",
+     "src": "annual_600941_2022.txt 主要运营数据表 / 业务概览"
+    },
+    "2023": {
+     "mobile_users_mn": 991, "users_5g_pkg_mn": 795, "users_5g_net_mn": 465,
+     "broadband_users_mn": 298, "home_bb_users_mn": 264,
+     "mobile_arpu": 49.3, "bb_arpu": 34.5, "home_arpu": 43.1,
+     "capex_yr": 1803, "cloud_rev": 833, "cloud_name": "移动云",
+     "service_rev": 8635,
+     "src": "annual_600941_2023.txt 主要运营数据表；5G 网络客户数 465 为 2024 年报重述的比较列"
+    },
+    "2024": {
+     "mobile_users_mn": 1004, "users_5g_net_mn": 552,
+     "broadband_users_mn": 315, "home_bb_users_mn": 278,
+     "mobile_arpu": 48.5, "home_arpu": 43.8,
+     "capex_yr": 1640, "dx_rev": 2788, "dx_name": "数字化转型收入",
+     "service_rev": 8895,
+     "src": "annual_600941_2024.txt 主要运营数据表 / 业务概览"
+    },
+    "2025": {
+     "mobile_users_mn": 1005, "users_5g_net_mn": 642, "gigabit_users_mn": 109,
+     "mobile_arpu": 46.8, "home_arpu": 44.5,
+     "capex_yr": 1509, "capex_guide_next": 1366,
+     "service_rev": 8955, "depreciation": 1789,
+     "src": "annual_600941_2025.txt 主要运营数据表 / 基础设施持续夯实"
+    }
+   }
+  },
+  "601728": {
+   "name": "中国电信",
+   "years": "2021-2025",
+   "report_source": "上交所 A 股年度报告原文（2021—2025 年共 5 份，A 股 2021-08-20 上市，故 A 股年报自 2021 年度起）",
+   "breaks": [
+    "2023 年起不再披露 5G 套餐用户绝对数，只披露渗透率（2023 年 70.4%）；2025 年改口径为「5G 网络用户渗透率」68.8%",
+    "宽带综合 ARPU 的口径 2024 年起由「宽带接入＋天翼高清＋智家应用及服务」改述为「宽带接入及智慧家庭」，数值可比性未受影响"
+   ],
+   "annual": {
+    "2021": {
+     "mobile_users_mn": 372, "users_5g_pkg_mn": 188, "penetration_5g": 50.4,
+     "broadband_users_mn": 170,
+     "mobile_arpu": 45.0, "bb_arpu": 45.9,
+     "capex_yr": 867, "cloud_rev": 279, "cloud_name": "天翼云",
+     "dx_rev": 989, "dx_name": "产业数字化业务收入",
+     "src": "annual_601728_2021.txt 业务回顾 / 资本开支（867 亿元，其中 5G 投资 380 亿元）"
+    },
+    "2022": {
+     "mobile_users_mn": 391, "users_5g_pkg_mn": 268, "penetration_5g": 68.5,
+     "broadband_users_mn": 181,
+     "mobile_arpu": 45.2, "bb_arpu": 46.3,
+     "capex_yr": 925, "cloud_rev": 579, "cloud_name": "天翼云",
+     "dx_rev": 1178, "dx_name": "产业数字化收入",
+     "src": "annual_601728_2022.txt 经营情况讨论 / 业务回顾"
+    },
+    "2023": {
+     "mobile_users_mn": 408, "penetration_5g": 70.4,
+     "broadband_users_mn": 190,
+     "mobile_arpu": 45.4, "bb_arpu": 47.6,
+     "capex_yr": 988, "cloud_rev": 972, "cloud_name": "天翼云",
+     "dx_rev": 1389, "dx_name": "产业数字化业务收入",
+     "src": "annual_601728_2023.txt 业务回顾；capex 988 亿元中移动网 348 亿、产数 355 亿"
+    },
+    "2024": {
+     "mobile_users_mn": 425,
+     "broadband_users_mn": 197,
+     "mobile_arpu": 45.6, "bb_arpu": 47.6,
+     "capex_yr": 935, "cloud_rev": 1139, "cloud_name": "天翼云",
+     "dx_rev": 1466, "dx_name": "产业数字化收入",
+     "src": "annual_601728_2024.txt 经营情况讨论；capex 935 亿元中移动网 299 亿、产数 325 亿"
+    },
+    "2025": {
+     "mobile_users_mn": 439, "penetration_5g": 68.8,
+     "broadband_users_mn": 201,
+     "mobile_arpu": 45.1, "bb_arpu": 47.1,
+     "capex_yr": 804, "cloud_rev": 1207, "cloud_name": "天翼云",
+     "dx_rev": 1473, "dx_name": "产业数字化业务收入",
+     "service_rev": 4854,
+     "src": "annual_601728_2025.txt 经营情况讨论（移动用户 4.39 亿户、宽带 2.01 亿户）"
+    }
+   }
+  },
+  "600050": {
+   "name": "中国联通",
+   "years": "2015-2025（用户数与 ARPU 只到 2021/2022，见 breaks）",
+   "report_source": "上交所 A 股年度报告原文（2015—2025 年共 11 份；2002—2014 年的年报 PDF 在上交所公告库中检索不到，未取）",
+   "breaks": [
+    "2022 年起 A 股年报不再披露精确的移动出账用户数与移动 ARPU 数值，改为「超过 3.2 亿户」「ARPU 连续三年正增长」这类表述；2023 年起 5G 用户也只给渗透率。因此本表 2022 年后的用户／ARPU 多为空，是**发行人披露口径收窄**，不是取数遗漏，也未按净增数推算补齐。",
+    "2023 年起披露「算网数智收入」，此前无同口径序列；联通云收入 2024 年起口径优化，与 2023 年及以前不完全可比。",
+    "2015 年宽带用户接入 ARPU 63.6 元与 2016 年 49.4 元之间的落差主要来自 2014-06-01 电信业营改增后收入由含税转不含税、以及 2015 年提速降费与光改后低价套餐放量，年报未给拆分说明。"
+   ],
+   "annual": {
+    "2015": {
+     "mobile_users_mn": 252.32, "broadband_users_mn": 72.33,
+     "mobile_arpu": 46.3, "bb_arpu": 63.6,
+     "capex_yr": 1338.8,
+     "src": "annual_600050_2015.txt 经营情况讨论 / 资本开支及现金流（移动网 610.3 亿、宽带及数据 337.6 亿）"
+    },
+    "2016": {
+     "mobile_users_mn": 263.82, "broadband_users_mn": 75.24,
+     "mobile_arpu": 46.4, "bb_arpu": 49.4,
+     "capex_yr": 721.1,
+     "src": "annual_600050_2016.txt 业务回顾 / 资本开支及现金流"
+    },
+    "2017": {
+     "mobile_users_mn": 284.16, "broadband_users_mn": 76.54,
+     "mobile_arpu": 48.0, "bb_arpu": 46.3,
+     "capex_yr": 421.3,
+     "src": "annual_600050_2017.txt 业务回顾（混改年，资本开支同比降 41.6%）"
+    },
+    "2018": {
+     "mobile_users_mn": 320, "broadband_users_mn": 80.88,
+     "mobile_arpu": 45.7, "bb_arpu": 44.6,
+     "capex_yr": 448.7,
+     "approx": ["mobile_users_mn"],
+     "src": "annual_600050_2018.txt 业务回顾（移动出账用户「达到约 3.2 亿户」，为近似披露）"
+    },
+    "2019": {
+     "mobile_users_mn": 318, "broadband_users_mn": 83.48,
+     "mobile_arpu": 40.4, "bb_arpu": 41.6,
+     "capex_yr": 564,
+     "src": "annual_600050_2019.txt 业务回顾（净增 344 万户至 3.18 亿户）"
+    },
+    "2020": {
+     "mobile_users_mn": 305.811, "users_5g_pkg_mn": 70.83, "penetration_5g": 23.0,
+     "broadband_users_mn": 86.095,
+     "mobile_arpu": 42.1, "bb_arpu": 41.5,
+     "capex_yr": 676,
+     "src": "annual_600050_2020.txt 公司业务概要 / 业务回顾"
+    },
+    "2021": {
+     "mobile_users_mn": 317.12, "users_5g_pkg_mn": 154.93, "penetration_5g": 48.9,
+     "broadband_users_mn": 95.05,
+     "mobile_arpu": 43.9, "bb_arpu": 41.3,
+     "capex_yr": 690,
+     "src": "annual_600050_2021.txt 业务回顾（宽带净增 895 万户创历史新高）"
+    },
+    "2022": {
+     "users_5g_pkg_mn": 210, "penetration_5g": 66.0,
+     "capex_yr": 742.0, "cloud_rev": 361, "cloud_name": "联通云",
+     "src": "annual_600050_2022.txt 经营情况讨论（移动出账「超过 3.2 亿户」、宽带「超过 1 亿户」，无精确值与 ARPU）"
+    },
+    "2023": {
+     "broadband_users_mn": 113, "penetration_5g": 78.0,
+     "capex_yr": 738.7, "cloud_rev": 510, "cloud_name": "联通云",
+     "dx_rev": 752, "dx_name": "算网数智收入",
+     "src": "annual_600050_2023.txt 经营情况讨论（固网宽带 1.13 亿户；capex 中 5G 投资 373.7 亿）"
+    },
+    "2024": {
+     "capex_yr": 613.7, "cloud_rev": 686, "cloud_name": "联通云",
+     "src": "annual_600050_2024.txt 经营情况讨论（移动出账「超 3.4 亿户」、宽带「超 1.2 亿户」，为近似披露故未录入用户数）"
+    },
+    "2025": {
+     "capex_yr": 541.5, "capex_guide_next": 500,
+     "src": "annual_600050_2025.txt 经营情况讨论（移网出账「超 3.57 亿户」、用户总量突破 12 亿；联通云只给同比 +5.2%，无绝对值）"
+    }
+   }
+  }
+ }
+}

@@ -16,13 +16,14 @@
   - `src/views/company/bank/legacy/` 银行页 3100+ 行原始图表脚本，逐字沿用
   - `public/data` → 仓库 `data/` 软链（只剩 txt/csv 等非 JSON 文件；cmcc 页的 JSON 走 `/api/tables/<表名>`）
 - `app.py` + `backend/` — Flask 纯 JSON API，只有 `/api/...`，页面路径一律 404
-- `data/extract/*.py` — 抽数脚本：`data/raw/`（原始文件，不入库）→ `data/tables/`（成品表，入库）
-- **JSON 不落盘**：原 `data/` 下的全部 `*.json`（`tables/` 成品表、`raw/` 接口缓存、`extract/` 中间件）原文存 MySQL
-  `json_file` 表（`data/sql/tables/json_file.sql`），键仍是相对 `data/` 的原路径；后端与抽数脚本一律经
-  `backend/jsonstore.py` 读写，连接配置读 `.env` 的 `MYSQL_*`。下文提到的 `data/tables/*.json` 都指这张表里的键。
-  导回文件对照：`./venv/bin/python backend/jsonstore.py export /tmp/json_export`
-- 结构化表（同库，`data/sql/tables/*.sql` 一表一文件）由 `./venv/bin/python data/extract/load_to_mysql.py --init --reload`
-  从 json_file 全量派生，可反复跑；后端目前仍读 json_file，JSON 更新后要重跑一次结构化表才跟上。
+- `data/extract/*.py` — 抽数脚本：`data/raw/`（原始文件，不入库）→ `data/tables/`（成品表，入库）；
+  `data/` 下的 `*.json` 读写统一经 `backend/jsonstore.py`
+- MySQL 只放结构化表，不存 JSON 原文：`data/sql/tables/*.sql` 一表一文件，
+  由 `./venv/bin/python data/extract/load_to_mysql.py --init --reload` 从 `data/tables/*.json` 全量拆出，可反复跑
+  （连接配置读 `.env` 的 `MYSQL_*`，`backend/db.py` 一份）。`/api` 一律读这些表、按载入映射还原原字段名
+  （行业年度表 `backend/industry_db.py`、股权结构 `backend/holders_db.py`、银行详情页图表 `backend/bank_charts_db.py`）；
+  只剩渝农商行精编件 `company_charts_601077.json` 与中国移动的 `/api/tables/telecom_00941_*.json` 还读文件（没拆表）。
+  JSON 更新后重跑一次 load_to_mysql.py 才跟上。
   实体键带交易所前缀（`sh.601077` / `hk.01578`）；行业专属列的字段映射在 `data/extract/industry_columns.py`；
   没登记映射的字段、同义字段两边不一致，载入时记进 `data_anomaly`，不静默丢弃
 - `data/local_index.md` — 本地数据索引（`gen_local_index.py` 生成）。取数先查它，本地没有才去交易所/官网抓
@@ -37,8 +38,7 @@ cd frontend && npm run build                 # 产物 frontend/dist，给 nginx 
 ```
 
 - 后端必须用 venv 的 python，系统 python 没装 `flask_cors`。
-- 后端与抽数脚本都依赖本机 MySQL（`.env` 的 `MYSQL_*`，库里 `json_file` 表）；服务端 `max_allowed_packet`
-  要大于最大一份 JSON（约 2.2MB），本机已 `SET PERSIST max_allowed_packet = 64M`。
+- 后端与 `load_to_mysql.py` 都连本机 MySQL（`.env` 的 `MYSQL_*`），起后端前 MySQL 要在、表要先载入。
 - 本机 `NODE_ENV=production` 会让 npm 跳过 devDependencies，靠仓库里的 `frontend/.npmrc`（`include=dev`）绕开。
 - nginx 配置在 `deploy/nginx/`：发 `dist` 静态站、`/api/` 反代 Flask、`/data/` alias 到仓库 `data/`、
   SPA 深链 `try_files … /index.html`。`standalone.conf` 免 root（`127.0.0.1:8080`，
@@ -51,11 +51,13 @@ cd frontend && npm run build                 # 产物 frontend/dist，给 nginx 
 
 `/company/bank/:code`（A 股 6 位 / H 股 5 位，缺省 `601077` 渝农商行）是同一套页面按代码渲染：
 向 `/api/company_charts?code=` 取数，标题与 H1 由返回的 `_bank` 元信息拼出；可切换清单 =
-实际存在的 `data/tables/company_charts_<code>.json`，加一家行只需放数据文件。
+MySQL 里有年度财务序列的银行（`/api/banks`）。
 
-44 家行有数据文件（41 家 A 股/A+H + 天津 `01578`、江西 `01916`、哈尔滨 `06138` 三家纯 H 股）。
-只有 `601077` 手工精编（42 个数据键），其余由 `gen_company_charts.py` 批量生成（基础 15~16 键，
-可用 `bank_<code>_detail_manual.json` 手工覆盖层补到 33~39 键），缺的图保留图位贴占位；
+图表载荷不落文件：后端把 `gen_company_charts.py` 的 `build()` 输入（annual、股东手工件、ar_manual、
+`bank_<code>_detail_manual.json`）从 MySQL 拼回后请求时现算（`backend/bank_charts_db.py`），共 44 家
+（41 家 A 股/A+H + 天津 `01578`、江西 `01916`、哈尔滨 `06138` 三家纯 H 股）。只有 `601077` 是手工精编件
+`data/tables/company_charts_601077.json`（42 个数据键，还没拆表，接口直接读它）；生成行基础 15~16 键，
+有年报正文手工层的补到 33~39 键，缺的图保留图位贴占位；
 页面文字说明、KPI 与 HTML 表格仍是渝农商行的。
 
 ## 抽数

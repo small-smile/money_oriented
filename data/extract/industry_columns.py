@@ -313,3 +313,201 @@ TECH_COLS = [("cost_of_revenue", "costOfRevenue", 1e6), ("operating_income", "op
              ("research_and_development_expense_ratio", "rdRatio"), ("return_on_average_equity", "roe"),
              ("net_cash_position", "netCash", 1e6), ("goodwill_impairment_loss", "goodwillImpairment", 1e6),
              ("advertising_revenue", "adRevenue", 1e6), ("other_revenue", "otherRevenue", 1e6)]
+
+# ── 经营口径表：年报正文人工摘录的 <行业>_operating（与 data/sql/tables/<行业>_operating.sql 一一对应）──
+# 每项同上 (SQL 列名, JSON 源字段名[, 倍数])：量统一换成户/吨/个，金额统一换成元，只做单位缩放。
+# *_TEXT_COLS 原文照存，*_FLAG_COLS 的 true/false 存 1/0。
+
+# cement_operating：cement_ops_manual.json companies[code].annual[year]（万吨 ×1e4、百万元 ×1e6）
+CEMENT_OPERATING_COLS = [("sales_volume_total", "sales_total_wt", 1e4), ("cement_sales_volume", "sales_cement_wt", 1e4),
+                         ("clinker_sales_volume", "sales_clinker_wt", 1e4),
+                         ("self_produced_sales_volume", "sales_self_wt", 1e4), ("trading_volume", "trade_wt", 1e4),
+                         ("aggregate_sales_volume", "agg_sales_wt", 1e4),
+                         ("concrete_sales_volume", "concrete_sales_wm3", 1e4),
+                         ("cement_production_volume", "prod_cement_wt", 1e4),
+                         ("clinker_production_volume", "prod_clinker_wt", 1e4),
+                         ("cement_revenue", "rev_cement_mn", 1e6), ("cement_cost", "cost_cement_mn", 1e6),
+                         ("cement_gross_margin", "gm_cement_pct"),
+                         ("self_produced_revenue", "rev_self_mn", 1e6), ("self_produced_cost", "cost_self_mn", 1e6),
+                         ("self_produced_gross_margin", "gm_self_pct"),
+                         ("total_line_revenue", "rev_total_mn", 1e6), ("total_line_cost", "cost_total_mn", 1e6),
+                         ("total_line_gross_margin", "gm_total_pct"),
+                         ("aggregate_revenue", "rev_agg_mn", 1e6), ("aggregate_cost", "cost_agg_mn", 1e6),
+                         ("concrete_revenue", "rev_concrete_mn", 1e6), ("concrete_cost", "cost_concrete_mn", 1e6),
+                         ("unit_cost_disclosed", "unit_cost_disclosed"), ("unit_price_disclosed", "unit_price_disclosed"),
+                         ("unit_gross_profit_disclosed", "unit_gross_disclosed")]
+CEMENT_OPERATING_TEXT_COLS = [("currency", "currency"), ("source_page", "page"), ("note", "note")]
+
+# telecom_operating：两份源表字段名不同，同一列各列一项。
+#   telecom_ops_manual.json（三家 A 股年报）：百万户 ×1e6、亿元 ×1e8；
+#   telecom_00941_operating.json（中国移动港股年报序列）：亿户 ×1e8、万户/万站/万架 ×1e4、百万 ×1e6、亿 ×1e8。
+TELECOM_OPERATING_COLS = [("mobile_users", "mobile_users_mn", 1e6), ("mobile_users", "mobileSubs", 1e8),
+                          ("mobile_net_additions", "netAddSubs", 1e4),
+                          ("users_3g", "subs3G", 1e8), ("users_4g", "subs4G", 1e8),
+                          ("users_5g_network", "users_5g_net_mn", 1e6), ("users_5g_network", "subs5G", 1e8),
+                          ("users_5g_package", "users_5g_pkg_mn", 1e6), ("users_5g_package", "subs5GPackage", 1e8),
+                          ("penetration_5g", "penetration_5g"),
+                          ("broadband_users", "broadband_users_mn", 1e6), ("broadband_users", "broadbandSubs", 1e8),
+                          ("home_broadband_users", "home_bb_users_mn", 1e6),
+                          ("home_broadband_users", "homeBroadbandSubs", 1e8),
+                          ("gigabit_broadband_users", "gigabit_users_mn", 1e6),
+                          ("gigabit_broadband_users", "gigabitSubs", 1e8),
+                          ("government_enterprise_customers", "govEntSubs", 1e6),
+                          ("iot_connections", "iotConnections", 1e8),
+                          ("mobile_arpu", "mobile_arpu"), ("mobile_arpu", "arpu"),
+                          ("broadband_arpu", "bb_arpu"), ("broadband_arpu", "broadbandArpu"),
+                          ("home_arpu", "home_arpu"), ("home_arpu", "homeArpu"),
+                          ("minutes_of_usage", "mou"), ("data_of_usage", "dou"),
+                          ("total_minutes", "totalMinutes", 1e8), ("sms_volume", "smsVolume", 1e8),
+                          ("total_data_traffic", "totalDataTraffic"), ("value_added_services_share", "vasShare"),
+                          ("base_stations", "baseStations"), ("base_stations_5g", "base5G", 1e4),
+                          ("idc_racks", "idcRacks", 1e4), ("employees", "employees"),
+                          ("capital_expenditure", "capex_yr", 1e8),
+                          ("capital_expenditure_guidance", "capex_guide_next", 1e8),
+                          ("service_revenue", "service_rev", 1e8), ("cloud_revenue", "cloud_rev", 1e8),
+                          ("digital_transformation_revenue", "dx_rev", 1e8),
+                          ("depreciation_and_amortization", "depreciation", 1e8)]
+TELECOM_OPERATING_TEXT_COLS = [("cloud_business_name", "cloud_name"), ("digital_transformation_name", "dx_name"),
+                               ("approximate_fields", "approx"), ("report_basis", "_reportBasis"),
+                               ("source", "src"), ("note", "_note"), ("restatement_note", "_restated")]
+TELECOM_OPERATING_FLAG_COLS = [("employees_approximate", "employeesApprox")]
+
+# tech_operating：tech_09888_segments_manual.json annual[year]（百度 20-F，人民币百万元 ×1e6，用户与订单百万 ×1e6）
+TECH_OPERATING_COLS = [("online_marketing_revenue", "onlineMarketing", 1e6),
+                       ("non_online_marketing_revenue", "nonOnlineMarketing", 1e6),
+                       ("total_revenue", "totalRevenue", 1e6),
+                       ("core_revenue", "coreRevenue", 1e6), ("iqiyi_revenue", "iqiyiRevenue", 1e6),
+                       ("inter_segment_eliminations", "interSegmentEliminations", 1e6),
+                       ("segment_total_revenue", "segmentTotalRevenue", 1e6),
+                       ("core_revenue_excluding_vat", "coreRevenueExVat", 1e6),
+                       ("iqiyi_revenue_excluding_vat", "iqiyiRevenueExVat", 1e6),
+                       ("core_value_added_tax", "vatCore", 1e6), ("iqiyi_value_added_tax", "vatIqiyi", 1e6),
+                       ("core_online_marketing_revenue", "coreOnlineMarketing", 1e6),
+                       ("core_non_online_marketing_revenue", "coreNonOnlineMarketing", 1e6),
+                       ("ai_cloud_revenue", "aiCloudRevenue", 1e6), ("core_other_revenue", "coreOthers", 1e6),
+                       ("core_financial_services_interest_income", "coreInterestIncomeFinancialServices", 1e6),
+                       ("iqiyi_online_advertising_revenue", "iqiyiOnlineAdvertising", 1e6),
+                       ("iqiyi_membership_revenue", "iqiyiMembership", 1e6),
+                       ("iqiyi_content_distribution_revenue", "iqiyiContentDistribution", 1e6),
+                       ("iqiyi_other_revenue", "iqiyiOthers", 1e6),
+                       ("core_operating_income", "coreOpIncome", 1e6), ("iqiyi_operating_income", "iqiyiOpIncome", 1e6),
+                       ("eliminations_operating_income", "eliminationsOpIncome", 1e6),
+                       ("total_operating_income", "totalOpIncome", 1e6), ("core_operating_margin", "coreOpMargin"),
+                       ("employees", "employees"), ("monthly_active_users", "mau", 1e6),
+                       ("daily_active_users", "dau", 1e6), ("apollo_go_cities", "apolloGoCities"),
+                       ("apollo_go_rides_annual", "apolloGoRidesAnnual", 1e6),
+                       ("apollo_go_rides_cumulative", "apolloGoRidesCumulative", 1e6),
+                       ("ads_ratio", "adsRatio"), ("eps_basic_per_share", "epsBasicPerShare"),
+                       ("eps_diluted_per_share", "epsDilutedPerShare"), ("eps_basic_per_ads", "epsBasicPerAds"),
+                       ("eps_diluted_per_ads", "epsDilutedPerAds"),
+                       ("eps_per_share_to_per_ads_factor", "epsPerShareToPerAdsFactor")]
+TECH_OPERATING_TEXT_COLS = [("revenue_presentation", "revenuePresentation"),
+                            ("core_operating_income_note", "coreOpIncomeNote"),
+                            ("employees_as_of", "employeesAsOf"), ("employees_basis", "employeesBasis"),
+                            ("employees_note", "employeesNote"), ("monthly_active_users_basis", "mauBasis"),
+                            ("daily_active_users_basis", "dauBasis"),
+                            ("apollo_go_rides_cumulative_as_of", "apolloGoRidesCumulativeAsOf"),
+                            ("apollo_go_note", "apolloGoNote"), ("ads_ratio_basis", "adsRatioBasis"),
+                            ("ads_ratio_change", "adsRatioChange"), ("eps_per_share_basis", "epsPerShareBasis"),
+                            ("eps_note", "epsNote")]
+TECH_OPERATING_FLAG_COLS = [("employees_approximate", "employeesApproximate"),
+                            ("eps_per_ads_comparable", "epsPerAdsComparable")]
+
+# ── 经营口径表：年报正文人工摘录的 <行业>_operating（与 data/sql/tables/<行业>_operating.sql 一一对应）──
+# 每项同上 (SQL 列名, JSON 源字段名[, 倍数])：量统一换成户/吨/个，金额统一换成元，只做单位缩放。
+# *_TEXT_COLS 原文照存，*_FLAG_COLS 的 true/false 存 1/0。
+
+# cement_operating：cement_ops_manual.json companies[code].annual[year]（万吨 ×1e4、百万元 ×1e6）
+CEMENT_OPERATING_COLS = [("sales_volume_total", "sales_total_wt", 1e4), ("cement_sales_volume", "sales_cement_wt", 1e4),
+                         ("clinker_sales_volume", "sales_clinker_wt", 1e4),
+                         ("self_produced_sales_volume", "sales_self_wt", 1e4), ("trading_volume", "trade_wt", 1e4),
+                         ("aggregate_sales_volume", "agg_sales_wt", 1e4),
+                         ("concrete_sales_volume", "concrete_sales_wm3", 1e4),
+                         ("cement_production_volume", "prod_cement_wt", 1e4),
+                         ("clinker_production_volume", "prod_clinker_wt", 1e4),
+                         ("cement_revenue", "rev_cement_mn", 1e6), ("cement_cost", "cost_cement_mn", 1e6),
+                         ("cement_gross_margin", "gm_cement_pct"),
+                         ("self_produced_revenue", "rev_self_mn", 1e6), ("self_produced_cost", "cost_self_mn", 1e6),
+                         ("self_produced_gross_margin", "gm_self_pct"),
+                         ("total_line_revenue", "rev_total_mn", 1e6), ("total_line_cost", "cost_total_mn", 1e6),
+                         ("total_line_gross_margin", "gm_total_pct"),
+                         ("aggregate_revenue", "rev_agg_mn", 1e6), ("aggregate_cost", "cost_agg_mn", 1e6),
+                         ("concrete_revenue", "rev_concrete_mn", 1e6), ("concrete_cost", "cost_concrete_mn", 1e6),
+                         ("unit_cost_disclosed", "unit_cost_disclosed"), ("unit_price_disclosed", "unit_price_disclosed"),
+                         ("unit_gross_profit_disclosed", "unit_gross_disclosed")]
+CEMENT_OPERATING_TEXT_COLS = [("currency", "currency"), ("source_page", "page"), ("note", "note")]
+
+# telecom_operating：两份源表字段名不同，同一列各列一项。
+#   telecom_ops_manual.json（三家 A 股年报）：百万户 ×1e6、亿元 ×1e8；
+#   telecom_00941_operating.json（中国移动港股年报序列）：亿户 ×1e8、万户/万站/万架 ×1e4、百万 ×1e6、亿 ×1e8。
+TELECOM_OPERATING_COLS = [("mobile_users", "mobile_users_mn", 1e6), ("mobile_users", "mobileSubs", 1e8),
+                          ("mobile_net_additions", "netAddSubs", 1e4),
+                          ("users_3g", "subs3G", 1e8), ("users_4g", "subs4G", 1e8),
+                          ("users_5g_network", "users_5g_net_mn", 1e6), ("users_5g_network", "subs5G", 1e8),
+                          ("users_5g_package", "users_5g_pkg_mn", 1e6), ("users_5g_package", "subs5GPackage", 1e8),
+                          ("penetration_5g", "penetration_5g"),
+                          ("broadband_users", "broadband_users_mn", 1e6), ("broadband_users", "broadbandSubs", 1e8),
+                          ("home_broadband_users", "home_bb_users_mn", 1e6),
+                          ("home_broadband_users", "homeBroadbandSubs", 1e8),
+                          ("gigabit_broadband_users", "gigabit_users_mn", 1e6),
+                          ("gigabit_broadband_users", "gigabitSubs", 1e8),
+                          ("government_enterprise_customers", "govEntSubs", 1e6),
+                          ("iot_connections", "iotConnections", 1e8),
+                          ("mobile_arpu", "mobile_arpu"), ("mobile_arpu", "arpu"),
+                          ("broadband_arpu", "bb_arpu"), ("broadband_arpu", "broadbandArpu"),
+                          ("home_arpu", "home_arpu"), ("home_arpu", "homeArpu"),
+                          ("minutes_of_usage", "mou"), ("data_of_usage", "dou"),
+                          ("total_minutes", "totalMinutes", 1e8), ("sms_volume", "smsVolume", 1e8),
+                          ("total_data_traffic", "totalDataTraffic"), ("value_added_services_share", "vasShare"),
+                          ("base_stations", "baseStations"), ("base_stations_5g", "base5G", 1e4),
+                          ("idc_racks", "idcRacks", 1e4), ("employees", "employees"),
+                          ("capital_expenditure", "capex_yr", 1e8),
+                          ("capital_expenditure_guidance", "capex_guide_next", 1e8),
+                          ("service_revenue", "service_rev", 1e8), ("cloud_revenue", "cloud_rev", 1e8),
+                          ("digital_transformation_revenue", "dx_rev", 1e8),
+                          ("depreciation_and_amortization", "depreciation", 1e8)]
+TELECOM_OPERATING_TEXT_COLS = [("cloud_business_name", "cloud_name"), ("digital_transformation_name", "dx_name"),
+                               ("approximate_fields", "approx"), ("report_basis", "_reportBasis"),
+                               ("source", "src"), ("note", "_note"), ("restatement_note", "_restated")]
+TELECOM_OPERATING_FLAG_COLS = [("employees_approximate", "employeesApprox")]
+
+# tech_operating：tech_09888_segments_manual.json annual[year]（百度 20-F，人民币百万元 ×1e6，用户与订单百万 ×1e6）
+TECH_OPERATING_COLS = [("online_marketing_revenue", "onlineMarketing", 1e6),
+                       ("non_online_marketing_revenue", "nonOnlineMarketing", 1e6),
+                       ("total_revenue", "totalRevenue", 1e6),
+                       ("core_revenue", "coreRevenue", 1e6), ("iqiyi_revenue", "iqiyiRevenue", 1e6),
+                       ("inter_segment_eliminations", "interSegmentEliminations", 1e6),
+                       ("segment_total_revenue", "segmentTotalRevenue", 1e6),
+                       ("core_revenue_excluding_vat", "coreRevenueExVat", 1e6),
+                       ("iqiyi_revenue_excluding_vat", "iqiyiRevenueExVat", 1e6),
+                       ("core_value_added_tax", "vatCore", 1e6), ("iqiyi_value_added_tax", "vatIqiyi", 1e6),
+                       ("core_online_marketing_revenue", "coreOnlineMarketing", 1e6),
+                       ("core_non_online_marketing_revenue", "coreNonOnlineMarketing", 1e6),
+                       ("ai_cloud_revenue", "aiCloudRevenue", 1e6), ("core_other_revenue", "coreOthers", 1e6),
+                       ("core_financial_services_interest_income", "coreInterestIncomeFinancialServices", 1e6),
+                       ("iqiyi_online_advertising_revenue", "iqiyiOnlineAdvertising", 1e6),
+                       ("iqiyi_membership_revenue", "iqiyiMembership", 1e6),
+                       ("iqiyi_content_distribution_revenue", "iqiyiContentDistribution", 1e6),
+                       ("iqiyi_other_revenue", "iqiyiOthers", 1e6),
+                       ("core_operating_income", "coreOpIncome", 1e6), ("iqiyi_operating_income", "iqiyiOpIncome", 1e6),
+                       ("eliminations_operating_income", "eliminationsOpIncome", 1e6),
+                       ("total_operating_income", "totalOpIncome", 1e6), ("core_operating_margin", "coreOpMargin"),
+                       ("employees", "employees"), ("monthly_active_users", "mau", 1e6),
+                       ("daily_active_users", "dau", 1e6), ("apollo_go_cities", "apolloGoCities"),
+                       ("apollo_go_rides_annual", "apolloGoRidesAnnual", 1e6),
+                       ("apollo_go_rides_cumulative", "apolloGoRidesCumulative", 1e6),
+                       ("ads_ratio", "adsRatio"), ("eps_basic_per_share", "epsBasicPerShare"),
+                       ("eps_diluted_per_share", "epsDilutedPerShare"), ("eps_basic_per_ads", "epsBasicPerAds"),
+                       ("eps_diluted_per_ads", "epsDilutedPerAds"),
+                       ("eps_per_share_to_per_ads_factor", "epsPerShareToPerAdsFactor")]
+TECH_OPERATING_TEXT_COLS = [("revenue_presentation", "revenuePresentation"),
+                            ("core_operating_income_note", "coreOpIncomeNote"),
+                            ("employees_as_of", "employeesAsOf"), ("employees_basis", "employeesBasis"),
+                            ("employees_note", "employeesNote"), ("monthly_active_users_basis", "mauBasis"),
+                            ("daily_active_users_basis", "dauBasis"),
+                            ("apollo_go_rides_cumulative_as_of", "apolloGoRidesCumulativeAsOf"),
+                            ("apollo_go_note", "apolloGoNote"), ("ads_ratio_basis", "adsRatioBasis"),
+                            ("ads_ratio_change", "adsRatioChange"), ("eps_per_share_basis", "epsPerShareBasis"),
+                            ("eps_note", "epsNote")]
+TECH_OPERATING_FLAG_COLS = [("employees_approximate", "employeesApproximate"),
+                            ("eps_per_ads_comparable", "epsPerAdsComparable")]

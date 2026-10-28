@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS financials
     dividend_per_share     DECIMAL(16, 6) GENERATED ALWAYS AS (dividend_per_10_shares / 10) STORED COMMENT '每股现金分红(=per10/10,单位换算,非反算)',
     dividend_unit          VARCHAR(8)   NULL COMMENT '每10股派息/每股 计价单位；中国移动等按港元',
     dividend_total         DECIMAL(20, 4) NULL COMMENT '当年现金分红总额(亿元/亿港元；年报「利润分配方案」原文,禁止反算, 元还是港元根据 dividend_unit)',
+    dividend_source        VARCHAR(255) NULL COMMENT '分红三列的来源文件：年报原文手工件(holders_manual.json、bank_<code>_shareholder_manual.json 等)盖过接口值时记手工件',
     dividend_payout_ratio  DECIMAL(12, 4) GENERATED ALWAYS AS (
         CASE WHEN dividend_unit = '元' AND eps > 0
              THEN dividend_per_share / eps * 100 END) STORED

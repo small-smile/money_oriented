@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """从本地存档的百度 20-F（2005—2025 共 21 份）抽取的历年股权结构数据，落地为
-data/extract/out/ownership_hist_09888.json（不落盘，原文写进 MySQL json_file 表，
-经 backend/jsonstore.py 按原文件路径存取）。
+data/extract/out/ownership_hist_09888.json（经 backend/jsonstore.py 写）。
 
 数据来源：data/raw/20f_09888_<year>.htm / .txt（.htm 的 <table> 结构按列取数，
 .txt 用于章节/脚注语义通读与行号锚点）。未联网、未使用第三方接口、未做任何推算；
@@ -19,7 +18,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 OUTDIR = os.path.join(ROOT, "data", "extract", "out")
 OUTFILE = os.path.join(OUTDIR, "ownership_hist_09888.json")

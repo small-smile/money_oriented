@@ -1,7 +1,7 @@
 import os
 import json
 
-from backend import jsonstore
+from backend import db, jsonstore
 
 
 # ── 统一接口响应 ──────────────────────────────────────────────────────────
@@ -24,17 +24,18 @@ def error(msg, code=500, data=None):
 # ── 通用路径常量 ──────────────────────────────────────────────────────────
 # 基准目录取自本文件的绝对位置，与进程启动时的工作目录（CWD）无关 —— gunicorn/systemd/
 # docker 等不在仓库根启动的场景也能定位到数据；需换数据根目录时设环境变量 MONEY_DATA_DIR。
-# *.json 已不落盘（原文存 MySQL json_file 表），路径照旧按这里拼，作为 jsonstore 的键；txt/csv 仍读文件。
+# *.json 经 jsonstore 读写，路径照旧按这里拼；txt/csv 直接读文件。
 DATA_DIR = jsonstore.DATA_DIR
 TABLES_DIR = os.path.join(DATA_DIR, "tables")
 
 # 两种用法都在这里：① 只补 factions（telecom 这类 annual 表已有接口股东快照的板块）；
 # ② 连 holders 一起给（tech/food 这类没有 annual 表的公司，股东块直接抄年报／20-F 原文）。
+# 文件是载入 MySQL 的源头，接口读库（_holders_manual）。
 HOLDERS_MANUAL_FILE = os.path.join(TABLES_DIR, "holders_manual.json")
 
 # 代码 ↔ 公司的对应表：一家公司在 A 股 / 港交所 / 美股各有一个代码，页面与外链给哪个都要能落到
 # 同一家公司上（?code=601398 与 ?code=01398 都是工商银行）。表由 data/extract/build_company_codes.py
-# 生成，每条都带本地出处，不靠常识补代码。
+# 生成，每条都带本地出处，不靠常识补代码；载入 MySQL company 表后接口读库（_company_codes）。
 COMPANY_CODES_FILE = os.path.join(TABLES_DIR, "company_codes.json")
 
 
@@ -44,7 +45,7 @@ def table_path(name):
 
 
 def read_json(path, default=None, tolerant=False):
-    """读 JSON 表（原文在 MySQL json_file 表，按原文件路径取，见 backend/jsonstore.py）：不存在返回 default。
+    """读 JSON 文件（经 backend/jsonstore.py）：不存在返回 default。
     tolerant=True 时连解析失败也当缺失（半截/损坏的数据不该让整页 500），
     否则解析错误照常抛出——批量扫目录的地方用 tolerant，单文件取数的地方不用。"""
     text = jsonstore.read_text(path)
@@ -59,17 +60,24 @@ def read_json(path, default=None, tolerant=False):
 
 
 def _holders_manual():
-    return read_json(HOLDERS_MANUAL_FILE, {})
+    """holders_manual.json 同形状的股权手工层（年报／20-F 原文抽取），从 MySQL 拼回，见 backend/holders_db.py。"""
+    from backend import holders_db          # holders_db → industry_db → load_to_mysql，按需导入免得包初始化时绕圈
+    return holders_db.holders_manual()
 
 
 def _company_codes():
     """返回 (entities, index)：entities 按实体唯一键索引，index 是「任意代码 → 实体」的反查表。
     same_entity=false 的两地主体（中国联通 A 股 600050 与红筹 00762 不是同一法人）照样进 index，
-    但标着 same_entity=false —— 解析时按这个标记拒绝互换，只把原因说清楚，不静默换成另一家。"""
-    raw = read_json(COMPANY_CODES_FILE)
-    if raw is None:
-        return {}, {}
-    entities = {e["key"]: e for e in raw.get("entities") or []}
+    但标着 same_entity=false —— 解析时按这个标记拒绝互换，只把原因说清楚，不静默换成另一家。
+    读 MySQL company 表（company_codes.json 载入），实体还原成原 entities[] 的字段；
+    source 为空的是载入时为 annual 序列补的代码行（中国移动港股序列 hk.00941），不是登记实体，不进表。"""
+    entities = {}
+    for r in db.query("SELECT * FROM company WHERE source IS NOT NULL"):
+        key = r["company_code"].split(".", 1)[1]
+        entities[key] = {"key": key, "short": r["short_name"], "full": r["full_name"], "industry": r["industry"],
+                         "a_code": r["a_code"], "h_code": r["h_code"], "us_code": r["us_code"], "tier": r["tier"],
+                         "same_entity": bool(r["same_entity"]), "note": r["note"],
+                         "sources": r["source"].split("\n")}
     index = {}
     for e in entities.values():
         for c in (e.get("a_code"), e.get("h_code"), e.get("us_code")):

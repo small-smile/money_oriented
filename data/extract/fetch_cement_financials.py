@@ -35,7 +35,7 @@ A 股（datacenter-web.eastmoney.com/api/data/v1/get）
     - 港股三家的 CURRENCY 字段一律写 HKD、IS_CNY_CODE=0，这个标记**不可信**
       （与开发商脚本同一个坑）：三家近年年报均以人民币编制，接口金额即人民币原值。
 
-输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
+输出：
     data/raw/em_<reportName>_<code>.json     原始响应（缓存；--refresh 重新拉取）
     data/tables/cement_<code>_annual.json    整理后的逐年序列 + 前十股东 + 分红 + 元信息
 

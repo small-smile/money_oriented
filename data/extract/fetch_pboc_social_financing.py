@@ -7,7 +7,7 @@ Fetch 社会融资规模（TSF / Aggregate Financing to the Real Economy）月�
 
 每年一份 XLSX，各含当年 12 个月。分别缓存到 data/raw/pboc_social_financing/YYYY_{stock,flow}.xlsx，
 最终汇总到 data/tables/social_financing_pboc_stock.json 与 social_financing_pboc_flow.json
-（这两份不落盘：原文存 MySQL json_file 表，经 backend/jsonstore.py 写；XLSX/HTM 缓存照旧落盘）。
+（经 backend/jsonstore.py 写；XLSX/HTM 缓存直接落盘）。
 
 用法:
     ./venv/bin/python data/extract/fetch_pboc_social_financing.py         # 缺失年份才下载
@@ -32,7 +32,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 表原文在 MySQL json_file 表，按原文件路径写
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 RAW_DIR = ROOT / "data" / "raw" / "pboc_social_financing"
 TABLES_DIR = ROOT / "data" / "tables"

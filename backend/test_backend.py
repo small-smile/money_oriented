@@ -594,3 +594,32 @@ class TestNav:
         assert bk.read_nav("00914")["data"]["code"] == "00914"
 
 
+class TestReadsMysqlNotJson:
+    """/api 的数据一律从 MySQL 结构化表拼：调用期间凡是经 jsonstore 读 data/ 下的 JSON 都记下来，
+    只许出现还没拆表的两份手工件（渝农商行精编图表件、中国移动三张成品表）"""
+    pytestmark = pytest.mark.integration
+    ALLOWED = ("tables/company_charts_601077.json", "tables/telecom_00941_annual.json",
+               "tables/telecom_00941_operating.json", "tables/telecom_00941_profile.json")
+
+    def test_no_json_reads(self, monkeypatch):
+        from backend import jsonstore
+        seen = []
+        real = jsonstore.read_text
+
+        def spy(path):
+            seen.append(jsonstore.key(path))
+            return real(path)
+        monkeypatch.setattr(jsonstore, "read_text", spy)
+        for code in ("601398", "600036", "01578", "600941", "601318", "600585", "09888", "605338", "00941"):
+            assert bk.read_holders(code)["code"] == 200, code
+            bk.read_nav(code)
+        for code in ("601398", "01398", "06138"):
+            assert bk.read_company_charts(code)["code"] == 200, code
+        assert bk.read_bank_npl_formation()["code"] == 200
+        for industry, spec in bk.INDUSTRIES.items():
+            assert bk.read_industry_peers(industry)["code"] == 200
+            assert bk.read_industry_annual(industry, spec["default"])["code"] == 200
+        assert bk.list_banks() and bk.read_social_financing()["code"] == 200
+        assert not [k for k in seen if k not in self.ALLOWED], sorted(set(seen) - set(self.ALLOWED))
+
+

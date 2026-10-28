@@ -8,8 +8,7 @@ FY2020 起，所以两边都取，长序列以 20-F / XBRL 为准，中文口径
 产物（PDF/htm/txt 落 data/raw/，只把汇总打到 stdout）：
     annual_09888_<年>.pdf / .txt        港交所中文年度報告（pdftotext -layout）
     20f_09888_<财年>.htm / .txt          SEC 20-F 正文（HTML 去标签）
-    sec_companyfacts_09888.json          SEC XBRL 全量事实（结构化长序列；不落盘，原文存 MySQL
-                                         json_file 表，键 raw/sec_companyfacts_09888.json，经 backend/jsonstore.py 读写）
+    sec_companyfacts_09888.json          SEC XBRL 全量事实（结构化长序列，经 backend/jsonstore.py 读写）
 
 用法：
     ./venv/bin/python data/extract/fetch_baidu_filings.py              # 全量（已存在则跳过）
@@ -32,7 +31,7 @@ import pdf_to_text  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 RAW = ROOT / "data" / "raw"
 CODE = "09888"

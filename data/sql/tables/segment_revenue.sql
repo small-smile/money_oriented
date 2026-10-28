@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS segment_revenue
     raw_item_name VARCHAR(128)   NULL COMMENT '年报原文科目名',
     is_subtotal   TINYINT(1)     NOT NULL DEFAULT 0 COMMENT '1=小计或合计行(service_total=主营业务收入,total=营业收入),加总分部时排除；小计+其他业务收入=合计可自检/0=分部',
     revenue       DECIMAL(28, 4) NOT NULL COMMENT '收入(亿元；原文移动为百万元、电信与联通为元,已按合计量级归一)',
+    line_order    SMALLINT       NULL COMMENT '该年附注表里的行序(从 1 起)',
     source        VARCHAR(255)   NULL COMMENT '来源文件',
     PRIMARY KEY (company_code, fiscal_year, segment_code),
     CONSTRAINT fk_segment_revenue_company FOREIGN KEY (company_code) REFERENCES company (company_code)

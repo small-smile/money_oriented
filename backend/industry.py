@@ -4,7 +4,7 @@ import json
 
 from flask import Blueprint, Response, jsonify, request
 
-from backend import jsonstore
+from backend import industry_db, jsonstore
 from backend.shared import (
     TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect, _company_entity,
     success, error,
@@ -61,11 +61,16 @@ INDUSTRIES = {
 _PEERS_DICT_FIELDS = ("annual", "dividend_per10")
 
 
+# 年度序列改读 MySQL 的行业（四个都切了；留着这份清单，新加的行业先读 JSON、比对过再加进来）
+DB_ANNUAL_INDUSTRIES = ("insurer", "developer", "cement", "telecom")
+
+
 def _read_industry_table(industry, code):
-    """读 data/tables/<industry>_<code>_annual.json 并按行业规则合并手工层；文件不存在返回 None。"""
+    """<industry>_<code>_annual.json 那份年度序列（DB_ANNUAL_INDUSTRIES 读 MySQL，形状照旧，见 backend/industry_db.py；
+    其余读 JSON 文件），再按行业规则合并手工层；没有数据返回 None。"""
     spec = INDUSTRIES[industry]
-    path = os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json")
-    d = read_json(path)
+    d = industry_db.read_annual_table(industry, code) if industry in DB_ANNUAL_INDUSTRIES else \
+        read_json(os.path.join(TABLES_DIR, f"{industry}_{code}_annual.json"))
     if d is None:
         return None
     return spec["merge"](code, d) if spec["merge"] else d
@@ -148,7 +153,7 @@ for _ind, _spec in INDUSTRIES.items():
 
 @industry_bp.route("/tables/<name>")
 def api_table(name):
-    """成品表原文（中国移动页原先直接 fetch('/data/tables/telecom_00941_*.json')，JSON 进库后改走这里）。
+    """成品表原文（中国移动页原先直接 fetch('/data/tables/telecom_00941_*.json')，现改走这里）。
     按原文下发、不套 {code, data}，键序与原文件一致；只开放 tables/ 下的 *.json。"""
     text = jsonstore.read_text(os.path.join(TABLES_DIR, name)) \
         if re.fullmatch(r"[A-Za-z0-9_.\-]+\.json", name) else None

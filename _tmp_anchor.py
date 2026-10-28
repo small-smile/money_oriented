@@ -1,6 +1,6 @@
 import os
 
-from backend import jsonstore  # JSON 原文在 MySQL json_file 表；仓库根目录下跑
+from backend import jsonstore  # JSON 文件读写统一走 jsonstore；仓库根目录下跑
 
 BASE = "tables"
 

@@ -14,8 +14,7 @@
 全部是同类归并 —— 这一点写进 caliber_note。
 
 用法：venv/bin/python data/extract/build_holders_manual.py
-读写的 JSON（抽取件 data/extract/out/*.json、data/tables/*.json 与本表）都不落盘，
-原文在 MySQL json_file 表，经 backend/jsonstore.py 按原文件路径读写。
+读写的 JSON（抽取件 data/extract/out/*.json、data/tables/*.json 与本表）都经 backend/jsonstore.py 读写。
 """
 import os
 import re
@@ -24,7 +23,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from backend import jsonstore  # noqa: E402  JSON 原文在 MySQL json_file 表，按原文件路径取
+from backend import jsonstore  # noqa: E402  JSON 文件读写统一走 jsonstore
 
 TABLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tables")
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")

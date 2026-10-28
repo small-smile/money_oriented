@@ -21,13 +21,13 @@
       实际为 4,678,776,901 股，须用年报值覆盖；DPS_HKD 是快照字段（2015—2024 各行同为 0.0807219），
       不能当逐年股息序列。
       港股 F10 主要指标完全不含银行监管指标（不良率/拨备覆盖率/拨贷比/资本充足率/NIM/NIS/
-      贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层（同在 json_file 表，键如下）：
+      贷款总额/员工数/逾期），这些只存在于年报正文，故另设覆盖层：
     - data/tables/bank_01916_ar_manual.json   逐年年报手工提取值（列式，一行 = 年报表格一行）
     - data/tables/bank_01578_ar_manual.json   同上（天津银行 2012—2025）
     - data/tables/bank_06138_ar_manual.json   同上（哈尔滨银行 2009—2025，源自 13 份 H 股年报；
       2018 年起 IFRS 9 且未重述比较期，永续债计入其他权益工具、100 亿转股协议存款在客户存款附注内）
 
-输出（data/ 下的 *.json 不落盘，原文存 MySQL json_file 表，键照旧是下列路径）：
+输出：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
     data/tables/bank_<code>_annual.json     整理后的逐年序列 + 前十股东 + 分红 + 元信息
 
@@ -467,7 +467,7 @@ def load_ar_manual(code: str) -> dict:
     path = OUT_DIR / f"bank_{code}_ar_manual.json"
     doc = jsonstore.read(path)
     if doc is None:
-        raise FileNotFoundError(f"json_file 表里没有 {jsonstore.key(path)}")
+        raise FileNotFoundError(f"没有 data/{jsonstore.key(path)}")
     years, series = doc["years"], doc["series"]
     amount = set(doc["amount_fields"])
     annual: dict[str, dict] = {y: {} for y in years}

@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS shareholder_faction
 (
     company_code  CHAR(10)     NOT NULL COMMENT '公司code(→company.company_code)',
     faction_title VARCHAR(64)  NOT NULL COMMENT '分组名称',
+    faction_order SMALLINT     NULL COMMENT '分组在原表里的顺序(从 1 起),页面按它排图例与配色',
     holder_name   VARCHAR(128) NOT NULL COMMENT '组内股东名称(与前十名股东表逐字一致)',
+    member_order  SMALLINT     NULL COMMENT '成员在组内的顺序(从 1 起)',
     color         VARCHAR(16)  NULL COMMENT '页面着色',
     basis         VARCHAR(32)  NULL COMMENT '分组依据 年报披露=年报或20-F 明确的关联关系、一致行动人、控股股东/同类归并=本项目按股东性质归的堆,年报未认定一致行动/同一主体=同一法人的多个证券账户/20-F 披露',
     source        VARCHAR(255) NULL COMMENT '来源文件',

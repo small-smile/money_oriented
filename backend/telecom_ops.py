@@ -1,24 +1,19 @@
-import json
-import os
-
-from backend.shared import TABLES_DIR, read_json
+from backend import industry_db
 
 # 三大运营商（通信）
 TELECOM_PEERS = ["600941", "601728", "600050"]
 
 
 def _telecom_ops_manual():
-    """经营口径手工层 data/tables/telecom_ops_manual.json：逐份年报原文读出的
-    移动/5G/宽带用户数、ARPU、年报口径资本开支、云与产业数字化收入。财务接口没有这些字段。"""
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tables", "telecom_ops_manual.json")
-    return read_json(path)
+    """经营口径手工层（逐份年报原文读出的移动/5G/宽带用户数、ARPU、年报口径资本开支、云与产业数字化收入，
+    财务接口没有这些字段）：读 MySQL telecom_operating 与 data_note，形状同 telecom_ops_manual.json。"""
+    return industry_db.telecom_ops_manual()
 
 
 def _telecom_segment_manual():
-    """收入构成层 data/tables/telecom_segment_manual.json：年报「营业收入和营业成本」附注里的
-    收入分解表，由 data/extract/extract_telecom_segments.py 解析。三家科目体系不同，不可横比同名科目。"""
-    path = os.path.join(TABLES_DIR, "telecom_segment_manual.json")
-    return read_json(path)
+    """收入构成层（年报「营业收入和营业成本」附注里的收入分解表，三家科目体系不同，不可横比同名科目）：
+    读 MySQL segment_revenue 与 data_note，形状同 telecom_segment_manual.json。"""
+    return industry_db.telecom_segment_manual()
 
 
 def _telecom_segment_labels(comp):

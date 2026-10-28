@@ -1,7 +1,4 @@
-import json
-import os
-
-from backend.shared import read_json
+from backend import industry_db
 
 # 八家水泥企业（地产的上游建材），数据由 data/extract/fetch_cement_financials.py 生成：
 # 前五家 A 股上市（海螺 600585、华新 600801 为 A+H，按项目规则取 A 股年报口径），
@@ -11,10 +8,9 @@ CEMENT_PEERS = ["600585", "000877", "600801", "000401", "002233", "03323", "0131
 
 
 def _cement_ops_manual():
-    """经营口径手工层 data/tables/cement_ops_manual.json：逐份年报 PDF 语义读出的
-    水泥熟料销量、分产品收入成本、年报直接披露的吨成本/吨售价。财务接口没有这些字段。"""
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tables", "cement_ops_manual.json")
-    return read_json(path)
+    """经营口径手工层（逐份年报 PDF 语义读出的水泥熟料销量、分产品收入成本、年报直接披露的吨成本/吨售价，
+    财务接口没有这些字段）：读 MySQL cement_operating 与 data_note，形状同 cement_ops_manual.json。"""
+    return industry_db.cement_ops_manual()
 
 
 def _cement_unit(amount_mn, sales_wt):

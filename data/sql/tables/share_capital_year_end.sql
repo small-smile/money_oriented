@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS share_capital_year_end
     fiscal_year    SMALLINT     NOT NULL COMMENT '报告期(年度)',
     total_shares   BIGINT       NULL COMMENT '年末股份总数(股)；是股数不是 financials.share_capital 的股本金额(元),中国移动等无面值公司两者不等',
     change_summary TEXT         NULL COMMENT '当年股本变动摘要原文(未变动/IPO/回购注销…)',
+    share_split_factor DECIMAL(10, 4) NULL COMMENT '拆股折算系数：拆细前各年股数 × 本系数 = 拆细后口径(百度 2021 年 1 拆 80,2005–2019 年记 80)；没有拆并股的为空,断点说明见 data_note 的 share_capital_break',
     source         VARCHAR(255) NULL COMMENT '来源文件',
     PRIMARY KEY (company_code, fiscal_year),
     CONSTRAINT fk_share_capital_year_end_company FOREIGN KEY (company_code) REFERENCES company (company_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='年末股份总数（holders_manual.json share_capital，年报「股份变动情况」逐年抄录）：变动事件本身（日期、股数、价格）见 share_capital_change';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='年末股份总数（holders_manual.json share_capital 与渝农商行精编件 company_charts_601077.json 的 share-capital，年报「股份变动情况」逐年抄录）：变动事件本身（日期、股数、价格）见 share_capital_change';

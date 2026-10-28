@@ -12,7 +12,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '../..');
-/* data/ 下的 JSON 原文已进 MySQL json_file 表，经 backend/jsonstore.py 的命令行读写（键为相对 data/ 的路径） */
+/* data/ 下的 JSON 经 backend/jsonstore.py 的命令行读写（路径相对 data/） */
 function jsonstore(args, input) {
     return execFileSync(path.join(ROOT, 'venv/bin/python'), [path.join(ROOT, 'backend/jsonstore.py')].concat(args),
         { cwd: ROOT, input: input, encoding: 'utf8', maxBuffer: 64 << 20 });

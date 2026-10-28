@@ -4,7 +4,7 @@
  * and produce a ground-truth snapshot for later render-diff verification.
  *
  * Usage: node capture_options.js <path-to-charts.js> <out.json>
- * <out.json> 落在仓库 data/ 下（如 data/extract/original_options.json）时写进 MySQL json_file 表，其余路径照常写文件。
+ * <out.json> 落在仓库 data/ 下（如 data/extract/original_options.json）时经 backend/jsonstore.py 写，其余路径直接写文件。
  */
 const fs = require('fs');
 const path = require('path');
@@ -12,7 +12,7 @@ const vm = require('vm');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '../..');
-/* data/ 下的 JSON 原文已进 MySQL json_file 表，经 backend/jsonstore.py 的命令行读写（键为相对 data/ 的路径） */
+/* data/ 下的 JSON 经 backend/jsonstore.py 的命令行读写（路径相对 data/） */
 function jsonstore(args, input) {
     return execFileSync(path.join(ROOT, 'venv/bin/python'), [path.join(ROOT, 'backend/jsonstore.py')].concat(args),
         { cwd: ROOT, input: input, encoding: 'utf8', maxBuffer: 64 << 20 });
