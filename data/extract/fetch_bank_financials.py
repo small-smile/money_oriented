@@ -26,6 +26,8 @@
     - data/tables/bank_01578_ar_manual.json   同上（天津银行 2012—2025）
     - data/tables/bank_06138_ar_manual.json   同上（哈尔滨银行 2009—2025，源自 13 份 H 股年报；
       2018 年起 IFRS 9 且未重述比较期，永续债计入其他权益工具、100 亿转股协议存款在客户存款附注内）
+A 股行有同名覆盖层时（渝农商行 bank_601077_ar_manual.json：2009—2017 港股年报、2018 取 2019 年报比较列、
+2019—2022 集团口径员工数），build_bank 也用年报值盖过接口值，drop 里列的格子清空。
 
 输出：
     data/raw/em_<reportName>_<code>.json    原始响应（缓存；--refresh 重新拉取）
@@ -322,6 +324,16 @@ def build_concentration(holder_rows: list[dict]) -> list[dict]:
     return out
 
 
+def load_writeoff(code: str) -> dict[str, float]:
+    """年报「贷款减值准备变动」表的本年核销（及转出）：bank_<code>_detail_manual.json 的 writeoff.writeOff
+    （人民币百万元）→ {年: 元}；渝农商行没有 detail_manual，取手工精编件 company_charts_601077.json 的同名块。
+    都没有或该年未披露的不出现。"""
+    doc = (jsonstore.read(OUT_DIR / f"bank_{code}_detail_manual.json")
+           or jsonstore.read(OUT_DIR / f"company_charts_{code}.json") or {})
+    w = doc.get("writeoff") or {}
+    return {str(y): round(v * 1e6, 2) for y, v in zip(w.get("years") or [], w.get("writeOff") or []) if v is not None}
+
+
 def build_bank(code: str, refresh: bool) -> dict:
     suffix, name, tier = BANKS[code]
     secucode = f"{code}.{suffix}"
@@ -342,16 +354,24 @@ def build_bank(code: str, refresh: bool) -> dict:
                 rec.update(pick(row, fields))
         annual[y] = rec
 
-    # ── 派生指标：贷款减值准备余额、核销净额、不良生成额/率 ──
-    # 减值损失科目回退：工行等个别行 2018–2022 的减值在 F10 模板里仍挂「资产减值损失」，
-    # 「信用减值损失」要到 2023 才出现（口径无差异，纯模板映射差异）。这类行（首个
-    # 信用减值年份晚于 2019）在 2018 起的年份缺失时回退取资产减值损失；
-    # 首个信用减值年份在 2017–2019 的行不回退——它们 2018/2019 的资产减值损失是旧准则
-    # 数值，拆不出贷款部分，回退会破坏不良生成率自 2018 年起可比的基准。
-    credit_years = [y for y in years if annual[y].get("credit_impairment") is not None]
-    allow_asset_fallback = bool(credit_years) and min(credit_years) > "2019"
+    # 年报覆盖层（目前只有渝农商行 bank_601077_ar_manual.json）：年报原文值盖过接口值、补接口缺的格子；
+    # drop 里列的格子清空（接口有、但找不到年报原文可核对）。纯 H 股行的同名文件由 build_bank_hk 处理。
+    if jsonstore.exists(OUT_DIR / f"bank_{code}_ar_manual.json"):
+        manual = load_ar_manual(code)
+        for y, rec in manual["annual"].items():
+            annual.setdefault(y, {}).update(rec)
+        years = sorted(annual)
+        for field, ys in (manual["doc"].get("drop") or {}).items():
+            for y in ys:
+                if y in annual:
+                    annual[y][field] = None
 
-    prev_allowance: float | None = None
+    # ── 派生指标：贷款减值准备余额、不良生成额/率 ──
+    # 核销只用年报「贷款减值准备变动」表的实测值（与纯 H 股行一致）。年报没有核销数的年份
+    # （多为 A 股上市前）核销与不良生成都留空，不再用「期初准备 + 信用减值损失 − 期末准备」倒推：
+    # 那个信用减值损失是全口径，混进了金融投资、表外等非贷款减值，个别行个别年份偏差超过一倍。
+    written_off = load_writeoff(code)
+
     prev_npl: float | None = None
     prev_gross: float | None = None
     for y in years:
@@ -360,9 +380,6 @@ def build_bank(code: str, refresh: bool) -> dict:
         pc = rec.get("provision_coverage")
         gl = rec.get("gross_loans")
         lpr = rec.get("loan_provision_ratio")
-        ci = rec.get("credit_impairment")
-        if ci is None and allow_asset_fallback and y >= "2018":
-            ci = rec.get("asset_impairment")
 
         # 贷款减值准备余额 = 不良余额 × 拨备覆盖率 / 100（优先）或 贷款总额 × 拨贷比 / 100
         if npl and pc:
@@ -373,11 +390,7 @@ def build_bank(code: str, refresh: bool) -> dict:
             allowance = None
         rec["loan_loss_allowance"] = allowance
 
-        # 核销净额 = 期初准备 + 本期计提 − 期末准备
-        if prev_allowance is not None and allowance is not None and ci is not None:
-            rec["net_charge_off"] = prev_allowance + ci - allowance
-        else:
-            rec["net_charge_off"] = None
+        rec["net_charge_off"] = written_off.get(y)
 
         # 不良生成额 = 期末不良 − 期初不良 + 核销净额
         nco = rec["net_charge_off"]
@@ -398,7 +411,6 @@ def build_bank(code: str, refresh: bool) -> dict:
         te, ta = rec.get("total_equity"), rec.get("total_assets")
         rec["equity_asset_ratio"] = round(te / ta * 100, 4) if te and ta else None
 
-        prev_allowance = allowance
         prev_npl = npl
         prev_gross = gl
 
@@ -508,8 +520,8 @@ def build_bank_hk(code: str, refresh: bool) -> dict:
         rec["minority_interest"] = round(np_ - pnp, 2) if np_ is not None and pnp is not None else None
 
     # ── 派生指标：核销净额、不良生成额/率 ──
-    # 与 19 家 A 股行的关键差别：核销取年报「贷款减值准备变动表」实测值（核销 + 转出），
-    # 不用「期初准备 + 计提 − 期末准备」反推，因此不受 F10 减值科目含非贷款资产的偏差影响。
+    # 核销取年报「贷款减值准备变动表」实测值（核销 + 转出），只用覆盖层的实测值、不反推
+    # （A 股行同样只用实测值，没有就留空）。
     prev_npl: float | None = None
     prev_gross: float | None = None
     for y in sorted(annual):

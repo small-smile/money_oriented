@@ -215,7 +215,7 @@ CHANGE_STATUS = ("新进", "加仓", "减仓", "不变")   # 接口 HOLDER_STATE
 HOLDER_NATURE_FLAGS = {
     "国有法人": (1, 0, 0), "国有法人股": (1, 0, 0), "非境外上市股（国有法人）": (1, 0, 0),
     "一般法人股": (0, 0, 0), "内资法人股": (None, 0, 0),
-    "境内自然人": (0, 0, 1), "境外法人": (None, 1, 0),
+    "境内自然人": (0, 0, 1), "境外法人": (None, 1, 0), "境内非国有法人": (0, 0, 0),
 }
 HOLDER_NATURE_UNKNOWN = ("其他", "未知")   # 年报原文就写「其他/未知」，三个标志都留空，不算缺对照
 LOADER = "load_to_mysql.py"                      # data_anomaly.source：本脚本写的行，--reload 时只清这些
@@ -275,7 +275,7 @@ COLUMNS = {
     "shareholder": ("company_code", "fiscal_year", "as_of_date", "holder_rank", "holder_name", "holder_short",
                     "holder_category", "is_state", "is_foreign", "is_natural", "holder_nature", "hold_num", "ratio",
                     "total_shares", "shares_type", "raw_shares_type", "pledged_shares", "chg_shares", "raw_change",
-                    "change_status", "raw_state", "source"),
+                    "change_status", "raw_state", "is_additional", "source"),
     "shareholder_meta": ("company_code", "holders_caliber", "caliber_note", "source", "factions_source",
                          "history_source"),
     "shareholder_count": ("company_code", "as_of_date", *HOLDER_COUNT_COLS, "domestic_share_holders", "source",
@@ -563,6 +563,15 @@ def load_annual(L):
                 if not (YEAR.match(str(year)) and isinstance(row, dict)):
                     continue
                 yr = int(year)
+                if row.get("rev_field_mismatch") is True:
+                    total, oi = _num(row.get("total_operate_income")), _num(row.get("operate_income"))
+                    if total and oi is not None and oi < total * 0.5:
+                        # 上市前回填行：接口的营业收入只装了其他业务收入（中国移动 2011 年 244.8 亿是销售产品等），
+                        # 主营的通信服务收入记在营业总收入的「其他」项里，两项合计才是营业收入（= 港股年报营运收入）
+                        L.add("data_anomaly", (code, file, "financials", "operate_income", str(yr),
+                                               "%s（只是其他业务收入，营业收入改取营业总收入 %s）" % (oi, total),
+                                               "caliber_mismatch", LOADER))
+                        row = {**row, "operate_income": total}
                 _apply_aliases(L, aliases, row, code, yr, file, table)
                 rv = _cols_values(row, REVENUE_COLS)
                 av = _cols_values(row, ASSET_COLS)
@@ -653,7 +662,8 @@ def _shareholder_rows(L, code, end_date, holders, source):
     前者进 shares_type，后者进 holder_nature。holders_manual 的 shares_type 写的是股东性质（国有法人/境内自然人…），也进 holder_nature；
     20-F 那种股份类别长句不是性质，只留在 raw_shares_type。
     is_state/is_foreign/is_natural 按 holder_nature 查 HOLDER_NATURE_FLAGS，对照表里没有的性质三个标志都留空并记 data_anomaly。
-    change 是数字才进 chg_shares，「不变」记 0，「新进」不算股数；change 是文字时原文另进 raw_change（页面按原文判「不变」）。"""
+    change 是数字才进 chg_shares，「不变」记 0，「新进」不算股数；change 是文字时原文另进 raw_change（页面按原文判「不变」）。
+    additional 为真的是名册外、按权益披露补进来的股东（is_additional=1）。"""
     year = _roster_year(end_date)
     rows = []
     for h in (holders or []) if year else []:
@@ -675,7 +685,7 @@ def _shareholder_rows(L, code, end_date, holders, source):
         rows.append((code, year, _txt(end_date), h.get("rank"), name, None, None, *flags, nature,
                      _num(h.get("hold_num")), _num(h.get("ratio")), _num(h.get("total_shares")), share_class,
                      _raw_text(h.get("shares_type")), _num(h.get("pledged")), 0 if change == "不变" else _num(change),
-                     raw_change, status, _raw_text(h.get("state")), source))
+                     raw_change, status, _raw_text(h.get("state")), 1 if h.get("additional") else None, source))
     return rows
 
 
@@ -1107,7 +1117,8 @@ def load_bank_detail(L):
 
 def load_bank_hand_layers(L):
     """银行年报原文手工件里的股东户数、集中度、年末股数、分红：bank_<code>_shareholder_manual.json、
-    纯 H 股行 bank_<code>_ar_manual.json 里 annual 没并进去的逐年户数与集中度重构序列、渝农商行手工精编的 company_charts_601077.json。
+    纯 H 股行 bank_<code>_ar_manual.json 里 annual 没并进去的逐年户数与集中度重构序列（渝农商行那份另有 2018 港股年报名册）、
+    渝农商行手工精编的 company_charts_601077.json。
     户数与分红是非空格子盖过接口值，两边不一致记 data_anomaly；集中度与股数只补接口没有的期。
     shareholder_manual 的前十名（与 annual 同一份名册）只把简称与类别记到名册那一行，页面文案进 data_note。"""
     for name in jsonstore.listdir(TABLES):
@@ -1125,6 +1136,10 @@ def load_bank_hand_layers(L):
             if isinstance(r, list) and len(r) >= 4 and _txt(r[0]):
                 L.add_concentration(code, {"date": r[0], "top1": r[1], "top3": r[2], "top10": r[3],
                                            "recon": r[4] if len(r) > 4 else None}, name)
+        # 渝农商行 A 股上市前最后一份港股年报（2018）的名册：前十大股东（占总股本）+ 依 SFO 披露的持 H 股 ≥5% 股东
+        # （additional=1，total_shares 是已发行 H 股、比例的分母），页面上那两张 H 股环形图的数
+        hk = d.get("hk_holders") or {}
+        L.set_shareholders(_shareholder_rows(L, code, hk.get("end_date"), hk.get("holders"), name))
         _add_notes(L, code, name, {**(d.get("notes") or {}), **{k: d.get(k) for k in (
             "reports", "concentrationHistNote", "holder_count_note")}})
     for name in jsonstore.listdir(TABLES):

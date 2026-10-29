@@ -179,8 +179,10 @@ HK_MAIN_FIELDS = {
 
 def revenue_of(rec: dict) -> float | None:
     """营业收入：优先营业总收入。
-    上市前回填的行里两个字段偶有一个是残值（如中国移动 2011 年 OPERATE_INCOME 只有 244.8 亿、
-    而 TOTAL_OPERATE_INCOME 是 5,280.0 亿），两者都有且差一个量级时取大的那个（营业总收入）。"""
+    上市前回填的行里两个字段偶有一个只装了一部分：中国移动 2011 年 OPERATE_INCOME 只有 244.8 亿，
+    那是其他业务收入（OTHER_BUSINESS_INCOME，销售产品等），主营的通信服务收入 5,035.19 亿被记在营业总收入的
+    「其他」项（TOI_OTHER），两项合计 5,279.99 亿 = TOTAL_OPERATE_INCOME = 港股年报营运收入。
+    两者都有且差一个量级时取大的那个（营业总收入）。"""
     total = rec.get("total_operate_income")
     oi = rec.get("operate_income")
     if total is not None and oi is not None:

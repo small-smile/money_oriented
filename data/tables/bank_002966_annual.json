@@ -942,9 +942,9 @@
    "staff_num": 4249,
    "total_share": 4470662011,
    "loan_loss_allowance": 5485130527.8,
-   "net_charge_off": 1708419904.1999998,
-   "npl_formation": 1775633904.1999998,
-   "npl_formation_rate": 1.2564,
+   "net_charge_off": 881760000.0,
+   "npl_formation": 948974000.0,
+   "npl_formation_rate": 0.6715,
    "equity_asset_ratio": 8.4296
   },
   "2020": {
@@ -1015,9 +1015,9 @@
    "staff_num": 4495,
    "total_share": 4470662011,
    "loan_loss_allowance": 7561089762.8,
-   "net_charge_off": 1787021444.999999,
-   "npl_formation": 1930789444.999999,
-   "npl_formation_rate": 1.2013,
+   "net_charge_off": 999310000.0,
+   "npl_formation": 1143078000.0,
+   "npl_formation_rate": 0.7112,
    "equity_asset_ratio": 8.0478
   },
   "2021": {
@@ -1088,9 +1088,9 @@
    "staff_num": 4919,
    "total_share": 4470662011,
    "loan_loss_allowance": 10017629875.8,
-   "net_charge_off": 884683377.0,
-   "npl_formation": 661699377.0,
-   "npl_formation_rate": 0.3511,
+   "net_charge_off": 658320000.0,
+   "npl_formation": 435336000.0,
+   "npl_formation_rate": 0.231,
    "equity_asset_ratio": 7.5688
   },
   "2022": {
@@ -1161,9 +1161,9 @@
    "staff_num": 5517,
    "total_share": 4470662011,
    "loan_loss_allowance": 11707417965.6,
-   "net_charge_off": 1074244440.1999989,
-   "npl_formation": 911082440.1999989,
-   "npl_formation_rate": 0.4272,
+   "net_charge_off": 271550000.0,
+   "npl_formation": 108388000.0,
+   "npl_formation_rate": 0.0508,
    "equity_asset_ratio": 7.7137
   },
   "2023": {
@@ -1234,9 +1234,9 @@
    "staff_num": 5944,
    "total_share": 4470662011,
    "loan_loss_allowance": 12868982040.7,
-   "net_charge_off": 486399692.8999996,
-   "npl_formation": 742514692.8999996,
-   "npl_formation_rate": 0.2963,
+   "net_charge_off": 535690000.0,
+   "npl_formation": 791805000.0,
+   "npl_formation_rate": 0.3159,
    "equity_asset_ratio": 7.9201
   },
   "2024": {
@@ -1307,9 +1307,9 @@
    "staff_num": 6016,
    "total_share": 4470662011,
    "loan_loss_allowance": 13368571930.0,
-   "net_charge_off": 628300261.7000008,
-   "npl_formation": 931567261.7000008,
-   "npl_formation_rate": 0.3175,
+   "net_charge_off": 1455280000.0,
+   "npl_formation": 1758547000.0,
+   "npl_formation_rate": 0.5994,
    "equity_asset_ratio": 7.9652
   },
   "2025": {
@@ -1380,9 +1380,9 @@
    "staff_num": 5920,
    "total_share": 4470662011,
    "loan_loss_allowance": 12888555862.0,
-   "net_charge_off": 1661646808.0,
-   "npl_formation": 1975655808.0,
-   "npl_formation_rate": 0.5927,
+   "net_charge_off": 1827490000.0,
+   "npl_formation": 2141499000.0,
+   "npl_formation_rate": 0.6424,
    "equity_asset_ratio": 8.0246
   }
  },

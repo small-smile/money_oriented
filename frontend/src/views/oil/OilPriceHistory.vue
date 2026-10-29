@@ -56,7 +56,8 @@ import { useChartPool } from '../../composables/useCharts'
 
 // 逐字搬自 dashboard/subject/oil/price_history.html：EVENTS / SERIES_UNIT / axisTooltip、
 // 两张图（原油 K 线蜡烛图 + 黄金/原油/金油比折线）的 option 与全部渲染/交互逻辑原样保留，
-// 仅取数改走统一 apiGet、容器改用组件 ref、echarts 实例收集后在卸载时 dispose、resize 归拢。
+// 仅取数改走统一 apiGet、容器改用组件 ref、echarts 实例收集后在卸载时 dispose、resize 归拢
+// （原页对每张图各自 addEventListener('resize')，现由 useChartPool 统一监听并 resize 池里的实例）。
 // 图与数据一律不变；K 线的 dataZoom(inside) 按原页保留。
 const mainEl = ref(null)
 const goldOilEl = ref(null)
@@ -474,9 +475,6 @@ onMounted(() => {
       console.error(err);
       alert("接口请求失败，请检查后端服务");
     });
-
-  // echarts 实例 resize 统一交给收集起来的实例（原页对每张图各自 addEventListener('resize')）
-  onWin('resize', onResize)
 
   // ---- 内部函数：黄金 / 原油 / 金油比 折线图（原 renderGoldOilChart IIFE）----
   function renderGoldOilChart() {

@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS bank_financials
     loan_loss_allowance_transferred_out DECIMAL(28, 4) NULL COMMENT '贷款减值准备转出(元；仅 01916 2017—2022)',
     recoveries_of_loans_written_off  DECIMAL(28, 4) NULL COMMENT '收回已核销贷款(元)',
     loan_loss_allowance_amortized_cost DECIMAL(28, 4) NULL COMMENT '以摊余成本计量贷款的减值准备(元；IFRS 9 起,为 loan_loss_allowance 的摊余成本部分)',
-    net_charge_off                   DECIMAL(28, 4) NULL COMMENT '核销及转出净额',
+    net_charge_off                   DECIMAL(28, 4) NULL COMMENT '核销及转出(元；年报贷款减值准备变动表的实测值,该年未披露为 NULL,不倒推)',
     provision_coverage_ratio         DECIMAL(12, 4) NULL COMMENT '拨备覆盖率%',
     loan_allowance_ratio             DECIMAL(12, 4) NULL COMMENT '拨贷比%',
     -- 资本与流动性
