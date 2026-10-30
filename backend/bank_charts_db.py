@@ -34,10 +34,24 @@ def _notes(company_code, source):
 
 
 def annual(code):
-    """bank_<code>_annual.json 同形状；库里没有这家返回 None（build() 遇到会报缺文件）。"""
+    """bank_<code>_annual.json 同形状 + share_capital_events（见 add_share_capital_events）；
+    库里没有这家返回 None（build() 遇到会报缺文件）。"""
     d = holders_db.holder_table("bank", code)
     if d is None:
         raise FileNotFoundError("库里没有 bank_%s_annual.json 的数据" % code)
+    return add_share_capital_events(d, code)
+
+
+def add_share_capital_events(d, code):
+    """补 share_capital_events：share_capital_year_end 里有变动摘要的年份 {年: {type, items}}，
+    build_share_capital 有它才在股本块里输出 events（载入时 items 用「；」拼成一格，这里拆回列表）。
+    股权页先读到的 annual 也要补：它和图表载荷共用一份缓存，先到者缺键后到者就跟着缺。"""
+    ev = {str(r["fiscal_year"]): {"type": r["change_type"], "items": r["change_summary"].split("；")}
+          for r in db.query("SELECT fiscal_year, change_summary, change_type FROM share_capital_year_end"
+                            " WHERE company_code = %s AND change_summary IS NOT NULL ORDER BY fiscal_year",
+                            (_entity(code),))}
+    if ev:
+        d["share_capital_events"] = ev
     return d
 
 
@@ -76,19 +90,27 @@ def shareholder_manual(code):
 
 
 def ar_manual(code):
-    """bank_<code>_ar_manual.json 里 build() 用到的港交所口径集中度序列与说明；没有返回 None。"""
+    """bank_<code>_ar_manual.json 里 build() 用到的：港交所口径集中度序列与说明，以及港股年报名册 hk_holders
+    （渝农商行 2018：前十大 + SFO ≥5% 的 H 股股东，后者 additional=1）；都没有返回 None。"""
     file = "bank_%s_ar_manual.json" % code
     cc = _entity(code)
     rows = db.query("SELECT * FROM shareholder_concentration WHERE company_code = %s AND source = %s ORDER BY as_of_date",
                     (cc, file))
     notes = _notes(cc, file)
-    if not rows and not notes:
+    hk = db.query("SELECT * FROM shareholder WHERE company_code = %s AND source = %s"
+                  " ORDER BY is_additional, holder_rank, ratio DESC", (cc, file))
+    if not rows and not notes and not hk:
         return None
     out = {"concentrationHist": [[r["as_of_date"].isoformat(), db.number(r["top1_holder_ratio"]),
                                   db.number(r["top3_holders_ratio"]), db.number(r["top10_holders_ratio"]),
                                   {1: "recon", 0: "disc"}.get(r["is_reconstructed"])] for r in rows]}
     if notes.get("concentrationHistNote"):
         out["concentrationHistNote"] = notes["concentrationHistNote"]
+    if hk:
+        out["hk_holders"] = {"end_date": hk[0]["as_of_date"].isoformat(), "holders": [
+            {"rank": r["holder_rank"], "name": r["holder_name"], "short": r["holder_short"], "state": r["holder_nature"],
+             "shares_type": r["raw_shares_type"], "ratio": db.number(r["ratio"]),
+             "additional": bool(r["is_additional"])} for r in hk]}
     return out
 
 

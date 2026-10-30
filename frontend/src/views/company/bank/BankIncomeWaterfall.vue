@@ -61,13 +61,15 @@ const reportYear = computed(() => {
   const ys = (data.value && data.value.perf && data.value.perf.years) || []
   return ys.length ? ys[ys.length - 1] : ''
 })
-const revTitle = computed(() => `${bankName.value || '银行'}　营收构成（公司/零售/同业/其他）`)
+const revTitle = computed(
+  () => `${bankName.value || '银行'}　营收构成（${isGeoRev.value ? '按地域' : '公司/零售/同业/其他'}）`
+)
 const pnlTitle = computed(() => `${bankName.value || '银行'}　营收 → 支出 → 净利`)
 const cardSub = computed(() => (reportYear.value ? `${reportYear.value} 年 · 单位：亿元` : '单位：亿元'))
-const revNote =
+const stdRevNote =
   '营业收入按经营分部归并为「公司 / 零售 / 同业 / 其他」四类（各行分部命名不一，按业务性质归类：对公·批发→公司，' +
   '个人·零售→零售，资金·金融市场→同业，未分配等→其他）；仅当分部合计与营业收入吻合（差 < 0.5 亿）时拆解，' +
-  '按地域分部、口径不吻合或未披露分部则此图留空，直接看下方利润形成图。'
+  '口径不吻合或未披露分部则此图留空，直接看下方利润形成图。'
 const pnlNote =
   '营业收入 −（信用减值损失 ＋ 其他营业支出与税负）＝ 净利润。信用减值损失为年报披露值（减值损失科目）；' +
   '「其他营业支出与税负」＝ 营业收入 − 净利润 − 信用减值损失 的倒推合计（含业务及管理费、税金及附加、所得税、少数股东损益等），' +
@@ -132,6 +134,55 @@ const optionRevenue = computed(() => {
   steps.push({ name: '营业收入', value: revenue, color: '#2c5f8a', total: true })
   return build(steps)
 })
+
+// ①b 营收构成（按地域）：兴业/成都/贵阳这类行的附注分部表只给收入分项与分部利润、没有分部营业收入行，
+// 归不出四类（seg-rev.std 为空），改用管理层讨论披露的「营业收入地区分布情况」出图，不与四类口径横比。
+const geoSeg = computed(() => {
+  const d = data.value
+  const perf = d && d.perf
+  const seg = d && d['seg-rev']
+  if (!perf || !Array.isArray(perf.years) || !perf.years.length) return null
+  if (!seg || seg.std || !Array.isArray(seg.segs) || !seg.segs.length) return null
+  const i = perf.years.length - 1
+  const year = perf.years[i]
+  const arr = seg['rev' + String(year).slice(-2)]
+  if (!Array.isArray(arr) || arr.length !== seg.segs.length) return null
+  const vals = arr.map((x) => Number(x) / 100) // 百万 → 亿
+  if (vals.some((v) => !isFinite(v))) return null
+  const revenue = Number(perf.revenue && perf.revenue[i])
+  return {
+    year, segs: seg.segs, vals,
+    total: vals.reduce((a, b) => a + b, 0),
+    revenue: isFinite(revenue) ? revenue : null,
+  }
+})
+
+const optionRevenueGeo = computed(() => {
+  const g = geoSeg.value
+  if (!g) return null
+  const steps = g.segs
+    .map((name, k) => ({ name, value: g.vals[k], color: COLOR.navy }))
+    .filter((s) => Math.abs(s.value) >= 0.005)
+  if (!steps.length) return null
+  steps.push({ name: '地域合计', value: g.total, color: '#2c5f8a', total: true })
+  return build(steps)
+})
+
+const isGeoRev = computed(() => !optionRevenue.value && !!optionRevenueGeo.value)
+// 地域口径按行现算差额：部分行的地区分布不含子公司，合计会小于利润表营业收入
+const geoRevNote = computed(() => {
+  const g = geoSeg.value
+  const base =
+    '该行年报未按业务条线披露分部营业收入（附注分部表只给利息净收入、手续费净收入等收入分项与分部利润），' +
+    '此图改按管理层讨论披露的「营业收入地区分布情况」拆解，与其他行的 公司/零售/同业/其他 口径不可比。'
+  if (!g || g.revenue == null) return base
+  const diff = g.revenue - g.total
+  return base + (Math.abs(diff) >= 0.5
+    ? `地域合计 ${fmtYi(g.total)} 亿、利润表营业收入 ${fmtYi(g.revenue)} 亿，差 ${fmtYi(Math.abs(diff))} 亿` +
+      '——地域分布部分行注明不含子公司。'
+    : `地域合计与利润表营业收入一致（${fmtYi(g.revenue)} 亿）。`)
+})
+const revNote = computed(() => (isGeoRev.value ? geoRevNote.value : stdRevNote))
 
 // ② 营收 → 支出 → 净利：营业收入 −（信用减值损失 + 其他营业支出与税负）= 净利润。
 const optionProfit = computed(() => {
@@ -334,13 +385,13 @@ const pnlCmpNote =
   '免体量口径：各行按最新披露年度把营业收入拆成 净利润 / 信用减值损失 / 其他营业支出与税负 三段占比（合计 100%），' +
   '比结构而非规模——绝对亿元跨行差一个数量级、小行贴底。深色为本页银行；缺信用减值披露的行该段计 0、并入其他；' +
   '各行最新年度可能不一致，具体见悬浮。'
-const revCardNote = computed(() => (isPeer.value ? revCmpNote : revNote))
+const revCardNote = computed(() => (isPeer.value ? revCmpNote : revNote.value))
 const pnlCardNote = computed(() => (isPeer.value ? pnlCmpNote : pnlNote))
 const revCardLoading = computed(() => (isPeer.value ? peerLoading.value : loading.value))
 const pnlCardLoading = computed(() => (isPeer.value ? peerLoading.value : loading.value))
 const revCardError = computed(() => (isPeer.value ? '' : error.value))
 const pnlCardError = computed(() => (isPeer.value ? '' : error.value))
-const revCardOption = computed(() => (isPeer.value ? optionRevCompare.value : optionRevenue.value))
+const revCardOption = computed(() => (isPeer.value ? optionRevCompare.value : optionRevenue.value || optionRevenueGeo.value))
 const pnlCardOption = computed(() => (isPeer.value ? optionCompare.value : optionProfit.value))
 const rowH = 28
 const revCardHeight = computed(() => (isPeer.value ? Math.max(360, revRows.value.length * rowH + 96) + 'px' : '440px'))

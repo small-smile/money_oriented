@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 
 from backend import bank_charts_db, db
 from backend.shared import (
-    TABLES_DIR, read_json, _resolve_company_code, _cross_industry_redirect,
+    TABLES_DIR, _resolve_company_code, _cross_industry_redirect,
     success, error,
 )
 
@@ -63,15 +63,9 @@ def api_bank_financials():
     return jsonify(success(data))
 
 
-# 渝农商行那份是手工精编件（42 个键，H 股时代的年报值、环形图配色与文案都是手工定的），不由 build() 现算，仍读文件
-HAND_CHART_CODES = ("601077",)
-
-
 def company_charts_doc(code, cache=None, skip=()):
     """某行详情页的整份图表载荷（同 company_charts_<code>.json 的形状）：库里拼回输入、gen_company_charts.build() 现算，
-    见 backend/bank_charts_db.py（cache / skip 同 bank_charts_db.charts）；渝农商行读手工精编件。没有这家银行返回 None。"""
-    if code in HAND_CHART_CODES:
-        return read_json(os.path.join(TABLES_DIR, f"company_charts_{code}.json"))
+    见 backend/bank_charts_db.py（cache / skip 同 bank_charts_db.charts）。没有这家银行返回 None。"""
     return bank_charts_db.charts(code, cache, skip)
 
 

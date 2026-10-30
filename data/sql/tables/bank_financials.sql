@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS bank_financials
     company_code                     CHAR(10)       NOT NULL,
     fiscal_year                      SMALLINT       NOT NULL COMMENT '报告期(年度)',
     -- 收入结构与盈利能力
+    interest_income                  DECIMAL(28, 4) NULL COMMENT '利息收入(元,本集团)',
+    interest_expense                 DECIMAL(28, 4) NULL COMMENT '利息支出(元,本集团)',
     net_interest_income              DECIMAL(28, 4) NULL COMMENT '利息净收入',
     net_fee_commission_income        DECIMAL(28, 4) NULL COMMENT '手续费及佣金净收入',
     net_interest_margin              DECIMAL(12, 4) NULL COMMENT '净息差%',
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS bank_financials
     net_charge_off                   DECIMAL(28, 4) NULL COMMENT '核销及转出(元；年报贷款减值准备变动表的实测值,该年未披露为 NULL,不倒推)',
     provision_coverage_ratio         DECIMAL(12, 4) NULL COMMENT '拨备覆盖率%',
     loan_allowance_ratio             DECIMAL(12, 4) NULL COMMENT '拨贷比%',
+    credit_cost                      DECIMAL(12, 4) NULL COMMENT '信用成本%(年报原文值,不由减值损失反算,分子分母定义见各行年报脚注)',
     -- 资本与流动性
     capital_adequacy_ratio           DECIMAL(12, 4) NULL COMMENT '资本充足率%',
     tier1_capital_ratio              DECIMAL(12, 4) NULL COMMENT '一级资本充足率%',
@@ -78,4 +81,4 @@ CREATE TABLE IF NOT EXISTS bank_financials
     source                           TEXT           NULL COMMENT '数据来源(annual JSON 的 source 原文,最长已超 255 字)',
     PRIMARY KEY (company_code, fiscal_year),
     CONSTRAINT fk_bank_financials_company FOREIGN KEY (company_code) REFERENCES company (company_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='银行业专属年度指标（bank_*_annual.json annual 里 financials 公共列以外的银行字段）：与 financials 同主键按需 JOIN，公共列不在此重复；公司/零售贷款余额与不良余额 4 列来自 bank_*_detail_manual.json 的 loantrend（亿元，入库换算为元）；单位：金额为元，比率为 %，loan_to_deposit_ratio 例外为小数（与 JSON 源一致，不换算）';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='银行业专属年度指标（bank_*_annual.json annual 里 financials 公共列以外的银行字段）：与 financials 同主键按需 JOIN，公共列不在此重复；公司/零售贷款余额与不良余额 4 列来自 bank_*_detail_manual.json 的 loantrend（亿元，入库换算为元）；利息收入、利息支出、信用成本取年报原文；单位：金额为元，比率为 %，loan_to_deposit_ratio 例外为小数（与 JSON 源一致，不换算）';

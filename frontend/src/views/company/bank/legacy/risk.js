@@ -220,9 +220,8 @@ __section(function (D, SELF, notes) {
         ]
     });
 
-    // 正常类迁徙率对比: 渝农商行(2019-2025) vs 农业银行(2010-2023, 历年A股年报摘要/全文「其他财务指标」表)
-    // 农行2017取自2019年报追溯值2.13%(非2017半年报摘要的年中数2.00%); 2018/2019两年在2019/2020两份年报重叠核对一致
-    // 2021取2023年报口径1.10%(与2022/2023同表可比); 2024/2025年报未检索到该表，序列止于2023
+    // 正常类迁徙率对比: 本行 vs 农业银行。农行那条由后端取农行自己的明细覆盖层（2010-2025 历年A股年报
+    // 「其他财务指标」表，2020/2021 用 2022 年报追溯调整值），按本行 normalYears 对齐成 abcNormal
     const normalYears = D['migrate'].normalYears;
     const ynshbNormal = D['migrate'].ynshbNormal;
     const abcNormal   = D['migrate'].abcNormal;

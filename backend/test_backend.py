@@ -596,10 +596,10 @@ class TestNav:
 
 class TestReadsMysqlNotJson:
     """/api 的数据一律从 MySQL 结构化表拼：调用期间凡是经 jsonstore 读 data/ 下的 JSON 都记下来，
-    只许出现还没拆表的两份手工件（渝农商行精编图表件、中国移动三张成品表）"""
+    只许出现还没拆表的中国移动三张成品表"""
     pytestmark = pytest.mark.integration
-    ALLOWED = ("tables/company_charts_601077.json", "tables/telecom_00941_annual.json",
-               "tables/telecom_00941_operating.json", "tables/telecom_00941_profile.json")
+    ALLOWED = ("tables/telecom_00941_annual.json", "tables/telecom_00941_operating.json",
+               "tables/telecom_00941_profile.json")
 
     def test_no_json_reads(self, monkeypatch):
         from backend import jsonstore
@@ -610,10 +610,10 @@ class TestReadsMysqlNotJson:
             seen.append(jsonstore.key(path))
             return real(path)
         monkeypatch.setattr(jsonstore, "read_text", spy)
-        for code in ("601398", "600036", "01578", "600941", "601318", "600585", "09888", "605338", "00941"):
+        for code in ("601077", "601398", "600036", "01578", "600941", "601318", "600585", "09888", "605338", "00941"):
             assert bk.read_holders(code)["code"] == 200, code
             bk.read_nav(code)
-        for code in ("601398", "01398", "06138"):
+        for code in ("601077", "03618", "601398", "01398", "06138"):
             assert bk.read_company_charts(code)["code"] == 200, code
         assert bk.read_bank_npl_formation()["code"] == 200
         for industry, spec in bk.INDUSTRIES.items():

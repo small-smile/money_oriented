@@ -14,6 +14,11 @@ alwaysApply: false
 - **其他** ← 含「其他 / 未分配 / 投行 / 保险」
 - 都不匹配（兴业/成都/贵阳按**地域**披露）→ 不归类、不生成 std。
 
+地域披露的行不是「没数据」：这三家附注分部表只给收入分项与分部利润、没有分部营业收入行
+（兴业连业务分部都没有，只有地域分部），所以 `std` 为空时读取方**退回地域口径出图**，
+不要反算业务口径营业收入。`BankIncomeWaterfall.vue` 的 `geoSeg()` / `optionRevenueGeo()` 就是这一支，
+标题改「按地域」、note 注明与四类口径不可比；同业横比仍只纳入有 `std` 的行。
+
 ## 落地位置
 
 映射只写一处：`data/extract/gen_company_charts.py` 的 `seg_bucket()` + `std_seg_rev()`，
@@ -23,6 +28,5 @@ alwaysApply: false
 ## 维护
 
 - 改映射后不用重生成：后端请求时按库现算（`backend/bank_charts_db.py` 调 `build()`），重启后端即生效；
-  `python data/extract/gen_company_charts.py` 只按 JSON 跑一遍自检，不落文件。
-- `601077` 手工精编、gen 跳过它，改分部时要手动补 `seg-rev.std`（可复用 `std_seg_rev`）。
+  `python data/extract/gen_company_charts.py` 只按 JSON 跑一遍自检，不落文件。渝农商行也走这条路，不用手补 `seg-rev.std`。
 - 单位一律**百万元**（招行曾误存亿元、已修），前端 `/100` 转亿。

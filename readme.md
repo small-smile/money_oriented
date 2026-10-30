@@ -22,7 +22,7 @@
   由 `./venv/bin/python data/extract/load_to_mysql.py --init --reload` 从 `data/tables/*.json` 全量拆出，可反复跑
   （连接配置读 `.env` 的 `MYSQL_*`，`backend/db.py` 一份）。`/api` 一律读这些表、按载入映射还原原字段名
   （行业年度表 `backend/industry_db.py`、股权结构 `backend/holders_db.py`、银行详情页图表 `backend/bank_charts_db.py`）；
-  只剩渝农商行精编件 `company_charts_601077.json` 与中国移动的 `/api/tables/telecom_00941_*.json` 还读文件（没拆表）。
+  只剩中国移动的 `/api/tables/telecom_00941_*.json` 还读文件（没拆表）。
   JSON 更新后重跑一次 load_to_mysql.py 才跟上。
   实体键带交易所前缀（`sh.601077` / `hk.01578`）；行业专属列的字段映射在 `data/extract/industry_columns.py`；
   没登记映射的字段、同义字段两边不一致，载入时记进 `data_anomaly`，不静默丢弃
@@ -54,11 +54,11 @@ cd frontend && npm run build                 # 产物 frontend/dist，给 nginx 
 MySQL 里有年度财务序列的银行（`/api/banks`）。
 
 图表载荷不落文件：后端把 `gen_company_charts.py` 的 `build()` 输入（annual、股东手工件、ar_manual、
-`bank_<code>_detail_manual.json`）从 MySQL 拼回后请求时现算（`backend/bank_charts_db.py`），共 44 家
-（41 家 A 股/A+H + 天津 `01578`、江西 `01916`、哈尔滨 `06138` 三家纯 H 股）。只有 `601077` 是手工精编件
-`data/tables/company_charts_601077.json`（42 个数据键，还没拆表，接口直接读它）；生成行基础 15~16 键，
-有年报正文手工层的补到 33~39 键，缺的图保留图位贴占位；
-页面文字说明、KPI 与 HTML 表格仍是渝农商行的。
+`bank_<code>_detail_manual.json`）从 MySQL 拼回后请求时现算（`backend/bank_charts_db.py`），共 45 家
+（42 家 A 股/A+H + 天津 `01578`、江西 `01916`、哈尔滨 `06138` 三家纯 H 股），渝农商行也一样；
+各行 23~45 个数据键，缺的图保留图位贴占位。
+页面模板不写任何一家的数字：各行的说明段、KPI 卡、年报摘录表按 DOM id 放在 detail_manual 的 `_notes`，
+填进模板里 `.bank-specific` 的空壳，本行没给的整块隐藏。
 
 ## 抽数
 

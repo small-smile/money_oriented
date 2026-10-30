@@ -6,21 +6,14 @@ function renderAll(D) {
 // 同业对比图里代表"本行"的那条线：换行后跟着换名字，其余同业名保持不变
 const SELF = (D._bank && D._bank.shortName) || '渝农商行';
 
-// 生成脚本按 DOM id 给出的分行说明文字（页面里的静态文案是渝农商行版本，换行后要覆盖）
+// 按 DOM id 下发的本行文案（年报摘录的说明段、KPI 卡、表格、含行名的标题），由后端从各行覆盖层拼出
 const notes = D._notes || {};
 
-/* .yns-only 里写死的是渝农商行的具体数字（标题、说明段、分红卡片）。换行后：
- *   · _notes 里有同 id 文案的 → 整段被覆盖成本行版本，留着显示；
- *   · 没有对应文案的 → 仍然是渝农商行的数字，隐藏掉。
- * .yns-h-only 是"H 股年报口径"专属块：渝农商 H 股年报只到 2018、A 股年报从 2019 起，两边没有
- * 重叠年份，所以能并排画 A/H 两套环形图；其余 A+H 行同一年两份年报都有，按 A 股优先只画 A 股，
- * 这块对它们恒定无意义，一律隐藏。 */
-if (window.COMPANY_CODE !== '601077') {
-    document.querySelectorAll('.yns-only').forEach(el => {
-        if (!(el.id && notes[el.id])) el.style.display = 'none';
-    });
-    document.querySelectorAll('.yns-h-only').forEach(el => { el.style.display = 'none'; });
-}
+/* .bank-specific 是「每家行各写各的」文案块：模板里只留带 id 的空壳，内容取自本行 _notes 里
+ * 同 id 的那段；本行没给的整块隐藏。所有银行同一套规则，模板里不写任何一家的具体数字。 */
+document.querySelectorAll('.bank-specific').forEach(el => {
+    if (!(el.id && notes[el.id])) el.style.display = 'none';
+});
 
 
 Object.keys(KEY_DOM).forEach(function (k) {
@@ -29,7 +22,7 @@ Object.keys(KEY_DOM).forEach(function (k) {
     D[k] = EMPTY_D;
 });
 
-// 覆盖页面上的渝农商行静态文案（上面的 .yns-only 门控已经按 notes 决定了哪些块留着）
+// 文案填进页面（.bank-specific 空壳，以及模板里带通用文字、需按本行改写的标题等）
 Object.keys(notes).forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { el.innerHTML = notes[id]; el.style.display = ''; }

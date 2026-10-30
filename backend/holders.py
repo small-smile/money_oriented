@@ -3,7 +3,7 @@ import threading
 
 from flask import Blueprint, jsonify, request
 
-from backend import holders_db
+from backend import bank_charts_db, holders_db
 from backend.shared import (
     _holders_manual, _company_codes, _company_entity,
     _resolve_company_code, _cross_industry_redirect,
@@ -100,9 +100,9 @@ def _company_charts(code):
     if memo is None:
         return company_charts_doc(code)
     if code not in memo:
-        # 股权页只取环形图 / 股本 / 分红几块，年报正文明细、港股集中度、社融不用拼
+        # 股权页只取环形图 / 股本 / 分红几块，年报正文明细、社融不用拼（ar_manual 里有港股年报口径的两张环形图，要留着）
         memo[code] = company_charts_doc(code, memo.setdefault("_annual", {}),
-                                        ("ar_manual", "detail", "social_financing"))
+                                        ("detail", "social_financing"))
     return memo[code]
 
 
@@ -169,7 +169,8 @@ def _holder_table(industry, code):
         return holders_db.holder_table(industry, code)
     cache = memo.setdefault("_annual", {})
     if code not in cache:
-        cache[code] = holders_db.holder_table(industry, code)
+        d = holders_db.holder_table(industry, code)
+        cache[code] = d and bank_charts_db.add_share_capital_events(d, code)
     return cache[code]
 
 

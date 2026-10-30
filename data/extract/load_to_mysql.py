@@ -16,10 +16,11 @@ annual JSON 里每个字段都必须落到某一列；没登记映射的数值�
 JSON 沿用数据源字段名，落库时按 (SQL 列名, JSON 源字段名) 映射成标准英文财报列名。
 company_code 是带交易所前缀的实体键（sh.601077 / sz.000001 / hk.01578，见 company.sql）；JSON 与文件名里的裸代码在这里换算。
 只收 data/tables 下的源 JSON（oil/宏观 CSV 未纳入）。股权数据从 annual 的 holders 与 holders_manual.json 取，
-银行股东手工件（shareholder_manual / ar_manual / 渝农商行精编件）的户数与分红按年报原文盖过接口值；
+银行股东手工件（shareholder_manual / ar_manual）的户数与分红按年报原文盖过接口值；
+各期名册里的一致行动人按 concert_party_manual.json（年报原文逐家摘录）标进 shareholder.concert_party；
 年报正文手工层 bank_<code>_detail_manual.json 进 bank_report_detail，经营口径表进 <行业>_operating，说明原文进 data_note。
 银行详情页图表与每公司股东表是派生物，不入库也不落文件（后端从这些表拼回输入现算，见 backend/bank_charts_db.py、holders_db.py）；
-渝农商行精编件里业绩/规模/息差等图表序列与环形图、公司简介/治理类文档（*_profile*.json、tech_09888_holders_manual.json）尚未拆表。
+公司简介/治理类文档（*_profile*.json、tech_09888_holders_manual.json）尚未拆表。
 只写 data/sql/tables 里有建表语句的表；解析了但没有建表文件的表只在行数清单里标「跳过」，不写库。
 """
 import os
@@ -273,9 +274,10 @@ COLUMNS = {
                         "issue_amount", "maturity", "status", "source_file"),
     **{t: ("company_code", "fiscal_year", *_operating_columns(t)) for t in OPERATING_TABLES},
     "shareholder": ("company_code", "fiscal_year", "as_of_date", "holder_rank", "holder_name", "holder_short",
-                    "holder_category", "is_state", "is_foreign", "is_natural", "holder_nature", "hold_num", "ratio",
-                    "total_shares", "shares_type", "raw_shares_type", "pledged_shares", "chg_shares", "raw_change",
-                    "change_status", "raw_state", "is_additional", "source"),
+                    "holder_category", "concert_party", "concert_short", "is_state", "is_foreign", "is_natural",
+                    "holder_nature", "hold_num", "ratio", "total_shares", "shares_type", "raw_shares_type",
+                    "pledged_shares", "chg_shares", "raw_change", "change_status", "raw_state", "is_additional",
+                    "source"),
     "shareholder_meta": ("company_code", "holders_caliber", "caliber_note", "source", "factions_source",
                          "history_source"),
     "shareholder_count": ("company_code", "as_of_date", *HOLDER_COUNT_COLS, "domestic_share_holders", "source",
@@ -287,8 +289,8 @@ COLUMNS = {
                                   "source"),
     "shareholder_faction": ("company_code", "faction_title", "faction_order", "holder_name", "member_order", "color",
                             "basis", "source"),
-    "share_capital_year_end": ("company_code", "fiscal_year", "total_shares", "change_summary", "share_split_factor",
-                               "source"),
+    "share_capital_year_end": ("company_code", "fiscal_year", "total_shares", "change_summary", "change_type",
+                               "share_split_factor", "source"),
     "social_financing_stock": ("period_month", "amount", "year_on_year_growth", "source"),
     "social_financing_flow": ("period_month", *[c for c, _ in SOCIAL_FINANCING_FLOW_COLS], "source"),
     "data_note": ("company_code", "source_file", "topic", "note"),
@@ -663,7 +665,9 @@ def _shareholder_rows(L, code, end_date, holders, source):
     20-F 那种股份类别长句不是性质，只留在 raw_shares_type。
     is_state/is_foreign/is_natural 按 holder_nature 查 HOLDER_NATURE_FLAGS，对照表里没有的性质三个标志都留空并记 data_anomaly。
     change 是数字才进 chg_shares，「不变」记 0，「新进」不算股数；change 是文字时原文另进 raw_change（页面按原文判「不变」）。
-    additional 为真的是名册外、按权益披露补进来的股东（is_additional=1）。"""
+    additional 为真的是名册外、按权益披露补进来的股东（is_additional=1）。
+    名册里自带 short 的（年报手工底稿给环形图用的简称）记进 holder_short；
+    其余简称/类别/一致行动人几列这里留空，分别由 holders_manual 的别名、_label_roster、load_concert_parties 补。"""
     year = _roster_year(end_date)
     rows = []
     for h in (holders or []) if year else []:
@@ -682,7 +686,7 @@ def _shareholder_rows(L, code, end_date, holders, source):
             L.add("data_anomaly", (code, source, "shareholder", "holder_nature", str(year), nature,
                                    "unmapped_value", LOADER))
         raw_change = h.get("change") if isinstance(h.get("change"), str) else None
-        rows.append((code, year, _txt(end_date), h.get("rank"), name, None, None, *flags, nature,
+        rows.append((code, year, _txt(end_date), h.get("rank"), name, _txt(h.get("short")), None, None, None, *flags, nature,
                      _num(h.get("hold_num")), _num(h.get("ratio")), _num(h.get("total_shares")), share_class,
                      _raw_text(h.get("shares_type")), _num(h.get("pledged")), 0 if change == "不变" else _num(change),
                      raw_change, status, _raw_text(h.get("state")), 1 if h.get("additional") else None, source))
@@ -730,7 +734,7 @@ def load_holders_manual(L):
             if isinstance(r, list) and r and YEAR.match(str(r[0])):
                 split = factor if factor and at and YEAR.match(at) and int(r[0]) < int(at) else None
                 L.add("share_capital_year_end", (code, int(r[0]), _num(r[1]) if len(r) > 1 else None,
-                                                 _raw_text(r[2]) if len(r) > 2 else None, split, file))
+                                                 _raw_text(r[2]) if len(r) > 2 else None, None, split, file))
         for g in e.get("history_gaps") or []:
             L.add("data_gap", (code, str(g), None, file))
         ring_alt = e.get("ring_alt_meta") or {}
@@ -816,8 +820,6 @@ def load_social_financing(L):
 
 
 # ── 银行年报正文明细：bank_<code>_detail_manual.json → bank_report_detail / bank_bond_issue / data_note ──
-# 渝农商行没有 detail_manual，同一批键手工精编在 company_charts_601077.json（gen_company_charts.py 不生成它）。
-HAND_CHART_FILES = {"601077": "company_charts_601077.json"}
 AMOUNT_UNITS = (("亿元", 1e8), ("百万元", 1e6), ("千元", 1e3), ("元", 1))   # 相邻两档差 100 倍以上
 FIXED_UNITS = {"%": ("%", 1), "人": ("人", 1), "笔": ("笔", 1), "万元": ("元", 1e4)}   # 原值单位 → (统一单位, 倍数)
 # 分项 × 两期：(topic, 分项键, {值键: (年, measure)}, 单位类)；年为 None 的取年报当年
@@ -883,7 +885,7 @@ DETAIL_SERIES = {
 }
 # 各键里不进 bank_report_detail 的子键：年份/分项轴、页面标注（marks 进 data_note）、
 # loantrend 的四项余额（已在 bank_financials）、seg-rev.std（gen 按四桶归并的派生值）、
-# migrate.abcNormal（农业银行的对标序列，不是本行数据）、bondpay.bonds（进 bank_bond_issue）、
+# migrate.abcNormal（农业银行的对标序列，不是本行数据；build 取农行自己的明细现对齐）、bondpay.bonds（进 bank_bond_issue）、
 # overdue-band.names（本行档名，替换缺省分项名）
 DETAIL_SKIP_KEYS = {"years", "normalYears", "items", "inds", "segs", "cats", "buckets", "roles", "edu", "vals",
                     "marks", "names", "std", "abcNormal", "bonds", "corp", "retail", "nplBalanceCorp",
@@ -938,13 +940,9 @@ def _bank_refs(L):
 
 
 def _detail_doc(code):
-    """银行年报正文手工层 (文档, 文件名)：bank_<code>_detail_manual.json；渝农商行取手工精编的 company_charts_601077.json。"""
+    """银行年报正文手工层 (文档, 文件名)：bank_<code>_detail_manual.json。"""
     name = "bank_%s_detail_manual.json" % code
-    d = _load_json(name)
-    if d is None and code in HAND_CHART_FILES:
-        name = HAND_CHART_FILES[code]
-        d = _load_json(name)
-    return d, name
+    return _load_json(name), name
 
 
 # 对账取哪些行求和（依次试，前一种取不到行再用后一种）；没列的主题取全部金额行
@@ -1000,7 +998,7 @@ def _cash_flow_caliber(rows, refs, code, year):
 
 def _bank_detail_codes():
     names = (re.fullmatch(r"bank_(\w+)_detail_manual\.json", n) for n in jsonstore.listdir(TABLES))
-    return sorted({m.group(1) for m in names if m} | set(HAND_CHART_FILES))
+    return sorted({m.group(1) for m in names if m})
 
 
 def _detail_rows(d, report_year):
@@ -1061,8 +1059,7 @@ def _detail_rows(d, report_year):
 def load_bank_detail(L):
     """银行年报正文手工层 → bank_report_detail（一个数一行）、bondpay.bonds → bank_bond_issue、_notes → data_note。
     金额原值单位按主题与 annual 同口径总量对账定量级（DETAIL_UNIT_CHECKS），统一成元；对不上只留原值并记 data_anomaly。
-    数组里的空格子也写行、分项记顺序，后端据此原样拼回（backend/bank_charts_db.detail）。
-    渝农商行的 company_charts_601077.json 只取与 detail_manual 同名的键，其余键是手工精编的图表值，尚未拆表。"""
+    数组里的空格子也写行、分项记顺序，后端据此原样拼回（backend/bank_charts_db.detail）。"""
     refs = _bank_refs(L)
     for raw_code in _bank_detail_codes():
         d, file = _detail_doc(raw_code)
@@ -1072,9 +1069,8 @@ def load_bank_detail(L):
         years = [y for c, y in refs if c == code]
         report_year = max(years) if years else None      # 只给一期的键记年报当年
         rows, bonds, marks, unknown = _detail_rows(d, report_year)
-        if file != HAND_CHART_FILES.get(raw_code):
-            for k in unknown:
-                L.add("data_anomaly", (code, file, "bank_report_detail", k, None, None, "unmapped_field", LOADER))
+        for k in unknown:
+            L.add("data_anomaly", (code, file, "bank_report_detail", k, None, None, "unmapped_field", LOADER))
         resolved = []                                    # 五级分类、员工构成：合计约 100 的是占比
         for topic, year, item, measure, v, kind, order, label in rows:
             if kind in ("amount_or_share", "people_or_share"):
@@ -1117,8 +1113,8 @@ def load_bank_detail(L):
 
 def load_bank_hand_layers(L):
     """银行年报原文手工件里的股东户数、集中度、年末股数、分红：bank_<code>_shareholder_manual.json、
-    纯 H 股行 bank_<code>_ar_manual.json 里 annual 没并进去的逐年户数与集中度重构序列（渝农商行那份另有 2018 港股年报名册）、
-    渝农商行手工精编的 company_charts_601077.json。
+    纯 H 股行 bank_<code>_ar_manual.json 里 annual 没并进去的逐年户数与集中度重构序列
+    （渝农商行那份另有港股口径集中度、2018 港股年报名册与历年资本运作）。
     户数与分红是非空格子盖过接口值，两边不一致记 data_anomaly；集中度与股数只补接口没有的期。
     shareholder_manual 的前十名（与 annual 同一份名册）只把简称与类别记到名册那一行，页面文案进 data_note。"""
     for name in jsonstore.listdir(TABLES):
@@ -1140,6 +1136,12 @@ def load_bank_hand_layers(L):
         # （additional=1，total_shares 是已发行 H 股、比例的分母），页面上那两张 H 股环形图的数
         hk = d.get("hk_holders") or {}
         L.set_shareholders(_shareholder_rows(L, code, hk.get("end_date"), hk.get("holders"), name))
+        # 历年资本运作（渝农商行）：{年: {type, items, shares(亿股)}} → share_capital_year_end 的变动摘要与类型
+        for y, ev in (d.get("share_capital_events") or {}).items():
+            items = [str(i) for i in ev.get("items") or []]
+            assert YEAR.match(str(y)) and not any("；" in i for i in items), (name, y, items)   # 「；」拼接，回读时拆开
+            L.add("share_capital_year_end", (code, int(y), round(_num(ev["shares"]) * 1e8) if _num(ev.get("shares")) else None,
+                                             _txt("；".join(items)), _txt(ev.get("type")), None, name))
         _add_notes(L, code, name, {**(d.get("notes") or {}), **{k: d.get(k) for k in (
             "reports", "concentrationHistNote", "holder_count_note")}})
     for name in jsonstore.listdir(TABLES):
@@ -1162,33 +1164,42 @@ def load_bank_hand_layers(L):
         _add_notes(L, code, name, {k: d.get(k) for k in ("holderNote", "holdersNote", "dividendNote", "meta",
                                                           "holdersSub", "dividendSub", "holderUnit", "top10Sum")})
         _label_roster(L, code, d.get("top10"), name)
-    for raw_code, name in HAND_CHART_FILES.items():
-        code, d = _entity_code(raw_code), _load_json(name) or {}
-        for r in (d.get("holder-count") or {}).get("raw") or []:     # [截止日, 合计, A股, H股]
-            if isinstance(r, list) and r and _txt(r[0]):
-                L.merge_holder_count(code, _txt(r[0]), [_num(r[i]) if len(r) > i else None for i in (1, 2, 3)] + [None],
-                                     name)
-        for r in (d.get("holder-concentration-hist") or {}).get("raw") or []:   # 同 ar_manual 的 concentrationHist
-            if isinstance(r, list) and len(r) >= 4 and _txt(r[0]):
-                L.add_concentration(code, {"date": r[0], "top1": r[1], "top3": r[2], "top10": r[3],
-                                           "recon": r[4] if len(r) > 4 else None}, name)
-        _add_notes(L, code, name, {"holder-concentration-hist": (d.get("holder-concentration-hist") or {}).get("note")})
-        hc = d.get("holder-concentration") or {}
-        tops = hc.get("top1Names") or []
-        for i, r in enumerate(hc.get("raw") or []):    # [报告期, 第一大, 前三大, 前十大, 其他流通股东]
-            if isinstance(r, list) and len(r) >= 4 and _txt(r[0]):
-                L.add_concentration(code, {"date": r[0], "top1": r[1], "top3": r[2], "top10": r[3],
-                                           "top1_name": tops[i] if i < len(tops) else None}, name)
-        _merge_dividends(L, code, d.get("dividend-per10"), name)
-        sc = d.get("share-capital") or {}
-        for y, s in zip(sc.get("years") or [], sc.get("shares") or []):   # 亿股
-            if YEAR.match(str(y)) and _num(s) is not None:
-                ev = (sc.get("events") or {}).get(str(y)) or {}
-                L.add("share_capital_year_end", (code, int(y), round(_num(s) * 1e8),
-                                                 _txt("；".join(map(str, ev.get("items") or []))), None, name))
 
 
 TOP10_CATEGORIES = ("soe", "hk", "ssf", "ins", "corp", "other")   # 银行股东手工件 top10 的类别键（见 shareholder.holder_category）
+CONCERT_FILE = "concert_party_manual.json"
+
+
+def load_concert_parties(L):
+    """concert_party_manual.json（逐家通读年报「上述股东关联关系或一致行动的说明」与主要股东章节的摘录）
+    → shareholder.concert_party / concert_short。按 "<板块>:<代码>" → {报告期: {groups, statement, …}} 索引，
+    组员名字必须与该期名册逐字一致，对不上或一人进了两组的记 data_anomaly、不硬配；
+    出处、原文与各组依据进 data_note（topic = concert_party.<报告期>）。要在各来源的名册都定下来之后调用。"""
+    cols = COLUMNS["shareholder"]
+    name_at, party_at = cols.index("holder_name"), cols.index("concert_party")
+    for key, periods in (_load_json(CONCERT_FILE) or {}).items():
+        if ":" not in key or not isinstance(periods, dict):
+            continue
+        code = _entity_code(key.split(":", 1)[1])
+        for year, e in periods.items():
+            rows = L.shareholders.get((code, int(year))) or []
+            names, party = {r[name_at] for r in rows}, {}
+            for g in e.get("groups") or []:
+                for m in g.get("members") or []:
+                    if m not in names or m in party:
+                        L.add("data_anomaly", (code, CONCERT_FILE, "shareholder", "concert_party", str(year),
+                                               "%s → %s（%s）" % (m, g.get("party"),
+                                                                 "已在别的组" if m in party else "名册里没有这个名字"),
+                                               "conflicting_duplicate" if m in party else "unmapped_value", LOADER))
+                        continue
+                    party[m] = (_txt(g.get("party")), _txt(g.get("short")))
+            if rows:
+                L.shareholders[(code, int(year))] = [r[:party_at] + party[r[name_at]] + r[party_at + 2:]
+                                                     if r[name_at] in party else r for r in rows]
+            _add_notes(L, code, CONCERT_FILE, {"concert_party.%s" % year: {
+                "出处": "%s %s" % (e.get("report") or "", e.get("sections") or ""),
+                "原文": e.get("statement"),
+                **{"%s（%s）" % (g.get("short"), g.get("relation")): g.get("evidence") for g in e.get("groups") or []}}})
 
 
 def _label_roster(L, code, top10, source):
@@ -1348,6 +1359,7 @@ def main():
     load_telecom_segments(L)
     load_bank_detail(L)             # 要用 annual 已载入的总量对账，放在 annual 之后
     load_bank_hand_layers(L)        # 户数与分红要在 finish() 并进 financials 之前
+    load_concert_parties(L)         # 各来源的名册都定下来之后再标一致行动人
     load_operating(L)
     L.finish()
     dedupe(L)

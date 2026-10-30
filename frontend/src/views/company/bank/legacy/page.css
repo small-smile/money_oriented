@@ -74,6 +74,8 @@ table.sortable thead th[data-sort="none"]::after { content: none; }
 .note summary::before { content: '▸ '; color: #9ca3af; }
 .note[open] summary::before { content: '▾ '; }
 .note summary:hover { color: #374151; }
+/* 每家行各写各的文案块（charts.js 按本行 _notes 填）：内容到达前空壳不占位，免得先闪一排空框 */
+.bank-specific:empty { display: none; }
 /* 回归结果说明：右对齐，紧贴图表标题下方 */
 .fit-note { font-size: 18px; color: #6b7280; text-align: right; margin-bottom: 2px; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }

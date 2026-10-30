@@ -19,6 +19,11 @@
     var cur = document.getElementById('npl-amt-current');
     var note = document.getElementById('note-npl-amt');
     var OWN_NOTE = note ? note.innerHTML : '';
+    // 本行那段说明在 _notes 里（模板只有空壳，charts.js 拉到数后才填），切回本行时从那里取
+    function ownNote() {
+        var n = (window.__companyD && window.__companyD._notes) || {};
+        return n['note-npl-amt'] != null ? n['note-npl-amt'] : OWN_NOTE;
+    }
     var btns = [];
     var TIER_ORDER = ['国有大行', '股份行', '城商行', '农商行'];
     var selected = {};      // code → true，当前要画的银行
@@ -67,10 +72,11 @@
         window.__renderNplAmt(D);
         if (cur) cur.textContent = name;
         if (note) {
-            note.style.display = '';
-            note.innerHTML = code === window.COMPANY_CODE ? OWN_NOTE :
+            var html = code === window.COMPANY_CODE ? ownNote() :
                 ('当前显示 <b>' + name + '</b> 的不良贷款余额（亿元），口径为该行年报「五级分类」次级+可疑+损失合计。' +
                  '勾选上方类型可一次对比国有大行 / 股份行 / 城商行 / 农商行。');
+            note.innerHTML = html;
+            note.style.display = html ? '' : 'none';
         }
     }
     function drawCompare(items, label) {
@@ -232,6 +238,10 @@ function __bankCmpPanel(cfg) {
     var cur = document.getElementById(cfg.ids.current);
     var note = document.getElementById(cfg.ids.note);
     var OWN_NOTE = note ? note.innerHTML : '';   // 本页银行的三段口径说明，切回来时还原
+    function ownNote() {                          // 本行在 _notes 里给了这段就用它（模板里只剩空壳）
+        var n = (window.__companyD && window.__companyD._notes) || {};
+        return n[cfg.ids.note] != null ? n[cfg.ids.note] : OWN_NOTE;
+    }
     var OPT = { id: cfg.ids.chart, metric: cfg.metric };
     var M = /^[A-Za-z]/.test(cfg.metric) ? ' ' + cfg.metric + ' ' : cfg.metric;   // 说明文字里嵌指标名：英文两侧留空格，中文不留
     var btns = [];
@@ -325,7 +335,7 @@ function __bankCmpPanel(cfg) {
         setHeight(cfg.oneHeight);
         var txt = cfg.drawOne(b, D, OPT);
         if (cur) cur.textContent = b.name;
-        if (note) note.innerHTML = (b.code === window.COMPANY_CODE && OWN_NOTE) ? OWN_NOTE : txt;
+        if (note) note.innerHTML = (b.code === window.COMPANY_CODE && ownNote()) ? ownNote() : txt;
     }
 
     // 各视图：渲染函数 + 图高 + 图下说明，一处配齐，paint 只管派发

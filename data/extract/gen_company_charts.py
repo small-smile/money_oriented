@@ -2,12 +2,12 @@
 整理成银行详情页 7 个页面直接消费的 data/tables/company_charts_<code>.json。
 
 背景：详情页（dashboard/company/bank/*.html）统一从 /api/company_charts?code=<code> 取一份大 JSON，
-charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，含大量只有年报正文才有的明细），
-本脚本只负责生成「能从公司数据接口的年度数据推导出来的」那部分 key，其余 key 缺失时页面显示
-「该行暂无此项数据」占位（charts.js 的 stub 逻辑）。
+charts.js 按 key 渲染各图。本脚本由公司数据接口的年度数据推导大部分 key，只有年报正文才有的明细
+（迁徙率、重定价、员工构成、页面文案等）来自各行的 detail_manual / ar_manual 覆盖层，渝农商行也一样；
+缺失的 key 页面显示「该行暂无此项数据」占位（charts.js 的 stub 逻辑）。
 
 约定：
-    - 金额：perf/scale-dep 用亿元；creditamount/bs-trend/bs 用百万元（与 601077 口径一致）
+    - 金额：perf/scale-dep 用亿元；creditamount/bs-trend/bs 用百万元
     - 比率：%，缺失年份保留 null
     - 不良生成率统一自 2018 年起（早年口径不可比，见 MEMORY 中的 2018 基准）
     - A+H 两地上市优先采用 A 股年报口径（手工覆盖层里的股东户数/前十大/分红即 A 股年报）
@@ -21,6 +21,7 @@ charts.js 按 key 渲染各图。601077 那份是手工精编的（41 个 key，
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -70,8 +71,7 @@ def std_seg_rev(seg: dict) -> dict | None:
             out[yk] = [round(agg[b], 2) for b in present]
     return out
 
-# 生成范围：全部 42 家 A 股上市银行 + 2 家纯 H 股行。601077（渝农商行）为手工精编，
-# 不在此列、不要覆盖（main() 里也硬跳过）。缺 annual.json 的代码由 main() 优雅跳过。
+# 生成范围：全部 42 家 A 股上市银行 + 3 家纯 H 股行。缺 annual.json 的代码由 main() 优雅跳过。
 CODES = [
     # 国有大行
     "601398", "601288", "601988", "601939", "601328", "601658",
@@ -82,8 +82,8 @@ CODES = [
     "601169", "601229", "600919", "002142", "601009", "601838",
     "600926", "601187", "002936", "002948", "601577", "002966",
     "601963", "601665", "601997", "600928", "001227",
-    # 农商行（601077 手工精编，不在此列）
-    "601825", "601128", "002958", "600908", "002807", "601860",
+    # 农商行
+    "601077", "601825", "601128", "002958", "600908", "002807", "601860",
     "002839", "601528", "603323",
     # 纯 H 股
     "01578", "01916", "06138",
@@ -317,15 +317,16 @@ def classify(name: str) -> str:
     return "corp"
 
 
-def build_holders(top10: list, top10_sum: float) -> dict:
-    """top10 行 [name, pct, chg, typeLabel, catKey] -> charts.js 的 holders 载荷。"""
+def build_holders(top10: list, top10_sum: float, residual: str = "其他流通股东", center: str | None = None) -> dict:
+    """top10 行 [name, pct, chg, typeLabel, catKey] -> charts.js 的 holders 载荷。
+    residual 是补满 100% 的那一块的名字，center 是环心文字（缺省「前十大 合计%」）。"""
     holder_data = [{"name": h[0], "value": h[1], "itemStyle": {"color": CAT[h[4]]["color"]}} for h in top10]
     float_pct = round(100 - top10_sum, 2)
-    holder_data.append({"name": "其他流通股东", "value": float_pct,
+    holder_data.append({"name": residual, "value": float_pct,
                         "itemStyle": {"color": CAT["float"]["color"]}})
 
     holders = [{"name": h[0], "pct": h[1], "chg": h[2], "type": h[3]} for h in top10]
-    holders.append({"name": "其他流通股东", "pct": float_pct, "chg": "—", "type": "流通股"})
+    holders.append({"name": residual, "pct": float_pct, "chg": "—", "type": "流通股"})
 
     order, grp = [], {}
     for h in top10:
@@ -334,13 +335,12 @@ def build_holders(top10: list, top10_sum: float) -> dict:
             grp[k] = {"title": CAT[k]["title"], "color": CAT[k]["color"], "names": []}
             order.append(k)
         grp[k]["names"].append(h[0])
-    grp["float"] = {"title": CAT["float"]["title"], "color": CAT["float"]["color"],
-                    "names": ["其他流通股东"]}
+    grp["float"] = {"title": residual, "color": CAT["float"]["color"], "names": [residual]}
     order.append("float")
 
     return {"holders": holders, "holderData": holder_data,
             "factions": [grp[k] for k in order],
-            "centerText": "前十大\n%.2f%%" % top10_sum}
+            "centerText": center or "前十大\n%.2f%%" % top10_sum}
 
 
 def top10_from_annual(src: dict) -> tuple[list, float]:
@@ -354,6 +354,31 @@ def top10_from_annual(src: dict) -> tuple[list, float]:
         label = CAT[cat]["title"] + ("（%s）" % h["shares_type"] if h.get("shares_type") else "")
         rows.append([name, round(pct, 2), h.get("change") or "—", label, cat])
     return rows, round(sum(x[1] for x in rows), 2)
+
+
+# 港股年报名册的股东性质 → 环形图类别键（A 股那份由手工覆盖层逐行给类别键，港股名册按性质推）
+HK_NATURE_CAT = {"国有法人": "soe", "境外法人": "hk", "境内非国有法人": "corp"}
+
+
+def hk_rings(hk: dict | None) -> dict:
+    """港股年报名册（ar_manual 的 hk_holders）-> 两张 H 股口径环形图：
+    holders-h 是该期前十大股东（占总股本），holders-h-only 是依 SFO 披露的持 H 股 ≥5% 股东（additional，占 H 股股本）。
+    简称用名册里的 short，没有就按 short_holder 截短；类别按股东性质推，SFO 那几家都是 H 股股东。"""
+    rows = {False: [], True: []}
+    for h in (hk or {}).get("holders") or []:
+        if h.get("ratio") is None:
+            continue
+        extra = bool(h.get("additional"))
+        cat = "hk" if extra else HK_NATURE_CAT.get(h.get("state") or "", classify(h.get("name") or ""))
+        label = CAT[cat]["title"] + ("（%s）" % h["shares_type"] if h.get("shares_type") else "")
+        rows[extra].append([h.get("short") or short_holder(h.get("name")), round(h["ratio"], 2), "—", label, cat])
+    out = {}
+    if rows[False]:
+        out["holders-h"] = build_holders(rows[False], round(sum(r[1] for r in rows[False]), 2))
+    if rows[True]:
+        s = round(sum(r[1] for r in rows[True]), 2)
+        out["holders-h-only"] = build_holders(rows[True], s, "其他H股股东", "披露≥5%%\nH股股东\n合计 %.2f%%" % s)
+    return out
 
 
 # 第一大股东名称在图例/tooltip 里要短。接口里同一个股东跨年有多种写法
@@ -412,12 +437,13 @@ def build_concentration(src: dict, is_ah: bool) -> dict | None:
     return out
 
 
-def build_share_capital(annual: dict, years: list[str]) -> dict | None:
+def build_share_capital(annual: dict, years: list[str], events: dict | None = None) -> dict | None:
     """历年总股本（亿股）。取资产负债表「股本」科目——面值 1 元，元金额即股数。
 
     total_share（ISSUED_COMMON_SHARES）是今天的快照回填到所有年份，不能用来看历年变动。
     缺失/为 0 的年份整年剔除（农行 2002–2006、建行 2003 的 share_capital 为空），
     页面脚注里点名，不做插值。
+    events 是精编过成因的年份 {年: {type, items}}（库里 share_capital_year_end 的变动摘要与类型），有才带。
     """
     ys, shares, gaps = [], [], []
     for y in years:
@@ -429,7 +455,11 @@ def build_share_capital(annual: dict, years: list[str]) -> dict | None:
         shares.append(round(v / YI, 2))
     if len(ys) < 3:
         return None
-    return {"years": ys, "shares": shares, "gaps": gaps}
+    out = {"years": ys, "shares": shares, "gaps": gaps}
+    ev = {y: (events or {})[y] for y in ys if y in (events or {})}
+    if ev:
+        out["events"] = ev
+    return out
 
 
 def build_invest(annual: dict, years: list[str]) -> dict | None:
@@ -621,8 +651,8 @@ def page_meta(code: str, hcode: str, assets: float | None, latest: str) -> str:
 def holders_sub(hc: dict | None, top10_sum: float | None, latest: str) -> str | None:
     """「股东及股东变动」小节副标题：期末股东户数（能拆 A/H 就拆）+ 前十大合计。
 
-    页面上写死的是渝农商行的 116,634 户，这段有 id 但内容非图表，必须逐行替换；
-    两项都拿不到时返回 None，由 .yns-only 门控整段隐藏，不让别的行显示渝农商行的数字。
+    这段按 DOM id 下发、每家行按自己的数现拼；两项都拿不到时返回 None，
+    页面上那块空壳（.bank-specific）整段隐藏。
     """
     bits = []
     if hc and hc.get("raw"):
@@ -813,13 +843,14 @@ def build(code: str, sources: dict | None = None) -> dict:
     # 接口的「前十名股东」只覆盖 A 股定期报告期，纯 H 股行（天津/江西银行）与 A+H 行上市前的年份
     # 只能从港股年报「股本变动及股东情况」逐年读出，口径与 A 股披露不同，不能并成一条序列。
     # 纯 H 股行没有 shareholder_manual 覆盖层，这份序列写在 ar_manual 年报底稿里。
-    hsrc = manual if (manual and manual.get("concentrationHist")) else (inputs["ar_manual"](code) or {})
+    ar = inputs["ar_manual"](code) or {}
+    hsrc = manual if (manual and manual.get("concentrationHist")) else ar
     if hsrc.get("concentrationHist"):
         out["holder-concentration-hist"] = {
             "raw": hsrc["concentrationHist"],
             "note": hsrc.get("concentrationHistNote", ""),
         }
-    sc = build_share_capital(annual, all_years)
+    sc = build_share_capital(annual, all_years, src.get("share_capital_events"))
     if sc:
         out["share-capital"] = sc
 
@@ -833,6 +864,8 @@ def build(code: str, sources: dict | None = None) -> dict:
         if rows:
             out["holders"] = build_holders(rows, s)
             top10_sum = s
+    # A 股上市前最后一份港股年报的名册（ar_manual 底稿里才有）：另出两张 H 股口径环形图
+    out.update(hk_rings(ar.get("hk_holders")))
 
     notes = {}
     if manual:
@@ -847,8 +880,8 @@ def build(code: str, sources: dict | None = None) -> dict:
                                   % (src["name"], latest))
 
     name = src["name"]
-    # 页面上这几处静态文案/标题写的是渝农商行的具体数字，换行后必须整段替换（charts.js 里
-    # 没被覆盖的 .yns-only 元素会整块隐藏，所以这里给不出文案的图位就只剩标题隐藏 + 图占位）
+    # 这几处文案/标题按本行数字现拼（页面上是 .bank-specific 空壳，charts.js 只填 _notes 里给了的；
+    # 这里给不出文案的图位就只剩标题隐藏 + 图占位）
     if out.get("dividend-per10"):
         cards = dividend_cards(name, annual, out["dividend-per10"])
         if cards:
@@ -858,8 +891,7 @@ def build(code: str, sources: dict | None = None) -> dict:
         notes["note-share-capital-g"] = share_capital_note(name, sc)
     hist = out.get("holder-concentration-hist")
     if conc or hist:
-        # 三张柱图的小节副标题与各图标题：页面静态文案写的是渝农商行（含 2010–2017 重构口径、
-        # 香港中央结算代理人），别的行必须整段替换，否则 .yns-only 会把标题整块隐藏。
+        # 三张柱图的小节副标题与各图标题：按本行实际有哪几个披露来源现拼，没给的标题整块隐藏。
         # 副标题按本行实际有哪几个披露来源拼：港交所（H 股年报）与 A 股定期报告在图上分开画。
         a_rows = conc["raw"] if conc else []
         h_rows = (hist or {}).get("raw") or []
@@ -890,8 +922,8 @@ def build(code: str, sources: dict | None = None) -> dict:
     if out.get("holder-count") and not (manual and manual.get("holderNote")):
         notes["note-holder-count-g"] = holder_count_note(name, out["holder-count"])
 
-    # 风控页 7 处含行名的图表标题：601077 静态 HTML 已写死本行名，本脚本给其他行按本行简称重拼
-    # （标题元素带 id 且是 .yns-only，charts.js 只在 _notes 里给了文案时才显示，否则整块隐藏）
+    # 风控页 7 处含行名的图表标题，各行按本行简称现拼
+    # （标题元素是 .bank-specific 空壳，charts.js 只在 _notes 里给了文案时才显示，否则整块隐藏）
     peers4 = " vs ".join(nm for pc, nm in PEER_NAMES.items() if pc != code)
     if peers4:
         vs4 = f"{name} vs {peers4}"
@@ -925,7 +957,8 @@ def build(code: str, sources: dict | None = None) -> dict:
 
     # 专属明细键覆盖层：语义读年报得到的迁徙率/重定价/期限/五级分类/分部/行业投向/员工构成/
     # 高管薪酬/存款成本/贷款结构/公允价值层级/现金流等，直接并入 out（顶层键即图表数据键）。
-    # charts.js 里这些图位默认按 .yns-only 隐藏，只有 out 里出现对应键（及标题 _notes）才显示。
+    # 图位缺键时 charts.js 画「暂无此项数据」占位；_notes 是按 DOM id 填进 .bank-specific 空壳的本行文案
+    # （年报摘录的说明段、KPI 卡、表格），覆盖上面现拼的同 id 文案。
     detail = inputs["detail"](code)
     if detail:
         dnotes = detail.pop("_notes", None)
@@ -934,6 +967,23 @@ def build(code: str, sources: dict | None = None) -> dict:
                 out[k] = v
         if dnotes:
             out.setdefault("_notes", {}).update(dnotes)
+
+    # 董事长/行长薪酬图：同一人兼两职或代行的年份（两栏姓名去掉括注后相同）由 intro.js 画成虚线
+    pay = out.get("chairman-pay")
+    if isinstance(pay, dict) and "dashedIdx" not in pay:
+        base = lambda s: re.sub(r"[（(].*$", "", s or "").strip()   # noqa: E731
+        same = [i for i, (a, b) in enumerate(zip(pay.get("chairmanNames") or [], pay.get("presidentNames") or []))
+                if a and b and base(a) == base(b)]
+        if same:
+            pay["dashedIdx"] = same
+
+    # 正常类迁徙率图的「农业银行」对比线：取农行自己明细覆盖层里的那条，按本行 normalYears 对齐
+    mig = out.get("migrate")
+    if isinstance(mig, dict) and code != "601288" and mig.get("normalYears"):
+        abc = (inputs["detail"]("601288") or {}).get("migrate") or {}
+        by_year = {str(y): v for y, v in zip(abc.get("normalYears") or [], abc.get("ynshbNormal") or [])}
+        if by_year:
+            mig["abcNormal"] = [by_year.get(str(y)) for y in mig["normalYears"]]
 
     # 营收分部预拆四类（公司/零售/同业/其他）写进 seg-rev.std，读取方直接用（见 seg_bucket 归类规则）
     if isinstance(out.get("seg-rev"), dict):
@@ -951,9 +1001,6 @@ def build(code: str, sources: dict | None = None) -> dict:
 def main(argv: list[str]) -> None:
     codes = argv or CODES
     for code in codes:
-        if code == "601077":
-            print("[skip] 601077 为手工精编文件，不由本脚本生成")
-            continue
         if not jsonstore.exists(TABLES / f"bank_{code}_annual.json"):
             print(f"[skip] {code}: 缺 bank_{code}_annual.json（fetch 未成功或未拉取），跳过")
             continue
