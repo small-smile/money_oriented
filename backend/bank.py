@@ -4,7 +4,7 @@ import re
 
 from flask import Blueprint, jsonify, request
 
-from backend import bank_charts_db, db
+from backend import bank_charts_db, db, holders_db, industry_db
 from backend.shared import (
     TABLES_DIR, _resolve_company_code, _cross_industry_redirect,
     success, error,
@@ -69,8 +69,19 @@ def company_charts_doc(code, cache=None, skip=()):
     return bank_charts_db.charts(code, cache, skip)
 
 
+def _with_dividend_yield(d, code):
+    """载荷补一块 dividend-yield {years, yield}（%）：业绩页股息率多行对比用。分红口径与股权页同一份
+    （详情页 dividend-per10 ∪ annual 表接口值，重叠以年报为准），除以 share_price_year_end 年末收盘价，
+    纯 H 股行港元股价按年末中间价折人民币 —— 计算在 holders_db.dividend_yield，两页数值一致。"""
+    annual = industry_db.read_annual_table("bank", code) or {}
+    per10 = holders_db.merge_bank_dividends(d.get("dividend-per10"), annual.get("dividend_per10"))
+    rows = holders_db.dividend_yield(per10, "元", code) or []
+    d["dividend-yield"] = {"years": [r[0] for r in rows], "yield": [round(r[1], 2) for r in rows]}
+    return d
+
+
 def read_company_charts(code):
-    """公司详情页全部图表数据（company_charts_doc）。
+    """公司详情页全部图表数据（company_charts_doc + 现算的 dividend-yield 块）。
     给 H 股代码（03618 / 01398）时按 company_codes.json 换成同一家公司的 A 股代码 ——
     银行按 A 股代码取数（纯 H 股行按 H 股代码），两地代码都要能取到同一份。"""
     if not re.fullmatch(r"[0-9]{5,6}", code):
@@ -80,13 +91,13 @@ def read_company_charts(code):
         alt, why, ent = _resolve_company_code(code, set(BANK_ORDER))
         alt_d = company_charts_doc(alt) if alt else None
         if alt_d is not None:
-            return success(alt_d, why)
+            return success(_with_dividend_yield(alt_d, alt), why)
         red = _cross_industry_redirect(code, ent, {"bank"})
         return error(
             f"银行 {code} 尚无详情页图表数据"
             + (f"：{why}" if why else (f"：{red['msg']}" if red else "")),
             404, {"redirect": red} if red else None)
-    return success(d)
+    return success(_with_dividend_yield(d, code))
 
 
 @bank_bp.route("/company_charts")

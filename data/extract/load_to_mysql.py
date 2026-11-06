@@ -18,7 +18,7 @@ company_code 是带交易所前缀的实体键（sh.601077 / sz.000001 / hk.0157
 只收 data/tables 下的源 JSON（oil/宏观 CSV 未纳入）。股权数据从 annual 的 holders 与 holders_manual.json 取，
 银行股东手工件（shareholder_manual / ar_manual）的户数与分红按年报原文盖过接口值；
 各期名册里的一致行动人按 concert_party_manual.json（年报原文逐家摘录）标进 shareholder.concert_party；
-年报正文手工层 bank_<code>_detail_manual.json 进 bank_report_detail，经营口径表进 <行业>_operating，说明原文进 data_note。
+年报正文手工层 bank_<code>_detail_manual.json 进 bank_report_detail 与各主题宽表（见 DETAIL_WIDE_TABLES），经营口径表进 <行业>_operating，说明原文进 data_note。
 银行详情页图表与每公司股东表是派生物，不入库也不落文件（后端从这些表拼回输入现算，见 backend/bank_charts_db.py、holders_db.py）；
 公司简介/治理类文档（*_profile*.json、tech_09888_holders_manual.json）尚未拆表。
 只写 data/sql/tables 里有建表语句的表；解析了但没有建表文件的表只在行数清单里标「跳过」，不写库。
@@ -29,6 +29,7 @@ import sys
 import glob
 import argparse
 import collections
+from decimal import Decimal
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
@@ -133,35 +134,6 @@ PER_SHARE_DIVIDEND_FIELDS = {"dividendTotal": "港元"}   # 每股股息 → fin
 # 挂在文件顶层、按年份组织的字段，先并进当年那行再映射（hk_crosscheck 是 {年:{字段:值}}，其余是 {年:值}）
 YEAR_LEVEL_KEYS = ("fx_rate_used", "fx_implied", "fx_check", "equity_check", "vintage_note", "hk_crosscheck")
 
-# annual JSON 中可稳定识别的资产负债表项目。现有 JSON 没有逐项原文名称，
-# 因此 raw_item_name、层级和页码留空，待补录年报原文时填写。
-BANK_BALANCE_SHEET_COLS = [
-    ("asset", "total_assets", "资产合计", "total_assets"),
-    ("asset", "cash_deposit_pbc", "现金及存放中央银行款项", "cash_and_central_bank_deposits"),
-    ("asset", "deposit_interbank", "存放同业和其他金融机构款项", "due_from_banks"),
-    ("asset", "lend_fund", "拆出资金", "placements_with_banks"),
-    ("asset", "buy_resale", "买入返售金融资产", "reverse_repurchase_assets"),
-    ("asset", "loan_advance", "发放贷款和垫款", "net_loans"),
-    ("asset", "trade_finasset", "交易性金融资产", "trading_financial_assets"),
-    ("asset", "fvtpl_finasset", "以公允价值计量且其变动计入当期损益的金融资产", "fvtpl_financial_assets"),
-    ("asset", "creditor_invest", "债权投资", "debt_investments"),
-    ("asset", "amortize_cost_finasset", "以摊余成本计量的金融资产", "amortized_cost_financial_assets"),
-    ("asset", "other_creditor_invest", "其他债权投资", "other_debt_investments"),
-    ("asset", "fvtoci_finasset", "以公允价值计量且其变动计入其他综合收益的金融资产", "fvtoci_financial_assets"),
-    ("asset", "other_equity_invest", "其他权益工具投资", "other_equity_investments"),
-    ("liability", "total_liabilities", "负债合计", "total_liabilities"),
-    ("liability", "accept_deposit", "吸收存款", "customer_deposits_balance_sheet"),
-    ("liability", "loan_pbc", "向中央银行借款", "borrowings_from_central_bank"),
-    ("liability", "iofi_deposit", "同业和其他金融机构存放款项", "due_to_banks"),
-    ("liability", "borrow_fund", "拆入资金", "placements_from_banks"),
-    ("liability", "sell_repo", "卖出回购金融资产款", "repurchase_agreements"),
-    ("liability", "bond_payable", "应付债券", "bonds_payable"),
-    ("equity", "total_equity", "股东权益合计", "total_equity"),
-    ("equity", "parent_equity", "归属于母公司股东权益", "equity_attr_parent"),
-    ("equity", "minority_equity", "少数股东权益", "minority_equity"),
-    ("equity", "share_capital", "股本", "share_capital"),
-]
-
 YEAR = re.compile(r"^(19|20)\d{2}$")
 
 
@@ -260,12 +232,6 @@ COLUMNS = {
                              *[c for c, _ in INDUSTRY_TEXT_COLS.get(i, [])],
                              *[c for c, _ in INDUSTRY_FLAG_COLS.get(i, [])], "source")
        for i in INDUSTRY_COLS},
-    "bank_balance_sheet_item": (
-        "company_code", "fiscal_year", "statement_type", "section",
-        "item_code", "item_name", "raw_item_name", "parent_item_code",
-        "item_level", "raw_value", "raw_unit", "value", "unit", "scope",
-        "accounting_standard", "caliber_note", "source_file", "source_section",
-        "source_page", "is_derived", "missing_reason"),
     "segment_revenue": ("company_code", "fiscal_year", "segment_code", "raw_item_name", "is_subtotal",
                         "revenue", "line_order", "source"),
     "bank_report_detail": ("company_code", "fiscal_year", "period_label", "topic", "item_name", "item_order", "measure",
@@ -291,6 +257,8 @@ COLUMNS = {
                             "basis", "source"),
     "share_capital_year_end": ("company_code", "fiscal_year", "total_shares", "change_summary", "change_type",
                                "share_split_factor", "source"),
+    "share_price_year_end": ("company_code", "fiscal_year", "trade_date", "close_price", "currency", "source"),
+    "exchange_rate_year_end": ("fiscal_year", "currency", "rmb_per_unit", "rate_date", "source"),
     "social_financing_stock": ("period_month", "amount", "year_on_year_growth", "source"),
     "social_financing_flow": ("period_month", *[c for c, _ in SOCIAL_FINANCING_FLOW_COLS], "source"),
     "data_note": ("company_code", "source_file", "topic", "note"),
@@ -300,10 +268,11 @@ COLUMNS = {
 }
 # 插入顺序：company 先建（外键父表）；--reload 按逆序清
 INSERT_ORDER = ["company", "financials_meta", "financials", "bank_financials",
-                *["%s_financials" % i for i in INDUSTRY_COLS], "bank_balance_sheet_item", "segment_revenue",
+                *["%s_financials" % i for i in INDUSTRY_COLS], "segment_revenue",
                 "bank_report_detail", "bank_bond_issue", *OPERATING_TABLES,
                 "shareholder", "shareholder_meta", "shareholder_count", "shareholder_concentration",
-                "shareholder_faction", "share_capital_year_end", "social_financing_stock",
+                "shareholder_faction", "share_capital_year_end", "share_price_year_end", "exchange_rate_year_end",
+                "social_financing_stock",
                 "social_financing_flow", "data_note", "data_gap", "data_anomaly"]
 
 
@@ -459,20 +428,6 @@ def _loan_structure(code):
     return out
 
 
-def _load_bank_balance_sheet(L, code, year, row, source_file, source, caliber_note, unit_note):
-    """把 annual 中已有的标准化资产负债科目落成逐项表；缺失值不写行。"""
-    amount_unit = "元" if "元" in (unit_note or "") else None
-    for section, json_key, item_name, item_code in BANK_BALANCE_SHEET_COLS:
-        value = _num(row.get(json_key))
-        if value is None:
-            continue
-        L.add("bank_balance_sheet_item", (
-            code, year, "consolidated", section, item_code, item_name,
-            None, None, None, value, amount_unit, value, amount_unit,
-            "合并", None, _txt(caliber_note), source_file, "资产负债表",
-            None, 0, None))
-
-
 def _same(a, b):
     return abs(a - b) <= max(1e-6, 1e-9 * max(abs(a), abs(b)))
 
@@ -588,9 +543,6 @@ def load_annual(L):
                     bv = [*_cols_values(row, BANK_COLS), *loans.pop(yr, no_loans)]
                     if any(v is not None for v in bv):
                         L.add("bank_financials", (code, yr, *bv, src))
-                    _load_bank_balance_sheet(
-                        L, code, yr, row, file, src,
-                        d.get("caliber_note"), d.get("unit_note"))
                 elif num_cols:
                     vals = _industry_values(L, num_cols, row, code, yr, file, table)
                     vals.update({c: _txt(row.get(j)) for c, j in text_cols})
@@ -783,6 +735,24 @@ def load_hshare_holder_count(L):
         L.add_holder_count(code, date, [None, None, n, None], file)
 
 
+def load_share_price(L):
+    """share_price_year_end.json（fetch_share_price_year_end.py 抓的年末收盘价）：rows[{code, year, trade_date,
+    close, currency, source}]，一家一年一行；source 是该行取自哪个行情源。"""
+    file = "share_price_year_end.json"
+    for r in (_load_json(file) or {}).get("rows") or []:
+        L.add("share_price_year_end", (_entity_code(r["code"]), int(r["year"]), _txt(r.get("trade_date")),
+                                       _num(r.get("close")), _txt(r.get("currency")), _txt(r.get("source")) or file))
+
+
+def load_exchange_rate(L):
+    """exchange_rate_year_end.json（fetch_exchange_rate_year_end.py 抓的年末人民币汇率中间价）：
+    rows[{year, currency, rmb_per_unit, rate_date, source}]，一年一币种一行。"""
+    file = "exchange_rate_year_end.json"
+    for r in (_load_json(file) or {}).get("rows") or []:
+        L.add("exchange_rate_year_end", (int(r["year"]), _txt(r["currency"]), _num(r["rmb_per_unit"]),
+                                         _txt(r["rate_date"]), _txt(r.get("source")) or file))
+
+
 def load_telecom_segments(L):
     """telecom_segment_manual.json：companies[code].annual[year].canon = {规范键:亿元}。
     原文科目名按 extract_telecom_segments.py 的 CANON 反查 items；小计/合计也存，is_subtotal=1。"""
@@ -890,6 +860,105 @@ DETAIL_SERIES = {
 DETAIL_SKIP_KEYS = {"years", "normalYears", "items", "inds", "segs", "cats", "buckets", "roles", "edu", "vals",
                     "marks", "names", "std", "abcNormal", "bonds", "corp", "retail", "nplBalanceCorp",
                     "nplBalanceRetail", "chairmanNames", "presidentNames", "chairmanPay", "presidentPay"}
+# 指标固定的主题不进 bank_report_detail，各进一张宽表（公司×年一行，一个指标一列）：
+# topic → (表名, {(分项名, measure): 列名})。分项随银行变的主题（行业、期限档、人员类别等）仍在 bank_report_detail。
+# 原表某年整行都未披露也写一行（值全空），年份轴靠它还原；金额列为元，原表单位记在 amount_raw_unit。
+DETAIL_WIDE_TABLES = {
+    "deposit_structure": ("bank_deposit_structure", {
+        ("定期存款", "balance"): "time_deposits", ("活期存款", "balance"): "demand_deposits",
+        ("保证金及其他", "balance"): "margin_and_other_deposits"}),
+    "loan_five_category": ("bank_loan_five_category", {
+        ("正常", "balance"): "normal_loans", ("关注", "balance"): "special_mention_loans",
+        ("次级", "balance"): "substandard_loans", ("可疑", "balance"): "doubtful_loans", ("损失", "balance"): "loss_loans",
+        ("正常", "share"): "normal_loans_share", ("关注", "share"): "special_mention_loans_share",
+        ("次级", "share"): "substandard_loans_share", ("可疑", "share"): "doubtful_loans_share",
+        ("损失", "share"): "loss_loans_share"}),
+    "quarterly_operating_cash_flow": ("bank_quarterly_operating_cash_flow", {
+        ("Q1", "net_cash_operating"): "first_quarter", ("Q2", "net_cash_operating"): "second_quarter",
+        ("Q3", "net_cash_operating"): "third_quarter", ("Q4", "net_cash_operating"): "fourth_quarter"}),
+    "county_urban_share": ("bank_county_urban_share", {
+        ("存款", "county_share"): "deposits_county_share", ("存款", "urban_share"): "deposits_urban_share",
+        ("贷款", "county_share"): "loans_county_share", ("贷款", "urban_share"): "loans_urban_share",
+        ("资产", "county_share"): "assets_county_share", ("资产", "urban_share"): "assets_urban_share"}),
+    "loan_migration_rate": ("bank_loan_migration_rate", {
+        ("", "normal_migration_rate"): "normal_migration_rate",
+        ("", "special_mention_migration_rate"): "special_mention_migration_rate",
+        ("", "substandard_migration_rate"): "substandard_migration_rate",
+        ("", "doubtful_migration_rate"): "doubtful_migration_rate"}),
+    "loan_trend": ("bank_loan_quality_by_segment", {
+        ("", "corporate_npl_ratio"): "corporate_non_performing_loan_ratio",
+        ("", "retail_npl_ratio"): "retail_non_performing_loan_ratio"}),
+    "retail_loan_by_product": ("bank_retail_loan_by_product", {
+        ("个人住房贷款", "balance"): "residential_mortgage_loans", ("个人经营贷款", "balance"): "personal_business_loans",
+        ("信用卡", "balance"): "credit_card_loans", ("个人消费贷款", "balance"): "personal_consumer_loans",
+        ("其他", "balance"): "other_retail_loans",
+        ("个人住房贷款", "npl_ratio"): "residential_mortgage_non_performing_loan_ratio",
+        ("个人经营贷款", "npl_ratio"): "personal_business_non_performing_loan_ratio",
+        ("其他(含消费/信用卡)", "npl_ratio"): "other_retail_non_performing_loan_ratio"}),
+    "deposit_cost": ("bank_deposit_cost", {
+        ("", "customer_deposit_cost_rate"): "customer_deposit_cost_rate",
+        ("", "demand_deposit_share"): "demand_deposit_share"}),
+    "bonds_payable": ("bank_debt_securities_issued", {
+        ("同业存单", "balance"): "interbank_certificates_of_deposit", ("债券", "balance"): "bonds",
+        ("合计", "balance"): "total",
+        ("同业存单", "average_balance"): "interbank_certificates_of_deposit_average_balance",
+        ("债券", "average_balance"): "bonds_average_balance", ("合计", "average_balance"): "total_average_balance",
+        ("同业存单", "cost_rate"): "interbank_certificates_of_deposit_cost_rate",
+        ("债券", "cost_rate"): "bonds_cost_rate", ("合计", "cost_rate"): "total_cost_rate"}),
+    "loan_average_yield": ("bank_loan_average_yield", {
+        ("公司贷款", "average_balance"): "corporate_loans_average_balance",
+        ("零售贷款", "average_balance"): "retail_loans_average_balance",
+        ("票据贴现", "average_balance"): "discounted_bills_average_balance",
+        ("合计", "average_balance"): "total_loans_average_balance",
+        ("公司贷款", "average_yield"): "corporate_loans_average_yield",
+        ("零售贷款", "average_yield"): "retail_loans_average_yield",
+        ("票据贴现", "average_yield"): "discounted_bills_average_yield",
+        ("合计", "average_yield"): "total_loans_average_yield"}),
+    "loan_write_off": ("bank_loan_write_off", {
+        ("", "write_offs"): "write_offs", ("", "recoveries"): "recoveries", ("", "net_write_offs"): "net_write_offs"}),
+    "consumer_complaint": ("bank_consumer_complaint", {
+        ("", "complaints"): "complaints", ("", "satisfaction_rate"): "satisfaction_rate"}),
+    "financial_investment_by_measurement": ("bank_financial_investment_by_measurement", {
+        ("以摊余成本计量", "balance"): "amortized_cost",
+        ("以公允价值计量且其变动计入其他综合收益(债务工具)", "balance"):
+            "fair_value_through_other_comprehensive_income_debt",
+        ("以公允价值计量且其变动计入其他综合收益(权益工具)", "balance"):
+            "fair_value_through_other_comprehensive_income_equity",
+        ("以公允价值计量且其变动计入当期损益", "balance"): "fair_value_through_profit_or_loss"}),
+    "fair_value_hierarchy": ("bank_fair_value_hierarchy", {
+        ("第一层次", "balance"): "level_1", ("第二层次", "balance"): "level_2", ("第三层次", "balance"): "level_3",
+        ("合计", "balance"): "total"}),
+    "executive_pay": ("bank_executive_pay", {          # 分项是在任者姓名，记进 <角色>_name
+        ("", "chairman_pay"): "chairman_pay", ("", "president_pay"): "president_pay"}),
+}
+DETAIL_AMOUNT_MEASURES = {"balance", "average_balance", "net_cash_operating", "write_offs", "recoveries",
+                          "net_write_offs"}
+
+
+def _wide_columns(topic):
+    """宽表的插入列：主键两列、期次写法（公允价值层级）/姓名（高管薪酬）、指标列、原表金额单位（有金额列才有）、
+    原表没列出的指标列、来源文件。"""
+    table, cols = DETAIL_WIDE_TABLES[topic]
+    lead = {"fair_value_hierarchy": ("period_label",), "executive_pay": ("chairman_name", "president_name")}
+    unit = ("amount_raw_unit",) if any(m in DETAIL_AMOUNT_MEASURES for _, m in cols) else ()
+    return ("company_code", "fiscal_year", *lead.get(topic, ()), *cols.values(), *unit, "columns_missing_in_source",
+            "source_file")
+
+
+def detail_item_order(topic):
+    """宽表主题每个 (分项名, measure) 在 bank_report_detail 时代的分项顺序：逐年序列是序列在键里的位置，
+    固定分项是分项的位置；后端拼回 detail_manual 形状时要用（与 _detail_rows 写的 order 一致）。"""
+    for _, (t, series) in DETAIL_SERIES.items():
+        if t == topic:
+            return {(spec[0], spec[1]): i for i, spec in enumerate(series.values(), 1)}
+    items = list(dict.fromkeys(i for i, _ in DETAIL_WIDE_TABLES[topic][1]))
+    return {(i, m): items.index(i) + 1 for i, m in DETAIL_WIDE_TABLES[topic][1]}
+
+
+# 宽表跟在 bank_report_detail 后面登记插入列与插入顺序（COLUMNS / INSERT_ORDER 定义在前，宽表清单在这里）
+COLUMNS.update({DETAIL_WIDE_TABLES[t][0]: _wide_columns(t) for t in DETAIL_WIDE_TABLES})
+INSERT_ORDER[INSERT_ORDER.index("bank_report_detail") + 1:INSERT_ORDER.index("bank_report_detail") + 1] = \
+    [table for table, _ in DETAIL_WIDE_TABLES.values()]
 # 金额量级对账：(参照列, 下限, 上限)，依次试，参照有值就用；合计 × 倍数 ÷ 参照落进区间的那一档即原值单位。
 # 区间都不足 100 倍宽，至多命中一档。取 topic 里哪些行求和见 _unit_probe。
 DETAIL_UNIT_CHECKS = {
@@ -1057,7 +1126,8 @@ def _detail_rows(d, report_year):
 
 
 def load_bank_detail(L):
-    """银行年报正文手工层 → bank_report_detail（一个数一行）、bondpay.bonds → bank_bond_issue、_notes → data_note。
+    """银行年报正文手工层 → bank_report_detail（分项随银行变的主题，一个数一行）与 DETAIL_WIDE_TABLES 的宽表
+    （指标固定的主题，公司×年一行），bondpay.bonds → bank_bond_issue、_notes → data_note。
     金额原值单位按主题与 annual 同口径总量对账定量级（DETAIL_UNIT_CHECKS），统一成元；对不上只留原值并记 data_anomaly。
     数组里的空格子也写行、分项记顺序，后端据此原样拼回（backend/bank_charts_db.detail）。"""
     refs = _bank_refs(L)
@@ -1088,12 +1158,16 @@ def load_bank_detail(L):
                 alt = _cash_flow_caliber(resolved, refs, code, report_year)
                 if alt:
                     unit = alt
-                    L.add("data_anomaly", (code, file, "bank_report_detail", "cf", str(report_year),
+                    L.add("data_anomaly", (code, file, DETAIL_WIDE_TABLES[
+                        "quarterly_operating_cash_flow"][0], "cf", str(report_year),
                                            "首项等于全年经营活动现金流量净额，四项之和与全年对不上，不像单季口径",
                                            "caliber_mismatch", LOADER))
             if unit is None:
-                L.add("data_anomaly", (code, file, "bank_report_detail", topic, None, why[:255], "unknown_unit", LOADER))
+                target = DETAIL_WIDE_TABLES.get(topic, ("bank_report_detail",))[0]
+                L.add("data_anomaly", (code, file, target, topic, None, why[:255], "unknown_unit", LOADER))
             units[topic] = unit
+        wide = {}                                        # (topic, 年) → {列: 值}；该年出过行就有这一行，值全空也写
+        listed = collections.defaultdict(set)            # (topic, 年) → 原表这一年列出的指标列（含值为空的）
         for topic, year, item, measure, v, kind, order, label in resolved:
             if kind == "amount":
                 raw_unit = units.get(topic)
@@ -1101,8 +1175,30 @@ def load_bank_detail(L):
             else:
                 raw_unit = kind
                 unit, factor = FIXED_UNITS[kind]
-            value = None if v is None or factor is None else round(v * factor, 4)
-            L.add("bank_report_detail", (code, year, label, topic, item, order, measure, value, unit, v, raw_unit, file))
+            # 按十进制相乘，免得 5314.1 亿元 落成 531410000000.0001 元
+            value = None if v is None or factor is None else round(Decimal(repr(v)) * Decimal(factor), 4)
+            if topic not in DETAIL_WIDE_TABLES:
+                L.add("bank_report_detail", (code, year, label, topic, item, order, measure, value, unit, v, raw_unit, file))
+                continue
+            row = wide.setdefault((topic, year), {})
+            if topic == "executive_pay":
+                row[measure.replace("_pay", "_name")] = item or None
+                item = ""
+            col = DETAIL_WIDE_TABLES[topic][1].get((item, measure))
+            if col is None:
+                L.add("data_anomaly", (code, file, DETAIL_WIDE_TABLES[topic][0], "%s/%s" % (item, measure),
+                                       str(year), _txt(v), "unmapped_field", LOADER))
+                continue
+            row[col] = value
+            listed[(topic, year)].add(col)
+            if kind == "amount":
+                row["amount_raw_unit"] = raw_unit
+            if label:
+                row["period_label"] = label
+        for (topic, year), vals in wide.items():
+            vals["columns_missing_in_source"] = ",".join(
+                c for c in DETAIL_WIDE_TABLES[topic][1].values() if c not in listed[(topic, year)]) or None
+            L.add(DETAIL_WIDE_TABLES[topic][0], (code, year, *[vals.get(c) for c in _wide_columns(topic)[2:-1]], file))
         for i, b in enumerate(bonds, 1):
             if _txt(b.get("name")):
                 L.add("bank_bond_issue", (code, i, _txt(b["name"]), _txt(b.get("issueDate")), _txt(b.get("tenor")),
@@ -1286,9 +1382,9 @@ KEY_COLS = {
     "financials": ("company_code", "fiscal_year"),
     "bank_financials": ("company_code", "fiscal_year"),
     **{"%s_financials" % i: ("company_code", "fiscal_year") for i in INDUSTRY_COLS},
-    "bank_balance_sheet_item": ("company_code", "fiscal_year", "statement_type", "item_code"),
     "segment_revenue": ("company_code", "fiscal_year", "segment_code"),
     "bank_report_detail": ("company_code", "fiscal_year", "topic", "item_name", "measure"),
+    **{table: ("company_code", "fiscal_year") for table, _ in DETAIL_WIDE_TABLES.values()},
     "bank_bond_issue": ("company_code", "bond_order"),
     **{t: ("company_code", "fiscal_year") for t in OPERATING_TABLES},
     "shareholder": ("company_code", "fiscal_year", "holder_name"),
@@ -1297,6 +1393,8 @@ KEY_COLS = {
     "shareholder_concentration": ("company_code", "as_of_date"),
     "shareholder_faction": ("company_code", "faction_title", "holder_name"),
     "share_capital_year_end": ("company_code", "fiscal_year"),
+    "share_price_year_end": ("company_code", "fiscal_year"),
+    "exchange_rate_year_end": ("fiscal_year", "currency"),
     "social_financing_stock": ("period_month",),
     "social_financing_flow": ("period_month",),
 }
@@ -1355,6 +1453,8 @@ def main():
     load_annual(L)
     load_holders_manual(L)
     load_hshare_holder_count(L)
+    load_share_price(L)
+    load_exchange_rate(L)
     load_social_financing(L)
     load_telecom_segments(L)
     load_bank_detail(L)             # 要用 annual 已载入的总量对账，放在 annual 之后

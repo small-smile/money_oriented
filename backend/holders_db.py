@@ -82,6 +82,65 @@ def _dividends(company_code, source):
     return [[str(r["fiscal_year"]), db.number(r["dividend_per_10_shares"])] for r in rows]
 
 
+def share_prices(code):
+    """[[年, 年末收盘价, 取价日, 币种, 行情来源]]：share_price_year_end 里该公司（裸代码）的逐年行，按年升序。"""
+    rows = db.query("SELECT * FROM share_price_year_end WHERE SUBSTRING_INDEX(company_code, '.', -1) = %s"
+                    " ORDER BY fiscal_year", (code,))
+    return [[str(r["fiscal_year"]), db.number(r["close_price"]), r["trade_date"].isoformat(), r["currency"],
+             r["source"]] for r in rows]
+
+
+def exchange_rates():
+    """{(年, 外币): 1 单位外币折人民币元}：exchange_rate_year_end 的年末中间价。"""
+    return {(str(r["fiscal_year"]), r["currency"]): db.number(r["rmb_per_unit"])
+            for r in db.query("SELECT fiscal_year, currency, rmb_per_unit FROM exchange_rate_year_end")}
+
+
+def merge_bank_dividends(charts_block, annual_div):
+    """银行历年每 10 股分红 [[年, 值]]：详情页载荷的 dividend-per10 块（逐年抄年报）∪ annual 表的
+    dividend_per10（年→值，公司数据接口）。重叠年份以年报口径为准，接口那份只补缺年。"""
+    dp = {}
+    if isinstance(annual_div, dict):
+        dp.update({str(y): v for y, v in annual_div.items() if v is not None})
+    blk = charts_block or {}
+    dp.update({str(y): v for y, v in zip(blk.get("years") or [], blk.get("per10") or []) if v is not None})
+    return [[y, dp[y]] for y in sorted(dp)] or None
+
+
+EXCHANGE_PRICE_SOURCES = ("上交所", "深交所", "港交所")   # share_price_year_end.source 的交易所前缀，其余是第三方行情
+
+
+def dividend_yield(per10, unit, code):
+    """股息率 [[年, 股息率%, 每股现金分红, 年末收盘价, 取价日, 行情来源, 股价币种, 折算汇率]]：
+    当年每股现金分红（每 10 股 ÷ 10）÷ 当年末收盘价，按请求现算、不入库。股权页与银行详情页的多行对比共用这一份。
+    分红与股价币种不同的（纯 H 股行人民币宣派、港元报价）先把股价按当年末人民币汇率中间价
+    （exchange_rate_year_end，1 单位外币折人民币元）折成分红币种再除，折算汇率记在末列，同币种的记 None；
+    那一年没有中间价就不出行。没有年末股价的年份（上市前、只有银行抓了行情）也不出行。"""
+    prices = share_prices(code)
+    if not (per10 and prices):
+        return None
+    rates = exchange_rates()
+
+    def rmb(cur, y):          # 1 单位 cur 折人民币元；人民币本身为 1
+        return 1 if cur == "元" else rates.get((y, cur))
+    px = {r[0]: r for r in prices if r[1]}
+    out = []
+    for y, v in per10:
+        if v is None or y not in px:
+            continue
+        p = px[y]
+        if p[3] == unit:
+            price, fx = p[1], None
+        else:
+            a, b = rmb(p[3], y), rmb(unit, y)
+            if not (a and b):
+                continue
+            price, fx = p[1] * a / b, a / b
+        out.append([y, round(v / 10 / price * 100, 4), round(v / 10, 6), p[1], p[2], p[4], p[3],
+                    round(fx, 6) if fx else None])
+    return out or None
+
+
 def _notes(company_code, source):
     return {r["topic"]: r["note"] for r in db.query(
         "SELECT topic, note FROM data_note WHERE company_code = %s AND source_file = %s ORDER BY id",

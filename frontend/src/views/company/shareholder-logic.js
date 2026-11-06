@@ -274,6 +274,44 @@ function buildCharts(d, agg) {
         srcTag('divper10');
     }
 
+    /* ①b 历年股息率 —— 紧跟在分红图下面，x 轴与分红图同一组年份，上下对着读：
+     * 当年每股现金分红 ÷ 当年末收盘价，接口按库现算（company.dividend_yield）。分红与股价币种不同
+     * （纯 H 股行人民币宣派、港元报价）时接口先按年末人民币汇率中间价把股价折成分红币种（末列是折算汇率）；
+     * 没有年末股价（上市前、非银行板块）的年份不出值，整条都没有就不画。 */
+    if (c.dividend_yield && c.dividend_yield.length > 1 && c.dividend_per10) {
+        const unit = c.dividend_unit || '元';
+        const years = c.dividend_per10.filter(r => r[1] !== null && r[1] !== undefined).map(r => r[0]);
+        const byYear = Object.fromEntries(c.dividend_yield.map(r => [r[0], r]));
+        const converted = c.dividend_yield.some(r => r[7]);
+        const ch = chartCard({
+            id: 'divyield', title: '历年股息率',
+            sub: '当年每股现金分红 ÷ 当年末收盘价（%，收盘价不复权' +
+                (converted ? '，港元股价按年末人民币汇率中间价折算' : '') + '）'
+        }, '40vh', 'sec-ring');
+        ch.setOption({
+            tooltip: {trigger: 'axis', formatter: ps => {
+                const r = byYear[ps[0].name];
+                if (!r) return ps[0].name + ' 年<br>无年末股价';
+                return ps[0].name + ' 年<br><b>' + fmt(r[1], 2) + ' %</b><br>' +
+                    '每股分红 ' + fmt(r[2], 4) + ' ' + unit + '<br>' +
+                    '年末收盘价 ' + fmt(r[3], r[3] < 1 ? 3 : 2) + ' ' + r[6] + '（' + r[4] + '）' +
+                    (r[7] ? '<br>折 ' + fmt(r[3] * r[7], 3) + ' ' + unit + '（中间价 ' + fmt(r[7], 5) + '）' : '') +
+                    '<br><span style="color:#888">' + r[5] + '</span>';
+            }},
+            grid: {left: 80, right: 40, top: 30, bottom: 50},
+            xAxis: {type: 'category', data: years, axisTick: {alignWithLabel: true},
+                axisLabel: {fontSize: 13, rotate: years.length > 14 ? 45 : 0}},
+            yAxis: Object.assign({}, AXIS, {name: '%', min: 0}),
+            series: [{
+                type: 'line', symbolSize: 7, itemStyle: {color: '#c0392b'}, lineStyle: {width: 2},
+                label: {show: true, position: 'top', fontSize: years.length > 16 ? 11 : 13,
+                    color: '#c0392b', formatter: p => fmt(p.value, 2)},
+                data: years.map(y => byYear[y] ? byYear[y][1] : null)
+            }]
+        });
+        srcTag('divyield');
+    }
+
     // ② 前十名股东各自的比例（横向条形，按股份类别着色）
     if (holders.length) {
         const rows = holders.slice().reverse();   // 横向条形从下往上画，倒序让第一名在顶

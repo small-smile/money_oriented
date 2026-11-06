@@ -966,4 +966,6 @@ concert_party_manual.json	各公司当期前十名股东之间的一致行动人
 #     下发: /api/holders 的 company.ring_alt = [{key,label,caliber,residual_label,note,holderData,factions}] +
 #       company.ring_label; 没写口径说明的块不下发(分母是总股本还是 H 股股本、取哪一年年报, 说不清的不让人切过去看).
 #     切换后上方口径说明与图下口径注一起换, 每圈各自铺满 100%(测试 test_ring_alt_calibers 逐块核对).
+share_price_year_end.json	银行年末每股收盘价(不复权, 45 家 1991-2025, 569 行), data/extract/fetch_share_price_year_end.py 抓取, 原始响应缓存 data/raw/price_<来源>_<代码>.json	[确认] 2026-11-05 抓取. 上交所 yunhq 日K(上市以来全量) / 深交所月K(只回最近约 200 根, 目前到 2010) + 深交所「股票行情」日报表(只按单日查, 给区间也只回起始日那天; 最早 2004-12) / 港交所 hkexwidget 日线(只回溯 10 年, 2016-11 起); 交易所查不到才用第三方: 平安银行 1991-2003 腾讯证券日K(不复权), 哈尔滨银行 2014-2015 Yahoo Close. 取该股当年最后一个有成交的交易日(招商银行 2005 停牌, 取 2005-12-16). A+H 只取 A 股, 上市前年份无行. 交叉核对: A 股 157 行与腾讯逐日逐价一致; 港股与 Yahoo 同日比 28 行有 3 行差 0.01-0.11(都在 12-31 半日市), 以港交所为准
+exchange_rate_year_end.json	年末人民币汇率中间价(港元, 2006-2025, 20 行), data/extract/fetch_exchange_rate_year_end.py 抓取, 原始响应缓存 data/raw/fx_cfets_hkd.json	[确认] 2026-11-05 抓取. 中国外汇交易中心(中国货币网) CcprHisNew 接口, 受权公布的官方中间价, 接口 2006 年起有数; 每年取 12 月最后一个发布日, 1 港元折人民币元. 用途: 纯 H 股行港元股价折人民币算股息率(backend/holders.py _dividend_yield)
 

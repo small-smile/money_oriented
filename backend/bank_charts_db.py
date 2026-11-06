@@ -7,9 +7,11 @@ build() 照旧现算出图表载荷（配色、文案、派生序列都在 build
   · 手工件只取 source（或户数的 revised_by、分红的 dividend_source）记为该文件的行，页面文案取 data_note；
   · detail 按 DETAIL_PAIR / DETAIL_SINGLE / DETAIL_SERIES 反过来拼：分项按 item_order，年份轴取该主题出现过的年份
     （空格子入库时也写了行），值用 raw_value（原单位）；年份一律写成字符串，整列为 null 的键不出现。
+    指标固定的主题在各自宽表里（DETAIL_WIDE_TABLES），先由 _wide_rows 摊回同样的行再拼。
 渝农商行（601077）是手工精编件，不走 build()，见 backend/bank.py。"""
 import os
 import sys
+from decimal import Decimal
 
 from backend import db, holders_db, industry_db
 
@@ -118,6 +120,44 @@ def _v(r):
     return None if r is None else db.number(r["raw_value"])
 
 
+def _wide_raw(r, col, topic, measure):
+    """宽表的统一值换回 detail_manual 的原单位（保留 6 位小数，同 bank_report_detail.raw_value）：
+    金额按 amount_raw_unit，高管薪酬按万元，比率与笔数照旧。"""
+    v = r[col]
+    if v is None:
+        return None
+    v = Decimal(v)                                       # 笔数列是 INT
+    if measure in schema.DETAIL_AMOUNT_MEASURES:
+        factor = dict(schema.AMOUNT_UNITS).get(r["amount_raw_unit"])
+        if factor is None:
+            return None
+        v = v / Decimal(factor)
+    elif topic == "executive_pay":
+        v = v / Decimal(schema.FIXED_UNITS["万元"][1])
+    return v.quantize(Decimal("0.000001"))
+
+
+def _wide_rows(cc, file):
+    """指标固定主题的宽表（schema.DETAIL_WIDE_TABLES）摊回 bank_report_detail 的行形状，detail() 照旧按行拼。
+    每行 columns_missing_in_source 里的列在这一年不出行（原表这一年没有这一格，整列都没有的拼回后该键为 null，
+    只缺部分年份的不进它的年份轴）；其余列照出，空值也出。"""
+    out = []
+    for topic, (table, cols) in schema.DETAIL_WIDE_TABLES.items():
+        got = db.query("SELECT * FROM %s WHERE company_code = %%s AND source_file = %%s ORDER BY fiscal_year" % table,
+                       (cc, file))
+        order = schema.detail_item_order(topic)
+        pay = topic == "executive_pay"
+        for (item, measure), col in cols.items():
+            for r in got:
+                if col in (r["columns_missing_in_source"] or "").split(","):
+                    continue
+                out.append({"topic": topic, "fiscal_year": r["fiscal_year"], "period_label": r.get("period_label"),
+                            "item_name": (r[measure.replace("_pay", "_name")] or "") if pay else item,
+                            "item_order": None if pay else order[(item, measure)], "measure": measure,
+                            "raw_value": _wide_raw(r, col, topic, measure)})
+    return out
+
+
 def _detail_marks(notes, key):
     """data_note 里 <键>.marks.<序号>.<字段> → [{字段: 原文}]（按序号）。"""
     marks = {}
@@ -132,8 +172,8 @@ def detail(code):
     """bank_<code>_detail_manual.json 同形状（build() 只取不以 _ 开头的键与 _notes）；库里没有这份返回 None。"""
     file = "bank_%s_detail_manual.json" % code
     cc = _entity(code)
-    rows = db.query("SELECT * FROM bank_report_detail WHERE company_code = %s AND source_file = %s"
-                    " ORDER BY topic, item_order, fiscal_year", (cc, file))
+    rows = list(db.query("SELECT * FROM bank_report_detail WHERE company_code = %s AND source_file = %s"
+                         " ORDER BY topic, item_order, fiscal_year", (cc, file))) + _wide_rows(cc, file)
     notes = _notes(cc, file)
     if not rows and not notes:
         return None

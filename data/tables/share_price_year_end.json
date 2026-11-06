@@ -1,0 +1,4562 @@
+{
+ "_meta": {
+  "generated_by": "data/extract/fetch_share_price_year_end.py",
+  "fetched_at": "2026-11-05",
+  "caliber": "每年该股最后一个有成交的交易日收盘价,不复权,A+H 两地上市只取 A 股",
+  "columns": "code 裸代码 / year 年度 / trade_date 取价日 / close 收盘价 / currency 币种 / source 来源"
+ },
+ "rows": [
+  {
+   "code": "000001",
+   "year": 1991,
+   "trade_date": "1991-12-31",
+   "close": 29.35,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1992,
+   "trade_date": "1992-12-31",
+   "close": 44.5,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1993,
+   "trade_date": "1993-12-31",
+   "close": 22.35,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1994,
+   "trade_date": "1994-12-30",
+   "close": 10.48,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1995,
+   "trade_date": "1995-12-29",
+   "close": 6.43,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1996,
+   "trade_date": "1996-12-31",
+   "close": 16.52,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1997,
+   "trade_date": "1997-12-31",
+   "close": 22.7,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1998,
+   "trade_date": "1998-12-31",
+   "close": 14.85,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 1999,
+   "trade_date": "1999-12-30",
+   "close": 17.45,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 2000,
+   "trade_date": "2000-12-29",
+   "close": 14.52,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 2001,
+   "trade_date": "2001-12-31",
+   "close": 12.25,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 2002,
+   "trade_date": "2002-12-31",
+   "close": 10.49,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 2003,
+   "trade_date": "2003-12-31",
+   "close": 8.51,
+   "currency": "元",
+   "source": "腾讯证券日K(不复权)"
+  },
+  {
+   "code": "000001",
+   "year": 2004,
+   "trade_date": "2004-12-31",
+   "close": 6.59,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2005,
+   "trade_date": "2005-12-30",
+   "close": 6.14,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 14.47,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 38.6,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 9.46,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 24.37,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "000001",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 15.79,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 15.59,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 16.02,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 12.25,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 15.84,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 11.99,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 9.1,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 13.3,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 9.38,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 16.45,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 19.34,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 16.48,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 13.16,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 9.39,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 11.7,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "000001",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 11.41,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "001227",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.77,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "001227",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.6,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "001227",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 2.46,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "001227",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 2.32,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 21.93,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "002142",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 6.8,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "002142",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 17.49,
+   "currency": "元",
+   "source": "深交所股票行情日报表"
+  },
+  {
+   "code": "002142",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 12.4,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 9.16,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 10.66,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 9.23,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 15.73,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 15.51,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 16.64,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 17.81,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 16.22,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 28.15,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 35.34,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 38.28,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 32.45,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 20.11,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 24.31,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002142",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 28.09,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 10.82,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 8.28,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.08,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 4.66,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.28,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.85,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.97,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.55,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 4.35,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002807",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 4.57,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 11.72,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.35,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.94,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 6.1,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.76,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.61,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.88,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 4.37,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002839",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 4.57,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.07,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 4.65,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.46,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.16,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 2.35,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.01,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 2.1,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002936",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 1.93,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.94,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.93,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.63,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.36,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.05,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 3.88,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002948",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 4.48,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 6.47,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.09,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.86,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 2.89,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.62,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 3.04,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002958",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 3.1,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 10.18,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 7.68,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 6.77,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 7.78,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.46,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 8.11,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "002966",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 8.29,
+   "currency": "元",
+   "source": "深交所行情(月K)"
+  },
+  {
+   "code": "01578",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 6.8,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 6.8,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2018,
+   "trade_date": "2018-12-31",
+   "close": 5.23,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 3.29,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 3.03,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 2.15,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 1.92,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 1.8,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 1.82,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01578",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 2.49,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2018,
+   "trade_date": "2018-12-31",
+   "close": 6.76,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 4.2,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 3.39,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 2.68,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 0.92,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 0.72,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2024,
+   "trade_date": "2024-12-30",
+   "close": 0.73,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "01916",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 0.67,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 2.99,
+   "currency": "港元",
+   "source": "Yahoo Finance 日线 Close(未做分红复权)"
+  },
+  {
+   "code": "06138",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 2.42,
+   "currency": "港元",
+   "source": "Yahoo Finance 日线 Close(未做分红复权)"
+  },
+  {
+   "code": "06138",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 2.29,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 2.43,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2018,
+   "trade_date": "2018-12-31",
+   "close": 1.81,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 1.54,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 1.0,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2021,
+   "trade_date": "2021-12-30",
+   "close": 0.79,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 0.335,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 0.239,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 0.335,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "06138",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 0.35,
+   "currency": "港元",
+   "source": "港交所行情(hkexwidget 日线)"
+  },
+  {
+   "code": "600000",
+   "year": 1999,
+   "trade_date": "1999-12-30",
+   "close": 24.75,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2000,
+   "trade_date": "2000-12-29",
+   "close": 20.75,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2001,
+   "trade_date": "2001-12-31",
+   "close": 15.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2002,
+   "trade_date": "2002-12-31",
+   "close": 9.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2003,
+   "trade_date": "2003-12-31",
+   "close": 10.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2004,
+   "trade_date": "2004-12-31",
+   "close": 7.0,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2005,
+   "trade_date": "2005-12-30",
+   "close": 9.75,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 21.31,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 52.8,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 13.25,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 21.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 12.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 8.49,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 9.92,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 9.43,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 15.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 18.27,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 16.21,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 12.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 9.8,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 12.37,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 9.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 8.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 7.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 10.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600000",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 12.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2003,
+   "trade_date": "2003-12-31",
+   "close": 7.64,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2004,
+   "trade_date": "2004-12-31",
+   "close": 4.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2005,
+   "trade_date": "2005-12-30",
+   "close": 4.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 7.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 19.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 7.27,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 12.42,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 10.9,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 11.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 10.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 8.57,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 13.46,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 12.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 10.85,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 9.0,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 7.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 7.67,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 6.25,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.6,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.19,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 8.01,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600015",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 6.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2000,
+   "trade_date": "2000-12-29",
+   "close": 17.22,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2001,
+   "trade_date": "2001-12-31",
+   "close": 14.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2002,
+   "trade_date": "2002-12-31",
+   "close": 9.19,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2003,
+   "trade_date": "2003-12-31",
+   "close": 9.45,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2004,
+   "trade_date": "2004-12-31",
+   "close": 5.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2005,
+   "trade_date": "2005-12-30",
+   "close": 4.06,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 10.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 14.82,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 4.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 7.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 5.02,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 5.89,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 7.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 7.72,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 10.88,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 9.64,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 9.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 8.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.73,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 6.31,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.9,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.45,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 4.13,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600016",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 3.83,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2002,
+   "trade_date": "2002-12-31",
+   "close": 8.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2003,
+   "trade_date": "2003-12-31",
+   "close": 10.81,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2004,
+   "trade_date": "2004-12-31",
+   "close": 8.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2005,
+   "trade_date": "2005-12-16",
+   "close": 6.58,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 16.36,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 39.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 12.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 18.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 12.81,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 11.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 13.75,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 10.89,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 16.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 17.99,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 17.6,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 29.02,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 25.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 37.58,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 43.95,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 48.71,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 37.26,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 27.82,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 39.3,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600036",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 42.1,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 10.93,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.24,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.55,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 6.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.67,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.27,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600908",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.93,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 9.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.97,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 7.24,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.46,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.83,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 7.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 9.82,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600919",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 10.4,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 20.95,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 11.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 7.4,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 14.92,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 12.82,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 13.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 10.01,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 14.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600926",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 15.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 7.77,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.56,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.3,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.52,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.33,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 3.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "600928",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 3.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 19.1,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 8.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 19.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 9.94,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 9.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 9.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 8.09,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 14.65,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 17.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 10.84,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 6.46,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 8.77,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 8.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 8.96,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 10.42,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 7.38,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 10.65,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601009",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 11.43,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 6.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.5,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.85,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 6.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601077",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 6.46,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 10.37,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.13,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 6.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.11,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 7.38,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 6.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 7.55,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.39,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 7.57,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601128",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.04,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 51.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 14.6,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 40.31,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 24.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 12.52,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 16.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 10.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 16.5,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 17.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 16.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 16.99,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 14.94,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 19.8,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 20.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 19.04,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 17.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 16.21,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 19.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601166",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 21.06,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 20.36,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 8.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 19.34,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 11.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 9.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 9.3,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 7.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 10.93,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 10.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 9.76,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.84,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.31,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 6.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601169",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.48,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 13.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 6.9,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.73,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.64,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601187",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.34,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 23.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 14.18,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 11.19,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.49,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 7.84,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 7.13,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.97,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 9.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601229",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 10.1,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 2.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 2.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 2.8,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 2.48,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 3.71,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 3.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 3.1,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 3.83,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 3.6,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 3.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 3.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 2.94,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 2.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.64,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.34,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601288",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 15.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 4.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 9.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 5.48,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 4.48,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 4.94,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 3.84,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 6.8,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 6.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 5.77,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 6.21,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.79,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.48,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 7.77,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601328",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.25,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 6.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 8.13,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 3.54,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 5.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 4.24,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 4.24,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 4.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 3.58,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 4.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 4.58,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 4.41,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 6.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.88,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.99,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.34,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 6.92,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601398",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.93,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601528",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 11.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601528",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 6.31,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601528",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.95,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601528",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601528",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 8.52,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 9.52,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 7.81,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 6.76,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.82,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 8.89,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601577",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 9.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.1,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601658",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.45,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601665",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.58,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601665",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.17,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601665",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601665",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601665",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 3.96,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 2.88,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 3.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 2.66,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 4.88,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 4.24,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 3.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 4.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 3.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 4.41,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 3.99,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.32,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.9,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 3.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601818",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 3.49,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601825",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 6.75,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601825",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.88,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601825",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.74,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601825",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 8.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601825",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 9.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 8.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.07,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 10.67,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 12.0,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 15.3,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 11.26,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 17.11,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601838",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 16.12,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.21,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.35,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 2.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.53,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 2.85,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601860",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 2.76,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 4.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.08,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.5,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 2.94,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 2.52,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 2.91,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601916",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 3.04,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 9.85,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 3.83,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 6.19,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 4.59,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 4.54,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 4.6,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 4.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 6.73,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 5.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 5.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 7.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 6.37,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 7.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 6.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 5.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.63,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 8.79,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601939",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 9.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601963",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 8.9,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601963",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 6.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601963",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 6.96,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601963",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 9.28,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601963",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 10.83,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2006,
+   "trade_date": "2006-12-29",
+   "close": 5.43,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 6.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 2.97,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 4.33,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 3.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 2.92,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 2.92,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 2.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 4.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 4.01,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 3.44,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 3.97,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 3.61,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 3.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 3.18,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 3.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 3.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 3.99,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601988",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.73,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 15.78,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 13.36,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 10.68,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 9.56,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 7.95,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 6.51,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 5.49,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 6.0,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601997",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2007,
+   "trade_date": "2007-12-28",
+   "close": 10.15,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2008,
+   "trade_date": "2008-12-31",
+   "close": 3.86,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2009,
+   "trade_date": "2009-12-31",
+   "close": 8.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2010,
+   "trade_date": "2010-12-31",
+   "close": 5.25,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2011,
+   "trade_date": "2011-12-30",
+   "close": 4.04,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2012,
+   "trade_date": "2012-12-31",
+   "close": 4.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2013,
+   "trade_date": "2013-12-31",
+   "close": 3.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2014,
+   "trade_date": "2014-12-31",
+   "close": 8.14,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2015,
+   "trade_date": "2015-12-31",
+   "close": 7.22,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 6.41,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 6.2,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 5.45,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 6.17,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 5.11,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.62,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.98,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 5.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 6.98,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "601998",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 7.7,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2016,
+   "trade_date": "2016-12-30",
+   "close": 15.46,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2017,
+   "trade_date": "2017-12-29",
+   "close": 8.23,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2018,
+   "trade_date": "2018-12-28",
+   "close": 6.11,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2019,
+   "trade_date": "2019-12-31",
+   "close": 5.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2020,
+   "trade_date": "2020-12-31",
+   "close": 4.96,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2021,
+   "trade_date": "2021-12-31",
+   "close": 4.87,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2022,
+   "trade_date": "2022-12-30",
+   "close": 4.69,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2023,
+   "trade_date": "2023-12-29",
+   "close": 4.16,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2024,
+   "trade_date": "2024-12-31",
+   "close": 5.29,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  },
+  {
+   "code": "603323",
+   "year": 2025,
+   "trade_date": "2025-12-31",
+   "close": 5.05,
+   "currency": "元",
+   "source": "上交所行情(yunhq 日K)"
+  }
+ ]
+}

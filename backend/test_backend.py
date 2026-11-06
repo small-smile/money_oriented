@@ -322,7 +322,7 @@ class TestHolders:
         assert set(c) == {"code", "name", "secucode", "tag", "source", "holders_end_date",
                           "holders", "holder_num", "holder_concentration", "detail_page",
                           "factions", "factions_source", "caliber_note", "residual_label", "ring",
-                          "share_capital", "dividend_per10", "history_source", "holders_caliber",
+                          "share_capital", "dividend_per10", "dividend_yield", "history_source", "holders_caliber",
                           "history_gaps", "dividend_unit", "share_capital_break",
                           # 两地代码对应表 + 每张图下那段现算的解读 + 环形图的附加口径
                           "codes", "code_note", "narrative", "ring_alt", "ring_label", "sources"}

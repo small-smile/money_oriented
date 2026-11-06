@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS bank_bond_issue
     source_file  VARCHAR(255)  NULL COMMENT '来源文件',
     PRIMARY KEY (company_code, bond_order),
     CONSTRAINT fk_bank_bond_issue_company FOREIGN KEY (company_code) REFERENCES company (company_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='银行已发行债券清单（detail_manual 的 bondpay.bonds）：含永续债(不计入应付债券余额),余额与成本率在 bank_report_detail 的 bonds_payable';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT ='银行已发行债券清单（detail_manual 的 bondpay.bonds）：含永续债(不计入应付债券余额),余额与成本率在 bank_debt_securities_issued';

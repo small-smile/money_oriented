@@ -1,7 +1,8 @@
 /* 图表上方的「快速切换银行」按钮面板（不属于 renderAll 分区，脚本加载即自行建按钮）：
  *   · #npl-amt-banks / #npl-amt-tiers —— 风控页不良贷款总额图，按行或按类型筛选对比；
  *   · #roe-banks —— 业绩页 ROE 图，单行切换或一键对比全部；
- *   · #provratio-banks —— 风控页拨贷比对比图，与 ROE 图同一套面板（__bankCmpPanel）。
+ *   · #provratio-banks —— 风控页拨贷比对比图，与 ROE 图同一套面板（__bankCmpPanel）；
+ *   · #divyield-banks —— 业绩页股息率对比图，同一套面板。
  * 都复用 charts-compare.js 里的渲染函数，数据按需向同一个 /api/company_charts 端点拉并缓存。 */
 
 
@@ -205,7 +206,7 @@
 })();
 
 /* ────── 多行对比面板·筛选银行（多选 / 按类型全选 / 五种视图） ──────
- * 业绩页 ROE 图（#roe-banks）与风控页拨贷比图（#provratio-banks）共用，页面上没有那排按钮的直接跳过。
+ * 业绩页 ROE 图（#roe-banks）、股息率图（#divyield-banks）与风控页拨贷比图（#provratio-banks）共用，页面上没有那排按钮的直接跳过。
  * 与导航条上的银行下拉框分工：下拉框换 ?code= 整页重载（整页都变成那家行），
  * 这排按钮不动页面主体，只把一张图换成别家行的曲线 —— 用来快速对照 ROE / 拨贷比高低。
  *
@@ -541,6 +542,32 @@ __bankCmpPanel({
         window.__renderRoeCompare([{ code: b.code, name: b.name, tier: b.tier || '其他',
                                      roe: this.slice(D) }], opt);
         return '当前只显示 <b>' + b.name + '</b> 的拨贷比。点上方类型或银行叠加对比，' +
+            '「最新年份榜」看当年谁高谁低。' + this.caliber;
+    },
+    view: 'lines',
+    initTier: true
+});
+
+/* 业绩页股息率：比率指标、各行可直接横比。数据是接口现算的 dividend-yield 块（与股权页同一份算法），
+ * 首屏叠出本行所属类型，点「全部」落到类型聚合 */
+__bankCmpPanel({
+    ids: { banks: 'divyield-banks', tiers: 'divyield-tiers', views: 'divyield-views',
+           current: 'divyield-current', note: 'note-divyield', chart: 'chart-divyield' },
+    metric: '股息率',
+    slice: function (D) {
+        var y = (D && D['dividend-yield']) || {};
+        return { years: y.years || [], roeNew: y.yield || [] };
+    },
+    caliber: '股息率 = 当年每股现金分红（每 10 股派现 ÷ 10，含税，中期＋末期合并）÷ 当年末收盘价（不复权，' +
+        '该股当年最后一个有成交的交易日）。纯 H 股行（天津 / 江西 / 哈尔滨）港元股价按当年末人民币汇率中间价折人民币；' +
+        'A+H 行只用 A 股价，A 股上市前的年份没有值。分红按报告期归年（次年才实际派发）。' +
+        '数据来源：分红取各行年报，股价取上交所 / 深交所 / 港交所行情（平安银行 1991–2003、哈尔滨银行 2014–2015 为第三方行情），' +
+        '经 MySQL <code>share_price_year_end</code> / <code>exchange_rate_year_end</code> 现算。',
+    oneHeight: '420px',
+    drawOne: function (b, D, opt) {
+        window.__renderRoeCompare([{ code: b.code, name: b.name, tier: b.tier || '其他',
+                                     roe: this.slice(D) }], opt);
+        return '当前只显示 <b>' + b.name + '</b> 的股息率。点上方类型或银行叠加对比，' +
             '「最新年份榜」看当年谁高谁低。' + this.caliber;
     },
     view: 'lines',

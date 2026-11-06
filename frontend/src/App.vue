@@ -1,7 +1,8 @@
 <template>
   <SiteHeader v-if="useSiteHeader" />
   <main>
-    <router-view />
+    <!-- 股权页在同一路由下只换 ?code=（导航里切银行），逻辑只在挂载时读一次 code，故按 fullPath 重挂载；其余页不打 key -->
+    <router-view :key="route.path === '/company/shareholder' ? route.fullPath : undefined" />
   </main>
 </template>
 

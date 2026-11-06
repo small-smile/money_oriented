@@ -143,13 +143,7 @@ def _bank_history_from_charts(code, annual_div=None):
         # 的调色板给点上色；没有这一层的公司退回「动过／未动过」两色
         sc.append([str(y), int(round(float(v) * 1e8)),
                    "；".join(items) if items else "未变动", ev.get("type")])
-    dp = {}
-    if isinstance(annual_div, dict):
-        dp.update({str(y): v for y, v in annual_div.items() if v is not None})
-    # 年报口径后写，重叠年份就覆盖掉接口那份
-    dp.update({str(y): v for y, v in zip(div.get("years") or [], div.get("per10") or [])
-               if v is not None})
-    return (sc or None), ([[y, dp[y]] for y in sorted(dp)] or None)
+    return (sc or None), holders_db.merge_bank_dividends(div, annual_div)
 
 
 def _bank_factions(code):
@@ -521,6 +515,14 @@ def _provenance(industry, code, rec, man, annual):
         else:
             t = ann_tier()
             put("divper10", t, "年报·分红" if t == "annual" else "东财接口·分红", ann_file)
+    if rec.get("dividend_yield") and out.get("divper10"):
+        # 口径档跟分红走（行情本来就不出自年报）；有年份用了第三方行情就在标签里点明
+        third = any(not r[5].startswith(holders_db.EXCHANGE_PRICE_SOURCES) for r in rec["dividend_yield"])
+        converted = any(r[7] for r in rec["dividend_yield"])
+        put("divyield", out["divper10"]["tier"],
+            out["divper10"]["label"] + " ÷ " + ("年末收盘价(含第三方行情)" if third else "交易所年末收盘价")
+            + ("·按年末中间价折算" if converted else ""),
+            "share_price_year_end")
     if rec.get("share_capital"):
         if man.get("share_capital"):
             put("sharecap", "manual", "年报·股份变动", mf)
@@ -595,6 +597,7 @@ def _stitch_rec(industry, code, man):
     rec["dividend_unit"] = man.get("dividend_unit")
     # 分红序列两种形态（手工层数组 / annual 表字典）在这里合一
     rec["dividend_per10"] = _as_year_pairs(rec.get("dividend_per10"))
+    rec["dividend_yield"] = holders_db.dividend_yield(rec["dividend_per10"], rec["dividend_unit"] or "元", code)
     # 年报口径环形图（银行取 company_charts）也落进 rec，合并表就自带 ring，请求时不必再读 json
     if not rec.get("ring") and industry == "bank":
         rec["ring"] = _ring_block_from_charts(code)
@@ -680,6 +683,9 @@ def _read_holders(code):
             # shareholder.html 那套模板有这两张图，其余板块的数据在手工层补齐后自然也画得出来
             "share_capital": d.get("share_capital") or None,
             "dividend_per10": d.get("dividend_per10") or None,
+            # 历年股息率 [[年, %, 每股分红, 年末收盘价, 取价日, 行情来源, 股价币种, 折算汇率]]：
+            # 分红 ÷ share_price_year_end 现算，股价与分红不同币种时按 exchange_rate_year_end 折算
+            "dividend_yield": d.get("dividend_yield") or None,
             # 股本序列的口径断点 {at, text}：拆股／并股前后基数不可直接比较，图上画界线
             "share_capital_break": d.get("share_capital_break") or None,
             "history_source": d.get("history_source"),

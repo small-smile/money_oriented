@@ -1,5 +1,7 @@
 <template>
-  <nav class="site-nav">
+  <!-- 银行代码的股权页：换成银行页同一条 header（含按机构类型分列的银行筛选面板） -->
+  <BankNav v-if="isBankShareholder" :code="shBoard.code" current="shareholder" />
+  <nav v-else class="site-nav">
     <router-link class="brand" to="/">📊 行业看板</router-link>
     <router-link
       v-for="p in links"
@@ -15,7 +17,8 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiGet } from '../api'
 // 分组导航数据抽到 src/site.config.js（与 router / Home 同源）。本组件只保留「按路由挑分组」的逻辑。
-import { navGroups, shareholderBoardPrefix, bankSubPages } from '../site.config'
+import { navGroups, shareholderBoardPrefix } from '../site.config'
+import BankNav from '../views/company/bank/BankNav.vue'
 
 const route = useRoute()
 
@@ -43,22 +46,14 @@ function groupPages(prefix) {
   const g = navGroups.find((x) => x.prefix === prefix)
   return g ? g.pages : []
 }
-// 银行板块的股权页挂「银行公司导航」（股东 + bankSubPages 各栏，按 code 指到 /company/bank/:code/*），
-// 其余板块挂各自的行业分组导航。
-function shareholderLinks(industry, code) {
-  if (industry === 'bank') {
-    return [
-      { to: `/company/shareholder?code=${code}`, title: '股东' },
-      ...bankSubPages.map((s) => ({ to: `/company/bank/${code}/${s.seg}`, title: s.title })),
-    ]
-  }
-  const prefix = shareholderBoardPrefix[industry]
-  return prefix ? groupPages(prefix) : []
-}
+// 银行板块的股权页整条换成 BankNav（与银行详情页同一份导航 + 银行筛选），其余板块挂各自的行业分组导航。
+const isBankShareholder = computed(() =>
+  route.path === '/company/shareholder' && !!shBoard.value && shBoard.value.industry === 'bank')
 
 const links = computed(() => {
   if (route.path === '/company/shareholder' && shBoard.value) {
-    return shareholderLinks(shBoard.value.industry, shBoard.value.code)
+    const prefix = shareholderBoardPrefix[shBoard.value.industry]
+    return prefix ? groupPages(prefix) : []
   }
   const g = navGroups.find((x) => route.path.startsWith(x.prefix))
   return g ? g.pages : []
