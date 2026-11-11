@@ -54,6 +54,11 @@
           <div class="kpi"><div class="label">2025 扣非归母净利</div><div class="value">2.45 亿</div><div class="delta up">▲ 16.66%</div></div>
           <div class="kpi"><div class="label">2025 加权平均 ROE</div><div class="value">11.97%</div><div class="delta down">▼ 0.27pct</div></div>
         </div>
+        <div class="stack-tabs" id="perf-tabs">
+          <span class="tab-slider"></span>
+          <button type="button" class="stack-tab">金额（亿元）</button>
+          <button type="button" class="stack-tab">指数（2020=100）</button>
+        </div>
         <div id="chart-perf" class="chart"></div>
         <div class="note">
           营业收入自 2020 年（上市当年，受疫情影响 9.75 亿元、同比 -8.35%）稳步增至 2025 年 <b>18.59 亿元</b>，
@@ -522,25 +527,49 @@ onMounted(() => {
             ]
         });
     })();
-    // 1 业绩走势
+    // 1 业绩走势（金额 / 指数两视图，胶囊分段控件切换；指数=各系列按 2020 基准归一到 100）
     (function () {
         const years = ['2020', '2021', '2022', '2023', '2024', '2025'];
-        initChart('chart-perf')?.setOption({
+        const rev = [9.75, 13.75, 15.25, 16.30, 16.71, 18.59];   // 营业收入（亿元）
+        const np  = [1.75, 3.14, 2.22, 2.14, 2.77, 2.73];        // 归母净利润（亿元）
+        const npd = [1.29, 1.52, 1.85, 1.78, 2.10, 2.45];        // 扣非归母净利（亿元）
+        const idx = a => a.map(v => +(v / a[0] * 100).toFixed(1)); // 基准年 2020 = 100
+        const chart = initChart('chart-perf');
+        if (!chart) return;
+        // 两套口径：金额(亿元) / 指数(2020=100)。仅换系列数据与 y 轴，其余 option 不动
+        const optionFor = pct => ({
             backgroundColor: '#fff', textStyle: { fontSize: 18 },
-            tooltip: { trigger: 'axis' },
+            tooltip: { trigger: 'axis', valueFormatter: v => v == null ? '-' : (pct ? v + '%' : v + ' 亿') },
             legend: { top: 4, textStyle: AX },
             grid: { left: 64, right: 24, top: 46, bottom: 56 },
             xAxis: { type: 'category', data: years, axisLabel: AX },
-            yAxis: { type: 'value', name: '亿元', min: 0, axisLabel: AX, nameTextStyle: AX },
+            yAxis: { type: 'value', name: pct ? '%' : '亿元', min: 0,
+                     axisLabel: pct ? { fontSize: 18, formatter: '{value}%' } : AX, nameTextStyle: AX },
             series: [
-                { name: '营业收入', type: 'bar', data: [9.75, 13.75, 15.25, 16.30, 16.71, 18.59],
+                { name: '营业收入', type: 'bar', data: pct ? idx(rev) : rev,
                   itemStyle: { color: '#aeb6bf' }, barWidth: '46%' },
                 { name: '归母净利润', type: 'line', smooth: true, symbolSize: 8,
-                  data: [1.75, 3.14, 2.22, 2.14, 2.77, 2.73], lineStyle: { color: RED, width: 3 }, itemStyle: { color: RED } },
+                  data: pct ? idx(np) : np, lineStyle: { color: RED, width: 3 }, itemStyle: { color: RED } },
                 { name: '扣非归母净利', type: 'line', smooth: true, symbolSize: 8,
-                  data: [1.29, 1.52, 1.85, 1.78, 2.10, 2.45], lineStyle: { color: ORANGE, width: 3, type: 'dashed' }, itemStyle: { color: ORANGE } }
+                  data: pct ? idx(npd) : npd, lineStyle: { color: ORANGE, width: 3, type: 'dashed' }, itemStyle: { color: ORANGE } }
             ]
         });
+        chart.setOption(optionFor(false), true);   // 默认金额视图；notMerge 避免切回时残留 % 格式
+        // 胶囊分段控件：金额 / 指数，白滑块随选中项平移（样式见 page.css）
+        const tabBar = rootEl.value?.querySelector('#perf-tabs');
+        if (tabBar) {
+            const slider = tabBar.querySelector('.tab-slider');
+            const tabs = Array.from(tabBar.querySelectorAll('.stack-tab'));
+            const moveSlider = t => { slider.style.width = t.offsetWidth + 'px'; slider.style.transform = 'translateX(' + t.offsetLeft + 'px)'; };
+            const activate = i => {
+                tabs.forEach((t, k) => t.classList.toggle('active', k === i));
+                moveSlider(tabs[i]);
+                chart.setOption(optionFor(i === 1), true);
+            };
+            tabs.forEach((t, i) => t.addEventListener('click', () => activate(i)));
+            activate(0);
+            if (document.fonts) document.fonts.ready.then(() => { const a = tabBar.querySelector('.stack-tab.active'); if (a) moveSlider(a); });
+        }
     })();
 
     // 1.5 分季度业绩

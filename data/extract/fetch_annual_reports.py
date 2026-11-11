@@ -63,6 +63,7 @@ HKEX_STOCK_ID = {
     "01916": "188671",  # 江西银行  —— HKEXnews stockId
     "01578": None,      # 天津银行  —— stockId 待补
     "06138": "104210",  # 哈尔滨银行 —— prefix.do 查得，2026-08-21 实测可列出 2013 年起全部年报
+    "03698": "96181",   # 徽商银行 —— partial.do 查得，2026-11-10
     "00966": "2282",    # 中国太平（保险，纯 H 股）—— 2026-08-21 实测可列出 2007 年起全部年报
 }
 
@@ -222,6 +223,10 @@ def list_hkexnews(code: str) -> dict[int, str]:
                 re.compile(rf"^{tag}\s*(\d{{4}})$", re.I))
         for r in rows:
             title = (r.get("TITLE") or "").strip()
+            # 徽商 03698 写「二零二五年年度報告」（中文数字年份），先换成阿拉伯数字
+            title = re.sub(r"[零〇一二三四五六七八九]{4}(?=年)",
+                           lambda mm: "".join(str("零一二三四五六七八九".index(c) if c != "〇" else 0)
+                                              for c in mm.group(0)), title)
             m = next((p.match(title) for p in pats if p.match(title)), None)
             if not m:
                 continue
